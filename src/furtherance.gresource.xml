@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/com/lakoliu/Furtherance">
+    <file>gtk/window.ui</file>
+    <file>gtk/history_box.ui</file>
+    <file>gtk/style.css</file>
+    <file>gtk/tasks_page.ui</file>
+    <file>gtk/tasks_group.ui</file>
+    <file>gtk/task_row.ui</file>
+    <file>gtk/task_details.ui</file>
+  </gresource>
+</gresources>

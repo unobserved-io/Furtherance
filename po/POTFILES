@@ -1,0 +1,4 @@
+data/com.lakoliu.Furtherance.desktop.in
+data/com.lakoliu.Furtherance.appdata.xml.in
+data/com.lakoliu.Furtherance.gschema.xml
+src/window.ui

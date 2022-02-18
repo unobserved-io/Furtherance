@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="FurTaskRow" parent="GtkListBoxRow">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">horizontal</property>
+        <property name="margin_top">10</property>
+        <property name="margin_bottom">10</property>
+        <property name="margin_end">12</property>
+        <property name="margin_start">12</property>
+        <property name="hexpand">True</property>
+        <property name="spacing">3</property>
+        <property name="valign">center</property>
+        <property name="homogeneous">True</property>
+        <child>
+          <object class="GtkLabel" id="task_name_label">
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Task</property>
+            <property name="ellipsize">end</property>
+            <property name="single_line_mode">True</property>
+            <style>
+              <class name="heading"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="total_time_label">
+            <property name="halign">end</property>
+            <property name="label" translatable="yes">Time</property>
+            <property name="single_line_mode">True</property>
+            <style>
+              <class name="numeric"/>
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

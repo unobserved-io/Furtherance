@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="FurTasksGroup" parent="AdwPreferencesGroup">
+    <child>
+      <object class="GtkBox" id="listbox_box">
+        <property name="orientation">vertical</property>
+      </object>
+    </child>
+  </template>
+</interface>
