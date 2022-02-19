@@ -113,7 +113,8 @@ impl FurtheranceApplication {
             .version(config::VERSION)
             .comments("Track your time without being tracked.")
             .copyright("© 2022 Ricky Kresslein")
-            .authors(vec!["Ricky Kresslein".into()])
+            .website("https://lakoliu.com")
+            .authors(vec!["Ricky Kresslein <rk@lakoliu.com>".into()])
             // .website("https://furtherance.app")
             .license_type(gtk::License::Gpl30)
             .build();
