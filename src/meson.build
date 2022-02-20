@@ -14,6 +14,7 @@ conf.set_quoted('GETTEXT_PACKAGE', 'furtherance')
 conf.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
 conf.set_quoted('PKGDATADIR', pkgdatadir)
 conf.set_quoted('APP_ID', app_id)
+conf.set_quoted('PROFILE', profile)
 
 configure_file(
     input: 'config.rs.in',
@@ -39,13 +40,11 @@ rust_sources = files(
   'ui/history_box.rs',
   'ui/window.rs',
 
-  'settings_manager.rs',
-
   'application.rs',
   'config.rs',
   'main.rs',
-
   'database.rs',
+  'settings_manager.rs',
 )
 
 sources = [cargo_sources, rust_sources]

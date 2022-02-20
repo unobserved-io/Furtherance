@@ -1,0 +1,11 @@
+option (
+  'profile',
+  type: 'combo',
+  choices: [
+    'default',
+    'beta',
+    'development'
+  ],
+  value: 'default'
+)
+	

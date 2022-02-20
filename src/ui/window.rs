@@ -31,6 +31,7 @@ use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
 use crate::database;
 use crate::settings_manager;
+use crate::config;
 
 mod imp {
     use super::*;
@@ -155,7 +156,10 @@ impl FurtheranceWindow {
         let stop_time = Rc::new(RefCell::new(Local::now()));
 
         // Development mode
-        // self.add_css_class("devel");
+        if config::PROFILE == "development" {
+            self.add_css_class("devel");
+        }
+
 
         imp.start_button.connect_clicked(clone!(
             @weak self as this,

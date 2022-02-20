@@ -16,6 +16,12 @@ dependency('libadwaita-1', version: '>=1.0.0')
 
 name       = 'Furtherance'
 app_id     = 'com.lakoliu.Furtherance'
+profile    = get_option('profile')
+
+# Change app id during development
+if profile == 'development'
+  app_id = '@0@.Devel'.format(app_id)
+endif
 
 i18n = import('i18n')
 

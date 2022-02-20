@@ -18,7 +18,7 @@ use gtk::{gio, gio::prelude::*, glib};
 use crate::config;
 
 pub fn get_settings() -> gio::Settings {
-    let app_id = config::APP_ID;
+    let app_id = config::APP_ID.trim_end_matches(".Devel");
     gio::Settings::new(app_id)
 }
 

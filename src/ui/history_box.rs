@@ -22,6 +22,7 @@ use glib::subclass;
 use crate::ui::FurTasksPage;
 use crate::FurtheranceApplication;
 use crate::database;
+use crate::config;
 
 enum View {
     Loading,
@@ -92,6 +93,13 @@ impl FurHistoryBox {
         } else {
             self.set_view(View::Empty);
         }
+
+        // Change "empty" page icon for development mode
+        let imp = imp::FurHistoryBox::from_instance(self);
+        if config::PROFILE == "development" {
+            imp.welcome_page.set_icon_name(Some("com.lakoliu.Furtherance.Devel"));
+        }
+
     }
 
     fn set_view(&self, view: View) {
