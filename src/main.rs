@@ -18,6 +18,7 @@ mod application;
 mod config;
 mod ui;
 mod database;
+mod settings_manager;
 
 use self::application::FurtheranceApplication;
 

@@ -149,7 +149,7 @@ pub fn check_for_tasks() -> Result<String> {
     let conn = Connection::open(get_directory())?;
 
     conn.query_row(
-        "SELECT task_name FROM tasks WHERE id='1'",
+        "SELECT task_name FROM tasks ORDER BY ROWID ASC LIMIT 1",
         [],
         |row| row.get(0),
     )

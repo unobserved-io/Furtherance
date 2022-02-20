@@ -14,18 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod window;
-mod history_box;
-mod tasks_page;
-mod tasks_group;
-mod task_row;
-mod task_details;
-mod preferences_window;
+use gtk::{gio, gio::prelude::*, glib};
+use crate::config;
 
-pub use window::FurtheranceWindow;
-pub use history_box::FurHistoryBox;
-pub use tasks_page::FurTasksPage;
-pub use tasks_group::FurTasksGroup;
-pub use task_row::FurTaskRow;
-pub use task_details::FurTaskDetails;
-pub use preferences_window::FurPreferencesWindow;
+pub fn get_settings() -> gio::Settings {
+    let app_id = config::APP_ID;
+    gio::Settings::new(app_id)
+}
+
+
+pub fn bind_property<P: IsA<glib::Object>>(key: &str, object: &P, property: &str) {
+    let settings = get_settings();
+    settings
+        .bind(key, object, property)
+        .flags(gio::SettingsBindFlags::DEFAULT)
+        .build();
+}
+
+#[allow(dead_code)]
+pub fn get_bool(key: &str) -> bool {
+    let settings = get_settings();
+    settings.boolean(key)
+}
+
+#[allow(dead_code)]
+pub fn get_int(key: &str) -> i32 {
+    let settings = get_settings();
+    settings.int(key)
+}

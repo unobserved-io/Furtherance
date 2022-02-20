@@ -20,7 +20,7 @@ use gtk::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
 
 use crate::config;
-use crate::ui::FurtheranceWindow;
+use crate::ui::{FurtheranceWindow, FurPreferencesWindow};
 use crate::database;
 
 mod imp {
@@ -95,6 +95,13 @@ impl FurtheranceApplication {
             app.quit();
         }));
         self.add_action(&quit_action);
+
+        let preferences_action = gio::SimpleAction::new("preferences", None);
+        preferences_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            FurPreferencesWindow::new().show();
+        }));
+        self.set_accels_for_action("app.preferences", &["<primary>comma"]);
+        self.add_action(&preferences_action);
 
         let about_action = gio::SimpleAction::new("about", None);
         about_action.connect_activate(clone!(@weak self as app => move |_, _| {

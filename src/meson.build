@@ -31,12 +31,15 @@ run_command(
 
 rust_sources = files(
   'ui.rs',
+  'ui/preferences_window.rs',
   'ui/task_details.rs',
   'ui/task_row.rs',
   'ui/tasks_group.rs',
   'ui/tasks_page.rs',
   'ui/history_box.rs',
   'ui/window.rs',
+
+  'settings_manager.rs',
 
   'application.rs',
   'config.rs',

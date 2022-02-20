@@ -30,6 +30,7 @@ use once_cell::unsync::OnceCell;
 use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
 use crate::database;
+use crate::settings_manager;
 
 mod imp {
     use super::*;
@@ -111,7 +112,9 @@ impl FurtheranceWindow {
         // Update watch time while timer is running
         let imp = imp::FurtheranceWindow::from_instance(self);
         imp.watch.set_text(text);
-        self.check_user_idle();
+        if settings_manager::get_bool("notify-of-idle") {
+            self.check_user_idle();
+        }
     }
 
     fn activate_task_input(&self, sensitive: bool) {
@@ -213,7 +216,9 @@ impl FurtheranceWindow {
 
     fn setup_settings(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        imp.notify_of_idle.set(300).expect("Failed to set notify_of_idle");
+        // Get user setting idle-time in minutes and convert it to seconds
+        imp.notify_of_idle.set((settings_manager::get_int("idle-time") * 60) as u64)
+            .expect("Failed to set notify_of_idle");
         self.reset_vars();
 
         // Enter starts timer

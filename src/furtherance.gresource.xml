@@ -8,5 +8,6 @@
     <file>gtk/tasks_group.ui</file>
     <file>gtk/task_row.ui</file>
     <file>gtk/task_details.ui</file>
+    <file>gtk/preferences_window.ui</file>
   </gresource>
 </gresources>

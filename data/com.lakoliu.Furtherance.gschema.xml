@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="furtherance">
 	<schema id="com.lakoliu.Furtherance" path="/com/lakoliu/Furtherance/">
+	  <key name="notify-of-idle" type="b">
+      <default>true</default>
+    </key>
+	  <key name="idle-time" type="i">
+      <default>6</default>
+    </key>
 	</schema>
 </schemalist>
