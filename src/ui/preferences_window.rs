@@ -31,6 +31,11 @@ mod imp {
     #[template(resource = "/com/lakoliu/Furtherance/gtk/preferences_window.ui")]
     pub struct FurPreferencesWindow {
         #[template_child]
+        pub appearance_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub dark_theme_switch: TemplateChild<gtk::Switch>,
+
+        #[template_child]
         pub idle_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub notify_of_idle_expander: TemplateChild<adw::ExpanderRow>,
@@ -88,11 +93,20 @@ impl FurPreferencesWindow {
     }
 
     fn setup_widgets(&self) {
+        let imp = imp::FurPreferencesWindow::from_instance(self);
 
+        let manager = adw::StyleManager::default();
+        let support_darkmode = manager.system_supports_color_schemes();
+        imp.appearance_group.set_visible(!support_darkmode);
     }
 
     fn setup_signals(&self) {
         let imp = imp::FurPreferencesWindow::from_instance(self);
+
+        settings_manager::bind_property(
+            "dark-mode",
+            &*imp.dark_theme_switch,
+            "active");
 
         settings_manager::bind_property(
             "notify-of-idle",

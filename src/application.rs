@@ -22,12 +22,15 @@ use gtk::{gdk, gio, glib};
 use crate::config;
 use crate::ui::{FurtheranceWindow, FurPreferencesWindow};
 use crate::database;
+use crate::settings_manager;
 
 mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct FurtheranceApplication {}
+    pub struct FurtheranceApplication {
+        // pub settings: gio::Settings,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for FurtheranceApplication {
@@ -41,6 +44,7 @@ mod imp {
             self.parent_constructed(obj);
 
             obj.setup_gactions();
+            obj.setup_application();
             obj.set_accels_for_action("app.quit", &["<primary>Q", "<primary>W"]);
         }
     }
@@ -110,6 +114,20 @@ impl FurtheranceApplication {
         self.add_action(&about_action);
     }
 
+    fn setup_application(&self) {
+        let app_id = config::APP_ID.trim_end_matches(".Devel");
+        let settings = gio::Settings::new(app_id);
+
+        settings.connect_changed(
+            Some("dark-mode"),
+            clone!(@weak self as app => move |_, _| {
+                    app.update_light_dark();
+                }
+            ),
+        );
+        self.update_light_dark()
+    }
+
     fn show_about(&self) {
         let window = self.active_window().unwrap();
         let dialog = gtk::AboutDialog::builder()
@@ -120,9 +138,8 @@ impl FurtheranceApplication {
             .version(config::VERSION)
             .comments("Track your time without being tracked.")
             .copyright("© 2022 Ricky Kresslein")
-            .website("https://lakoliu.com")
             .authors(vec!["Ricky Kresslein <rk@lakoliu.com>".into()])
-            // .website("https://furtherance.app")
+            .website("https://furtherance.app")
             .license_type(gtk::License::Gpl30)
             .build();
 
@@ -179,6 +196,19 @@ impl FurtheranceApplication {
             self.remove_action("delete-history");
         }
     }
+
+    fn update_light_dark(&self) {
+        let manager = adw::StyleManager::default();
+
+        if !manager.system_supports_color_schemes() {
+            let color_scheme = if settings_manager::get_bool("dark-mode") {
+                adw::ColorScheme::PreferDark
+            } else {
+                adw::ColorScheme::PreferLight
+            };
+            manager.set_color_scheme(color_scheme);
+        }
+    }
 }
 
 impl Default for FurtheranceApplication {
@@ -189,3 +219,4 @@ impl Default for FurtheranceApplication {
             .unwrap()
     }
 }
+

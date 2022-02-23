@@ -25,7 +25,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use chrono::{DateTime, Local, Duration as ChronDur};
 use dbus::blocking::Connection;
-use once_cell::unsync::OnceCell;
 
 use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
@@ -53,7 +52,6 @@ mod imp {
         #[template_child]
         pub toast_overlay: TemplateChild<adw::ToastOverlay>,
 
-        pub notify_of_idle: OnceCell<u64>,
         pub stored_idle: Mutex<u64>,
         pub idle_notified: Mutex<bool>,
         pub idle_time_reached: Mutex<bool>,
@@ -220,9 +218,6 @@ impl FurtheranceWindow {
 
     fn setup_settings(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        // Get user setting idle-time in minutes and convert it to seconds
-        imp.notify_of_idle.set((settings_manager::get_int("idle-time") * 60) as u64)
-            .expect("Failed to set notify_of_idle");
         self.reset_vars();
 
         // Enter starts timer
@@ -249,7 +244,7 @@ impl FurtheranceWindow {
         let idle_time = self.get_idle_time().unwrap();
 
         // If user was idle and has now returned...
-        if idle_time < *imp.notify_of_idle.get().unwrap()
+        if idle_time < (settings_manager::get_int("idle-time") * 60) as u64
             && *imp.idle_time_reached.lock().unwrap()
             && !*imp.idle_notified.lock().unwrap() {
 
@@ -259,12 +254,12 @@ impl FurtheranceWindow {
         *imp.stored_idle.lock().unwrap() = idle_time;
 
         // If user is idle but has not returned...
-        if *imp.stored_idle.lock().unwrap() >= *imp.notify_of_idle.get().unwrap()
+        if *imp.stored_idle.lock().unwrap() >= (settings_manager::get_int("idle-time") * 60) as u64
             && !*imp.idle_time_reached.lock().unwrap() {
 
             *imp.idle_time_reached.lock().unwrap() = true;
             let true_idle_start_time = Local::now() -
-                ChronDur::seconds(*imp.notify_of_idle.get().unwrap() as i64);
+                ChronDur::seconds((settings_manager::get_int("idle-time") * 60) as i64);
             *imp.idle_start_time.lock().unwrap() = true_idle_start_time.to_rfc3339();
         }
     }
