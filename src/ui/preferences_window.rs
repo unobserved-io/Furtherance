@@ -41,6 +41,13 @@ mod imp {
         pub notify_of_idle_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub notify_of_idle_spin: TemplateChild<gtk::SpinButton>,
+
+        #[template_child]
+        pub task_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub limit_tasks_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub limit_days_spin: TemplateChild<gtk::SpinButton>,
     }
 
     #[glib::object_subclass]
@@ -119,7 +126,28 @@ impl FurPreferencesWindow {
             &*imp.notify_of_idle_spin,
             "value",
         );
-    }
 
+        settings_manager::bind_property(
+            "limit-tasks",
+            &*imp.limit_tasks_expander,
+            "enable-expansion",
+        );
+
+        settings_manager::bind_property(
+            "limit-days",
+            &*imp.limit_days_spin,
+            "value",
+        );
+
+        imp.limit_tasks_expander.connect_enable_expansion_notify(move |_|{
+            let window = FurtheranceWindow::default();
+            window.reset_history_box();
+        });
+
+        imp.limit_days_spin.connect_value_changed(move |_|{
+            let window = FurtheranceWindow::default();
+            window.reset_history_box();
+        });
+    }
 }
 

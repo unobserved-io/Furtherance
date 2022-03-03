@@ -10,5 +10,11 @@
 	  <key name="idle-time" type="i">
       <default>6</default>
     </key>
+	  <key name="limit-tasks" type="b">
+      <default>false</default>
+    </key>
+	  <key name="limit-days" type="i">
+      <default>6</default>
+    </key>
 	</schema>
 </schemalist>

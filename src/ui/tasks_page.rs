@@ -22,6 +22,7 @@ use chrono::{DateTime, Local, Duration};
 
 use crate::ui::FurTasksGroup;
 use crate::database;
+use crate::settings_manager;
 
 mod imp {
     use super::*;
@@ -122,6 +123,15 @@ impl FurTasksPage {
                 tasks_sorted_by_day.push(same_date_list.clone());
             }
             i += 1;
+            if settings_manager::get_bool("limit-tasks") {
+                if uniq_date_list.len() > settings_manager::get_int("limit-days") as usize {
+                    if same_date_list.len() > 0 && i != len {
+                        tasks_sorted_by_day.push(same_date_list.clone());
+                    }
+                    uniq_date_list.pop();
+                    break;
+                }
+            }
         }
 
         // Create FurTasksGroups for all unique days
