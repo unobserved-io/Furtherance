@@ -18,11 +18,12 @@ use adw::subclass::prelude::*;
 use glib::clone;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
-use chrono::{DateTime, NaiveDateTime, Local, offset::TimeZone};
+use chrono::{DateTime, NaiveDateTime, Local, ParseError, offset::TimeZone};
 
 use crate::FurtheranceApplication;
 use crate::ui::FurtheranceWindow;
 use crate::database;
+use crate::settings_manager;
 
 mod imp {
     use super::*;
@@ -117,13 +118,19 @@ impl FurTaskDetails {
             task_box.set_homogeneous(true);
 
             let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
-            let start_time_str = start_time.format("%H:%M:%S").to_string();
+            let mut start_time_str = start_time.format("%H:%M:%S").to_string();
+            if !settings_manager::get_bool("show-seconds") {
+                start_time_str = start_time.format("%H:%M").to_string();
+            }
             let start = gtk::Button::new();
             start.set_label(&start_time_str);
             task_box.append(&start);
 
             let stop_time = DateTime::parse_from_rfc3339(&task.stop_time).unwrap();
-            let stop_time_str = stop_time.format("%H:%M:%S").to_string();
+            let mut stop_time_str = stop_time.format("%H:%M:%S").to_string();
+            if !settings_manager::get_bool("show-seconds") {
+                stop_time_str = stop_time.format("%H:%M").to_string();
+            }
             let stop = gtk::Button::new();
             stop.set_label(&stop_time_str);
             task_box.append(&stop);
@@ -133,7 +140,10 @@ impl FurTaskDetails {
             let h = total_time / 60 / 60;
             let m = (total_time / 60) - (h * 60);
             let s = total_time - (m * 60);
-            let total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+            let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+            if !settings_manager::get_bool("show-seconds") {
+                total_time_str = format!("{:02}:{:02}", h, m);
+            }
             let total = gtk::Button::new();
             total.set_label(&total_time_str);
             total.add_css_class("inactive-button");
@@ -167,8 +177,14 @@ impl FurTaskDetails {
                 let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
                 times_box.set_homogeneous(true);
 
-                let start_time_w_year = start_time.format("%h %e %Y %H:%M:%S").to_string();
-                let stop_time_w_year = stop_time.format("%h %e %Y %H:%M:%S").to_string();
+                let mut start_time_w_year = start_time.format("%h %e %Y %H:%M:%S").to_string();
+                if !settings_manager::get_bool("show-seconds") {
+                    start_time_w_year = start_time.format("%h %e %Y %H:%M").to_string();
+                }
+                let mut stop_time_w_year = stop_time.format("%h %e %Y %H:%M:%S").to_string();
+                if !settings_manager::get_bool("show-seconds") {
+                    stop_time_w_year = stop_time.format("%h %e %Y %H:%M").to_string();
+                }
                 let start_time_edit = gtk::Entry::new();
                 start_time_edit.set_text(&start_time_w_year);
                 let stop_time_edit = gtk::Entry::new();
@@ -176,6 +192,9 @@ impl FurTaskDetails {
 
                 let instructions = gtk::Label::new(Some(
                     "*Use the format MMM DD YYYY HH:MM:SS"));
+                if !settings_manager::get_bool("show-seconds") {
+                    instructions.set_text("*Use the format MMM DD YYYY HH:MM");
+                }
                 instructions.set_visible(false);
                 instructions.add_css_class("error_message");
 
@@ -241,7 +260,11 @@ impl FurTaskDetails {
                         }
                     }));
 
-                    delete_confirmation.show();
+                    if settings_manager::get_bool("delete-confirmation") {
+                        delete_confirmation.show();
+                    } else {
+                        delete_confirmation.response(gtk::ResponseType::Ok);
+                    }
                 }));
 
 
@@ -262,9 +285,16 @@ impl FurTaskDetails {
                             let new_stop_time_edited: String;
                             if start_time_edit.text() != start_time_w_year {
                                 let new_start_time_str = start_time_edit.text();
-                                let new_start_time = NaiveDateTime::parse_from_str(
+                                let new_start_time: Result<NaiveDateTime, ParseError>;
+                                if settings_manager::get_bool("show-seconds") {
+                                    new_start_time = NaiveDateTime::parse_from_str(
                                                         &new_start_time_str,
                                                         "%h %e %Y %H:%M:%S");
+                                } else {
+                                    new_start_time = NaiveDateTime::parse_from_str(
+                                                            &new_start_time_str,
+                                                            "%h %e %Y %H:%M");
+                                }
                                 if let Err(_) = new_start_time {
                                     instructions.set_visible(true);
                                     do_not_close = true;
@@ -276,9 +306,16 @@ impl FurTaskDetails {
                             }
                             if stop_time_edit.text() != stop_time_w_year {
                                 let new_stop_time_str = stop_time_edit.text();
-                                let new_stop_time = NaiveDateTime::parse_from_str(
+                                let new_stop_time: Result<NaiveDateTime, ParseError>;
+                                if settings_manager::get_bool("show-seconds") {
+                                    new_stop_time = NaiveDateTime::parse_from_str(
                                                         &new_stop_time_str,
                                                         "%h %e %Y %H:%M:%S");
+                                } else {
+                                    new_stop_time = NaiveDateTime::parse_from_str(
+                                                            &new_stop_time_str,
+                                                            "%h %e %Y %H:%M");
+                                }
                                 if let Err(_) = new_stop_time {
                                     instructions.set_visible(true);
                                     do_not_close = true;
@@ -414,7 +451,6 @@ impl FurTaskDetails {
                 ("Delete", gtk::ResponseType::Accept),
                 ("Cancel", gtk::ResponseType::Reject)
             ]);
-            dialog.show();
 
             dialog.connect_response(clone!(@strong dialog => move |_,resp|{
                 if resp == gtk::ResponseType::Accept {
@@ -427,6 +463,12 @@ impl FurTaskDetails {
                     dialog.close();
                 }
             }));
+
+            if settings_manager::get_bool("delete-confirmation") {
+                dialog.show();
+            } else {
+                dialog.response(gtk::ResponseType::Accept);
+            }
 
         }));
 

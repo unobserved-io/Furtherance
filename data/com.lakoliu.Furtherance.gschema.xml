@@ -16,5 +16,11 @@
 	  <key name="limit-days" type="i">
       <default>6</default>
     </key>
+	  <key name="delete-confirmation" type="b">
+      <default>true</default>
+    </key>
+	  <key name="show-seconds" type="b">
+      <default>true</default>
+    </key>
 	</schema>
 </schemalist>

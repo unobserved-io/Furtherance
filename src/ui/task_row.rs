@@ -23,6 +23,7 @@ use glib::clone;
 
 use crate::database::Task;
 use crate::ui::FurTaskDetails;
+use crate::settings_manager;
 
 
 mod imp {
@@ -116,8 +117,11 @@ impl FurTaskRow {
         let h = total_time / 60 / 60;
         let m = (total_time / 60) - (h * 60);
         let s = total_time - (m * 60);
+        let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
 
-        let total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+        if !settings_manager::get_bool("show-seconds") {
+            total_time_str = format!("{:02}:{:02}", h, m);
+        }
 
         imp.total_time_label.set_text(&total_time_str);
     }

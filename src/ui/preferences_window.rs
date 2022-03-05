@@ -48,6 +48,10 @@ mod imp {
         pub limit_tasks_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub limit_days_spin: TemplateChild<gtk::SpinButton>,
+        #[template_child]
+        pub delete_confirmation_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub show_seconds_switch: TemplateChild<gtk::Switch>,
     }
 
     #[glib::object_subclass]
@@ -113,7 +117,8 @@ impl FurPreferencesWindow {
         settings_manager::bind_property(
             "dark-mode",
             &*imp.dark_theme_switch,
-            "active");
+            "active"
+        );
 
         settings_manager::bind_property(
             "notify-of-idle",
@@ -139,12 +144,29 @@ impl FurPreferencesWindow {
             "value",
         );
 
+        settings_manager::bind_property(
+            "delete-confirmation",
+            &*imp.delete_confirmation_switch,
+            "active"
+        );
+
+        settings_manager::bind_property(
+            "show-seconds",
+            &*imp.show_seconds_switch,
+            "active"
+        );
+
         imp.limit_tasks_expander.connect_enable_expansion_notify(move |_|{
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
 
         imp.limit_days_spin.connect_value_changed(move |_|{
+            let window = FurtheranceWindow::default();
+            window.reset_history_box();
+        });
+
+        imp.show_seconds_switch.connect_active_notify(move |_|{
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
