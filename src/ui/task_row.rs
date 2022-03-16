@@ -114,9 +114,9 @@ impl FurTaskRow {
             }
         }
         // Format total time to readable string
-        let h = total_time / 60 / 60;
-        let m = (total_time / 60) - (h * 60);
-        let s = total_time - (m * 60);
+        let h = total_time / 3600;
+        let m = total_time % 3600 / 60;
+        let s = total_time % 60;
         let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
 
         if !settings_manager::get_bool("show-seconds") {

@@ -137,9 +137,9 @@ impl FurTaskDetails {
 
             let total_time = stop_time - start_time;
             let total_time = total_time.num_seconds();
-            let h = total_time / 60 / 60;
-            let m = (total_time / 60) - (h * 60);
-            let s = total_time - (m * 60);
+            let h = total_time / 3600;
+            let m = total_time % 3600 / 60;
+            let s = total_time % 60;
             let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
             if !settings_manager::get_bool("show-seconds") {
                 total_time_str = format!("{:02}:{:02}", h, m);
