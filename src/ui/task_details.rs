@@ -51,6 +51,7 @@ mod imp {
 
         pub all_boxes: RefCell<Vec<gtk::Box>>,
         pub all_task_ids: RefCell<Vec<i32>>,
+        pub this_day: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -106,6 +107,8 @@ impl FurTaskDetails {
         let imp = imp::FurTaskDetails::from_instance(self);
 
         imp.task_name_label.set_text(&task_group[0].task_name);
+        let this_day_str = DateTime::parse_from_rfc3339(&task_group[0].start_time).unwrap();
+        *imp.this_day.borrow_mut() = this_day_str.format("%h %d %Y").to_string();
 
         for task in task_group.clone() {
             imp.all_task_ids.borrow_mut().push(task.id);
@@ -177,13 +180,13 @@ impl FurTaskDetails {
                 let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
                 times_box.set_homogeneous(true);
 
-                let mut start_time_w_year = start_time.format("%h %e %Y %H:%M:%S").to_string();
+                let mut start_time_w_year = start_time.format("%h %d %Y %H:%M:%S").to_string();
                 if !settings_manager::get_bool("show-seconds") {
-                    start_time_w_year = start_time.format("%h %e %Y %H:%M").to_string();
+                    start_time_w_year = start_time.format("%h %d %Y %H:%M").to_string();
                 }
-                let mut stop_time_w_year = stop_time.format("%h %e %Y %H:%M:%S").to_string();
+                let mut stop_time_w_year = stop_time.format("%h %d %Y %H:%M:%S").to_string();
                 if !settings_manager::get_bool("show-seconds") {
-                    stop_time_w_year = stop_time.format("%h %e %Y %H:%M").to_string();
+                    stop_time_w_year = stop_time.format("%h %d %Y %H:%M").to_string();
                 }
                 let start_time_edit = gtk::Entry::new();
                 start_time_edit.set_text(&start_time_w_year);
@@ -289,11 +292,11 @@ impl FurTaskDetails {
                                 if settings_manager::get_bool("show-seconds") {
                                     new_start_time = NaiveDateTime::parse_from_str(
                                                         &new_start_time_str,
-                                                        "%h %e %Y %H:%M:%S");
+                                                        "%h %d %Y %H:%M:%S");
                                 } else {
                                     new_start_time = NaiveDateTime::parse_from_str(
                                                             &new_start_time_str,
-                                                            "%h %e %Y %H:%M");
+                                                            "%h %d %Y %H:%M");
                                 }
                                 if let Err(_) = new_start_time {
                                     instructions.set_visible(true);
@@ -310,11 +313,11 @@ impl FurTaskDetails {
                                 if settings_manager::get_bool("show-seconds") {
                                     new_stop_time = NaiveDateTime::parse_from_str(
                                                         &new_stop_time_str,
-                                                        "%h %e %Y %H:%M:%S");
+                                                        "%h %d %Y %H:%M:%S");
                                 } else {
                                     new_stop_time = NaiveDateTime::parse_from_str(
                                                             &new_stop_time_str,
-                                                            "%h %e %Y %H:%M");
+                                                            "%h %d %Y %H:%M");
                                 }
                                 if let Err(_) = new_stop_time {
                                     instructions.set_visible(true);
@@ -397,10 +400,25 @@ impl FurTaskDetails {
         imp.all_boxes.borrow_mut().clear();
         // Get list from database by a vec of IDs
         let updated_list = database::get_list_by_id(imp.all_task_ids.clone().borrow().to_vec());
+        let mut updated_list = updated_list.unwrap();
+        // Check if dates in all_task_ids list match this date
+        // and if not, delete them.
+        updated_list.retain(|task| {
+            let delete = {
+                let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
+                let start_time_str = start_time.format("%h %d %Y").to_string();
+                if imp.this_day.borrow().to_string() != start_time_str {
+                    false
+                } else {
+                    true
+                }
+            };
+            delete
+        });
         imp.all_task_ids.borrow_mut().clear();
         let window = FurtheranceWindow::default();
         window.reset_history_box();
-        self.setup_widgets(updated_list.unwrap());
+        self.setup_widgets(updated_list);
     }
 
     fn setup_signals(&self) {

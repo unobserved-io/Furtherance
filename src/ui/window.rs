@@ -77,6 +77,7 @@ mod imp {
 
     impl ObjectImpl for FurtheranceWindow {
         fn constructed(&self, obj: &Self::Type) {
+            obj.setup_widgets();
             obj.setup_signals();
             obj.setup_settings();
             self.parent_constructed(obj);
@@ -147,17 +148,22 @@ impl FurtheranceWindow {
         imp.history_box.create_tasks_page();
     }
 
-    fn setup_signals(&self) {
+    fn setup_widgets(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        let running = Arc::new(Mutex::new(false));
-        let start_time = Rc::new(RefCell::new(Local::now()));
-        let stop_time = Rc::new(RefCell::new(Local::now()));
 
         // Development mode
         if config::PROFILE == "development" {
             self.add_css_class("devel");
         }
 
+        imp.task_input.grab_focus();
+    }
+
+    fn setup_signals(&self) {
+        let imp = imp::FurtheranceWindow::from_instance(self);
+        let running = Arc::new(Mutex::new(false));
+        let start_time = Rc::new(RefCell::new(Local::now()));
+        let stop_time = Rc::new(RefCell::new(Local::now()));
 
         imp.start_button.connect_clicked(clone!(
             @weak self as this,
