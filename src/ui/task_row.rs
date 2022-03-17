@@ -22,7 +22,7 @@ use once_cell::sync::Lazy;
 use glib::clone;
 
 use crate::database::Task;
-use crate::ui::FurTaskDetails;
+use crate::ui::{FurTaskDetails, FurtheranceWindow};
 use crate::settings_manager;
 
 
@@ -100,7 +100,20 @@ impl FurTaskRow {
         for task in task_list.clone() {
             imp.tasks.lock().unwrap().push(task);
         }
+        let task_name_text = &task_list[0].task_name;
         imp.task_name_label.set_text(&imp.tasks.lock().unwrap()[0].task_name);
+
+        // Create right-click gesture
+        let gesture = gtk::GestureClick::new();
+        gesture.set_button(gtk::gdk::ffi::GDK_BUTTON_SECONDARY as u32);
+        gesture.connect_pressed(clone!(@strong task_name_text => move |gesture, _, _, _| {
+            gesture.set_state(gtk::EventSequenceState::Claimed);
+            let window = FurtheranceWindow::default();
+            window.set_task_input_text(task_name_text.to_string());
+            window.start_timer();
+        }));
+
+        self.add_controller(&gesture);
 
         // Add up all durations for task of said name to create total_time
         let mut total_time: i64 = 0;

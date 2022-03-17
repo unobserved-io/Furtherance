@@ -327,6 +327,16 @@ impl FurtheranceWindow {
         let imp = imp::FurtheranceWindow::from_instance(self);
         *imp.subtract_idle.lock().unwrap() = val;
     }
+
+    pub fn set_task_input_text(&self, text: String) {
+        let imp = imp::FurtheranceWindow::from_instance(self);
+        imp.task_input.set_text(&text);
+    }
+
+    pub fn start_timer(&self) {
+        let imp = imp::FurtheranceWindow::from_instance(self);
+        imp.start_button.emit_clicked();
+    }
 }
 
 impl Default for FurtheranceWindow {
