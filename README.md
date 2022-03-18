@@ -14,10 +14,10 @@ It allows you to track time spent on different activities without worrying about
 * Tasks are grouped by name and date.
 * Tasks can be edited after they are created (name, time, and date).
 * Settings to customize the view and defaults to your liking.
-* Features can be added! Just email your request.
+* Features can be added! Just open an issue.
 
 ## Getting Started
-Just install Furtherance using Flatpak and you'll be off to the races.
+Install Furtherance using Flatpak and you'll be off to the races.
 
 ## Use
 Type in the name of the task you are working on and press start. That's really all there is to it.
