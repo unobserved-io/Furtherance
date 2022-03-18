@@ -3,10 +3,10 @@ Furtherance is a time tracking app written in Rust with GTK 4.
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 
 <p float="left">
-    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-main.png" alt="Furtherance main window" width="500"/>
-    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-task-details.png" alt="Furtherance task details" width="500"/>
-    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-edit-task.png" alt="Furtherance edit task" width="500"/>
-    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-settings.png" alt="Furtherance settings" width="500"/>
+    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-main.png" alt="Furtherance main window" width="400"/>
+    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-task-details.png" alt="Furtherance task details" width="400"/>
+    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-edit-task.png" alt="Furtherance edit task" width="400"/>
+    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-settings.png" alt="Furtherance settings" width="400"/>
 </p>
 
 ## Features
