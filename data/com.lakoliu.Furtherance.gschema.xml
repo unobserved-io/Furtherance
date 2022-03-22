@@ -2,7 +2,7 @@
 <schemalist gettext-domain="furtherance">
 	<schema id="com.lakoliu.Furtherance" path="/com/lakoliu/Furtherance/">
 	  <key name="dark-mode" type="b">
-      <default>true</default>
+      <default>false</default>
     </key>
 	  <key name="notify-of-idle" type="b">
       <default>true</default>

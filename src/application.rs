@@ -28,9 +28,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct FurtheranceApplication {
-        // pub settings: gio::Settings,
-    }
+    pub struct FurtheranceApplication {}
 
     #[glib::object_subclass]
     impl ObjectSubclass for FurtheranceApplication {
@@ -115,16 +113,6 @@ impl FurtheranceApplication {
     }
 
     fn setup_application(&self) {
-        let app_id = config::APP_ID.trim_end_matches(".Devel");
-        let settings = gio::Settings::new(app_id);
-
-        settings.connect_changed(
-            Some("dark-mode"),
-            clone!(@weak self as app => move |_, _| {
-                    app.update_light_dark();
-                }
-            ),
-        );
         self.update_light_dark()
     }
 
@@ -197,7 +185,7 @@ impl FurtheranceApplication {
         }
     }
 
-    fn update_light_dark(&self) {
+    pub fn update_light_dark(&self) {
         let manager = adw::StyleManager::default();
 
         if !manager.system_supports_color_schemes() {

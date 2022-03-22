@@ -22,6 +22,7 @@ use gtk::CompositeTemplate;
 
 use crate::settings_manager;
 use crate::ui::FurtheranceWindow;
+use crate::FurtheranceApplication;
 
 mod imp {
     use super::*;
@@ -155,6 +156,11 @@ impl FurPreferencesWindow {
             &*imp.show_seconds_switch,
             "active"
         );
+
+        imp.dark_theme_switch.connect_active_notify(move |_|{
+            let app = FurtheranceApplication::default();
+            app.update_light_dark();
+        });
 
         imp.limit_tasks_expander.connect_enable_expansion_notify(move |_|{
             let window = FurtheranceWindow::default();
