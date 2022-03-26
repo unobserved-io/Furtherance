@@ -1,9 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="desktop">
-	<id>com.lakoliu.Furtherance.desktop</id>
+<component type="desktop-application">
+	<id>com.lakoliu.Furtherance</id>
+  <launchable type="desktop-id">com.lakoliu.Furtherance.desktop</launchable>
+  <name>Furtherance</name>
+  <summary>Track your time without being tracked.</summary>
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0-or-later</project_license>
 	<description>
-	  <p>Track your time without being tracked.</p>
+	  <p>
+	    Furtherance is an elegant time tracking app built for Gnome with Rust
+	    and GTK4. In addition to tracking time spent on tasks, you can edit that
+	    time, delete entries, and change settings. It even has idle detection.
+	  </p>
 	</description>
+
+  <screenshots>
+    <screenshot type="default">
+      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-main.png</image>
+    </screenshot>
+    <screenshot>
+      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-task-details.png</image>
+    </screenshot>
+    <screenshot>
+      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-edit-task.png</image>
+    </screenshot>
+    <screenshot>
+      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-settings.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://furtherance.app</url>
+  <url type="bugtracker">https://github.com/lakoliu/Furtherance/issues</url>
+
+  <content_rating type="oars-1.1" />
+
 </component>
