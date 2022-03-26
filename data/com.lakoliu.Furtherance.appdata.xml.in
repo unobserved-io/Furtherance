@@ -4,6 +4,8 @@
   <launchable type="desktop-id">com.lakoliu.Furtherance.desktop</launchable>
   <name>Furtherance</name>
   <summary>Track your time without being tracked.</summary>
+  <developer_name>Ricky Kresslein</developer_name>
+  <update_contact>rk@lakoliu.com</update_contact>
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0-or-later</project_license>
 	<description>
@@ -16,16 +18,16 @@
 
   <screenshots>
     <screenshot type="default">
-      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-main.png</image>
+      <image>https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-main.png</image>
     </screenshot>
     <screenshot>
-      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-task-details.png</image>
+      <image>https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-task-details.png</image>
     </screenshot>
     <screenshot>
-      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-edit-task.png</image>
+      <image>https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-edit-task.png</image>
     </screenshot>
     <screenshot>
-      <image width="500">https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-settings.png</image>
+      <image>https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screenshot-settings.png</image>
     </screenshot>
   </screenshots>
 
@@ -33,5 +35,20 @@
   <url type="bugtracker">https://github.com/lakoliu/Furtherance/issues</url>
 
   <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="1.0.7" date="2022-03-18">
+      <description>
+        <p>
+          First stable release of Furtherance.
+        </p>
+        <ul>
+          <li>Track time spent on tasks</li>
+          <li>Change/delete recorded times</li>
+          <li>Idle detection</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
 
 </component>
