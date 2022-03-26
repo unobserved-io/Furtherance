@@ -1,5 +1,5 @@
 project('furtherance', 'rust',
-          version: '1.0.7',
+          version: '1.0.8',
     meson_version: '>= 0.50.0',
   default_options: [ 'warning_level=2',
                    ],
