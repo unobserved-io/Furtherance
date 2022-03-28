@@ -17,7 +17,8 @@ It allows you to track time spent on different activities without worrying about
 * Features can be added! Just open an issue.
 
 ## Getting Started
-Install Furtherance using Flatpak and you'll be off to the races.
+<a href='https://flathub.org/apps/details/com.lakoliu.Furtherance'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
+Install Furtherance from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance) and you'll be off to the races. Make sure you have Flatpak [setup](https://flatpak.org/setup/).
 
 ## Use
 Type in the name of the task you are working on and press start. That's really all there is to it.
