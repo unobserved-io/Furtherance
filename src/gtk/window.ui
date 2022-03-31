@@ -31,7 +31,6 @@
             <object class="GtkBox" id="win_box">
               <property name="orientation">vertical</property>
               <property name="spacing">10</property>
-              <property name="margin_bottom">18</property>
               <property name="halign">center</property>
               <property name="width_request">400</property>
               <property name="vexpand">True</property>
