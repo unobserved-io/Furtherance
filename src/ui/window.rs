@@ -135,7 +135,7 @@ impl FurtheranceWindow {
         if *imp.subtract_idle.lock().unwrap() {
             let idle_start = DateTime::parse_from_rfc3339(&imp.idle_start_time.lock().unwrap()).unwrap();
             stop_time = idle_start.with_timezone(&Local);
-            *imp.subtract_idle.lock().unwrap() = false
+            *imp.subtract_idle.lock().unwrap() = false;
         }
 
         let _ = database::db_write(&imp.task_input.text().trim(), start_time, stop_time);

@@ -105,6 +105,8 @@ impl FurPreferencesWindow {
     }
 
     fn setup_widgets(&self) {
+        self.set_search_enabled(false);
+
         let imp = imp::FurPreferencesWindow::from_instance(self);
 
         let manager = adw::StyleManager::default();
