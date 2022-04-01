@@ -1,50 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   width="161mm"
-   height="161mm"
-   viewBox="0 0 161 161"
-   version="1.1"
-   id="svg5"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   sodipodi:docname="com.lakoliu.Furtherance.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview7"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:document-units="mm"
-     showgrid="false"
-     inkscape:zoom="0.65477694"
-     inkscape:cx="298.57496"
-     inkscape:cy="310.02924"
-     inkscape:window-width="1920"
-     inkscape:window-height="1131"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
-  <defs
-     id="defs2" />
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(-43.512234,-66.387247)">
-    <path
-       id="text1508"
-       style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-size:105.833px;line-height:1.25;font-family:Dosis;-inkscape-font-specification:'Dosis Ultra-Bold';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.566104"
-       d="M 129.43493,67.567547 A 80.04071,80.04071 0 0 0 61.234416,131.11444 l 58.978804,93.48427 a 80.04071,80.04071 0 0 0 29.62945,1.74318 80.04071,80.04071 0 0 0 24.48666,-7.30544 c 0.10719,-0.25431 0.19856,-0.5101 0.25695,-0.76765 0.42413,-1.87402 -0.12902,-4.02385 -1.65951,-6.44968 l -23.80256,-37.72776 33.32376,-21.02368 c 2.42582,-1.53045 3.82701,-3.12854 4.20403,-4.79433 0.42413,-1.87402 -0.12902,-4.02383 -1.6595,-6.44968 l -14.49842,-22.98132 c -1.53042,-2.42585 -3.1927,-3.78704 -4.98616,-4.08351 -1.74635,-0.50469 -3.83213,0.006 -6.25797,1.53787 l -33.32376,21.02368 -12.56515,-19.91783 48.8354,-30.809699 c 2.42585,-1.530419 3.82813,-3.128664 4.20515,-4.794456 0.42413,-1.874019 -0.12902,-4.023834 -1.6595,-6.449679 l -3.43132,-5.438243 a 80.04071,80.04071 0 0 0 -31.87584,-2.342936 z m 10.2176,6.206941 1.20815,1.914842 -59.177825,37.33497 34.554845,54.77287 43.66523,-27.54774 1.20818,1.91485 -43.66524,27.54773 28.27283,44.81387 -1.91484,1.20817 -65.244149,-103.41753 z"
-       inkscape:export-filename="/home/ricky/Pictures/Furtherance/Furtherance-logo-256.png"
-       inkscape:export-xdpi="40.620335"
-       inkscape:export-ydpi="40.620335" />
-  </g>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg height="16px" viewBox="0 0 16 16" width="16px" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#241f31">
+        <path d="m 8.019531 1.050781 c -2.988281 -0.007812 -5.65625 1.90625 -6.605469 4.742188 c -0.175781 0.523437 0.105469 1.089843 0.628907 1.261719 c 0.523437 0.175781 1.089843 -0.105469 1.269531 -0.628907 c 0.675781 -2.019531 2.566406 -3.378906 4.699219 -3.375 c 2.132812 0.007813 4.015625 1.375 4.6875 3.398438 c 0.082031 0.253906 0.261719 0.460937 0.496093 0.582031 c 0.238282 0.121094 0.511719 0.140625 0.765626 0.054688 c 0.253906 -0.082032 0.460937 -0.261719 0.582031 -0.496094 c 0.117187 -0.238282 0.136719 -0.511719 0.054687 -0.765625 c -0.9375 -2.835938 -3.59375 -4.765625 -6.578125 -4.773438 z m 0 0"/>
+        <path d="m 0 8 c 0 2.140625 0.859375 4.195312 2.386719 5.699219 c 1.496093 1.476562 3.515625 2.300781 5.613281 2.300781 v -6 c -0.527344 0 -1.027344 -0.207031 -1.40625 -0.578125 c -0.378906 -0.375 -0.59375 -0.886719 -0.59375 -1.421875 z m 0 0"/>
+        <path d="m 10.957031 7.980469 c 0 1.269531 -0.824219 2.351562 -1.957031 2.800781 v 4.125 c 3.324219 -0.5625 5.957031 -3.484375 5.957031 -6.925781 z m -2.957031 3.015625 c -0.027344 0 -0.058594 0.003906 -0.085938 0.003906 l 0.085938 4 z m 0 0"/>
+    </g>
+    <path d="m 51.832031 13 c -1.335937 0.019531 -2.628906 -0.5 -3.582031 -1.4375 c -0.953125 -0.941406 -1.488281 -2.222656 -1.488281 -3.5625" fill="none" stroke="#241f31" stroke-width="6"/>
 </svg>
