@@ -36,7 +36,7 @@
                 <child>
                   <object class="AdwActionRow">
                     <property name="title" translatable="yes">_Minutes to idle</property>
-                    <property name="subtitle" translatable="yes">Number of miniutes before the user is considered idle</property>
+                    <property name="subtitle" translatable="yes">Number of minutes before the user is considered idle</property>
                     <property name="use_underline">True</property>
                     <child>
                       <object class="GtkSpinButton" id="notify_of_idle_spin">
