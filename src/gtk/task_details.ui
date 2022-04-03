@@ -70,7 +70,7 @@
                             <property name="spacing">5</property>
                             <child>
                               <object class="GtkLabel">
-                                <property name="label">Start</property>
+                                <property name="label" translatable="yes">Start</property>
                                 <style>
                                   <class name="title-2"/>
                                 </style>
@@ -78,7 +78,7 @@
                             </child>
                             <child>
                               <object class="GtkLabel">
-                                <property name="label">Stop</property>
+                                <property name="label" translatable="yes">Stop</property>
                                 <style>
                                   <class name="title-2"/>
                                 </style>
@@ -86,7 +86,7 @@
                             </child>
                             <child>
                               <object class="GtkLabel">
-                                <property name="label">Total</property>
+                                <property name="label" translatable="yes">Total</property>
                                 <style>
                                   <class name="title-2"/>
                                 </style>
