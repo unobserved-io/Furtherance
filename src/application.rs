@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use gettextrs::*;
 use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
@@ -124,7 +125,7 @@ impl FurtheranceApplication {
             .program_name("Furtherance")
             .logo_icon_name(config::APP_ID)
             .version(config::VERSION)
-            .comments("Track your time without being tracked.")
+            .comments(&gettext("Track your time without being tracked."))
             .copyright("© 2022 Ricky Kresslein")
             .authors(vec!["Ricky Kresslein <rk@lakoliu.com>".into()])
             .website("https://furtherance.app")
@@ -142,17 +143,17 @@ impl FurtheranceApplication {
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Question,
             gtk::ButtonsType::None,
-            Some("<span size='x-large' weight='bold'>Delete history?</span>"),
+            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Delete history?"))),
         );
         dialog.add_buttons(&[
-            ("Cancel", gtk::ResponseType::Reject),
-            ("Delete", gtk::ResponseType::Accept)
+            (&gettext("Cancel"), gtk::ResponseType::Reject),
+            (&gettext("Delete"), gtk::ResponseType::Accept)
         ]);
 
         let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
-        let explanation = gtk::Label::new(Some("This will delete ALL of your task history."));
+        let explanation = gtk::Label::new(Some(&gettext("This will delete ALL of your task history.")));
         let instructions = gtk::Label::new(Some(
-            "Type DELETE in the box below then click Delete to proceed."));
+            &gettext("Type DELETE in the box below then click Delete to proceed.")));
         let delete_entry = gtk::Entry::new();
         message_area.append(&explanation);
         message_area.append(&instructions);
@@ -160,7 +161,7 @@ impl FurtheranceApplication {
 
         dialog.connect_response(clone!(@weak dialog = > move |_, resp| {
             if resp == gtk::ResponseType::Accept {
-                if delete_entry.text().to_uppercase() == "DELETE" {
+                if delete_entry.text().to_uppercase() == gettext("DELETE") {
                     let _ = database::delete_all();
                     window.reset_history_box();
                     dialog.close();

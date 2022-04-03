@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use adw::subclass::prelude::AdwApplicationWindowImpl;
+use gettextrs::*;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib, CompositeTemplate};
@@ -174,9 +175,9 @@ impl FurtheranceWindow {
                     gtk::DialogFlags::MODAL,
                     gtk::MessageType::Error,
                     gtk::ButtonsType::Ok,
-                    Some("<span size='large'>No Task Name</span>"),
+                    Some(&format!("<span size='large'>{}</span>", &gettext("No Task Name"))),
                 );
-                dialog.set_secondary_text(Some("Enter a task name to start the timer."));
+                dialog.set_secondary_text(Some(&gettext("Enter a task name to start the timer.")));
                 dialog.show();
 
                 dialog.connect_response(clone!(@strong dialog => move |_,_|{
@@ -282,19 +283,20 @@ impl FurtheranceWindow {
         let m = (idle_time / 60) - (h * 60);
         let s = idle_time - (m * 60);
         let idle_time_str = format!(
-            "You have been idle for {:02}:{:02}:{:02}.\nWould you like to discard that time, or continue the clock?",
-            h, m, s);
+            "{}{:02}:{:02}:{:02}{}", gettext("You have been idle for "), h, m, s,
+            gettext(".\nWould you like to discard that time, or continue the clock?")
+            );
 
         let dialog = gtk::MessageDialog::with_markup(
             Some(self),
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Warning,
             gtk::ButtonsType::None,
-            Some("<span size='x-large' weight='bold'>Edit Task</span>"),
+            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Edit Task"))),
         );
         dialog.add_buttons(&[
-            ("Discard", gtk::ResponseType::Reject),
-            ("Continue", gtk::ResponseType::Accept)
+            (&gettext("Discard"), gtk::ResponseType::Reject),
+            (&gettext("Continue"), gtk::ResponseType::Accept)
         ]);
         dialog.set_secondary_text(Some(&idle_time_str));
 
