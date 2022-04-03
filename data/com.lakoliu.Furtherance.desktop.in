@@ -8,4 +8,4 @@ Terminal=false
 Type=Application
 Categories=GTK;Utility;
 StartupNotify=true
-Keywords=timer;tracker;clock;tasks;productivity
+Keywords=timer;tracker;clock;tasks;productivity;
