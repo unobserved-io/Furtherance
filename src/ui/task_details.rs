@@ -467,8 +467,8 @@ impl FurTaskDetails {
             );
             dialog.set_secondary_text(Some(&gettext("This will delete all occurrences of this task on this day.")));
             dialog.add_buttons(&[
-                (&gettext("Delete"), gtk::ResponseType::Accept),
-                (&gettext("Cancel"), gtk::ResponseType::Reject)
+                (&gettext("Cancel"), gtk::ResponseType::Reject),
+                (&gettext("Delete"), gtk::ResponseType::Accept)
             ]);
 
             dialog.connect_response(clone!(@strong dialog => move |_,resp|{
