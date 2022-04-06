@@ -20,7 +20,7 @@ use gtk::subclass::prelude::*;
 use gtk::{gio, glib, CompositeTemplate};
 use glib::{clone, timeout_add_local};
 use std::time::Duration;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::rc::Rc;
 use std::cell::RefCell;
 use chrono::{DateTime, Local, Duration as ChronDur};
@@ -102,7 +102,7 @@ impl FurtheranceWindow {
             .expect("Failed to create FurtheranceWindow")
     }
 
-    pub fn inapp_notification(&self, text: &str) {
+    pub fn display_toast(&self, text: &str) {
         // Display in-app notifications
         let imp = imp::FurtheranceWindow::from_instance(self);
         let toast = adw::Toast::new(text);
@@ -336,6 +336,8 @@ impl FurtheranceWindow {
         if !*imp.running.lock().unwrap() {
             imp.task_input.set_text(&task_name_text);
             imp.start_button.emit_clicked();
+        } else {
+            self.display_toast("Stop the timer to duplicate a task.");
         }
     }
 }
