@@ -16,6 +16,7 @@
 
 use adw::subclass::prelude::*;
 use adw::prelude::{PreferencesPageExt, PreferencesGroupExt};
+use gettextrs::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*};
 use chrono::{DateTime, Local, Duration};
@@ -142,9 +143,9 @@ impl FurTasksPage {
         for i in 0..uniq_date_list.len() {
             let group = FurTasksGroup::new();
             if uniq_date_list[i] == today {
-                group.set_title("Today")
+                group.set_title(&gettext("Today"))
             } else if uniq_date_list[i] == yesterday{
-                group.set_title("Yesterday")
+                group.set_title(&gettext("Yesterday"))
             } else {
                 group.set_title(&uniq_date_list[i])
             }

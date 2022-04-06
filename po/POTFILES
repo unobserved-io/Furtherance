@@ -1,4 +1,11 @@
 data/com.lakoliu.Furtherance.desktop.in
 data/com.lakoliu.Furtherance.appdata.xml.in
-data/com.lakoliu.Furtherance.gschema.xml
-src/window.ui
+src/gtk/history_box.ui
+src/gtk/preferences_window.ui
+src/gtk/task_details.ui
+src/gtk/task_row.ui
+src/gtk/window.ui
+src/application.rs
+src/ui/task_details.rs
+src/ui/tasks_page.rs
+src/ui/window.rs

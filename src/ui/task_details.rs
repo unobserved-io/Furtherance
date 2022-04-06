@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use adw::subclass::prelude::*;
+use gettextrs::*;
 use glib::clone;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
@@ -163,7 +164,7 @@ impl FurTaskDetails {
                     gtk::DialogFlags::MODAL,
                     gtk::MessageType::Question,
                     gtk::ButtonsType::OkCancel,
-                    "<span size='x-large' weight='bold'>Edit Task</span>",
+                    &format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Edit Task")),
                 );
                 dialog.set_use_markup(true);
 
@@ -173,9 +174,9 @@ impl FurTaskDetails {
                 task_name_edit.set_text(&task.task_name);
                 let labels_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
                 labels_box.set_homogeneous(true);
-                let start_label = gtk::Label::new(Some("Start"));
+                let start_label = gtk::Label::new(Some(&gettext("Start")));
                 start_label.add_css_class("title-4");
-                let stop_label = gtk::Label::new(Some("Stop"));
+                let stop_label = gtk::Label::new(Some(&gettext("Stop")));
                 stop_label.add_css_class("title-4");
                 let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
                 times_box.set_homogeneous(true);
@@ -194,26 +195,26 @@ impl FurTaskDetails {
                 stop_time_edit.set_text(&stop_time_w_year);
 
                 let instructions = gtk::Label::new(Some(
-                    "*Use the format MMM DD YYYY HH:MM:SS"));
+                    &gettext("*Use the format MMM DD YYYY HH:MM:SS")));
                 if !settings_manager::get_bool("show-seconds") {
-                    instructions.set_text("*Use the format MMM DD YYYY HH:MM");
+                    instructions.set_text(&gettext("*Use the format MMM DD YYYY HH:MM"));
                 }
                 instructions.set_visible(false);
                 instructions.add_css_class("error_message");
 
                 let time_error = gtk::Label::new(Some(
-                    "*Start time cannot be later than stop time."));
+                    &gettext("*Start time cannot be later than stop time.")));
                 time_error.set_visible(false);
                 time_error.add_css_class("error_message");
 
                 let future_error = gtk::Label::new(Some(
-                    "*Time cannot be in the future."));
+                    &gettext("*Time cannot be in the future.")));
                 future_error.set_visible(false);
                 future_error.add_css_class("error_message");
 
                 let delete_task_btn = gtk::Button::new();
                 delete_task_btn.set_icon_name("user-trash-symbolic");
-                delete_task_btn.set_tooltip_text(Some("Delete task"));
+                delete_task_btn.set_tooltip_text(Some(&gettext("Delete task")));
                 delete_task_btn.set_hexpand(false);
                 delete_task_btn.set_vexpand(false);
                 delete_task_btn.set_halign(gtk::Align::End);
@@ -239,7 +240,7 @@ impl FurTaskDetails {
                         gtk::DialogFlags::MODAL,
                         gtk::MessageType::Question,
                         gtk::ButtonsType::OkCancel,
-                        Some("<span size='x-large' weight='bold'>Delete task?</span>"),
+                        Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Delete task?"))),
                     );
 
                     delete_confirmation.connect_response(clone!(
@@ -462,12 +463,12 @@ impl FurTaskDetails {
                 gtk::DialogFlags::MODAL,
                 gtk::MessageType::Warning,
                 gtk::ButtonsType::None,
-                Some("<span size='large'>Delete All?</span>"),
+                Some(&format!("<span size='large'>{}</span>", &gettext("Delete All?"))),
             );
-            dialog.set_secondary_text(Some("This will delete all occurrences of this task on this day."));
+            dialog.set_secondary_text(Some(&gettext("This will delete all occurrences of this task on this day.")));
             dialog.add_buttons(&[
-                ("Delete", gtk::ResponseType::Accept),
-                ("Cancel", gtk::ResponseType::Reject)
+                (&gettext("Cancel"), gtk::ResponseType::Reject),
+                (&gettext("Delete"), gtk::ResponseType::Accept)
             ]);
 
             dialog.connect_response(clone!(@strong dialog => move |_,resp|{
