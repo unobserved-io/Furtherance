@@ -31,7 +31,7 @@
                     <property name="column_spacing">12</property>
                     <child>
                       <object class="GtkImage">
-                        <property name="icon_name">list-add-symbolic</property>
+                        <property name="icon_name">accessories-character-map-symbolic</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">0</property>
@@ -50,7 +50,7 @@
                     </child>
                     <child>
                       <object class="GtkImage">
-                        <property name="icon_name">window-new-symbolic</property>
+                        <property name="icon_name">accessories-text-editor-symbolic</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
