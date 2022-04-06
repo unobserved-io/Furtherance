@@ -57,6 +57,7 @@ mod imp {
         pub idle_time_reached: Mutex<bool>,
         pub subtract_idle: Mutex<bool>,
         pub idle_start_time: Mutex<String>,
+        pub running: Mutex<bool>,
     }
 
     #[glib::object_subclass]
@@ -161,13 +162,14 @@ impl FurtheranceWindow {
 
     fn setup_signals(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        let running = Arc::new(Mutex::new(false));
+        // running = false
+        *imp.running.lock().unwrap() = false;
         let start_time = Rc::new(RefCell::new(Local::now()));
         let stop_time = Rc::new(RefCell::new(Local::now()));
 
         imp.start_button.connect_clicked(clone!(
-            @weak self as this,
-            @strong running => move |button| {
+            @weak self as this => move |button| {
+            let imp2 = imp::FurtheranceWindow::from_instance(&this);
             if this.get_task_text().trim().is_empty() {
                 let dialog = gtk::MessageDialog::with_markup(
                     Some(&this),
@@ -184,17 +186,18 @@ impl FurtheranceWindow {
                 }));
 
             } else {
-                if !*running.lock().unwrap() {
+                if !*imp2.running.lock().unwrap() {
                     let mut secs: u32 = 0;
                     let mut mins: u32 = 0;
                     let mut hrs: u32 = 0;
 
-                    *running.lock().unwrap() = true;
+                    *imp2.running.lock().unwrap() = true;
                     *start_time.borrow_mut() = Local::now();
                     this.activate_task_input(false);
                     let duration = Duration::new(1,0);
-                    timeout_add_local(duration, clone!(@strong running as running_clone => move || {
-                        if *running_clone.lock().unwrap() {
+                    timeout_add_local(duration, clone!(@strong this as this_clone => move || {
+                        let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
+                        if *imp3.running.lock().unwrap() {
                             secs += 1;
                             if secs > 59 {
                                 secs = 0;
@@ -205,14 +208,14 @@ impl FurtheranceWindow {
                                 }
                             }
                             let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
-                            this.set_watch_time(watch_text);
+                            this_clone.set_watch_time(watch_text);
                         }
-                        Continue(*running_clone.lock().unwrap())
+                        Continue(*imp3.running.lock().unwrap())
                     }));
                     button.set_icon_name("media-playback-stop-symbolic");
                 } else {
                     *stop_time.borrow_mut() = Local::now();
-                    *running.lock().unwrap() = false;
+                    *imp2.running.lock().unwrap() = false;
                     button.set_icon_name("media-playback-start-symbolic");
                     this.set_watch_time("00:00:00");
                     this.activate_task_input(true);
@@ -328,14 +331,12 @@ impl FurtheranceWindow {
         *imp.subtract_idle.lock().unwrap() = val;
     }
 
-    pub fn set_task_input_text(&self, text: String) {
+    pub fn duplicate_task(&self, task_name_text: String) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        imp.task_input.set_text(&text);
-    }
-
-    pub fn start_timer(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
-        imp.start_button.emit_clicked();
+        if !*imp.running.lock().unwrap() {
+            imp.task_input.set_text(&task_name_text);
+            imp.start_button.emit_clicked();
+        }
     }
 }
 

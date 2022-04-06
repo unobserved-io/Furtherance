@@ -109,8 +109,7 @@ impl FurTaskRow {
         gesture.connect_pressed(clone!(@strong task_name_text => move |gesture, _, _, _| {
             gesture.set_state(gtk::EventSequenceState::Claimed);
             let window = FurtheranceWindow::default();
-            window.set_task_input_text(task_name_text.to_string());
-            window.start_timer();
+            window.duplicate_task(task_name_text.to_string());
         }));
 
         self.add_controller(&gesture);
