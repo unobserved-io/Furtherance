@@ -37,6 +37,8 @@
               <child>
                 <object class="GtkLabel" id="watch">
                   <property name="label">00:00:00</property>
+                  <property name="margin_start">12</property>
+                  <property name="margin_end">12</property>
                   <attributes>
                     <attribute name="weight" value="bold"/>
                     <attribute name="scale" value="5"/>
