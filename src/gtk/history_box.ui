@@ -31,7 +31,7 @@
                     <property name="column_spacing">12</property>
                     <child>
                       <object class="GtkImage">
-                        <property name="icon_name">accessories-character-map-symbolic</property>
+                        <property name="icon_name">input-keyboard-symbolic</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">0</property>
@@ -64,6 +64,25 @@
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon_name">input-mouse-symbolic</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">2</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Right-click a task to duplicate it</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">2</property>
                         </layout>
                       </object>
                     </child>
