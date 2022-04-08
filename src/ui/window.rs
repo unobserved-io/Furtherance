@@ -153,6 +153,17 @@ impl FurtheranceWindow {
     fn setup_widgets(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
 
+        // Set initial minimum height
+        let is_saved_task: bool = match database::check_for_tasks() {
+            Ok(_) => true,
+            Err(_) => false,
+        };
+        if is_saved_task {
+            self.set_height_request(300);
+        } else {
+            self.set_height_request(390);
+        }
+
         // Development mode
         if config::PROFILE == "development" {
             self.add_css_class("devel");

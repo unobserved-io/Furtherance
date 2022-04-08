@@ -64,7 +64,6 @@ mod imp {
                 let window = FurtheranceWindow::new(application);
                 window.set_default_size(400, 600);
                 window.set_title(Some("Furtherance"));
-                window.set_height_request(300);
                 window.upcast()
             };
 

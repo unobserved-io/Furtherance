@@ -19,7 +19,7 @@ use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
 use glib::subclass;
 
-use crate::ui::FurTasksPage;
+use crate::ui::{FurtheranceWindow, FurTasksPage};
 use crate::FurtheranceApplication;
 use crate::database;
 use crate::config;
@@ -125,6 +125,7 @@ impl FurHistoryBox {
 
     pub fn create_tasks_page(&self) {
         let imp = imp::FurHistoryBox::from_instance(self);
+        let window = FurtheranceWindow::default();
         imp.tasks_page.clear_task_list();
         let is_saved_task: bool = match database::check_for_tasks() {
             Ok(_) => true,
@@ -134,13 +135,17 @@ impl FurHistoryBox {
             self.set_view(View::Loading);
             imp.tasks_page.build_task_list();
             self.set_view(View::Tasks);
+            window.set_height_request(300);
         } else {
             self.set_view(View::Empty);
+            window.set_height_request(390);
         }
     }
 
     pub fn empty_view(&self) {
         self.set_view(View::Empty);
+        let window = FurtheranceWindow::default();
+        window.set_height_request(390);
     }
 
 }
