@@ -296,10 +296,9 @@ impl FurtheranceWindow {
         let h = idle_time / 60 / 60;
         let m = (idle_time / 60) - (h * 60);
         let s = idle_time - (m * 60);
-        let idle_time_str = format!(
-            "{}{:02}:{:02}:{:02}{}", gettext("You have been idle for "), h, m, s,
-            gettext(".\nWould you like to discard that time, or continue the clock?")
-            );
+        let idle_time_str = format!("{}{:02}:{:02}:{:02}", gettext("You have been idle for "), h, m, s);
+        let question_str = gettext("\nWould you like to discard that time, or continue the clock?");
+        let idle_time_msg = format!("{}{}", idle_time_str, question_str);
 
         let dialog = gtk::MessageDialog::with_markup(
             Some(self),
@@ -312,7 +311,10 @@ impl FurtheranceWindow {
             (&gettext("Discard"), gtk::ResponseType::Reject),
             (&gettext("Continue"), gtk::ResponseType::Accept)
         ]);
-        dialog.set_secondary_text(Some(&idle_time_str));
+        dialog.set_secondary_text(Some(&idle_time_msg));
+
+        let app = FurtheranceApplication::default();
+        app.system_notification(&idle_time_str, &question_str, dialog.clone());
 
         dialog.connect_response(clone!(
             @weak self as this,
@@ -331,7 +333,7 @@ impl FurtheranceWindow {
         dialog.show()
     }
 
-    fn reset_vars(&self) {
+    pub fn reset_vars(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
         *imp.stored_idle.lock().unwrap() = 0;
         *imp.idle_notified.lock().unwrap() = false;
@@ -339,7 +341,7 @@ impl FurtheranceWindow {
         *imp.subtract_idle.lock().unwrap() = false;
     }
 
-    fn set_subtract_idle(&self, val: bool) {
+    pub fn set_subtract_idle(&self, val: bool) {
         let imp = imp::FurtheranceWindow::from_instance(self);
         *imp.subtract_idle.lock().unwrap() = val;
     }

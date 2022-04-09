@@ -19,6 +19,8 @@ use glib::clone;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
+use log::debug;
+use std::sync::Mutex;
 
 use crate::config;
 use crate::ui::{FurtheranceWindow, FurPreferencesWindow};
@@ -29,7 +31,9 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default)]
-    pub struct FurtheranceApplication {}
+    pub struct FurtheranceApplication {
+        pub idle_dialog: Mutex<gtk::MessageDialog>,
+    }
 
     #[glib::object_subclass]
     impl ObjectSubclass for FurtheranceApplication {
@@ -111,6 +115,30 @@ impl FurtheranceApplication {
             app.show_about();
         }));
         self.add_action(&about_action);
+
+        let discard_idle_action = gio::SimpleAction::new("discard-idle-action", None);
+        discard_idle_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            let window = FurtheranceWindow::default();
+            let imp = window.imp();
+            if *imp.running.lock().unwrap() && *imp.idle_time_reached.lock().unwrap() {
+                window.set_subtract_idle(true);
+                imp.start_button.emit_clicked();
+                let imp_app = imp::FurtheranceApplication::from_instance(&app);
+                imp_app.idle_dialog.lock().unwrap().close();
+            }
+        }));
+        self.add_action(&discard_idle_action);
+
+        let continue_idle_action = gio::SimpleAction::new("continue-idle-action", None);
+        continue_idle_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            let window = FurtheranceWindow::default();
+            if *window.imp().running.lock().unwrap() {
+                window.reset_vars();
+                let imp = imp::FurtheranceApplication::from_instance(&app);
+                imp.idle_dialog.lock().unwrap().close();
+            }
+        }));
+        self.add_action(&continue_idle_action);
     }
 
     fn setup_application(&self) {
@@ -197,6 +225,28 @@ impl FurtheranceApplication {
             };
             manager.set_color_scheme(color_scheme);
         }
+    }
+
+    pub fn system_notification(&self, title: &str, subtitle: &str, dialog: gtk::MessageDialog) {
+        let imp = imp::FurtheranceApplication::from_instance(self);
+        *imp.idle_dialog.lock().unwrap() = dialog;
+        let icon = Some("appointment-missed-symbolic");
+        let notification = gio::Notification::new(title.as_ref());
+        notification.set_body(Some(subtitle.as_ref()));
+
+        if let Some(icon) = icon {
+            match gio::Icon::for_string(icon) {
+                Ok(gicon) => notification.set_icon(&gicon),
+                Err(err) => debug!("Unable to display notification: {:?}", err),
+            }
+        }
+
+        notification.add_button("Discard", "app.discard-idle-action");
+        notification.add_button("Continue", "app.continue-idle-action");
+
+        gio::Application::default()
+            .unwrap()
+            .send_notification(None, &notification);
     }
 }
 
