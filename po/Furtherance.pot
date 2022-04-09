@@ -201,31 +201,31 @@ msgstr ""
 msgid "DELETE"
 msgstr ""
 
-#: src/ui/window.rs:178
+#: src/ui/window.rs:191
 msgid "No Task Name"
 msgstr ""
 
-#: src/ui/window.rs:180
+#: src/ui/window.rs:193
 msgid "Enter a task name to start the timer."
 msgstr ""
 
-#: src/ui/window.rs:286
+#: src/ui/window.rs:299
 msgid "You have been idle for "
 msgstr ""
 
-#: src/ui/window.rs:287
-msgid ".\nWould you like to discard that time, or continue the clock?"
+#: src/ui/window.rs:300
+msgid "\nWould you like to discard that time, or continue the clock?"
 msgstr ""
 
-#: src/ui/window.rs:295 src/ui/task_details.rs:167
+#: src/ui/window.rs:308 src/ui/task_details.rs:167
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/window.rs:298
+#: src/ui/window.rs:311
 msgid "Discard"
 msgstr ""
 
-#: src/ui/window.rs:299
+#: src/ui/window.rs:312
 msgid "Continue"
 msgstr ""
 
