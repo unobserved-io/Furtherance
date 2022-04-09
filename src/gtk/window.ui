@@ -63,6 +63,9 @@
                   <child>
                     <object class="GtkButton" id="start_button">
                       <property name="icon-name">media-playback-start-symbolic</property>
+                      <style>
+                        <class name="circular"/>
+                      </style>
                     </object>
                   </child>
                 </object>
