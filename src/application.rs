@@ -156,6 +156,7 @@ impl FurtheranceApplication {
             .comments(&gettext("Track your time without being tracked."))
             .copyright("© 2022 Ricky Kresslein")
             .authors(vec!["Ricky Kresslein <rk@lakoliu.com>".into()])
+            .translator_credits(&gettext("translator-credits"))
             .website("https://furtherance.app")
             .license_type(gtk::License::Gpl30)
             .build();
@@ -241,8 +242,8 @@ impl FurtheranceApplication {
             }
         }
 
-        notification.add_button("Discard", "app.discard-idle-action");
-        notification.add_button("Continue", "app.continue-idle-action");
+        notification.add_button(&gettext("Discard"), "app.discard-idle-action");
+        notification.add_button(&gettext("Continue"), "app.continue-idle-action");
 
         gio::Application::default()
             .unwrap()
