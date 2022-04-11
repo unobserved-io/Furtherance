@@ -36,19 +36,17 @@
                 <path d="m 27 54 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 27 70 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 42 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
-                <path d="m 26 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 42 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
-                <path d="m 26 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 63 38 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 63 70 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 78 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
-                <path d="m 62 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
-                <path d="m 78 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
+                <path d="m 102 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 62 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 87 38 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 87 54 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
+                <path d="m 63 54 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 87 70 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0" fill="#99c1f1"/>
-                <path d="m 102 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
+                <path d="m 86 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 86 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0" fill="#99c1f1"/>
                 <path d="m 49 58 l 2 -2 h 2 l 2 2 l -2 2 h -2 z m 0 0" fill="#99c1f1"/>
                 <path d="m 28 91 c 0 2.761719 -2.238281 5 -5 5 s -5 -2.238281 -5 -5 s 2.238281 -5 5 -5 s 5 2.238281 5 5 z m 0 0" fill="#62a0ea"/>
@@ -95,19 +93,17 @@
         <path d="m 27 54 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
         <path d="m 27 70 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
         <path d="m 42 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
-        <path d="m 26 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
         <path d="m 42 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
-        <path d="m 26 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
         <path d="m 63 38 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
         <path d="m 63 70 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
         <path d="m 78 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
-        <path d="m 62 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
-        <path d="m 78 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
+        <path d="m 102 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
         <path d="m 62 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
         <path d="m 87 38 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
         <path d="m 87 54 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
+        <path d="m 63 54 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
         <path d="m 87 70 l 2 -2 h 10 l 2 2 l -2 2 h -10 z m 0 0"/>
-        <path d="m 102 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
+        <path d="m 86 39 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
         <path d="m 86 55 l 2 2 v 10 l -2 2 l -2 -2 v -10 z m 0 0"/>
         <path d="m 49 58 l 2 -2 h 2 l 2 2 l -2 2 h -2 z m 0 0"/>
     </g>
