@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-04-02 16:51+0200\n"
-"PO-Revision-Date: 2022-04-03 18:59+0200\n"
+"PO-Revision-Date: 2022-04-11 23:27+0200\n"
 "Last-Translator: musiclover <musiclover382@protonmail.com>\n"
 "Language-Team: \n"
 "Language: it\n"
@@ -187,30 +187,39 @@ msgstr "Inserisci la tua attività e avvia il timer"
 msgid "Prior tasks will show up here"
 msgstr "Le attività svolte verranno mostrate qui"
 
-#: src/application.rs:146
+#: src/gtk/history_box.ui:82
+msgid "Right-click a task to duplicate it"
+msgstr "Clicca con il tasto destro per duplicare un'attività"
+
+#. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
+#: src/application.rs:159
+msgid "translator-credits"
+msgstr "Musiclover382 <musiclover382@protonmail.com>"
+
+#: src/application.rs:175
 msgid "Delete history?"
 msgstr "Cancellare la cronologia?"
 
-#: src/application.rs:149 src/ui/task_details.rs:470
+#: src/application.rs:178 src/ui/task_details.rs:470
 msgid "Cancel"
 msgstr "Annulla"
 
-#: src/application.rs:150 src/ui/task_details.rs:471
+#: src/application.rs:179 src/ui/task_details.rs:471
 msgid "Delete"
 msgstr "Elimina"
 
-#: src/application.rs:154
+#: src/application.rs:183
 msgid "This will delete ALL of your task history."
 msgstr "Verranno eliminate TUTTE le attività svolte."
 
-#: src/application.rs:156
+#: src/application.rs:185
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 "Scrivere ELIMINA nella casella sottostante, poi cliccare Elimina per "
 "continuare."
 
 #. TRANSLATORS: This must match the translation for "DELETE" in the other string
-#: src/application.rs:164
+#: src/application.rs:193
 msgid "DELETE"
 msgstr "ELIMINA"
 
@@ -238,11 +247,11 @@ msgstr ""
 msgid "Edit Task"
 msgstr "Modifica attività"
 
-#: src/ui/window.rs:311
+#: src/ui/window.rs:311 src/ui/application.rs:245
 msgid "Discard"
 msgstr "Scarta"
 
-#: src/ui/window.rs:312
+#: src/ui/window.rs:312 src/ui/application.rs:246
 msgid "Continue"
 msgstr "Continua"
 

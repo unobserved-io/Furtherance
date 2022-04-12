@@ -176,28 +176,37 @@ msgstr ""
 msgid "Prior tasks will show up here"
 msgstr ""
 
-#: src/application.rs:146
+#: src/gtk/history_box.ui:82
+msgid "Right-click a task to duplicate it"
+msgstr ""
+
+#. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
+#: src/application.rs:159
+msgid "translator-credits"
+msgstr ""
+
+#: src/application.rs:175
 msgid "Delete history?"
 msgstr ""
 
-#: src/application.rs:149 src/ui/task_details.rs:470
+#: src/application.rs:178 src/ui/task_details.rs:470
 msgid "Cancel"
 msgstr ""
 
-#: src/application.rs:150 src/ui/task_details.rs:471
+#: src/application.rs:179 src/ui/task_details.rs:471
 msgid "Delete"
 msgstr ""
 
-#: src/application.rs:154
+#: src/application.rs:183
 msgid "This will delete ALL of your task history."
 msgstr ""
 
-#: src/application.rs:156
+#: src/application.rs:185
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 
 #. TRANSLATORS: This must match the translation for "DELETE" in the other string
-#: src/application.rs:164
+#: src/application.rs:193
 msgid "DELETE"
 msgstr ""
 
@@ -221,11 +230,11 @@ msgstr ""
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/window.rs:311
+#: src/ui/window.rs:311 src/ui/application.rs:245
 msgid "Discard"
 msgstr ""
 
-#: src/ui/window.rs:312
+#: src/ui/window.rs:312 src/ui/application.rs:246
 msgid "Continue"
 msgstr ""
 
