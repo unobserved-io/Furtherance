@@ -6,6 +6,7 @@
   <summary>Track your time without being tracked.</summary>
   <developer_name>Ricky Kresslein</developer_name>
   <update_contact>rk@lakoliu.com</update_contact>
+  <translation type="gettext">furtherance</translation>
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0-or-later</project_license>
 	<description>
