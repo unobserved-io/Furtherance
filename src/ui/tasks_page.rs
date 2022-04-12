@@ -143,11 +143,11 @@ impl FurTasksPage {
         for i in 0..uniq_date_list.len() {
             let group = FurTasksGroup::new();
             if uniq_date_list[i] == today {
-                group.set_title(&gettext("Today"))
+                group.set_title(&gettext("Today"));
             } else if uniq_date_list[i] == yesterday{
-                group.set_title(&gettext("Yesterday"))
+                group.set_title(&gettext("Yesterday"));
             } else {
-                group.set_title(&uniq_date_list[i])
+                group.set_title(&uniq_date_list[i]);
             }
             self.add(&group);
             group.add_task_model(tasks_sorted_by_day[i].clone());

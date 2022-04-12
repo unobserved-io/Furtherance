@@ -60,7 +60,6 @@ glib::wrapper! {
     pub struct FurTasksGroup(
         ObjectSubclass<imp::FurTasksGroup>)
         @extends gtk::Widget, adw::PreferencesGroup;
-
 }
 
 impl FurTasksGroup {
