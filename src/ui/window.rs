@@ -41,7 +41,7 @@ mod imp {
     pub struct FurtheranceWindow {
         // Template widgets
         #[template_child]
-        pub header_bar: TemplateChild<gtk::HeaderBar>,
+        pub header_bar: TemplateChild<adw::HeaderBar>,
         #[template_child]
         pub watch: TemplateChild<gtk::Label>,
         #[template_child]
