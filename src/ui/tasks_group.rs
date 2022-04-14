@@ -33,7 +33,9 @@ mod imp {
     pub struct FurTasksGroup {
         #[template_child]
         pub listbox_box: TemplateChild<gtk::Box>,
+
         pub models: RefCell<Vec<gtk::SortListModel>>,
+        pub day_total_time: RefCell<i64>,
     }
 
     #[glib::object_subclass]
@@ -99,13 +101,18 @@ impl FurTasksGroup {
         for same_name in tasks_by_name {
             let listbox_row = FurTaskRow::new();
             listbox_row.set_row_labels(same_name);
+            *imp.day_total_time.borrow_mut() += listbox_row.get_total_time();
             listbox.append(&listbox_row);
         }
 
         listbox.connect_row_activated(move |_, row| {
             row.activate_action("task-row.open-details", None).unwrap();
         });
+    }
 
+    pub fn get_total_day_time(&self) -> i64 {
+        let imp = imp::FurTasksGroup::from_instance(&self);
+        *imp.day_total_time.borrow()
     }
 }
 

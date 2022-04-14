@@ -29,6 +29,7 @@ use crate::settings_manager;
 mod imp {
     use super::*;
     use glib::subclass;
+    use std::cell::RefCell;
 
     #[derive(Debug, CompositeTemplate, Default)]
     #[template(resource = "/com/lakoliu/Furtherance/gtk/task_row.ui")]
@@ -37,8 +38,9 @@ mod imp {
         pub task_name_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub total_time_label: TemplateChild<gtk::Label>,
-        // pub tasks: Vec<database::Task>,
+
         pub tasks: Lazy<Mutex<Vec<Task>>>,
+        pub total_time: RefCell<i64>,
     }
 
     #[glib::object_subclass]
@@ -115,20 +117,19 @@ impl FurTaskRow {
         self.add_controller(&gesture);
 
         // Add up all durations for task of said name to create total_time
-        let mut total_time: i64 = 0;
         for task in &task_list {
             if task.task_name == task.task_name {
                 let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
                 let stop_time = DateTime::parse_from_rfc3339(&task.stop_time).unwrap();
 
                 let duration = stop_time - start_time;
-                total_time += duration.num_seconds();
+                *imp.total_time.borrow_mut() += duration.num_seconds();
             }
         }
         // Format total time to readable string
-        let h = total_time / 3600;
-        let m = total_time % 3600 / 60;
-        let s = total_time % 60;
+        let h = *imp.total_time.borrow() / 3600;
+        let m = *imp.total_time.borrow() % 3600 / 60;
+        let s = *imp.total_time.borrow() % 60;
         let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
 
         if !settings_manager::get_bool("show-seconds") {
@@ -141,6 +142,11 @@ impl FurTaskRow {
     pub fn get_tasks(&self) -> Vec<Task> {
         let imp = imp::FurTaskRow::from_instance(&self);
         imp.tasks.lock().unwrap().to_vec()
+    }
+
+    pub fn get_total_time(&self) -> i64 {
+        let imp = imp::FurTaskRow::from_instance(&self);
+        *imp.total_time.borrow()
     }
 }
 
