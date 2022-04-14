@@ -116,6 +116,18 @@
                 </child>
               </object>
             </child>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Show daily sums</property>
+                <property name="use_underline">True</property>
+                <property name="activatable_widget">show_daily_sums_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="show_daily_sums_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>

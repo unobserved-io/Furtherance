@@ -154,16 +154,18 @@ impl FurTasksPage {
             group.add_task_model(tasks_sorted_by_day[i].clone());
 
             // Set total time for each day
-            let day_total_time = group.get_total_day_time();
-            // Format total time to readable string
-            let h = day_total_time / 3600;
-            let m = day_total_time % 3600 / 60;
-            let s = day_total_time % 60;
-            let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
-            if !settings_manager::get_bool("show-seconds") {
-                total_time_str = format!("{:02}:{:02}", h, m);
+            if settings_manager::get_bool("show-daily-sums") {
+                let day_total_time = group.get_total_day_time();
+                // Format total time to readable string
+                let h = day_total_time / 3600;
+                let m = day_total_time % 3600 / 60;
+                let s = day_total_time % 60;
+                let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+                if !settings_manager::get_bool("show-seconds") {
+                    total_time_str = format!("{:02}:{:02}", h, m);
+                }
+                group.set_description(Some(&total_time_str));
             }
-            group.set_description(Some(&total_time_str));
 
             imp.all_groups.borrow_mut().push(group);
         }
