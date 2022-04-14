@@ -262,7 +262,10 @@ impl FurtheranceWindow {
     fn check_user_idle(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
         // Check for user idle
-        let idle_time = self.get_idle_time().unwrap();
+        let idle_time = match self.get_idle_time() {
+            Ok(val) => val,
+            Err(_) => 1,
+        };
 
         // If user was idle and has now returned...
         if idle_time < (settings_manager::get_int("idle-time") * 60) as u64
