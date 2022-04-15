@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-04-02 16:51+0200\n"
-"PO-Revision-Date: 2022-04-11 23:27+0200\n"
+"PO-Revision-Date: 2022-04-15 19:33+0200\n"
 "Last-Translator: musiclover <musiclover382@protonmail.com>\n"
 "Language-Team: \n"
 "Language: it\n"
@@ -23,31 +23,37 @@ msgstr ""
 msgid "Track your time without being tracked."
 msgstr "Traccia il tuo tempo senza essere tracciato."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:13
+#: data/com.lakoliu.Furtherance.appdata.xml.in:14
 msgid ""
-"Furtherance is an elegant time tracking app built for Gnome with Rust and "
-"GTK4. In addition to tracking time spent on tasks, you can edit that time, "
-"delete entries, and change settings. It even has idle detection."
+"Furtherance is a time tracking app built for GNOME with Rust and GTK4. In "
+"addition to tracking time spent on tasks, you can edit that time, delete "
+"entries, and change settings. It even has idle detection."
 msgstr ""
-"Furtherance è un'elegante applicazione per tracciare il tempo scritta in "
-"Rust e GTK4. Oltre a tracciare il tempo speso compiendo le attività, "
+"Furtherance è un'applicazione per tenere traccia del tempo scritta in Rust e "
+"GTK4 per GNOME. Oltre a registrare il tempo speso compiendo le attività, "
 "permette di modificare manualmente il tempo, eliminare precedenti "
 "registrazioni e cambiare impostazioni. È anche in grado di rilevare "
 "l'inattività."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
+msgstr ""
+"Furtherance ha una nuova icona! Oltre a diversi miglioramenti e correzioni "
+"di bug."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
 msgid "First stable release of Furtherance."
 msgstr "La prima versione stabile di Furtherance."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
 msgid "Track time spent on tasks"
 msgstr "Traccia il tempo speso compiendo delle attività"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
 msgid "Change/delete recorded times"
 msgstr "Cambia/elimina i tempi registrati"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:50
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
 msgid "Idle detection"
 msgstr "Rilevamento di inattività"
 
@@ -175,6 +181,10 @@ msgid "Tasks list only. Seconds always show on timer"
 msgstr ""
 "Solo per la lista delle attività. I secondi sono sempre visibili nel timer."
 
+#: src/gtk/preferences_window.ui:121
+msgid "Show daily sums"
+msgstr "Mostra somme giornaliere"
+
 #: src/gtk/history_box.ui:25
 msgid "Start Tracking"
 msgstr "Inizia il tracciamento"
@@ -231,11 +241,11 @@ msgstr "Attività senza nome"
 msgid "Enter a task name to start the timer."
 msgstr "Inserire un nome per avviare il timer."
 
-#: src/ui/window.rs:299
+#: src/ui/window.rs:302
 msgid "You have been idle for "
 msgstr "Sei stato inattivo per "
 
-#: src/ui/window.rs:300
+#: src/ui/window.rs:303
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
@@ -243,15 +253,15 @@ msgstr ""
 "\n"
 "Vuoi scartare tale lasso di tempo o continuare regolarmente?"
 
-#: src/ui/window.rs:308 src/ui/task_details.rs:167
+#: src/ui/window.rs:311 src/ui/task_details.rs:167
 msgid "Edit Task"
 msgstr "Modifica attività"
 
-#: src/ui/window.rs:311 src/ui/application.rs:245
+#: src/ui/window.rs:314 src/ui/application.rs:245
 msgid "Discard"
 msgstr "Scarta"
 
-#: src/ui/window.rs:312 src/ui/application.rs:246
+#: src/ui/window.rs:315 src/ui/application.rs:246
 msgid "Continue"
 msgstr "Continua"
 
