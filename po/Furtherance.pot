@@ -21,25 +21,29 @@ msgstr ""
 msgid "Track your time without being tracked."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:13
-msgid "Furtherance is an elegant time tracking app built for Gnome with Rust "
+#: data/com.lakoliu.Furtherance.appdata.xml.in:14
+msgid "Furtherance is a time tracking app built for GNOME with Rust "
 "and GTK4. In addition to tracking time spent on tasks, you can edit that "
 "time, delete entries, and change settings. It even has idle detection."
 msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
 msgid "First stable release of Furtherance."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
 msgid "Track time spent on tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
 msgid "Change/delete recorded times"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:50
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
 msgid "Idle detection"
 msgstr ""
 
@@ -164,6 +168,10 @@ msgstr ""
 msgid "Tasks list only. Seconds always show on timer"
 msgstr ""
 
+#: src/gtk/preferences_window.ui:121
+msgid "Show daily sums"
+msgstr ""
+
 #: src/gtk/history_box.ui:25
 msgid "Start Tracking"
 msgstr ""
@@ -218,23 +226,23 @@ msgstr ""
 msgid "Enter a task name to start the timer."
 msgstr ""
 
-#: src/ui/window.rs:299
+#: src/ui/window.rs:302
 msgid "You have been idle for "
 msgstr ""
 
-#: src/ui/window.rs:300
+#: src/ui/window.rs:303
 msgid "\nWould you like to discard that time, or continue the clock?"
 msgstr ""
 
-#: src/ui/window.rs:308 src/ui/task_details.rs:167
+#: src/ui/window.rs:311 src/ui/task_details.rs:167
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/window.rs:311 src/ui/application.rs:245
+#: src/ui/window.rs:314 src/ui/application.rs:245
 msgid "Discard"
 msgstr ""
 
-#: src/ui/window.rs:312 src/ui/application.rs:246
+#: src/ui/window.rs:315 src/ui/application.rs:246
 msgid "Continue"
 msgstr ""
 
