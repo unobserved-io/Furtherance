@@ -1,5 +1,5 @@
 # German translation for Furtherance package.
-# Copyright (C) 2022 THE Furtherance'S COPYRIGHT HOLDER
+# Copyright (C) 2022 Ricky Kresslein
 # This file is distributed under the same license as the Furtherance package.
 # Gabriel Brand <gabr.brand@gmail.com>, 2022.
 #
@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-04-02 16:51+0200\n"
-"PO-Revision-Date: 2022-04-12 11:32+0200\n"
+"PO-Revision-Date: 2022-04-12 14:36+0200\n"
 "Last-Translator: Gabriel Brand <gabr.brand@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -191,7 +191,7 @@ msgstr ""
 #. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
 #: src/application.rs:159
 msgid "translator-credits"
-msgstr "Gabriel Brand <gabr.brand@gmail.com"
+msgstr "Gabriel Brand <gabr.brand@gmail.com>"
 
 #: src/application.rs:175
 msgid "Delete history?"
