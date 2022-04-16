@@ -1,5 +1,5 @@
 # German translation for Furtherance package.
-# Copyright (C) 2022 THE Furtherance'S COPYRIGHT HOLDER
+# Copyright (C) 2022 Ricky Kresslein
 # This file is distributed under the same license as the Furtherance package.
 # Gabriel Brand <gabr.brand@gmail.com>, 2022.
 #
@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-04-02 16:51+0200\n"
-"PO-Revision-Date: 2022-04-12 11:32+0200\n"
+"PO-Revision-Date: 2022-04-15 21:06+0200\n"
 "Last-Translator: Gabriel Brand <gabr.brand@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -23,30 +23,36 @@ msgstr ""
 msgid "Track your time without being tracked."
 msgstr "Erfassen Sie Ihre Zeit ohne getrackt zu werden."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:13
+#: data/com.lakoliu.Furtherance.appdata.xml.in:14
 msgid ""
-"Furtherance is an elegant time tracking app built for Gnome with Rust and "
-"GTK4. In addition to tracking time spent on tasks, you can edit that time, "
-"delete entries, and change settings. It even has idle detection."
+"Furtherance is a time tracking app built for GNOME with Rust and GTK4. In "
+"addition to tracking time spent on tasks, you can edit that time, delete "
+"entries, and change settings. It even has idle detection."
 msgstr ""
-"Furtherance ist eine elegante Zeiterfassungsanwendung, die für Gnome mit "
-"Rust und GTK4 entwickelt wurde. Zusätzlich zur Erfassung der für Aufgaben "
+"Furtherance ist eine Zeiterfassungsanwendung, die für Gnome mit Rust und "
+"GTK4 entwickelt wurde. Zusätzlich zur Erfassung der für Aufgaben "
 "aufgewendeten Zeit können Sie diese Zeit bearbeiten, Einträge löschen und "
 "Einstellungen ändern. Es hat sogar eine Inaktivitätserkennung."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
+msgstr ""
+"Furtherance hat ein neues Symbol! Und viele Fehlerbehebungen und "
+"Verbesserungen."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
 msgid "First stable release of Furtherance."
 msgstr "Erste stabile Veröffentlichung von Furtherance."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
 msgid "Track time spent on tasks"
 msgstr "Für Aufgaben aufgewendete Zeit erfassen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
 msgid "Change/delete recorded times"
 msgstr "Erfasste Zeiten ändern/löschen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:50
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
 msgid "Idle detection"
 msgstr "Inaktivitätserkennung"
 
@@ -171,6 +177,10 @@ msgstr "_Sekunden anzeigen"
 msgid "Tasks list only. Seconds always show on timer"
 msgstr "Nur in der Aufgabenliste. Sekunden werden immer im Timer angezeigt"
 
+#: src/gtk/preferences_window.ui:121
+msgid "Show daily sums"
+msgstr "Tägliche Summe anzeigen"
+
 #: src/gtk/history_box.ui:25
 msgid "Start Tracking"
 msgstr "Fangen Sie das Erfassen an"
@@ -191,7 +201,7 @@ msgstr ""
 #. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
 #: src/application.rs:159
 msgid "translator-credits"
-msgstr "Gabriel Brand <gabr.brand@gmail.com"
+msgstr "Gabriel Brand <gabr.brand@gmail.com>"
 
 #: src/application.rs:175
 msgid "Delete history?"
@@ -228,11 +238,11 @@ msgstr "Kein Aufgabenname"
 msgid "Enter a task name to start the timer."
 msgstr "Geben Sie einen Aufgabennamen ein, um den Timer zu starten."
 
-#: src/ui/window.rs:299
+#: src/ui/window.rs:302
 msgid "You have been idle for "
 msgstr "Sie waren inaktiv für "
 
-#: src/ui/window.rs:300
+#: src/ui/window.rs:303
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
@@ -240,15 +250,15 @@ msgstr ""
 "\n"
 "Möchten Sie diese Zeit verwerfen oder die Uhr fortsetzen?"
 
-#: src/ui/window.rs:308 src/ui/task_details.rs:167
+#: src/ui/window.rs:311 src/ui/task_details.rs:167
 msgid "Edit Task"
 msgstr "Aufgabe bearbeiten"
 
-#: src/ui/window.rs:311 src/ui/application.rs:245
+#: src/ui/window.rs:314 src/ui/application.rs:245
 msgid "Discard"
 msgstr "Verwerfen"
 
-#: src/ui/window.rs:312 src/ui/application.rs:246
+#: src/ui/window.rs:315 src/ui/application.rs:246
 msgid "Continue"
 msgstr "Fortsetzen"
 
