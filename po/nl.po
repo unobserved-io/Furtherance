@@ -1,0 +1,300 @@
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Furtherance package.
+#
+# Heimen Stoffels <vistausss@fastmail.com>, 2022.
+msgid ""
+msgstr ""
+"Project-Id-Version: Furtherance\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-04-02 16:51+0200\n"
+"PO-Revision-Date: 2022-04-16 17:48+0200\n"
+"Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
+"Language-Team: Dutch <>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: nl\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lokalize 22.03.90\n"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6 data/com.lakoliu.Furtherance.desktop.in:4 src/application.rs:128
+msgid "Track your time without being tracked."
+msgstr "Houd tijd bij zonder zélf bijgehouden te worden."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:14
+msgid ""
+"Furtherance is a time tracking app built for GNOME with Rust "
+"and GTK4. In addition to tracking time spent on tasks, you can edit that "
+"time, delete entries, and change settings. It even has idle detection."
+msgstr ""
+"Furtherance is een tijdnotatietoepassing voor GNOME, gemaakt met Rust en "
+"GKT4. U kunt tijden bijhouden en noteren, maar ook bewerken, wissen en"
+" allerlei "
+"voorkeuren aanpassen. Ook kan inactieve tijd worden bijgehouden."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
+msgstr ""
+"Furtherance is voorzien van een nieuw pictogram! Ook zijn er problemen"
+" opgelost en kleine verbeteringen doorgevoerd."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+msgid "First stable release of Furtherance."
+msgstr "De eerste stabiele uitgave van Furtherance."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
+msgid "Track time spent on tasks"
+msgstr "Houd bij hoeveel tijd u besteedt aan taken"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
+msgid "Change/delete recorded times"
+msgstr "Bewerk/Verwijder genoteerde tijden"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
+msgid "Idle detection"
+msgstr "Houd inactieve tijd bij"
+
+#: data/com.lakoliu.Furtherance.desktop.in:3
+msgid "Time Tracker"
+msgstr "Houd tijd bij"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/com.lakoliu.Furtherance.desktop.in:11
+msgid "timer;tracker;clock;tasks;productivity;"
+msgstr "tijdklok;bijhouden;klok;timer;taken;productiviteit;taak;"
+
+#: src/gtk/window.ui:20
+msgid "Main Menu"
+msgstr "Hoofdmenu"
+
+#: src/gtk/window.ui:56
+msgid "Task Name"
+msgstr "Taaknaam"
+
+#: src/gtk/window.ui:81
+msgid "_Preferences"
+msgstr "_Voorkeuren"
+
+#: src/gtk/window.ui:85
+msgid "_Delete history"
+msgstr "Geschie_denis wissen"
+
+#: src/gtk/window.ui:89
+msgid "_About Furtherance"
+msgstr "Over Further_ance"
+
+#: src/gtk/task_row.ui:18
+msgid "Task"
+msgstr "Taak"
+
+#: src/gtk/task_row.ui:29
+msgid "Time"
+msgstr "Tijd"
+
+#: src/gtk/task_details.ui:8
+msgid "Task Details"
+msgstr "Taakgegevens"
+
+#: src/gtk/task_details.ui:73 src/ui/task_details.rs:177
+msgid "Start"
+msgstr "Starten"
+
+#: src/gtk/task_details.ui:81 src/ui/task_details.rs:179
+msgid "Stop"
+msgstr "Stoppen"
+
+#: src/gtk/task_details.ui:89
+msgid "Total"
+msgstr "Totaal"
+
+#: src/gtk/task_details.ui:116
+msgid "Delete all"
+msgstr "Alles wissen"
+
+#: src/gtk/preferences_window.ui:7
+msgid "General"
+msgstr "Algemeen"
+
+#: src/gtk/preferences_window.ui:10
+msgid "Appearance"
+msgstr "Vormgeving"
+
+#: src/gtk/preferences_window.ui:14
+msgid "_Dark theme"
+msgstr "_Donker thema"
+
+#: src/gtk/preferences_window.ui:28
+msgid "Idle"
+msgstr "Inactief"
+
+#: src/gtk/preferences_window.ui:32
+msgid "Notify of idle"
+msgstr "Melding tonen bij inactiviteit"
+
+#: src/gtk/preferences_window.ui:33
+msgid "(Gnome only)"
+msgstr "(werkt alleen op GNOME)"
+
+#: src/gtk/preferences_window.ui:38
+msgid "_Minutes to idle"
+msgstr "Inactiviteit (in _minuten)"
+
+#: src/gtk/preferences_window.ui:39
+msgid "Number of minutes before the user is considered idle"
+msgstr ""
+"Het aantal minuten dat verstreken dient te zijn voordat u als inactief wordt"
+" beschouwd"
+
+#: src/gtk/preferences_window.ui:63
+msgid "Task List"
+msgstr "Takenlijst"
+
+#: src/gtk/preferences_window.ui:67
+msgid "Limit tasks shown"
+msgstr "Aantal getoonde taken beperken"
+
+#: src/gtk/preferences_window.ui:68
+msgid "Only show X number of days in the saved tasks list"
+msgstr "Toon slechts een x-aantal dagen op de takenlijst"
+
+#: src/gtk/preferences_window.ui:73
+msgid "_Days ago"
+msgstr "Aantal _dagen"
+
+#: src/gtk/preferences_window.ui:74
+msgid "Number of days to display in the list"
+msgstr "Het aantal dagen dat dient te worden getoond op de takenlijst"
+
+#: src/gtk/preferences_window.ui:96
+msgid "_Delete confirmation"
+msgstr "Om beves_tiging vragen alvorens te wissen"
+
+#: src/gtk/preferences_window.ui:108
+msgid "_Show seconds"
+msgstr "_Seconden tonen"
+
+#: src/gtk/preferences_window.ui:111
+msgid "Tasks list only. Seconds always show on timer"
+msgstr ""
+"Toon ook het aantal seconden op de tijdklok (alleen van toepassing op de"
+" takenlijst)."
+
+#: src/gtk/preferences_window.ui:121
+msgid "Show daily sums"
+msgstr "Dagelijks overzicht tonen"
+
+#: src/gtk/history_box.ui:25
+msgid "Start Tracking"
+msgstr "Bijhouden starten"
+
+#: src/gtk/history_box.ui:44
+msgid "Type your task and press start"
+msgstr "Voer een taaknaam in en druk op de startknop"
+
+#: src/gtk/history_box.ui:63
+msgid "Prior tasks will show up here"
+msgstr "Eerder genoteerde taken worden hier getoond"
+
+#: src/gtk/history_box.ui:82
+msgid "Right-click a task to duplicate it"
+msgstr "Klik met de rechtermuisknop op een taak om te klonen"
+
+#. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
+#: src/application.rs:159
+msgid "translator-credits"
+msgstr "Heimen Stoffels <vistausss@fastmail.com>"
+
+#: src/application.rs:175
+msgid "Delete history?"
+msgstr "Weet u zeker dat u de geschiedenis wilt wissen?"
+
+#: src/application.rs:178 src/ui/task_details.rs:470
+msgid "Cancel"
+msgstr "Annuleren"
+
+#: src/application.rs:179 src/ui/task_details.rs:471
+msgid "Delete"
+msgstr "Wissen"
+
+#: src/application.rs:183
+msgid "This will delete ALL of your task history."
+msgstr "Hierdoor worden ALLE taken gewist."
+
+#: src/application.rs:185
+msgid "Type DELETE in the box below then click Delete to proceed."
+msgstr ""
+"Typ WISSEN in het onderstaande vak en klik vervolgens op de gelijknamige knop"
+" om door te gaan."
+
+#. TRANSLATORS: This must match the translation for "DELETE" in the other string
+#: src/application.rs:193
+msgid "DELETE"
+msgstr "WISSEN"
+
+#: src/ui/window.rs:191
+msgid "No Task Name"
+msgstr "Naamloos"
+
+#: src/ui/window.rs:193
+msgid "Enter a task name to start the timer."
+msgstr "Voer een taaknaam in om de tijdklok te starten."
+
+#: src/ui/window.rs:302
+msgid "You have been idle for "
+msgstr "U bent inactief: "
+
+#: src/ui/window.rs:303
+msgid "\nWould you like to discard that time, or continue the clock?"
+msgstr "\nWilt u deze tijd wissen of de klok verder laten tikken?"
+
+#: src/ui/window.rs:311 src/ui/task_details.rs:167
+msgid "Edit Task"
+msgstr "Taak bewerken"
+
+#: src/ui/window.rs:314 src/ui/application.rs:245
+msgid "Discard"
+msgstr "Wissen"
+
+#: src/ui/window.rs:315 src/ui/application.rs:246
+msgid "Continue"
+msgstr "Doorgaan"
+
+#: src/ui/tasks_page.rs:146
+msgid "Today"
+msgstr "Vandaag"
+
+#: src/ui/tasks_page.rs:148
+msgid "Yesterday"
+msgstr "Gisteren"
+
+#: src/ui/task_details.rs:198
+msgid "*Use the format MMM DD YYYY HH:MM:SS"
+msgstr "*Gebruik de volgende opmaak: DD MMMM JJJJ HH:MM:SS"
+
+#: src/ui/task_details.rs:200
+msgid "*Use the format MMM DD YYYY HH:MM"
+msgstr "*Gebruik de volgende opmaak: DD MMMM JJJJ HH:MM"
+
+#: src/ui/task_details.rs:206
+msgid "*Start time cannot be later than stop time."
+msgstr "*De begintijd dient vóór de eindtijd te liggen."
+
+#: src/ui/task_details.rs:211
+msgid "*Time cannot be in the future."
+msgstr "*U kunt geen toekomstig tijdstip kiezen."
+
+#: src/ui/task_details.rs:217
+msgid "Delete task"
+msgstr "Taak wissen"
+
+#: src/ui/task_details.rs:243
+msgid "Delete task?"
+msgstr "Weet u zeker dat u deze taak wilt wissen?"
+
+#: src/ui/task_details.rs:466
+msgid "Delete All?"
+msgstr "Weet u zeker dat u alles wilt wissen?"
+
+#: src/ui/task_details.rs:468
+msgid "This will delete all occurrences of this task on this day."
+msgstr "Hierdoor worden alle taken die plaatsvonden op deze dag gewist."
