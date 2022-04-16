@@ -1,10 +1,15 @@
-data/com.lakoliu.Furtherance.desktop.in
+# Please keep this list alphabetized
 data/com.lakoliu.Furtherance.appdata.xml.in
+data/com.lakoliu.Furtherance.desktop.in
+
+# UI files
 src/gtk/history_box.ui
 src/gtk/preferences_window.ui
 src/gtk/task_details.ui
 src/gtk/task_row.ui
 src/gtk/window.ui
+
+# Rust code
 src/application.rs
 src/ui/task_details.rs
 src/ui/tasks_page.rs
