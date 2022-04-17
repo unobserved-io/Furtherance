@@ -1,0 +1,303 @@
+# Brazilian Portuguese translation for Furtherance.
+# Copyright (C) 2022 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Furtherance package.
+# Pedro Sader Azevedo <pedro.saderazevedo@protonmail.com>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Furtherance\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-04-02 16:51+0200\n"
+"PO-Revision-Date: 2022-04-16 18:35-0300\n"
+"Last-Translator: Pedro Sader Azevedo <pedro.saderazevedo@protonmail.com>\n"
+"Language-Team: Brazilian Portuguese <pedro.saderazevedo@protonmail.com>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"X-Generator: Gtranslator 42.0\n"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6
+#: data/com.lakoliu.Furtherance.desktop.in:4 src/application.rs:128
+msgid "Track your time without being tracked."
+msgstr "Monitore seu tempo sem ser monitorado."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:14
+msgid ""
+"Furtherance is a time tracking app built for GNOME with Rust and GTK4. In "
+"addition to tracking time spent on tasks, you can edit that time, delete "
+"entries, and change settings. It even has idle detection."
+msgstr ""
+"Furtherance é um aplicativo de monitoramento de tempo desenvolvido para o "
+"GNOME com Rust e GTK4. Além de gerenciar o tempo dedicado a diferentes "
+"atividades, você pode editar esse tempo, excluir entradas e alterar "
+"configurações. Ele tem até detecção de inatividade."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
+msgstr ""
+"Furtherance tem um novo ícone! E várias correções de problemas e melhorias."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+msgid "First stable release of Furtherance."
+msgstr "A primeira versão estável de Furtherance."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
+msgid "Track time spent on tasks"
+msgstr "Monitore o tempo gasto em diferentes atividades."
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
+msgid "Change/delete recorded times"
+msgstr "Alterar/apagar tempos registrados"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
+msgid "Idle detection"
+msgstr "Detecção de inatividade"
+
+#: data/com.lakoliu.Furtherance.desktop.in:3
+msgid "Time Tracker"
+msgstr "Monitor de tempo"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/com.lakoliu.Furtherance.desktop.in:11
+msgid "timer;tracker;clock;tasks;productivity;"
+msgstr ""
+"timer;tracker;clock;tasks;productivity; cronômetro; monitor; relógio; "
+"tarefas; produtividade;"
+
+#: src/gtk/window.ui:20
+msgid "Main Menu"
+msgstr "Menu principal"
+
+#: src/gtk/window.ui:56
+msgid "Task Name"
+msgstr "Nome da atividade"
+
+#: src/gtk/window.ui:81
+msgid "_Preferences"
+msgstr "_Preferências"
+
+#: src/gtk/window.ui:85
+msgid "_Delete history"
+msgstr "_Deletar histórico"
+
+#: src/gtk/window.ui:89
+msgid "_About Furtherance"
+msgstr "_Sobre o Furtherance"
+
+#: src/gtk/task_row.ui:18
+msgid "Task"
+msgstr "Atividade"
+
+#: src/gtk/task_row.ui:29
+msgid "Time"
+msgstr "Tempo"
+
+#: src/gtk/task_details.ui:8
+msgid "Task Details"
+msgstr "Detalhes da atividade"
+
+#: src/gtk/task_details.ui:73 src/ui/task_details.rs:177
+msgid "Start"
+msgstr "Iniciar"
+
+#: src/gtk/task_details.ui:81 src/ui/task_details.rs:179
+msgid "Stop"
+msgstr "Parar"
+
+#: src/gtk/task_details.ui:89
+msgid "Total"
+msgstr "Total"
+
+#: src/gtk/task_details.ui:116
+msgid "Delete all"
+msgstr "Deletar todos"
+
+#: src/gtk/preferences_window.ui:7
+msgid "General"
+msgstr "Geral"
+
+#: src/gtk/preferences_window.ui:10
+msgid "Appearance"
+msgstr "Aparência"
+
+#: src/gtk/preferences_window.ui:14
+msgid "_Dark theme"
+msgstr "_Tema escuro"
+
+#: src/gtk/preferences_window.ui:28
+msgid "Idle"
+msgstr "Inatividade"
+
+#: src/gtk/preferences_window.ui:32
+msgid "Notify of idle"
+msgstr "Notificação de inatividade"
+
+#: src/gtk/preferences_window.ui:33
+msgid "(Gnome only)"
+msgstr "(Somente para GNOME)"
+
+#: src/gtk/preferences_window.ui:38
+msgid "_Minutes to idle"
+msgstr "_Minutos para inatividade"
+
+#: src/gtk/preferences_window.ui:39
+msgid "Number of minutes before the user is considered idle"
+msgstr "O número de minutos necessários para detectar inatividade"
+
+#: src/gtk/preferences_window.ui:63
+msgid "Task List"
+msgstr "Lista de atividades"
+
+#: src/gtk/preferences_window.ui:67
+msgid "Limit tasks shown"
+msgstr "Limitar atividades mostradas"
+
+#: src/gtk/preferences_window.ui:68
+msgid "Only show X number of days in the saved tasks list"
+msgstr "Mostrar apenas um certo número de dias na lista de atividades"
+
+#: src/gtk/preferences_window.ui:73
+msgid "_Days ago"
+msgstr "_Dias atrás"
+
+#: src/gtk/preferences_window.ui:74
+msgid "Number of days to display in the list"
+msgstr "O número máximo de dias mostrados na lista"
+
+#: src/gtk/preferences_window.ui:96
+msgid "_Delete confirmation"
+msgstr "_Confirmar.deleção"
+
+#: src/gtk/preferences_window.ui:108
+msgid "_Show seconds"
+msgstr "_Mostrar segundos"
+
+#: src/gtk/preferences_window.ui:111
+msgid "Tasks list only. Seconds always show on timer"
+msgstr ""
+"Apenas para a lista de atividades. Segundos sempre aparecem no cronômetro."
+
+#: src/gtk/preferences_window.ui:121
+msgid "Show daily sums"
+msgstr "Mostrar somas diárias"
+
+#: src/gtk/history_box.ui:25
+msgid "Start Tracking"
+msgstr "Iniciar monitoramento"
+
+#: src/gtk/history_box.ui:44
+msgid "Type your task and press start"
+msgstr "Digite sua atividade e pressione \"Iniciar\""
+
+#: src/gtk/history_box.ui:63
+msgid "Prior tasks will show up here"
+msgstr "Suas atividades vão ser mostradas aqui"
+
+#: src/gtk/history_box.ui:82
+msgid "Right-click a task to duplicate it"
+msgstr "Clique em uma atividade com o botão direito do mouse para duplicá-la"
+
+#. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
+#: src/application.rs:159
+msgid "translator-credits"
+msgstr "Pedro Sader Azevedo <pedro.saderazevedo@protonmail.com>"
+
+#: src/application.rs:175
+msgid "Delete history?"
+msgstr "Deletar histórico?"
+
+#: src/application.rs:178 src/ui/task_details.rs:470
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/application.rs:179 src/ui/task_details.rs:471
+msgid "Delete"
+msgstr "Deletar"
+
+#: src/application.rs:183
+msgid "This will delete ALL of your task history."
+msgstr "Isso vai deletar TODO o seu histórico de atividades."
+
+#: src/application.rs:185
+msgid "Type DELETE in the box below then click Delete to proceed."
+msgstr ""
+"Digite DELETAR na caixa de texto abaixo e pressione Deletar para proceder"
+
+#. TRANSLATORS: This must match the translation for "DELETE" in the other string
+#: src/application.rs:193
+msgid "DELETE"
+msgstr "DELETAR"
+
+#: src/ui/window.rs:191
+msgid "No Task Name"
+msgstr "Atividade sem nome"
+
+#: src/ui/window.rs:193
+msgid "Enter a task name to start the timer."
+msgstr "Insira um nome para a atividade para começar o cronômetro."
+
+#: src/ui/window.rs:302
+msgid "You have been idle for "
+msgstr "Você ficou inativo por "
+
+#: src/ui/window.rs:303
+msgid ""
+"\n"
+"Would you like to discard that time, or continue the clock?"
+msgstr ""
+"\n"
+"Você gostaria de descartar ou continuar o tempo registrado?"
+
+#: src/ui/window.rs:311 src/ui/task_details.rs:167
+msgid "Edit Task"
+msgstr "Editar atividade"
+
+#: src/ui/window.rs:314 src/ui/application.rs:245
+msgid "Discard"
+msgstr "Descatar"
+
+#: src/ui/window.rs:315 src/ui/application.rs:246
+msgid "Continue"
+msgstr "Continuar"
+
+#: src/ui/tasks_page.rs:146
+msgid "Today"
+msgstr "Hoje"
+
+#: src/ui/tasks_page.rs:148
+msgid "Yesterday"
+msgstr "Ontem"
+
+#: src/ui/task_details.rs:198
+msgid "*Use the format MMM DD YYYY HH:MM:SS"
+msgstr "*Usar o formato MMM DD AAAA HH:MM:SS"
+
+#: src/ui/task_details.rs:200
+msgid "*Use the format MMM DD YYYY HH:MM"
+msgstr "*Usar o formato MMM DD AAAA HH:MM"
+
+#: src/ui/task_details.rs:206
+msgid "*Start time cannot be later than stop time."
+msgstr "*O horário de início não pode ser posterior ao horário de fim."
+
+#: src/ui/task_details.rs:211
+msgid "*Time cannot be in the future."
+msgstr "*O horário não pode ser no futuro."
+
+#: src/ui/task_details.rs:217
+msgid "Delete task"
+msgstr "Deletar atividade"
+
+#: src/ui/task_details.rs:243
+msgid "Delete task?"
+msgstr "Deletar atividade?"
+
+#: src/ui/task_details.rs:466
+msgid "Delete All?"
+msgstr "Deletar tudo?"
+
+#: src/ui/task_details.rs:468
+msgid "This will delete all occurrences of this task on this day."
+msgstr "Isso vai eliminar todas as ocorrências dessa atividade nesse dia."
