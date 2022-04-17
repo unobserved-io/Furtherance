@@ -1,7 +1,6 @@
-# Italian translation for Furtherance.
+# Brazilian Portuguese translation for Furtherance.
 # Copyright (C) 2022 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the Furtherance package.
-# Musiclover <Musiclover382@protonmail.com>, 2022.
 # Pedro Sader Azevedo <pedro.saderazevedo@protonmail.com>, 2022.
 #
 msgid ""
