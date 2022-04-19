@@ -17,9 +17,24 @@ It allows you to track time spent on different activities without worrying about
 * Features can be added! Just open an issue.
 
 ## Getting Started
-Install Furtherance from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance) and you'll be off to the races. Make sure you have Flatpak [setup](https://flatpak.org/setup/).
-
 <a href="https://flathub.org/apps/details/com.lakoliu.Furtherance"><img width='240' alt='Download on Flathub' src="https://flathub.org/assets/badges/flathub-badge-en.png"/></a>
+* The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
+* Furtherance is also available in the AUR ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
+
+## Build
+The easiest way to build Furtherance is with [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder).
+To build Furtherance on your own, make sure you have all the dependencies: rust, cargo, meson, ninja-build, sqlite3, dbus-1, glib-2.0, gtk4, libadwaita-1
+Then do:
+```
+git clone https://github.com/lakoliu/Furtherance.git
+cd Furtherance
+mkdir build
+cd build
+meson ..
+ninja
+sudo ninja install
+```
+To uninstall, run `sudo ninja uninstall` in the same directory.
 
 ## Use
 Type in the name of the task you are working on and press start. That's really all there is to it.
@@ -34,3 +49,6 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 
 ### Author
 This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [lakoliu](https://lakoliu.com). More information at [Furtherance.app](https://furtherance.app).
+
+### Give
+Besides helping to pay the bills, donations make me feel all warm and fuzzy inside. If you want to help out, you can use the links to the right under "Sponsor this project". Thank you so much!
