@@ -23,6 +23,7 @@ It allows you to track time spent on different activities without worrying about
 
 ## Build
 The easiest way to build Furtherance is with [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder).
+
 To build Furtherance on your own, make sure you have all the dependencies: rust, cargo, meson, ninja-build, sqlite3, dbus-1, glib-2.0, gtk4, libadwaita-1
 Then do:
 ```
