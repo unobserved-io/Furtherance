@@ -17,14 +17,16 @@ It allows you to track time spent on different activities without worrying about
 * Features can be added! Just open an issue.
 
 ## Getting Started
+
+### Install
 <a href="https://flathub.org/apps/details/com.lakoliu.Furtherance"><img width='240' alt='Download on Flathub' src="https://flathub.org/assets/badges/flathub-badge-en.png"/></a>
 * The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
 * Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
 
-## Build
+### Build
 The easiest way to build Furtherance is with [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder).
 
-To build Furtherance on your own, make sure you have all the dependencies: rust, cargo, meson, ninja-build, sqlite3, dbus-1, glib-2.0, gtk4, libadwaita-1
+To build Furtherance on your own, make sure you have all the dependencies: *rust, cargo, meson, ninja-build, sqlite3, dbus-1, glib-2.0, gtk4, libadwaita-1*
 
 Then do:
 ```
@@ -38,7 +40,7 @@ sudo ninja install
 ```
 To uninstall, run `sudo ninja uninstall` in the same directory.
 
-## Use
+### Use
 Type in the name of the task you are working on and press start. That's really all there is to it.
 
 ## Project Details
