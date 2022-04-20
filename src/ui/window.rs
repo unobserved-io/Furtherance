@@ -125,11 +125,6 @@ impl FurtheranceWindow {
         imp.task_input.set_sensitive(sensitive);
     }
 
-    fn get_task_text(&self) -> String {
-        let imp = imp::FurtheranceWindow::from_instance(self);
-        imp.task_input.text().to_string()
-    }
-
     fn save_task(&self, start_time: DateTime<Local>, mut stop_time: DateTime<Local>) {
         // Save the most recent task to the database and clear the task_input field
         let imp = imp::FurtheranceWindow::from_instance(self);
@@ -169,6 +164,8 @@ impl FurtheranceWindow {
             self.add_css_class("devel");
         }
 
+        imp.start_button.set_sensitive(false);
+        imp.start_button.add_css_class("suggested-action");
         imp.task_input.grab_focus();
     }
 
@@ -179,60 +176,51 @@ impl FurtheranceWindow {
         let start_time = Rc::new(RefCell::new(Local::now()));
         let stop_time = Rc::new(RefCell::new(Local::now()));
 
-        imp.start_button.connect_clicked(clone!(
-            @weak self as this => move |button| {
+        imp.task_input.connect_changed(clone!(@weak self as this => move |task_input| {
             let imp2 = imp::FurtheranceWindow::from_instance(&this);
-            if this.get_task_text().trim().is_empty() {
-                let dialog = gtk::MessageDialog::with_markup(
-                    Some(&this),
-                    gtk::DialogFlags::MODAL,
-                    gtk::MessageType::Error,
-                    gtk::ButtonsType::Ok,
-                    Some(&format!("<span size='large'>{}</span>", &gettext("No Task Name"))),
-                );
-                dialog.set_secondary_text(Some(&gettext("Enter a task name to start the timer.")));
-                dialog.show();
-
-                dialog.connect_response(clone!(@strong dialog => move |_,_|{
-                    dialog.close();
-                }));
-
+            if task_input.text().trim().is_empty() {
+                imp2.start_button.set_sensitive(false);
             } else {
-                if !*imp2.running.lock().unwrap() {
-                    let mut secs: u32 = 0;
-                    let mut mins: u32 = 0;
-                    let mut hrs: u32 = 0;
+                imp2.start_button.set_sensitive(true);
+            }
+        }));
 
-                    *imp2.running.lock().unwrap() = true;
-                    *start_time.borrow_mut() = Local::now();
-                    this.activate_task_input(false);
-                    let duration = Duration::new(1,0);
-                    timeout_add_local(duration, clone!(@strong this as this_clone => move || {
-                        let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
-                        if *imp3.running.lock().unwrap() {
-                            secs += 1;
-                            if secs > 59 {
-                                secs = 0;
-                                mins += 1;
-                                if mins > 59 {
-                                    mins = 0;
-                                    hrs += 1;
-                                }
+        imp.start_button.connect_clicked(clone!(@weak self as this => move |button| {
+            let imp2 = imp::FurtheranceWindow::from_instance(&this);
+            if !*imp2.running.lock().unwrap() {
+                let mut secs: u32 = 0;
+                let mut mins: u32 = 0;
+                let mut hrs: u32 = 0;
+
+                *imp2.running.lock().unwrap() = true;
+                *start_time.borrow_mut() = Local::now();
+                this.activate_task_input(false);
+                let duration = Duration::new(1,0);
+                timeout_add_local(duration, clone!(@strong this as this_clone => move || {
+                    let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
+                    if *imp3.running.lock().unwrap() {
+                        secs += 1;
+                        if secs > 59 {
+                            secs = 0;
+                            mins += 1;
+                            if mins > 59 {
+                                mins = 0;
+                                hrs += 1;
                             }
-                            let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
-                            this_clone.set_watch_time(watch_text);
                         }
-                        Continue(*imp3.running.lock().unwrap())
-                    }));
-                    button.set_icon_name("media-playback-stop-symbolic");
-                } else {
-                    *stop_time.borrow_mut() = Local::now();
-                    *imp2.running.lock().unwrap() = false;
-                    button.set_icon_name("media-playback-start-symbolic");
-                    this.set_watch_time("00:00:00");
-                    this.activate_task_input(true);
-                    this.save_task(*start_time.borrow(), *stop_time.borrow());
-                }
+                        let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
+                        this_clone.set_watch_time(watch_text);
+                    }
+                    Continue(*imp3.running.lock().unwrap())
+                }));
+                button.set_icon_name("media-playback-stop-symbolic");
+            } else {
+                *stop_time.borrow_mut() = Local::now();
+                *imp2.running.lock().unwrap() = false;
+                button.set_icon_name("media-playback-start-symbolic");
+                this.set_watch_time("00:00:00");
+                this.activate_task_input(true);
+                this.save_task(*start_time.borrow(), *stop_time.borrow());
             }
         }));
     }
