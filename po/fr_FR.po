@@ -1,7 +1,6 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# French (France) translation for Furtherance.
+# Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # Mathieu Heurtevin <mathieu.heurtevinruiz@protonmail.com>, 2022.
 #
 msgid ""
