@@ -178,12 +178,14 @@ impl FurtheranceApplication {
             (&gettext("Cancel"), gtk::ResponseType::Reject),
             (&gettext("Delete"), gtk::ResponseType::Accept)
         ]);
+        dialog.set_default_response(gtk::ResponseType::Accept);
 
         let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
         let explanation = gtk::Label::new(Some(&gettext("This will delete ALL of your task history.")));
         let instructions = gtk::Label::new(Some(
             &gettext("Type DELETE in the box below then click Delete to proceed.")));
         let delete_entry = gtk::Entry::new();
+        delete_entry.set_activates_default(true);
         message_area.append(&explanation);
         message_area.append(&instructions);
         message_area.append(&delete_entry);
