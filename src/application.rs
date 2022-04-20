@@ -179,6 +179,8 @@ impl FurtheranceApplication {
             (&gettext("Delete"), gtk::ResponseType::Accept)
         ]);
         dialog.set_default_response(gtk::ResponseType::Accept);
+        let delete_btn = dialog.widget_for_response(gtk::ResponseType::Accept).unwrap();
+        delete_btn.add_css_class("destructive-action");
 
         let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
         let explanation = gtk::Label::new(Some(&gettext("This will delete ALL of your task history.")));

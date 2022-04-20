@@ -242,6 +242,8 @@ impl FurTaskDetails {
                         gtk::ButtonsType::OkCancel,
                         Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Delete task?"))),
                     );
+                    let delete_btn = delete_confirmation.widget_for_response(gtk::ResponseType::Ok).unwrap();
+                    delete_btn.add_css_class("destructive-action");
 
                     delete_confirmation.connect_response(clone!(
                         @strong dialog,
@@ -470,6 +472,8 @@ impl FurTaskDetails {
                 (&gettext("Cancel"), gtk::ResponseType::Reject),
                 (&gettext("Delete"), gtk::ResponseType::Accept)
             ]);
+            let delete_btn = dialog.widget_for_response(gtk::ResponseType::Accept).unwrap();
+            delete_btn.add_css_class("destructive-action");
 
             dialog.connect_response(clone!(@strong dialog => move |_,resp|{
                 if resp == gtk::ResponseType::Accept {
