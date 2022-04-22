@@ -120,13 +120,6 @@ impl FurtheranceWindow {
         }
     }
 
-    // TODO remove function, just use set_sensitive
-    fn activate_task_input(&self, sensitive: bool) {
-        // Deactivate task_input while timer is running
-        let imp = imp::FurtheranceWindow::from_instance(self);
-        imp.task_input.set_sensitive(sensitive);
-    }
-
     fn save_task(&self, start_time: DateTime<Local>, mut stop_time: DateTime<Local>) {
         // Save the most recent task to the database and clear the task_input field
         let imp = imp::FurtheranceWindow::from_instance(self);
@@ -214,7 +207,7 @@ impl FurtheranceWindow {
 
                 *imp2.running.lock().unwrap() = true;
                 *start_time.borrow_mut() = Local::now();
-                this.activate_task_input(false);
+                imp2.task_input.set_sensitive(false);
                 let duration = Duration::new(1,0);
                 timeout_add_local(duration, clone!(@strong this as this_clone => move || {
                     let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
@@ -239,7 +232,7 @@ impl FurtheranceWindow {
                 *imp2.running.lock().unwrap() = false;
                 button.set_icon_name("media-playback-start-symbolic");
                 this.set_watch_time("00:00:00");
-                this.activate_task_input(true);
+                imp2.task_input.set_sensitive(true);
                 this.save_task(*start_time.borrow(), *stop_time.borrow());
             }
         }));
