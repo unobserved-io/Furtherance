@@ -39,6 +39,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.1.2" date="2022-04-22">
+      <description>
+        <ul>
+          <li>Ability to add tags!</li>
+          <li>Fixed icon positioning</li>
+          <li>Changed start button color and behavior</li>
+          <li>Changed color of delete buttons</li>
+          <li>Dutch, Brazilian Portuguese, and French translations</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.1" date="2022-04-14"/>
     <release version="1.1.0" date="2022-04-11">
       <description>

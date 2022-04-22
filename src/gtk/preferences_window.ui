@@ -30,7 +30,7 @@
             <child>
               <object class="AdwExpanderRow" id="notify_of_idle_expander">
                 <property name="title" translatable="yes">Notify of idle</property>
-                <property name="subtitle" translatable="yes">(Gnome only)</property>
+                <property name="subtitle" translatable="yes">(GNOME only)</property>
                 <property name="show_enable_switch">True</property>
                 <property name="use_underline">True</property>
                 <child>

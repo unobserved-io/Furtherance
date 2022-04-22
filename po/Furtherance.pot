@@ -28,22 +28,42 @@ msgid "Furtherance is a time tracking app built for GNOME with Rust "
 msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Ability to add tags!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "Fixed icon positioning"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+msgid "Changed start button color and behavior"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+msgid "Changed color of delete buttons"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+msgid "Dutch, Brazilian Portuguese, and French translations"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:57
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+#: data/com.lakoliu.Furtherance.appdata.xml.in:66
 msgid "First stable release of Furtherance."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:58
+#: data/com.lakoliu.Furtherance.appdata.xml.in:69
 msgid "Track time spent on tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:59
+#: data/com.lakoliu.Furtherance.appdata.xml.in:70
 msgid "Change/delete recorded times"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:60
+#: data/com.lakoliu.Furtherance.appdata.xml.in:71
 msgid "Idle detection"
 msgstr ""
 
@@ -60,27 +80,27 @@ msgstr ""
 msgid "Main Menu"
 msgstr ""
 
-#: src/gtk/window.ui:56
-msgid "Task Name"
+#: src/gtk/window.ui:58
+msgid "Task Name #Tags"
 msgstr ""
 
-#: src/gtk/window.ui:81
+#: src/gtk/window.ui:86
 msgid "_Preferences"
 msgstr ""
 
-#: src/gtk/window.ui:85
+#: src/gtk/window.ui:90
 msgid "_Delete history"
 msgstr ""
 
-#: src/gtk/window.ui:89
+#: src/gtk/window.ui:94
 msgid "_About Furtherance"
 msgstr ""
 
-#: src/gtk/task_row.ui:18
+#: src/gtk/task_row.ui:22
 msgid "Task"
 msgstr ""
 
-#: src/gtk/task_row.ui:29
+#: src/gtk/task_row.ui:45
 msgid "Time"
 msgstr ""
 
@@ -88,11 +108,11 @@ msgstr ""
 msgid "Task Details"
 msgstr ""
 
-#: src/gtk/task_details.ui:73 src/ui/task_details.rs:177
+#: src/gtk/task_details.ui:73 src/ui/task_details.rs:186
 msgid "Start"
 msgstr ""
 
-#: src/gtk/task_details.ui:81 src/ui/task_details.rs:179
+#: src/gtk/task_details.ui:81 src/ui/task_details.rs:188
 msgid "Stop"
 msgstr ""
 
@@ -125,7 +145,7 @@ msgid "Notify of idle"
 msgstr ""
 
 #: src/gtk/preferences_window.ui:33
-msgid "(Gnome only)"
+msgid "(GNOME only)"
 msgstr ""
 
 #: src/gtk/preferences_window.ui:38
@@ -141,35 +161,35 @@ msgid "Task List"
 msgstr ""
 
 #: src/gtk/preferences_window.ui:67
-msgid "Limit tasks shown"
-msgstr ""
-
-#: src/gtk/preferences_window.ui:68
-msgid "Only show X number of days in the saved tasks list"
-msgstr ""
-
-#: src/gtk/preferences_window.ui:73
-msgid "_Days ago"
-msgstr ""
-
-#: src/gtk/preferences_window.ui:74
-msgid "Number of days to display in the list"
-msgstr ""
-
-#: src/gtk/preferences_window.ui:96
 msgid "_Delete confirmation"
 msgstr ""
 
+#: src/gtk/preferences_window.ui:79
+msgid "Limit tasks shown"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:80
+msgid "Only show X number of days in the saved tasks list"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:85
+msgid "_Days ago"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:86
+msgid "Number of days to display in the list"
+msgstr ""
+
 #: src/gtk/preferences_window.ui:108
+msgid "Show daily sums"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:120
 msgid "_Show seconds"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:111
+#: src/gtk/preferences_window.ui:123
 msgid "Tasks list only. Seconds always show on timer"
-msgstr ""
-
-#: src/gtk/preferences_window.ui:121
-msgid "Show daily sums"
 msgstr ""
 
 #: src/gtk/history_box.ui:25
@@ -189,60 +209,56 @@ msgid "Right-click a task to duplicate it"
 msgstr ""
 
 #. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
-#: src/application.rs:159
+#: src/application.rs:160
 msgid "translator-credits"
 msgstr ""
 
-#: src/application.rs:175
+#: src/application.rs:176
 msgid "Delete history?"
 msgstr ""
 
-#: src/application.rs:178 src/ui/task_details.rs:470
+#: src/application.rs:179 src/ui/task_details.rs:495
 msgid "Cancel"
 msgstr ""
 
-#: src/application.rs:179 src/ui/task_details.rs:471
+#: src/application.rs:180 src/ui/task_details.rs:496
 msgid "Delete"
 msgstr ""
 
-#: src/application.rs:183
+#: src/application.rs:187
 msgid "This will delete ALL of your task history."
 msgstr ""
 
-#: src/application.rs:185
+#: src/application.rs:189
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 
 #. TRANSLATORS: This must match the translation for "DELETE" in the other string
-#: src/application.rs:193
+#: src/application.rs:198
 msgid "DELETE"
 msgstr ""
 
-#: src/ui/window.rs:191
-msgid "No Task Name"
-msgstr ""
-
-#: src/ui/window.rs:193
-msgid "Enter a task name to start the timer."
-msgstr ""
-
-#: src/ui/window.rs:302
+#: src/ui/window.rs:303
 msgid "You have been idle for "
 msgstr ""
 
-#: src/ui/window.rs:303
+#: src/ui/window.rs:304
 msgid "\nWould you like to discard that time, or continue the clock?"
 msgstr ""
 
-#: src/ui/window.rs:311 src/ui/task_details.rs:167
+#: src/ui/window.rs:365
+msgid "Stop the timer to duplicate a task."
+msgstr ""
+
+#: src/ui/window.rs:312 src/ui/task_details.rs:168
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/window.rs:314 src/ui/application.rs:245
+#: src/ui/window.rs:315 src/ui/application.rs:250
 msgid "Discard"
 msgstr ""
 
-#: src/ui/window.rs:315 src/ui/application.rs:246
+#: src/ui/window.rs:316 src/ui/application.rs:251
 msgid "Continue"
 msgstr ""
 
@@ -254,34 +270,34 @@ msgstr ""
 msgid "Yesterday"
 msgstr ""
 
-#: src/ui/task_details.rs:198
+#: src/ui/task_details.rs:207
 msgid "*Use the format MMM DD YYYY HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:200
+#: src/ui/task_details.rs:209
 msgid "*Use the format MMM DD YYYY HH:MM"
 msgstr ""
 
-#: src/ui/task_details.rs:206
+#: src/ui/task_details.rs:215
 msgid "*Start time cannot be later than stop time."
 msgstr ""
 
-#: src/ui/task_details.rs:211
+#: src/ui/task_details.rs:220
 msgid "*Time cannot be in the future."
 msgstr ""
 
-#: src/ui/task_details.rs:217
+#: src/ui/task_details.rs:226
 msgid "Delete task"
 msgstr ""
 
-#: src/ui/task_details.rs:243
+#: src/ui/task_details.rs:253
 msgid "Delete task?"
 msgstr ""
 
-#: src/ui/task_details.rs:466
+#: src/ui/task_details.rs:491
 msgid "Delete All?"
 msgstr ""
 
-#: src/ui/task_details.rs:468
+#: src/ui/task_details.rs:493
 msgid "This will delete all occurrences of this task on this day."
 msgstr ""
