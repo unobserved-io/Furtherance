@@ -444,7 +444,11 @@ impl FurTaskDetails {
         imp.all_task_ids.borrow_mut().clear();
         let window = FurtheranceWindow::default();
         window.reset_history_box();
-        self.setup_widgets(updated_list);
+        if updated_list.len() > 0 {
+            self.setup_widgets(updated_list);
+        } else {
+            self.close();
+        }
     }
 
     fn setup_signals(&self) {
