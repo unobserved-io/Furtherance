@@ -26,6 +26,7 @@ pub struct Task {
     pub task_name: String,
     pub start_time: String,
     pub stop_time: String,
+    pub tags: String,
 }
 
 pub fn get_directory() -> PathBuf {
@@ -45,21 +46,36 @@ pub fn db_init() -> Result<()> {
                     id integer primary key,
                     task_name text,
                     start_time timestamp,
-                    stop_time timestamp)",
+                    stop_time timestamp,
+                    tags text)",
         [],
     )?;
 
     Ok(())
 }
 
+pub fn upgrade_old_db() -> Result<()> {
+    // Update from old DB w/o tags
+    let conn = Connection::open(get_directory())?;
 
-pub fn db_write(task_name: &str, start_time: DateTime<Local>, stop_time: DateTime<Local>) -> Result<()> {
+    conn.execute(
+        "ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ' '",
+        [],
+    )?;
+
+    Ok(())
+}
+
+pub fn db_write(task_name: &str,
+                start_time: DateTime<Local>,
+                stop_time: DateTime<Local>,
+                tags: String) -> Result<()> {
     // Write data into database
     let conn = Connection::open(get_directory())?;
 
     conn.execute(
-        "INSERT INTO tasks (task_name, start_time, stop_time) values (?1, ?2, ?3)",
-        &[&task_name.to_string(), &start_time.to_rfc3339(), &stop_time.to_rfc3339()],
+        "INSERT INTO tasks (task_name, start_time, stop_time, tags) values (?1, ?2, ?3, ?4)",
+        &[&task_name.to_string(), &start_time.to_rfc3339(), &stop_time.to_rfc3339(), &tags],
     )?;
 
     Ok(())
@@ -76,6 +92,7 @@ pub fn retrieve() -> Result<Vec<Task>, rusqlite::Error> {
             task_name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
+            tags: row.get(4)?,
         })
     })?;
 
@@ -121,6 +138,17 @@ pub fn update_task_name(id: i32, task_name: String) -> Result<()> {
     Ok(())
 }
 
+pub fn update_tags(id: i32, tags: String) -> Result<()> {
+    let conn = Connection::open(get_directory())?;
+
+    conn.execute(
+        "UPDATE tasks SET tags = (?1) WHERE id = (?2)",
+        &[&tags, &id.to_string()]
+    )?;
+
+    Ok(())
+}
+
 pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
     let conn = Connection::open(get_directory())?;
     let mut tasks_vec: Vec<Task> = Vec::new();
@@ -134,6 +162,7 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
                 task_name: row.get(1)?,
                 start_time: row.get(2)?,
                 stop_time: row.get(3)?,
+                tags: row.get(4)?,
             })
         })?;
 

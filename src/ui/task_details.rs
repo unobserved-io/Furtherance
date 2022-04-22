@@ -20,6 +20,7 @@ use glib::clone;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
 use chrono::{DateTime, NaiveDateTime, Local, ParseError, offset::TimeZone};
+use itertools::Itertools;
 
 use crate::FurtheranceApplication;
 use crate::ui::FurtheranceWindow;
@@ -172,6 +173,14 @@ impl FurTaskDetails {
                 let vert_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
                 let task_name_edit = gtk::Entry::new();
                 task_name_edit.set_text(&task.task_name);
+                let task_tags_edit = gtk::Entry::new();
+                let tags_placeholder = format!("#{}", &gettext("Tags"));
+                task_tags_edit.set_placeholder_text(Some(&tags_placeholder));
+                let mut task_tags: String = task.tags.clone();
+                if !task.tags.trim().is_empty() {
+                    task_tags = format!("#{}", task.tags);
+                    task_tags_edit.set_text(&task_tags);
+                }
                 let labels_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
                 labels_box.set_homogeneous(true);
                 let start_label = gtk::Label::new(Some(&gettext("Start")));
@@ -220,6 +229,7 @@ impl FurTaskDetails {
                 delete_task_btn.set_halign(gtk::Align::End);
 
                 vert_box.append(&task_name_edit);
+                vert_box.append(&task_tags_edit);
                 labels_box.append(&start_label);
                 labels_box.append(&stop_label);
                 times_box.append(&start_time_edit);
@@ -276,9 +286,10 @@ impl FurTaskDetails {
 
                 dialog.connect_response(
                     clone!(@strong dialog,
-                        @strong task.task_name as name
-                        @strong task.start_time as start_time
-                        @strong task.stop_time as stop_time => move |_ , resp| {
+                        @strong task.task_name as name,
+                        @strong task.start_time as start_time,
+                        @strong task.stop_time as stop_time,
+                        @strong task.tags as tags => move |_ , resp| {
                         if resp == gtk::ResponseType::Ok {
                             instructions.set_visible(false);
                             time_error.set_visible(false);
@@ -333,7 +344,7 @@ impl FurTaskDetails {
                                             database::update_stop_time(task.id, new_stop_time_edited.clone())
                                                 .expect("Failed to update stop time.");
                                             database::update_start_time(task.id, new_start_time_edited.clone())
-                                                .expect("Failed to update stop time.");
+                                                .expect("Failed to update start time.");
                                         }
                                     } else {
                                         let old_start_time = DateTime::parse_from_rfc3339(&start_time);
@@ -354,7 +365,22 @@ impl FurTaskDetails {
                             }
                             if task_name_edit.text() != name {
                                 database::update_task_name(task.id, task_name_edit.text().to_string())
-                                    .expect("Failed to update start time.");
+                                    .expect("Failed to update task name.");
+                            }
+
+                            if task_tags_edit.text() != task_tags {
+                                let new_tags = task_tags_edit.text();
+                                let mut split_tags: Vec<&str> = new_tags.trim().split("#").collect();
+	                            split_tags = split_tags.iter().map(|x| x.trim()).collect();
+	                            // Don't allow empty tags
+	                            split_tags.retain(|&x| !x.trim().is_empty());
+	                            // Handle duplicate tags before they are saved
+	                            split_tags = split_tags.into_iter().unique().collect();
+	                            // Lowercase tags
+	                            let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
+	                            let new_tag_list = lower_tags.join(" #");
+                                database::update_tags(task.id, new_tag_list)
+                                    .expect("Failed to update tags.");
                             }
 
                             if start_successful && !stop_successful {
@@ -367,7 +393,6 @@ impl FurTaskDetails {
                                     time_error.set_visible(true);
                                     do_not_close = true;
                                 }
-
                             }
 
                             if !do_not_close {
@@ -375,14 +400,12 @@ impl FurTaskDetails {
                                 dialog.close();
                             }
 
-
                         } else {
                             // If Cancel, close dialog and do nothing.
                             dialog.close();
                         }
                     }),
                 );
-
 
                 dialog.show();
             }));

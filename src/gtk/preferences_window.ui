@@ -63,6 +63,18 @@
             <property name="title" translatable="yes">Task List</property>
             <property name="visible">True</property>
             <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">_Delete confirmation</property>
+                <property name="use_underline">True</property>
+                <property name="activatable_widget">delete_confirmation_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="delete_confirmation_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="AdwExpanderRow" id="limit_tasks_expander">
                 <property name="title" translatable="yes">Limit tasks shown</property>
                 <property name="subtitle" translatable="yes">Only show X number of days in the saved tasks list</property>
@@ -93,11 +105,11 @@
             </child>
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">_Delete confirmation</property>
+                <property name="title" translatable="yes">Show daily sums</property>
                 <property name="use_underline">True</property>
-                <property name="activatable_widget">delete_confirmation_switch</property>
+                <property name="activatable_widget">show_daily_sums_switch</property>
                 <child>
-                  <object class="GtkSwitch" id="delete_confirmation_switch">
+                  <object class="GtkSwitch" id="show_daily_sums_switch">
                     <property name="valign">center</property>
                   </object>
                 </child>
@@ -116,18 +128,21 @@
                 </child>
               </object>
             </child>
+
             <child>
               <object class="AdwActionRow">
-                <property name="title" translatable="yes">Show daily sums</property>
+                <property name="title" translatable="yes">Show tags</property>
                 <property name="use_underline">True</property>
-                <property name="activatable_widget">show_daily_sums_switch</property>
+                <property name="activatable_widget">show_tags_switch</property>
+                <property name="subtitle" translatable="yes">Tags are saved, just not shown</property>
                 <child>
-                  <object class="GtkSwitch" id="show_daily_sums_switch">
+                  <object class="GtkSwitch" id="show_tags_switch">
                     <property name="valign">center</property>
                   </object>
                 </child>
               </object>
             </child>
+
           </object>
         </child>
       </object>

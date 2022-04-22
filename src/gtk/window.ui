@@ -55,7 +55,7 @@
                   <property name="margin_end">8</property>
                   <child>
                     <object class="GtkEntry" id="task_input">
-                      <property name="placeholder-text" translatable="yes">Task Name</property>
+                      <property name="placeholder-text" translatable="yes">Task Name #Tags</property>
                       <property name="hexpand">True</property>
                       <property name="hexpand-set">True</property>
                     </object>

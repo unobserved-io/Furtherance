@@ -55,6 +55,8 @@ mod imp {
         pub show_seconds_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub show_daily_sums_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        pub show_tags_switch: TemplateChild<gtk::Switch>,
     }
 
     #[glib::object_subclass]
@@ -167,6 +169,12 @@ impl FurPreferencesWindow {
             "active"
         );
 
+        settings_manager::bind_property(
+            "show-tags",
+            &*imp.show_tags_switch,
+            "active"
+        );
+
         imp.dark_theme_switch.connect_active_notify(move |_|{
             let app = FurtheranceApplication::default();
             app.update_light_dark();
@@ -188,6 +196,11 @@ impl FurPreferencesWindow {
         });
 
         imp.show_daily_sums_switch.connect_active_notify(move |_|{
+            let window = FurtheranceWindow::default();
+            window.reset_history_box();
+        });
+
+        imp.show_tags_switch.connect_active_notify(move |_|{
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });

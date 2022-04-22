@@ -14,6 +14,7 @@ dbus = "0.9.5"
 dbus-codegen = "0.10.0"
 log = "0.4"
 gtk4-macros = "=0.4.3"
+itertools = "0.10.3"
 
 [dependencies.gtk]
 package = "gtk4"

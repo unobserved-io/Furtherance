@@ -60,6 +60,7 @@ mod imp {
         fn activate(&self, application: &Self::Type) {
             // Initialize the database
             let _ = database::db_init();
+            let _ = database::upgrade_old_db();
 
             // Get the current window or create one if necessary
             let window = if let Some(window) = application.active_window() {
@@ -142,7 +143,7 @@ impl FurtheranceApplication {
     }
 
     fn setup_application(&self) {
-        self.update_light_dark()
+        self.update_light_dark();
     }
 
     fn show_about(&self) {

@@ -35,7 +35,11 @@ mod imp {
     #[template(resource = "/com/lakoliu/Furtherance/gtk/task_row.ui")]
     pub struct FurTaskRow {
         #[template_child]
+        pub row_box: TemplateChild<gtk::Box>,
+        #[template_child]
         pub task_name_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub task_tags_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub total_time_label: TemplateChild<gtk::Label>,
 
@@ -102,16 +106,27 @@ impl FurTaskRow {
         for task in task_list.clone() {
             imp.tasks.lock().unwrap().push(task);
         }
-        let task_name_text = &task_list[0].task_name;
+
+        // Display task's name
         imp.task_name_label.set_text(&imp.tasks.lock().unwrap()[0].task_name);
+
+        // Display task's tags
+        if task_list[0].tags.trim().is_empty() || !settings_manager::get_bool("show-tags") {
+            imp.task_tags_label.hide();
+        } else {
+            let task_tags = format!("#{}", task_list[0].tags);
+            imp.task_tags_label.set_text(&task_tags);
+            imp.row_box.set_margin_top(5);
+            imp.row_box.set_margin_bottom(5);
+        }
 
         // Create right-click gesture
         let gesture = gtk::GestureClick::new();
         gesture.set_button(gtk::gdk::ffi::GDK_BUTTON_SECONDARY as u32);
-        gesture.connect_pressed(clone!(@strong task_name_text => move |gesture, _, _, _| {
+        gesture.connect_pressed(clone!(@strong task_list => move |gesture, _, _, _| {
             gesture.set_state(gtk::EventSequenceState::Claimed);
             let window = FurtheranceWindow::default();
-            window.duplicate_task(task_name_text.to_string());
+            window.duplicate_task(task_list[0].clone());
         }));
 
         self.add_controller(&gesture);
@@ -135,7 +150,7 @@ impl FurTaskRow {
         if !settings_manager::get_bool("show-seconds") {
             total_time_str = format!("{:02}:{:02}", h, m);
         }
-
+        // Display task's total time
         imp.total_time_label.set_text(&total_time_str);
     }
 

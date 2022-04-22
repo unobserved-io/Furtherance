@@ -26,6 +26,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use chrono::{DateTime, Local, Duration as ChronDur};
 use dbus::blocking::Connection;
+use itertools::Itertools;
 
 use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
@@ -119,6 +120,7 @@ impl FurtheranceWindow {
         }
     }
 
+    // TODO remove function, just use set_sensitive
     fn activate_task_input(&self, sensitive: bool) {
         // Deactivate task_input while timer is running
         let imp = imp::FurtheranceWindow::from_instance(self);
@@ -135,7 +137,23 @@ impl FurtheranceWindow {
             *imp.subtract_idle.lock().unwrap() = false;
         }
 
-        let _ = database::db_write(&imp.task_input.text().trim(), start_time, stop_time);
+        // let task_input_text = imp.task_input.text().trim();
+        let task_input_text = imp.task_input.text();
+        let mut split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
+        // Remove task name from tags list
+        let task_name = *split_tags.first().unwrap();
+        split_tags.remove(0);
+        // Trim whitespace around each tag
+        split_tags = split_tags.iter().map(|x| x.trim()).collect();
+        // Don't allow empty tags
+        split_tags.retain(|&x| !x.trim().is_empty());
+        // Handle duplicate tags before they are ever saved
+        split_tags = split_tags.into_iter().unique().collect();
+        // Lowercase tags
+        let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
+        let tag_list = lower_tags.join(" #");
+
+        let _ = database::db_write(task_name.trim(), start_time, stop_time, tag_list);
         imp.task_input.set_text("");
         imp.history_box.create_tasks_page();
     }
@@ -178,7 +196,9 @@ impl FurtheranceWindow {
 
         imp.task_input.connect_changed(clone!(@weak self as this => move |task_input| {
             let imp2 = imp::FurtheranceWindow::from_instance(&this);
-            if task_input.text().trim().is_empty() {
+            let task_input_text = task_input.text();
+            let split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
+            if split_tags[0].trim().is_empty() {
                 imp2.start_button.set_sensitive(false);
             } else {
                 imp2.start_button.set_sensitive(true);
@@ -337,13 +357,19 @@ impl FurtheranceWindow {
         *imp.subtract_idle.lock().unwrap() = val;
     }
 
-    pub fn duplicate_task(&self, task_name_text: String) {
+    pub fn duplicate_task(&self, task: database::Task) {
         let imp = imp::FurtheranceWindow::from_instance(self);
         if !*imp.running.lock().unwrap() {
-            imp.task_input.set_text(&task_name_text);
+            let task_text: String;
+            if task.tags.trim().is_empty() {
+                task_text = task.task_name;
+            } else {
+                task_text = format!("{} #{}", task.task_name, task.tags);
+            }
+            imp.task_input.set_text(&task_text);
             imp.start_button.emit_clicked();
         } else {
-            self.display_toast("Stop the timer to duplicate a task.");
+            self.display_toast(&gettext("Stop the timer to duplicate a task."));
         }
     }
 }

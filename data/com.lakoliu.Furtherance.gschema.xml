@@ -25,5 +25,8 @@
     <key name="show-daily-sums" type="b">
       <default>true</default>
     </key>
+	  <key name="show-tags" type="b">
+      <default>true</default>
+    </key>
 	</schema>
 </schemalist>
