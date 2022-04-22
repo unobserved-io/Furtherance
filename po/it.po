@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-04-02 16:51+0200\n"
-"PO-Revision-Date: 2022-04-15 19:33+0200\n"
+"PO-Revision-Date: 2022-04-22 16:04+0200\n"
 "Last-Translator: musiclover <musiclover382@protonmail.com>\n"
 "Language-Team: \n"
 "Language: it\n"
@@ -36,24 +36,44 @@ msgstr ""
 "l'inattività."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Ability to add tags!"
+msgstr "Aggiunti i tag"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "Fixed icon positioning"
+msgstr "La posizione dell'icona è stata corretta"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+msgid "Changed start button color and behavior"
+msgstr "Il colore e il funzionamento del pulsante avvia sono stati modificati"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+msgid "Changed color of delete buttons"
+msgstr "Il colore del pulsante elimina è stato cambiato"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+msgid "Dutch, Brazilian Portuguese, and French translations"
+msgstr "Traduzioni olandese, brasiliana e francese"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:57
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 "Furtherance ha una nuova icona! Oltre a diversi miglioramenti e correzioni "
 "di bug."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+#: data/com.lakoliu.Furtherance.appdata.xml.in:66
 msgid "First stable release of Furtherance."
 msgstr "La prima versione stabile di Furtherance."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:58
+#: data/com.lakoliu.Furtherance.appdata.xml.in:69
 msgid "Track time spent on tasks"
 msgstr "Traccia il tempo speso compiendo delle attività"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:59
+#: data/com.lakoliu.Furtherance.appdata.xml.in:70
 msgid "Change/delete recorded times"
 msgstr "Cambia/elimina i tempi registrati"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:60
+#: data/com.lakoliu.Furtherance.appdata.xml.in:71
 msgid "Idle detection"
 msgstr "Rilevamento di inattività"
 
@@ -72,27 +92,27 @@ msgstr ""
 msgid "Main Menu"
 msgstr "Menu principale"
 
-#: src/gtk/window.ui:56
-msgid "Task Name"
-msgstr "Nome attività"
+#: src/gtk/window.ui:58
+msgid "Task Name #Tags"
+msgstr "Nome attività #Tag"
 
-#: src/gtk/window.ui:81
+#: src/gtk/window.ui:86
 msgid "_Preferences"
 msgstr "_Preferenze"
 
-#: src/gtk/window.ui:85
+#: src/gtk/window.ui:90
 msgid "_Delete history"
 msgstr "_Cancella cronologia"
 
-#: src/gtk/window.ui:89
+#: src/gtk/window.ui:94
 msgid "_About Furtherance"
 msgstr "_Informazioni"
 
-#: src/gtk/task_row.ui:18
+#: src/gtk/task_row.ui:22
 msgid "Task"
 msgstr "Attività"
 
-#: src/gtk/task_row.ui:29
+#: src/gtk/task_row.ui:45
 msgid "Time"
 msgstr "Tempo"
 
@@ -100,11 +120,11 @@ msgstr "Tempo"
 msgid "Task Details"
 msgstr "Dettagli attività"
 
-#: src/gtk/task_details.ui:73 src/ui/task_details.rs:177
+#: src/gtk/task_details.ui:73 src/ui/task_details.rs:186
 msgid "Start"
 msgstr "Inizio"
 
-#: src/gtk/task_details.ui:81 src/ui/task_details.rs:179
+#: src/gtk/task_details.ui:81 src/ui/task_details.rs:188
 msgid "Stop"
 msgstr "Fine"
 
@@ -137,7 +157,7 @@ msgid "Notify of idle"
 msgstr "Notifiche inattività"
 
 #: src/gtk/preferences_window.ui:33
-msgid "(Gnome only)"
+msgid "(GNOME only)"
 msgstr "(Solo per GNOME)"
 
 #: src/gtk/preferences_window.ui:38
@@ -153,37 +173,37 @@ msgid "Task List"
 msgstr "Lista delle attività"
 
 #: src/gtk/preferences_window.ui:67
-msgid "Limit tasks shown"
-msgstr "Limita attività mostrate"
-
-#: src/gtk/preferences_window.ui:68
-msgid "Only show X number of days in the saved tasks list"
-msgstr "Mostra solo un determinato numero di giorni nella lista delle attività"
-
-#: src/gtk/preferences_window.ui:73
-msgid "_Days ago"
-msgstr "_Giorni"
-
-#: src/gtk/preferences_window.ui:74
-msgid "Number of days to display in the list"
-msgstr "Il numero massimo di giorni da mostrare nella lista"
-
-#: src/gtk/preferences_window.ui:96
 msgid "_Delete confirmation"
 msgstr "_Conferma eliminazioni"
 
+#: src/gtk/preferences_window.ui:79
+msgid "Limit tasks shown"
+msgstr "Limita attività mostrate"
+
+#: src/gtk/preferences_window.ui:80
+msgid "Only show X number of days in the saved tasks list"
+msgstr "Mostra solo un determinato numero di giorni nella lista delle attività"
+
+#: src/gtk/preferences_window.ui:85
+msgid "_Days ago"
+msgstr "_Giorni"
+
+#: src/gtk/preferences_window.ui:86
+msgid "Number of days to display in the list"
+msgstr "Il numero massimo di giorni da mostrare nella lista"
+
 #: src/gtk/preferences_window.ui:108
+msgid "Show daily sums"
+msgstr "Mostra somme giornaliere"
+
+#: src/gtk/preferences_window.ui:120
 msgid "_Show seconds"
 msgstr "_Mostra secondi"
 
-#: src/gtk/preferences_window.ui:111
+#: src/gtk/preferences_window.ui:123
 msgid "Tasks list only. Seconds always show on timer"
 msgstr ""
 "Solo per la lista delle attività. I secondi sono sempre visibili nel timer."
-
-#: src/gtk/preferences_window.ui:121
-msgid "Show daily sums"
-msgstr "Mostra somme giornaliere"
 
 #: src/gtk/history_box.ui:25
 msgid "Start Tracking"
@@ -202,50 +222,42 @@ msgid "Right-click a task to duplicate it"
 msgstr "Clicca con il tasto destro per duplicare un'attività"
 
 #. TRANSLATORS: 'Name <email@domain.com>' or 'Name https://website.example'
-#: src/application.rs:159
+#: src/application.rs:160
 msgid "translator-credits"
 msgstr "Musiclover382 <musiclover382@protonmail.com>"
 
-#: src/application.rs:175
+#: src/application.rs:176
 msgid "Delete history?"
 msgstr "Cancellare la cronologia?"
 
-#: src/application.rs:178 src/ui/task_details.rs:470
+#: src/application.rs:179 src/ui/task_details.rs:495
 msgid "Cancel"
 msgstr "Annulla"
 
-#: src/application.rs:179 src/ui/task_details.rs:471
+#: src/application.rs:180 src/ui/task_details.rs:496
 msgid "Delete"
 msgstr "Elimina"
 
-#: src/application.rs:183
+#: src/application.rs:187
 msgid "This will delete ALL of your task history."
 msgstr "Verranno eliminate TUTTE le attività svolte."
 
-#: src/application.rs:185
+#: src/application.rs:189
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 "Scrivere ELIMINA nella casella sottostante, poi cliccare Elimina per "
 "continuare."
 
 #. TRANSLATORS: This must match the translation for "DELETE" in the other string
-#: src/application.rs:193
+#: src/application.rs:198
 msgid "DELETE"
 msgstr "ELIMINA"
 
-#: src/ui/window.rs:191
-msgid "No Task Name"
-msgstr "Attività senza nome"
-
-#: src/ui/window.rs:193
-msgid "Enter a task name to start the timer."
-msgstr "Inserire un nome per avviare il timer."
-
-#: src/ui/window.rs:302
+#: src/ui/window.rs:303
 msgid "You have been idle for "
 msgstr "Sei stato inattivo per "
 
-#: src/ui/window.rs:303
+#: src/ui/window.rs:304
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
@@ -253,15 +265,19 @@ msgstr ""
 "\n"
 "Vuoi scartare tale lasso di tempo o continuare regolarmente?"
 
-#: src/ui/window.rs:311 src/ui/task_details.rs:167
+#: src/ui/window.rs:365
+msgid "Stop the timer to duplicate a task."
+msgstr "Ferma il timer per duplicare un'attività."
+
+#: src/ui/window.rs:312 src/ui/task_details.rs:168
 msgid "Edit Task"
 msgstr "Modifica attività"
 
-#: src/ui/window.rs:314 src/ui/application.rs:245
+#: src/ui/window.rs:315 src/ui/application.rs:250
 msgid "Discard"
 msgstr "Scarta"
 
-#: src/ui/window.rs:315 src/ui/application.rs:246
+#: src/ui/window.rs:316 src/ui/application.rs:251
 msgid "Continue"
 msgstr "Continua"
 
@@ -273,34 +289,34 @@ msgstr "Oggi"
 msgid "Yesterday"
 msgstr "Ieri"
 
-#: src/ui/task_details.rs:198
+#: src/ui/task_details.rs:207
 msgid "*Use the format MMM DD YYYY HH:MM:SS"
 msgstr "*Usare il formato MMM GG AAAA HH:MM:SS"
 
-#: src/ui/task_details.rs:200
+#: src/ui/task_details.rs:209
 msgid "*Use the format MMM DD YYYY HH:MM"
 msgstr "*Usare il formato MMM GG AAAA HH:MM"
 
-#: src/ui/task_details.rs:206
+#: src/ui/task_details.rs:215
 msgid "*Start time cannot be later than stop time."
 msgstr "*Il tempo iniziale non può essere successivo al tempo finale."
 
-#: src/ui/task_details.rs:211
+#: src/ui/task_details.rs:220
 msgid "*Time cannot be in the future."
 msgstr "*Il tempo non può essere futuro."
 
-#: src/ui/task_details.rs:217
+#: src/ui/task_details.rs:226
 msgid "Delete task"
 msgstr "Elimina attività"
 
-#: src/ui/task_details.rs:243
+#: src/ui/task_details.rs:253
 msgid "Delete task?"
 msgstr "Eliminare l'attività?"
 
-#: src/ui/task_details.rs:466
+#: src/ui/task_details.rs:491
 msgid "Delete All?"
 msgstr "Eliminare tutto?"
 
-#: src/ui/task_details.rs:468
+#: src/ui/task_details.rs:493
 msgid "This will delete all occurrences of this task on this day."
 msgstr "Verranno eliminate tutte le attività con questo nome in questo giorno."
