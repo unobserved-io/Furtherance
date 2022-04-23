@@ -1,4 +1,4 @@
-# Italian translation for Furtherance.
+# Slovakia translation for Furtherance.
 # Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
 # MartinIIOT https://github.com/MartinIIOT, 2022.
