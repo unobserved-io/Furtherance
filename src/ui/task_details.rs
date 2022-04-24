@@ -112,7 +112,7 @@ impl FurTaskDetails {
         imp.task_name_label.set_text(&task_group[0].task_name);
         let this_day_str = DateTime::parse_from_rfc3339(&task_group[0].start_time).unwrap();
         *imp.this_day.borrow_mut() = this_day_str.format("%h %d %Y").to_string();
-        *imp.orig_tags.borrow_mut() = task_group[0].task_name.clone();
+        *imp.orig_tags.borrow_mut() = task_group[0].tags.clone();
 
         for task in task_group.clone() {
             imp.all_task_ids.borrow_mut().push(task.id);
@@ -435,7 +435,9 @@ impl FurTaskDetails {
             let delete = {
                 let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
                 let start_time_str = start_time.format("%h %d %Y").to_string();
-                if imp.this_day.borrow().to_string() != start_time_str {
+                if imp.this_day.borrow().to_string() != start_time_str
+                    || imp.task_name_label.text() != task.task_name
+                    || imp.orig_tags.borrow().to_string() != task.tags {
                     false
                 } else {
                     true
@@ -443,8 +445,6 @@ impl FurTaskDetails {
             };
             delete
         });
-        // TODO Need to check if all task names and tags also match the original
-        // and remove those that don't.
 
         imp.all_task_ids.borrow_mut().clear();
         let window = FurtheranceWindow::default();
