@@ -54,6 +54,7 @@ mod imp {
         pub all_boxes: RefCell<Vec<gtk::Box>>,
         pub all_task_ids: RefCell<Vec<i32>>,
         pub this_day: RefCell<String>,
+        pub orig_tags: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -111,6 +112,7 @@ impl FurTaskDetails {
         imp.task_name_label.set_text(&task_group[0].task_name);
         let this_day_str = DateTime::parse_from_rfc3339(&task_group[0].start_time).unwrap();
         *imp.this_day.borrow_mut() = this_day_str.format("%h %d %Y").to_string();
+        *imp.orig_tags.borrow_mut() = task_group[0].task_name.clone();
 
         for task in task_group.clone() {
             imp.all_task_ids.borrow_mut().push(task.id);
@@ -441,6 +443,9 @@ impl FurTaskDetails {
             };
             delete
         });
+        // TODO Need to check if all task names and tags also match the original
+        // and remove those that don't.
+
         imp.all_task_ids.borrow_mut().clear();
         let window = FurtheranceWindow::default();
         window.reset_history_box();

@@ -55,7 +55,7 @@ msgstr "Preklady do holandčiny, brazílskej portugalčiny a francúzštiny"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:57
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
-msgstr ""Podpora má novú ikonu! A veľa opráv chýb a vylepšení."
+msgstr "Podpora má novú ikonu! A veľa opráv chýb a vylepšení."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:66
 msgid "First stable release of Furtherance."
