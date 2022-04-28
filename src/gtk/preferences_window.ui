@@ -150,13 +150,13 @@
             <child>
               <object class="AdwExpanderRow" id="pomodoro_expander">
                 <property name="title" translatable="yes">_Pomodoro</property>
-                <property name="subtitle" translatable="yes">Timer counts down instead of up.</property>
+                <property name="subtitle" translatable="yes">Timer counts down instead of up</property>
                 <property name="show_enable_switch">True</property>
                 <property name="use_underline">True</property>
                 <child>
                   <object class="AdwActionRow">
                     <property name="title" translatable="yes">Interval</property>
-                    <property name="subtitle" translatable="yes">Timer start time in minutes</property>
+                    <property name="subtitle" translatable="yes">Start time in minutes</property>
                     <property name="use_underline">True</property>
                     <child>
                       <object class="GtkSpinButton" id="pomodoro_spin">
