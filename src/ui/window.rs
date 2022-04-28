@@ -60,6 +60,8 @@ mod imp {
         pub subtract_idle: Mutex<bool>,
         pub idle_start_time: Mutex<String>,
         pub running: Mutex<bool>,
+        pub pomodoro_continue: Mutex<bool>,
+        pub idle_dialog: Mutex<gtk::MessageDialog>,
     }
 
     #[glib::object_subclass]
@@ -120,7 +122,7 @@ impl FurtheranceWindow {
         }
     }
 
-    fn save_task(&self, start_time: DateTime<Local>, mut stop_time: DateTime<Local>) {
+    pub fn save_task(&self, start_time: DateTime<Local>, mut stop_time: DateTime<Local>) {
         // Save the most recent task to the database and clear the task_input field
         let imp = imp::FurtheranceWindow::from_instance(self);
 
@@ -149,6 +151,7 @@ impl FurtheranceWindow {
         let _ = database::db_write(task_name.trim(), start_time, stop_time, tag_list);
         imp.task_input.set_text("");
         imp.history_box.create_tasks_page();
+        self.reset_idle();
     }
 
     pub fn reset_history_box(&self) {
@@ -175,14 +178,15 @@ impl FurtheranceWindow {
             self.add_css_class("devel");
         }
 
+        *imp.pomodoro_continue.lock().unwrap() = false;
         imp.start_button.set_sensitive(false);
         imp.start_button.add_css_class("suggested-action");
+        self.refresh_timer();
         imp.task_input.grab_focus();
     }
 
     fn setup_signals(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        // running = false
         *imp.running.lock().unwrap() = false;
         let start_time = Rc::new(RefCell::new(Local::now()));
         let stop_time = Rc::new(RefCell::new(Local::now()));
@@ -201,37 +205,87 @@ impl FurtheranceWindow {
         imp.start_button.connect_clicked(clone!(@weak self as this => move |button| {
             let imp2 = imp::FurtheranceWindow::from_instance(&this);
             if !*imp2.running.lock().unwrap() {
-                let mut secs: u32 = 0;
-                let mut mins: u32 = 0;
-                let mut hrs: u32 = 0;
+                if settings_manager::get_bool("pomodoro") && !*imp2.pomodoro_continue.lock().unwrap() {
+                    let mut secs: i32 = 0;
+                    let mut mins: i32 = settings_manager::get_int("pomodoro-time");
+                    let mut hrs: i32 = mins / 60;
+                    mins = mins % 60;
 
-                *imp2.running.lock().unwrap() = true;
-                *start_time.borrow_mut() = Local::now();
-                imp2.task_input.set_sensitive(false);
-                let duration = Duration::new(1,0);
-                timeout_add_local(duration, clone!(@strong this as this_clone => move || {
-                    let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
-                    if *imp3.running.lock().unwrap() {
-                        secs += 1;
-                        if secs > 59 {
-                            secs = 0;
-                            mins += 1;
-                            if mins > 59 {
-                                mins = 0;
-                                hrs += 1;
+                    *imp2.running.lock().unwrap() = true;
+                    *start_time.borrow_mut() = Local::now();
+                    let timer_start = *start_time.borrow();
+                    imp2.task_input.set_sensitive(false);
+                    let duration = Duration::new(1,0);
+                    timeout_add_local(duration, clone!(@strong this as this_clone => move || {
+                        let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
+                        if *imp3.running.lock().unwrap() {
+                            secs -= 1;
+                            if secs < 0 {
+                                secs = 59;
+                                mins -= 1;
+                                if mins < 0 {
+                                    mins = 59;
+                                    hrs -= 1;
+                                }
                             }
+                            let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
+                            this_clone.set_watch_time(watch_text);
                         }
+                        if hrs == 0 && mins == 0 && secs == 0 {
+                            let timer_stop = Local::now();
+                            *imp3.running.lock().unwrap() = false;
+                            this_clone.pomodoro_over(timer_start, timer_stop);
+                        }
+                        Continue(*imp3.running.lock().unwrap())
+                    }));
+                } else {
+                    let mut secs: u32 = 0;
+                    let mut mins: u32 = 0;
+                    let mut hrs: u32 = 0;
+
+                    if *imp2.pomodoro_continue.lock().unwrap() {
+                        let pomodoro_start_time = *start_time.borrow();
+                        let now_time = Local::now();
+                        let continue_time = now_time - pomodoro_start_time;
+                        let continue_time = continue_time.num_seconds() as u32;
+                        hrs = continue_time / 3600;
+                        mins = continue_time % 3600 / 60;
+                        secs = continue_time % 60;
                         let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
-                        this_clone.set_watch_time(watch_text);
+                        this.set_watch_time(watch_text);
+
+                        *imp2.pomodoro_continue.lock().unwrap() = false;
+                    } else {
+                        *start_time.borrow_mut() = Local::now();
                     }
-                    Continue(*imp3.running.lock().unwrap())
-                }));
+
+                    *imp2.running.lock().unwrap() = true;
+                    imp2.task_input.set_sensitive(false);
+                    let duration = Duration::new(1,0);
+                    timeout_add_local(duration, clone!(@strong this as this_clone => move || {
+                        let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
+                        if *imp3.running.lock().unwrap() {
+                            secs += 1;
+                            if secs > 59 {
+                                secs = 0;
+                                mins += 1;
+                                if mins > 59 {
+                                    mins = 0;
+                                    hrs += 1;
+                                }
+                            }
+                            let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
+                            this_clone.set_watch_time(watch_text);
+                        }
+                        Continue(*imp3.running.lock().unwrap())
+                    }));
+                }
                 button.set_icon_name("media-playback-stop-symbolic");
             } else {
                 *stop_time.borrow_mut() = Local::now();
                 *imp2.running.lock().unwrap() = false;
                 button.set_icon_name("media-playback-start-symbolic");
-                this.set_watch_time("00:00:00");
+                this.refresh_timer();
                 imp2.task_input.set_sensitive(true);
                 this.save_task(*start_time.borrow(), *stop_time.borrow());
             }
@@ -240,7 +294,7 @@ impl FurtheranceWindow {
 
     fn setup_settings(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
-        self.reset_vars();
+        self.reset_idle();
 
         // Enter starts timer
         let start = imp.start_button.clone();
@@ -267,7 +321,6 @@ impl FurtheranceWindow {
             Ok(val) => val,
             Err(_) => 1,
         };
-
         // If user was idle and has now returned...
         if idle_time < (settings_manager::get_int("idle-time") * 60) as u64
             && *imp.idle_time_reached.lock().unwrap()
@@ -309,16 +362,13 @@ impl FurtheranceWindow {
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Warning,
             gtk::ButtonsType::None,
-            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Edit Task"))),
+            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Idle"))),
         );
         dialog.add_buttons(&[
             (&gettext("Discard"), gtk::ResponseType::Reject),
             (&gettext("Continue"), gtk::ResponseType::Accept)
         ]);
         dialog.set_secondary_text(Some(&idle_time_msg));
-
-        let app = FurtheranceApplication::default();
-        app.system_notification(&idle_time_str, &question_str, dialog.clone());
 
         dialog.connect_response(clone!(
             @weak self as this,
@@ -328,16 +378,60 @@ impl FurtheranceWindow {
                 this.set_subtract_idle(true);
                 start_button.emit_clicked();
                 dialog.close();
-            } else {
-                this.reset_vars();
+            } else if resp == gtk::ResponseType::Accept {
+                this.reset_idle();
                 dialog.close();
             }
         }));
 
-        dialog.show()
+        *imp.idle_dialog.lock().unwrap() = dialog.clone();
+        let app = FurtheranceApplication::default();
+        app.system_idle_notification(&idle_time_str, &question_str);
+
+        dialog.show();
     }
 
-    pub fn reset_vars(&self) {
+    fn pomodoro_over(&self, timer_start: DateTime<Local>, timer_stop: DateTime<Local>) {
+        let dialog = gtk::MessageDialog::with_markup(
+            Some(self),
+            gtk::DialogFlags::MODAL,
+            gtk::MessageType::Warning,
+            gtk::ButtonsType::None,
+            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Time's up!"))),
+        );
+        dialog.add_buttons(&[
+            (&gettext("Continue"), gtk::ResponseType::Accept),
+            (&gettext("Stop"), gtk::ResponseType::Reject)
+        ]);
+
+        let app = FurtheranceApplication::default();
+        app.system_pomodoro_notification(dialog.clone());
+        dialog.connect_response(clone!(
+            @weak self as this,
+            @strong dialog => move |_, resp| {
+            let imp = imp::FurtheranceWindow::from_instance(&this);
+            if resp == gtk::ResponseType::Reject {
+                imp.start_button.set_icon_name("media-playback-start-symbolic");
+                this.refresh_timer();
+                imp.task_input.set_sensitive(true);
+                this.save_task(timer_start, timer_stop);
+                this.reset_idle();
+                dialog.close();
+            } else if resp == gtk::ResponseType::Accept {
+                *imp.pomodoro_continue.lock().unwrap() = true;
+                this.reset_idle();
+                imp.start_button.emit_clicked();
+                dialog.close();
+            }
+        }));
+
+        let imp2 = imp::FurtheranceWindow::from_instance(self);
+        imp2.idle_dialog.lock().unwrap().close();
+
+        dialog.show();
+    }
+
+    pub fn reset_idle(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
         *imp.stored_idle.lock().unwrap() = 0;
         *imp.idle_notified.lock().unwrap() = false;
@@ -363,6 +457,22 @@ impl FurtheranceWindow {
             imp.start_button.emit_clicked();
         } else {
             self.display_toast(&gettext("Stop the timer to duplicate a task."));
+        }
+    }
+
+    pub fn refresh_timer (&self) {
+        let imp = imp::FurtheranceWindow::from_instance(self);
+        if settings_manager::get_bool("pomodoro") {
+            let mut mins = settings_manager::get_int("pomodoro-time");
+            let mut hrs: i32 = 0;
+            if mins > 59 {
+                hrs = mins / 60;
+                mins = mins % 60;
+            }
+            let watch_text: &str = &format!("{:02}:{:02}:00", hrs, mins);
+            imp.watch.set_text(watch_text);
+        } else {
+            imp.watch.set_text("00:00:00");
         }
     }
 }

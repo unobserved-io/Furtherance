@@ -32,7 +32,7 @@ mod imp {
 
     #[derive(Debug, Default)]
     pub struct FurtheranceApplication {
-        pub idle_dialog: Mutex<gtk::MessageDialog>,
+        pub pomodoro_dialog: Mutex<gtk::MessageDialog>,
     }
 
     #[glib::object_subclass]
@@ -122,10 +122,7 @@ impl FurtheranceApplication {
             let window = FurtheranceWindow::default();
             let imp = window.imp();
             if *imp.running.lock().unwrap() && *imp.idle_time_reached.lock().unwrap() {
-                window.set_subtract_idle(true);
-                imp.start_button.emit_clicked();
-                let imp_app = imp::FurtheranceApplication::from_instance(&app);
-                imp_app.idle_dialog.lock().unwrap().close();
+                window.imp().idle_dialog.lock().unwrap().response(gtk::ResponseType::Reject);
             }
         }));
         self.add_action(&discard_idle_action);
@@ -134,12 +131,24 @@ impl FurtheranceApplication {
         continue_idle_action.connect_activate(clone!(@weak self as app => move |_, _| {
             let window = FurtheranceWindow::default();
             if *window.imp().running.lock().unwrap() {
-                window.reset_vars();
-                let imp = imp::FurtheranceApplication::from_instance(&app);
-                imp.idle_dialog.lock().unwrap().close();
+                window.imp().idle_dialog.lock().unwrap().response(gtk::ResponseType::Accept);
             }
         }));
         self.add_action(&continue_idle_action);
+
+        let continue_pomodoro_action = gio::SimpleAction::new("continue-pomodoro-action", None);
+        continue_pomodoro_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            let imp = imp::FurtheranceApplication::from_instance(&app);
+            imp.pomodoro_dialog.lock().unwrap().response(gtk::ResponseType::Accept);
+        }));
+        self.add_action(&continue_pomodoro_action);
+
+        let stop_pomodoro_action = gio::SimpleAction::new("stop-pomodoro-action", None);
+        stop_pomodoro_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            let imp = imp::FurtheranceApplication::from_instance(&app);
+            imp.pomodoro_dialog.lock().unwrap().response(gtk::ResponseType::Reject);
+        }));
+        self.add_action(&stop_pomodoro_action);
     }
 
     fn setup_application(&self) {
@@ -233,9 +242,7 @@ impl FurtheranceApplication {
         }
     }
 
-    pub fn system_notification(&self, title: &str, subtitle: &str, dialog: gtk::MessageDialog) {
-        let imp = imp::FurtheranceApplication::from_instance(self);
-        *imp.idle_dialog.lock().unwrap() = dialog;
+    pub fn system_idle_notification(&self, title: &str, subtitle: &str) {
         let icon = Some("appointment-missed-symbolic");
         let notification = gio::Notification::new(title.as_ref());
         notification.set_body(Some(subtitle.as_ref()));
@@ -250,9 +257,32 @@ impl FurtheranceApplication {
         notification.add_button(&gettext("Discard"), "app.discard-idle-action");
         notification.add_button(&gettext("Continue"), "app.continue-idle-action");
 
-        gio::Application::default()
-            .unwrap()
-            .send_notification(None, &notification);
+        notification.set_priority(gio::NotificationPriority::High);
+
+        self.send_notification(Some("idle"), &notification);
+    }
+
+    pub fn system_pomodoro_notification(&self, dialog: gtk::MessageDialog) {
+        let imp = imp::FurtheranceApplication::from_instance(self);
+        *imp.pomodoro_dialog.lock().unwrap() = dialog;
+        let icon = Some("alarm-symbolic");
+        let notification = gio::Notification::new("Time's up!");
+        notification.set_body(Some("Your Furtherance timer ended."));
+
+        if let Some(icon) = icon {
+            match gio::Icon::for_string(icon) {
+                Ok(gicon) => notification.set_icon(&gicon),
+                Err(err) => debug!("Unable to display notification: {:?}", err),
+            }
+        }
+
+        notification.add_button(&gettext("Continue"), "app.continue-pomodoro-action");
+        notification.add_button(&gettext("Stop"), "app.stop-pomodoro-action");
+
+        notification.set_priority(gio::NotificationPriority::High);
+
+        self.withdraw_notification("idle");
+        self.send_notification(Some("pomodoro"), &notification);
     }
 }
 

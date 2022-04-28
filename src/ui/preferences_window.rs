@@ -57,6 +57,13 @@ mod imp {
         pub show_daily_sums_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub show_tags_switch: TemplateChild<gtk::Switch>,
+
+        #[template_child]
+        pub timer_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub pomodoro_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub pomodoro_spin: TemplateChild<gtk::SpinButton>,
     }
 
     #[glib::object_subclass]
@@ -175,6 +182,18 @@ impl FurPreferencesWindow {
             "active"
         );
 
+        settings_manager::bind_property(
+            "pomodoro",
+            &*imp.pomodoro_expander,
+            "enable-expansion"
+        );
+
+        settings_manager::bind_property(
+            "pomodoro-time",
+            &*imp.pomodoro_spin,
+            "value"
+        );
+
         imp.dark_theme_switch.connect_active_notify(move |_|{
             let app = FurtheranceApplication::default();
             app.update_light_dark();
@@ -203,6 +222,16 @@ impl FurPreferencesWindow {
         imp.show_tags_switch.connect_active_notify(move |_|{
             let window = FurtheranceWindow::default();
             window.reset_history_box();
+        });
+
+        imp.pomodoro_expander.connect_enable_expansion_notify(move |_|{
+            let window = FurtheranceWindow::default();
+            window.refresh_timer();
+        });
+
+        imp.pomodoro_spin.connect_value_changed(move |_|{
+            let window = FurtheranceWindow::default();
+            window.refresh_timer();
         });
     }
 }

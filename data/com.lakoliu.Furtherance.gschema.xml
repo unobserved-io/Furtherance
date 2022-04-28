@@ -28,5 +28,11 @@
 	  <key name="show-tags" type="b">
       <default>true</default>
     </key>
+	  <key name="pomodoro" type="b">
+      <default>false</default>
+    </key>
+	  <key name="pomodoro-time" type="i">
+      <default>25</default>
+    </key>
 	</schema>
 </schemalist>

@@ -128,7 +128,6 @@
                 </child>
               </object>
             </child>
-
             <child>
               <object class="AdwActionRow">
                 <property name="title" translatable="yes">Show tags</property>
@@ -142,7 +141,41 @@
                 </child>
               </object>
             </child>
-
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="timer_group">
+            <property name="title" translatable="yes">Timer</property>
+            <property name="visible">True</property>
+            <child>
+              <object class="AdwExpanderRow" id="pomodoro_expander">
+                <property name="title" translatable="yes">_Pomodoro</property>
+                <property name="subtitle" translatable="yes">Timer counts down instead of up.</property>
+                <property name="show_enable_switch">True</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Interval</property>
+                    <property name="subtitle" translatable="yes">Timer start time in minutes</property>
+                    <property name="use_underline">True</property>
+                    <child>
+                      <object class="GtkSpinButton" id="pomodoro_spin">
+                        <property name="valign">center</property>
+                        <property name="adjustment">
+                          <object class="GtkAdjustment">
+                            <property name="upper">999</property>
+                            <property name="lower">1</property>
+                            <property name="step_increment">1</property>
+                            <property name="page_increment">15</property>
+                          </object>
+                        </property>
+                        <property name="numeric">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
