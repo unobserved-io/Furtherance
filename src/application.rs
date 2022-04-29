@@ -266,8 +266,8 @@ impl FurtheranceApplication {
         let imp = imp::FurtheranceApplication::from_instance(self);
         *imp.pomodoro_dialog.lock().unwrap() = dialog;
         let icon = Some("alarm-symbolic");
-        let notification = gio::Notification::new("Time's up!");
-        notification.set_body(Some("Your Furtherance timer ended."));
+        let notification = gio::Notification::new(&gettext("Time's up!"));
+        notification.set_body(Some(&gettext("Your Furtherance timer ended.")));
 
         if let Some(icon) = icon {
             match gio::Icon::for_string(icon) {
