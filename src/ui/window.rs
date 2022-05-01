@@ -132,7 +132,6 @@ impl FurtheranceWindow {
             *imp.subtract_idle.lock().unwrap() = false;
         }
 
-        // let task_input_text = imp.task_input.text().trim();
         let task_input_text = imp.task_input.text();
         let mut split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
         // Remove task name from tags list
