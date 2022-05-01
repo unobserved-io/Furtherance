@@ -55,4 +55,4 @@ This project is licensed under the GNU General Public License v3.0. See the [LIC
 This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [lakoliu](https://lakoliu.com). More information at [Furtherance.app](https://furtherance.app).
 
 ### Tips
-Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you want to help out, you can tip me via [Ko-fi](https://ko-fi.com/lakoliu) or [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL). Thank you so much!
+Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via [Ko-fi](https://ko-fi.com/lakoliu) or [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL). Thank you so much!
