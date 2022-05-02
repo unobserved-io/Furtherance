@@ -41,7 +41,7 @@ sudo ninja install
 To uninstall, run `sudo ninja uninstall` in the same directory.
 
 ### Use
-Type in the name of the task you are working on and press start. That's really all there is to it.
+Type in the name of the task you are working on, add some #tags, and press start. That's really all there is to it.
 
 ## Project Details
 
