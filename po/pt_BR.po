@@ -168,7 +168,7 @@ msgstr "O número máximo de dias mostrados na lista"
 
 #: src/gtk/preferences_window.ui:96
 msgid "_Delete confirmation"
-msgstr "_Confirmar.deleção"
+msgstr "_Confirmar antes de deletar"
 
 #: src/gtk/preferences_window.ui:108
 msgid "_Show seconds"
