@@ -15,6 +15,12 @@
                     <property name="title">Furtherance</property>
                   </object>
                 </property>
+                <child>
+                  <object class="GtkButton" id="add_task">
+                    <property name="tooltip_text" translatable="yes">Add Task</property>
+                    <property name="icon_name">list-add-symbolic</property>
+                  </object>
+                </child>
                 <child type="end">
                   <object class="GtkMenuButton" id="app_menu_button">
                     <property name="tooltip_text" translatable="yes">Main Menu</property>

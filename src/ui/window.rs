@@ -24,7 +24,7 @@ use std::time::Duration;
 use std::sync::Mutex;
 use std::rc::Rc;
 use std::cell::RefCell;
-use chrono::{DateTime, Local, Duration as ChronDur};
+use chrono::{DateTime, Local, NaiveDateTime, ParseError, Duration as ChronDur, offset::TimeZone};
 use dbus::blocking::Connection;
 use itertools::Itertools;
 
@@ -43,6 +43,8 @@ mod imp {
         // Template widgets
         #[template_child]
         pub header_bar: TemplateChild<adw::HeaderBar>,
+        #[template_child]
+        pub add_task: TemplateChild<gtk::Button>,
         #[template_child]
         pub watch: TemplateChild<gtk::Label>,
         #[template_child]
@@ -288,6 +290,185 @@ impl FurtheranceWindow {
                 imp2.task_input.set_sensitive(true);
                 this.save_task(*start_time.borrow(), *stop_time.borrow());
             }
+        }));
+
+        imp.add_task.connect_clicked(clone!(@weak self as this => move |_| {
+            let dialog = gtk::MessageDialog::new(
+                    Some(&this),
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Question,
+                    gtk::ButtonsType::None,
+                    &format!("<span size='x-large' weight='bold'>{}</span>", &gettext("New Task")),
+                );
+                dialog.set_use_markup(true);
+                dialog.add_buttons(&[
+                    (&gettext("Cancel"), gtk::ResponseType::Cancel),
+                    (&gettext("Add"), gtk::ResponseType::Ok)
+                ]);
+
+                let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
+                let vert_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+                let task_name_edit = gtk::Entry::new();
+                task_name_edit.set_placeholder_text(Some(&gettext("Task Name")));
+                let task_tags_edit = gtk::Entry::new();
+                let tags_placeholder = format!("#{}", &gettext("Tags"));
+                task_tags_edit.set_placeholder_text(Some(&tags_placeholder));
+
+                let labels_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+                labels_box.set_homogeneous(true);
+                let start_label = gtk::Label::new(Some(&gettext("Start")));
+                start_label.add_css_class("title-4");
+                let stop_label = gtk::Label::new(Some(&gettext("Stop")));
+                stop_label.add_css_class("title-4");
+                let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+                times_box.set_homogeneous(true);
+
+                let stop_time = Local::now();
+                let start_time = stop_time - ChronDur::seconds(1);
+
+                let mut start_time_w_year = start_time.format("%h %d %Y %H:%M:%S").to_string();
+                if !settings_manager::get_bool("show-seconds") {
+                    start_time_w_year = start_time.format("%h %d %Y %H:%M").to_string();
+                }
+                let mut stop_time_w_year = stop_time.format("%h %d %Y %H:%M:%S").to_string();
+                if !settings_manager::get_bool("show-seconds") {
+                    stop_time_w_year = stop_time.format("%h %d %Y %H:%M").to_string();
+                }
+                let start_time_edit = gtk::Entry::new();
+                start_time_edit.set_text(&start_time_w_year);
+                let stop_time_edit = gtk::Entry::new();
+                stop_time_edit.set_text(&stop_time_w_year);
+
+                let instructions = gtk::Label::new(Some(
+                    &gettext("*Use the format MMM DD YYYY HH:MM:SS")));
+                if !settings_manager::get_bool("show-seconds") {
+                    instructions.set_text(&gettext("*Use the format MMM DD YYYY HH:MM"));
+                }
+                instructions.set_visible(false);
+                instructions.add_css_class("error_message");
+
+                let time_error = gtk::Label::new(Some(
+                    &gettext("*Start time cannot be later than stop time.")));
+                time_error.set_visible(false);
+                time_error.add_css_class("error_message");
+
+                let future_error = gtk::Label::new(Some(
+                    &gettext("*Time cannot be in the future.")));
+                future_error.set_visible(false);
+                future_error.add_css_class("error_message");
+
+                let name_error = gtk::Label::new(Some(
+                    &gettext("*Task name cannot be blank.")));
+                name_error.set_visible(false);
+                name_error.add_css_class("error_message");
+
+                vert_box.append(&task_name_edit);
+                vert_box.append(&task_tags_edit);
+                labels_box.append(&start_label);
+                labels_box.append(&stop_label);
+                times_box.append(&start_time_edit);
+                times_box.append(&stop_time_edit);
+                vert_box.append(&labels_box);
+                vert_box.append(&times_box);
+                vert_box.append(&instructions);
+                vert_box.append(&time_error);
+                vert_box.append(&future_error);
+                vert_box.append(&name_error);
+                message_area.append(&vert_box);
+
+                dialog.connect_response(clone!(@strong dialog => move |_ , resp| {
+                    if resp == gtk::ResponseType::Ok {
+                        instructions.set_visible(false);
+                        time_error.set_visible(false);
+                        future_error.set_visible(false);
+                        name_error.set_visible(false);
+                        let mut do_not_close = false;
+                        let mut new_start_time_local = Local::now();
+                        let mut new_stop_time_local = Local::now();
+
+                        // Task Name
+                        if task_name_edit.text().trim().is_empty() {
+                            name_error.set_visible(true);
+                            do_not_close = true;
+                        }
+
+                        // Start Time
+                        let new_start_time_str = start_time_edit.text();
+                        let new_start_time: Result<NaiveDateTime, ParseError>;
+                        if settings_manager::get_bool("show-seconds") {
+                            new_start_time = NaiveDateTime::parse_from_str(
+                                                &new_start_time_str,
+                                                "%h %d %Y %H:%M:%S");
+                        } else {
+                            new_start_time = NaiveDateTime::parse_from_str(
+                                                    &new_start_time_str,
+                                                    "%h %d %Y %H:%M");
+                        }
+                        if let Err(_) = new_start_time {
+                            instructions.set_visible(true);
+                            do_not_close = true;
+                        } else {
+                            new_start_time_local = Local.from_local_datetime(&new_start_time.unwrap()).unwrap();
+                            if (Local::now() - new_start_time_local).num_seconds() < 0 {
+                                future_error.set_visible(true);
+                                do_not_close = true;
+                            }
+                        }
+
+                        // Stop Time
+                        let new_stop_time_str = stop_time_edit.text();
+                        let new_stop_time: Result<NaiveDateTime, ParseError>;
+                        if settings_manager::get_bool("show-seconds") {
+                            new_stop_time = NaiveDateTime::parse_from_str(
+                                                &new_stop_time_str,
+                                                "%h %d %Y %H:%M:%S");
+                        } else {
+                            new_stop_time = NaiveDateTime::parse_from_str(
+                                                    &new_stop_time_str,
+                                                    "%h %d %Y %H:%M");
+                        }
+                        if let Err(_) = new_stop_time {
+                            instructions.set_visible(true);
+                            do_not_close = true;
+                        } else {
+                            new_stop_time_local = Local.from_local_datetime(&new_stop_time.unwrap()).unwrap();
+                            if (Local::now() - new_stop_time_local).num_seconds() < 0 {
+                                future_error.set_visible(true);
+                                do_not_close = true;
+                            }
+                        }
+
+                        // Tags
+                        let mut new_tag_list = "".to_string();
+                        if !task_tags_edit.text().trim().is_empty() {
+                            let new_tags = task_tags_edit.text();
+                            let mut split_tags: Vec<&str> = new_tags.trim().split("#").collect();
+                            split_tags = split_tags.iter().map(|x| x.trim()).collect();
+                            // Don't allow empty tags
+                            split_tags.retain(|&x| !x.trim().is_empty());
+                            // Handle duplicate tags before they are saved
+                            split_tags = split_tags.into_iter().unique().collect();
+                            // Lowercase tags
+                            let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
+                            new_tag_list = lower_tags.join(" #");
+                        }
+
+                        if !do_not_close {
+                            let _ = database::db_write(task_name_edit.text().trim(),
+                                                        new_start_time_local,
+                                                        new_stop_time_local,
+                                                        new_tag_list);
+                            this.reset_history_box();
+                            dialog.close();
+                        }
+
+                    } else if resp == gtk::ResponseType::Cancel {
+                        dialog.close();
+                    }
+                }),
+            );
+
+            dialog.show();
         }));
     }
 
