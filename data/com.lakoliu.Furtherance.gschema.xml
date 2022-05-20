@@ -34,5 +34,11 @@
 	  <key name="pomodoro-time" type="i">
       <default>25</default>
     </key>
+	  <key name="autosave" type="b">
+      <default>true</default>
+    </key>
+	  <key name="autosave-time" type="i">
+      <default>5</default>
+    </key>
 	</schema>
 </schemalist>

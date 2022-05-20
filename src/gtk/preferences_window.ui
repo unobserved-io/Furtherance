@@ -176,6 +176,34 @@
                 </child>
               </object>
             </child>
+            <child>
+              <object class="AdwExpanderRow" id="autosave_expander">
+                <property name="title" translatable="yes">_Autosave</property>
+                <property name="subtitle" translatable="yes">Prevent losing tracked time due to improper shutdown</property>
+                <property name="show_enable_switch">True</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <object class="AdwActionRow">
+                    <property name="title" translatable="yes">Autosave every X _minutes</property>
+                    <property name="use_underline">True</property>
+                    <child>
+                      <object class="GtkSpinButton" id="autosave_spin">
+                        <property name="valign">center</property>
+                        <property name="adjustment">
+                          <object class="GtkAdjustment">
+                            <property name="upper">60</property>
+                            <property name="lower">1</property>
+                            <property name="step_increment">1</property>
+                            <property name="page_increment">10</property>
+                          </object>
+                        </property>
+                        <property name="numeric">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>

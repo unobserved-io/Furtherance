@@ -81,6 +81,21 @@ pub fn db_write(task_name: &str,
     Ok(())
 }
 
+pub fn write_autosave(task_name: &str,
+                start_time: &str,
+                stop_time: &str,
+                tags: &str) -> Result<()> {
+    // Write data into database
+    let conn = Connection::open(get_directory())?;
+
+    conn.execute(
+        "INSERT INTO tasks (task_name, start_time, stop_time, tags) values (?1, ?2, ?3, ?4)",
+        &[&task_name, &start_time, &stop_time, &tags],
+    )?;
+
+    Ok(())
+}
+
 pub fn retrieve() -> Result<Vec<Task>, rusqlite::Error> {
     // Retrieve all tasks from the database
     let conn = Connection::open(get_directory())?;

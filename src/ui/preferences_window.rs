@@ -64,6 +64,11 @@ mod imp {
         pub pomodoro_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
         pub pomodoro_spin: TemplateChild<gtk::SpinButton>,
+
+        #[template_child]
+        pub autosave_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub autosave_spin: TemplateChild<gtk::SpinButton>,
     }
 
     #[glib::object_subclass]
@@ -191,6 +196,18 @@ impl FurPreferencesWindow {
         settings_manager::bind_property(
             "pomodoro-time",
             &*imp.pomodoro_spin,
+            "value"
+        );
+
+        settings_manager::bind_property(
+            "autosave",
+            &*imp.autosave_expander,
+            "enable-expansion"
+        );
+
+        settings_manager::bind_property(
+            "autosave-time",
+            &*imp.autosave_spin,
             "value"
         );
 

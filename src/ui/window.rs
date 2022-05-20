@@ -27,6 +27,10 @@ use std::cell::RefCell;
 use chrono::{DateTime, Local, NaiveDateTime, ParseError, Duration as ChronDur, offset::TimeZone};
 use dbus::blocking::Connection;
 use itertools::Itertools;
+use std::fs::{File, create_dir_all, remove_file};
+use std::io::{self, BufWriter, Write, BufReader, BufRead};
+use directories::ProjectDirs;
+use std::path::PathBuf;
 
 use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
@@ -134,22 +138,8 @@ impl FurtheranceWindow {
             *imp.subtract_idle.lock().unwrap() = false;
         }
 
-        let task_input_text = imp.task_input.text();
-        let mut split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
-        // Remove task name from tags list
-        let task_name = *split_tags.first().unwrap();
-        split_tags.remove(0);
-        // Trim whitespace around each tag
-        split_tags = split_tags.iter().map(|x| x.trim()).collect();
-        // Don't allow empty tags
-        split_tags.retain(|&x| !x.trim().is_empty());
-        // Handle duplicate tags before they are ever saved
-        split_tags = split_tags.into_iter().unique().collect();
-        // Lowercase tags
-        let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
-        let tag_list = lower_tags.join(" #");
-
-        let _ = database::db_write(task_name.trim(), start_time, stop_time, tag_list);
+        let (task_name, tag_list) = self.split_tags_and_task();
+        let _ = database::db_write(&task_name, start_time, stop_time, tag_list);
         imp.task_input.set_text("");
         imp.history_box.create_tasks_page();
         self.reset_idle();
@@ -184,6 +174,10 @@ impl FurtheranceWindow {
         imp.start_button.add_css_class("suggested-action");
         self.refresh_timer();
         imp.task_input.grab_focus();
+
+        if settings_manager::get_bool("autosave") {
+            self.check_for_autosave();
+        }
     }
 
     fn setup_signals(&self) {
@@ -207,8 +201,9 @@ impl FurtheranceWindow {
             let imp2 = imp::FurtheranceWindow::from_instance(&this);
             if !*imp2.running.lock().unwrap() {
                 if settings_manager::get_bool("pomodoro") && !*imp2.pomodoro_continue.lock().unwrap() {
+                    let pomodoro_time = settings_manager::get_int("pomodoro-time");
                     let mut secs: i32 = 0;
-                    let mut mins: i32 = settings_manager::get_int("pomodoro-time");
+                    let mut mins: i32 = pomodoro_time;
                     let mut hrs: i32 = mins / 60;
                     mins = mins % 60;
 
@@ -231,6 +226,13 @@ impl FurtheranceWindow {
                             }
                             let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
                             this_clone.set_watch_time(watch_text);
+                        }
+                        if settings_manager::get_bool("autosave") {
+                            let autosave_mins = settings_manager::get_int("autosave-time");
+                            let total_elapsed = (pomodoro_time * 60) - (hrs * 3600) - (mins * 60) - secs;
+                            if total_elapsed % (autosave_mins * 60) == 0 {
+                                this_clone.write_autosave(timer_start);
+                            }
                         }
                         if hrs == 0 && mins == 0 && secs == 0 {
                             let timer_stop = Local::now();
@@ -262,6 +264,7 @@ impl FurtheranceWindow {
 
                     *imp2.running.lock().unwrap() = true;
                     imp2.task_input.set_sensitive(false);
+                    let autosave_start = *start_time.borrow();
                     let duration = Duration::new(1,0);
                     timeout_add_local(duration, clone!(@strong this as this_clone => move || {
                         let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
@@ -277,6 +280,14 @@ impl FurtheranceWindow {
                             }
                             let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
                             this_clone.set_watch_time(watch_text);
+
+                            if settings_manager::get_bool("autosave") {
+                                let autosave_mins = settings_manager::get_int("autosave-time") as u32;
+                                let total_elapsed = (hrs * 3600) + (mins * 60) + secs;
+                                if total_elapsed % (autosave_mins * 60) == 0 {
+                                    this_clone.write_autosave(autosave_start);
+                                }
+                            }
                         }
                         Continue(*imp3.running.lock().unwrap())
                     }));
@@ -289,184 +300,184 @@ impl FurtheranceWindow {
                 this.refresh_timer();
                 imp2.task_input.set_sensitive(true);
                 this.save_task(*start_time.borrow(), *stop_time.borrow());
+                FurtheranceWindow::delete_autosave();
             }
         }));
 
         imp.add_task.connect_clicked(clone!(@weak self as this => move |_| {
             let dialog = gtk::MessageDialog::new(
-                    Some(&this),
-                    gtk::DialogFlags::MODAL,
-                    gtk::MessageType::Question,
-                    gtk::ButtonsType::None,
-                    &format!("<span size='x-large' weight='bold'>{}</span>", &gettext("New Task")),
-                );
-                dialog.set_use_markup(true);
-                dialog.add_buttons(&[
-                    (&gettext("Cancel"), gtk::ResponseType::Cancel),
-                    (&gettext("Add"), gtk::ResponseType::Ok)
-                ]);
+                Some(&this),
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Question,
+                gtk::ButtonsType::None,
+                &format!("<span size='x-large' weight='bold'>{}</span>", &gettext("New Task")),
+            );
+            dialog.set_use_markup(true);
+            dialog.add_buttons(&[
+                (&gettext("Cancel"), gtk::ResponseType::Cancel),
+                (&gettext("Add"), gtk::ResponseType::Ok)
+            ]);
 
-                let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
-                let vert_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-                let task_name_edit = gtk::Entry::new();
-                task_name_edit.set_placeholder_text(Some(&gettext("Task Name")));
-                let task_tags_edit = gtk::Entry::new();
-                let tags_placeholder = format!("#{}", &gettext("Tags"));
-                task_tags_edit.set_placeholder_text(Some(&tags_placeholder));
+            let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
+            let vert_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+            let task_name_edit = gtk::Entry::new();
+            task_name_edit.set_placeholder_text(Some(&gettext("Task Name")));
+            let task_tags_edit = gtk::Entry::new();
+            let tags_placeholder = format!("#{}", &gettext("Tags"));
+            task_tags_edit.set_placeholder_text(Some(&tags_placeholder));
 
-                let labels_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
-                labels_box.set_homogeneous(true);
-                let start_label = gtk::Label::new(Some(&gettext("Start")));
-                start_label.add_css_class("title-4");
-                let stop_label = gtk::Label::new(Some(&gettext("Stop")));
-                stop_label.add_css_class("title-4");
-                let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
-                times_box.set_homogeneous(true);
+            let labels_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+            labels_box.set_homogeneous(true);
+            let start_label = gtk::Label::new(Some(&gettext("Start")));
+            start_label.add_css_class("title-4");
+            let stop_label = gtk::Label::new(Some(&gettext("Stop")));
+            stop_label.add_css_class("title-4");
+            let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
+            times_box.set_homogeneous(true);
 
-                let stop_time = Local::now();
-                let start_time = stop_time - ChronDur::seconds(1);
+            let stop_time = Local::now();
+            let start_time = stop_time - ChronDur::seconds(1);
 
-                let mut start_time_w_year = start_time.format("%h %d %Y %H:%M:%S").to_string();
-                if !settings_manager::get_bool("show-seconds") {
-                    start_time_w_year = start_time.format("%h %d %Y %H:%M").to_string();
-                }
-                let mut stop_time_w_year = stop_time.format("%h %d %Y %H:%M:%S").to_string();
-                if !settings_manager::get_bool("show-seconds") {
-                    stop_time_w_year = stop_time.format("%h %d %Y %H:%M").to_string();
-                }
-                let start_time_edit = gtk::Entry::new();
-                start_time_edit.set_text(&start_time_w_year);
-                let stop_time_edit = gtk::Entry::new();
-                stop_time_edit.set_text(&stop_time_w_year);
+            let mut start_time_w_year = start_time.format("%h %d %Y %H:%M:%S").to_string();
+            if !settings_manager::get_bool("show-seconds") {
+                start_time_w_year = start_time.format("%h %d %Y %H:%M").to_string();
+            }
+            let mut stop_time_w_year = stop_time.format("%h %d %Y %H:%M:%S").to_string();
+            if !settings_manager::get_bool("show-seconds") {
+                stop_time_w_year = stop_time.format("%h %d %Y %H:%M").to_string();
+            }
+            let start_time_edit = gtk::Entry::new();
+            start_time_edit.set_text(&start_time_w_year);
+            let stop_time_edit = gtk::Entry::new();
+            stop_time_edit.set_text(&stop_time_w_year);
 
-                let instructions = gtk::Label::new(Some(
-                    &gettext("*Use the format MMM DD YYYY HH:MM:SS")));
-                if !settings_manager::get_bool("show-seconds") {
-                    instructions.set_text(&gettext("*Use the format MMM DD YYYY HH:MM"));
-                }
-                instructions.set_visible(false);
-                instructions.add_css_class("error_message");
+            let instructions = gtk::Label::new(Some(
+                &gettext("*Use the format MMM DD YYYY HH:MM:SS")));
+            if !settings_manager::get_bool("show-seconds") {
+                instructions.set_text(&gettext("*Use the format MMM DD YYYY HH:MM"));
+            }
+            instructions.set_visible(false);
+            instructions.add_css_class("error_message");
 
-                let time_error = gtk::Label::new(Some(
-                    &gettext("*Start time cannot be later than stop time.")));
-                time_error.set_visible(false);
-                time_error.add_css_class("error_message");
+            let time_error = gtk::Label::new(Some(
+                &gettext("*Start time cannot be later than stop time.")));
+            time_error.set_visible(false);
+            time_error.add_css_class("error_message");
 
-                let future_error = gtk::Label::new(Some(
-                    &gettext("*Time cannot be in the future.")));
-                future_error.set_visible(false);
-                future_error.add_css_class("error_message");
+            let future_error = gtk::Label::new(Some(
+                &gettext("*Time cannot be in the future.")));
+            future_error.set_visible(false);
+            future_error.add_css_class("error_message");
 
-                let name_error = gtk::Label::new(Some(
-                    &gettext("*Task name cannot be blank.")));
-                name_error.set_visible(false);
-                name_error.add_css_class("error_message");
+            let name_error = gtk::Label::new(Some(
+                &gettext("*Task name cannot be blank.")));
+            name_error.set_visible(false);
+            name_error.add_css_class("error_message");
 
-                vert_box.append(&task_name_edit);
-                vert_box.append(&task_tags_edit);
-                labels_box.append(&start_label);
-                labels_box.append(&stop_label);
-                times_box.append(&start_time_edit);
-                times_box.append(&stop_time_edit);
-                vert_box.append(&labels_box);
-                vert_box.append(&times_box);
-                vert_box.append(&instructions);
-                vert_box.append(&time_error);
-                vert_box.append(&future_error);
-                vert_box.append(&name_error);
-                message_area.append(&vert_box);
+            vert_box.append(&task_name_edit);
+            vert_box.append(&task_tags_edit);
+            labels_box.append(&start_label);
+            labels_box.append(&stop_label);
+            times_box.append(&start_time_edit);
+            times_box.append(&stop_time_edit);
+            vert_box.append(&labels_box);
+            vert_box.append(&times_box);
+            vert_box.append(&instructions);
+            vert_box.append(&time_error);
+            vert_box.append(&future_error);
+            vert_box.append(&name_error);
+            message_area.append(&vert_box);
 
-                dialog.connect_response(clone!(@strong dialog => move |_ , resp| {
-                    if resp == gtk::ResponseType::Ok {
-                        instructions.set_visible(false);
-                        time_error.set_visible(false);
-                        future_error.set_visible(false);
-                        name_error.set_visible(false);
-                        let mut do_not_close = false;
-                        let mut new_start_time_local = Local::now();
-                        let mut new_stop_time_local = Local::now();
+            dialog.connect_response(clone!(@strong dialog => move |_ , resp| {
+                if resp == gtk::ResponseType::Ok {
+                    instructions.set_visible(false);
+                    time_error.set_visible(false);
+                    future_error.set_visible(false);
+                    name_error.set_visible(false);
+                    let mut do_not_close = false;
+                    let mut new_start_time_local = Local::now();
+                    let mut new_stop_time_local = Local::now();
 
-                        // Task Name
-                        if task_name_edit.text().trim().is_empty() {
-                            name_error.set_visible(true);
-                            do_not_close = true;
-                        }
+                    // Task Name
+                    if task_name_edit.text().trim().is_empty() {
+                        name_error.set_visible(true);
+                        do_not_close = true;
+                    }
 
-                        // Start Time
-                        let new_start_time_str = start_time_edit.text();
-                        let new_start_time: Result<NaiveDateTime, ParseError>;
-                        if settings_manager::get_bool("show-seconds") {
-                            new_start_time = NaiveDateTime::parse_from_str(
+                    // Start Time
+                    let new_start_time_str = start_time_edit.text();
+                    let new_start_time: Result<NaiveDateTime, ParseError>;
+                    if settings_manager::get_bool("show-seconds") {
+                        new_start_time = NaiveDateTime::parse_from_str(
+                                            &new_start_time_str,
+                                            "%h %d %Y %H:%M:%S");
+                    } else {
+                        new_start_time = NaiveDateTime::parse_from_str(
                                                 &new_start_time_str,
-                                                "%h %d %Y %H:%M:%S");
-                        } else {
-                            new_start_time = NaiveDateTime::parse_from_str(
-                                                    &new_start_time_str,
-                                                    "%h %d %Y %H:%M");
-                        }
-                        if let Err(_) = new_start_time {
-                            instructions.set_visible(true);
+                                                "%h %d %Y %H:%M");
+                    }
+                    if let Err(_) = new_start_time {
+                        instructions.set_visible(true);
+                        do_not_close = true;
+                    } else {
+                        new_start_time_local = Local.from_local_datetime(&new_start_time.unwrap()).unwrap();
+                        if (Local::now() - new_start_time_local).num_seconds() < 0 {
+                            future_error.set_visible(true);
                             do_not_close = true;
-                        } else {
-                            new_start_time_local = Local.from_local_datetime(&new_start_time.unwrap()).unwrap();
-                            if (Local::now() - new_start_time_local).num_seconds() < 0 {
-                                future_error.set_visible(true);
-                                do_not_close = true;
-                            }
                         }
+                    }
 
-                        // Stop Time
-                        let new_stop_time_str = stop_time_edit.text();
-                        let new_stop_time: Result<NaiveDateTime, ParseError>;
-                        if settings_manager::get_bool("show-seconds") {
-                            new_stop_time = NaiveDateTime::parse_from_str(
+                    // Stop Time
+                    let new_stop_time_str = stop_time_edit.text();
+                    let new_stop_time: Result<NaiveDateTime, ParseError>;
+                    if settings_manager::get_bool("show-seconds") {
+                        new_stop_time = NaiveDateTime::parse_from_str(
+                                            &new_stop_time_str,
+                                            "%h %d %Y %H:%M:%S");
+                    } else {
+                        new_stop_time = NaiveDateTime::parse_from_str(
                                                 &new_stop_time_str,
-                                                "%h %d %Y %H:%M:%S");
-                        } else {
-                            new_stop_time = NaiveDateTime::parse_from_str(
-                                                    &new_stop_time_str,
-                                                    "%h %d %Y %H:%M");
-                        }
-                        if let Err(_) = new_stop_time {
-                            instructions.set_visible(true);
+                                                "%h %d %Y %H:%M");
+                    }
+                    if let Err(_) = new_stop_time {
+                        instructions.set_visible(true);
+                        do_not_close = true;
+                    } else {
+                        new_stop_time_local = Local.from_local_datetime(&new_stop_time.unwrap()).unwrap();
+                        if (Local::now() - new_stop_time_local).num_seconds() < 0 {
+                            future_error.set_visible(true);
                             do_not_close = true;
-                        } else {
-                            new_stop_time_local = Local.from_local_datetime(&new_stop_time.unwrap()).unwrap();
-                            if (Local::now() - new_stop_time_local).num_seconds() < 0 {
-                                future_error.set_visible(true);
-                                do_not_close = true;
-                            }
                         }
+                    }
 
-                        // Tags
-                        let mut new_tag_list = "".to_string();
-                        if !task_tags_edit.text().trim().is_empty() {
-                            let new_tags = task_tags_edit.text();
-                            let mut split_tags: Vec<&str> = new_tags.trim().split("#").collect();
-                            split_tags = split_tags.iter().map(|x| x.trim()).collect();
-                            // Don't allow empty tags
-                            split_tags.retain(|&x| !x.trim().is_empty());
-                            // Handle duplicate tags before they are saved
-                            split_tags = split_tags.into_iter().unique().collect();
-                            // Lowercase tags
-                            let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
-                            new_tag_list = lower_tags.join(" #");
-                        }
+                    // Tags
+                    let mut new_tag_list = "".to_string();
+                    if !task_tags_edit.text().trim().is_empty() {
+                        let new_tags = task_tags_edit.text();
+                        let mut split_tags: Vec<&str> = new_tags.trim().split("#").collect();
+                        split_tags = split_tags.iter().map(|x| x.trim()).collect();
+                        // Don't allow empty tags
+                        split_tags.retain(|&x| !x.trim().is_empty());
+                        // Handle duplicate tags before they are saved
+                        split_tags = split_tags.into_iter().unique().collect();
+                        // Lowercase tags
+                        let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
+                        new_tag_list = lower_tags.join(" #");
+                    }
 
-                        if !do_not_close {
-                            let _ = database::db_write(task_name_edit.text().trim(),
-                                                        new_start_time_local,
-                                                        new_stop_time_local,
-                                                        new_tag_list);
-                            this.reset_history_box();
-                            dialog.close();
-                        }
-
-                    } else if resp == gtk::ResponseType::Cancel {
+                    if !do_not_close {
+                        let _ = database::db_write(task_name_edit.text().trim(),
+                                                    new_start_time_local,
+                                                    new_stop_time_local,
+                                                    new_tag_list);
+                        this.reset_history_box();
                         dialog.close();
                     }
-                }),
-            );
+
+                } else if resp == gtk::ResponseType::Cancel {
+                    dialog.close();
+                }
+            }));
 
             dialog.show();
         }));
@@ -609,6 +620,107 @@ impl FurtheranceWindow {
         imp2.idle_dialog.lock().unwrap().close();
 
         dialog.show();
+    }
+
+    fn write_autosave(&self, auto_start_time: DateTime<Local>) {
+        let auto_stop_time = Local::now().to_rfc3339();
+        let auto_start_time = auto_start_time.to_rfc3339();
+        let (task_name, tag_list) = self.split_tags_and_task();
+
+        let path = FurtheranceWindow::get_autosave_path();
+        let file = File::create(path).expect("Couldn't create autosave file");
+        let mut file = BufWriter::new(file);
+
+        writeln!(file, "{}", task_name).expect("Unable to write autosave");
+        writeln!(file, "{}", auto_start_time).expect("Unable to write autosave");
+        writeln!(file, "{}", auto_stop_time).expect("Unable to write autosave");
+        write!(file, "{}", tag_list).expect("Unable to write autosave");
+    }
+
+    fn delete_autosave() {
+        let path = FurtheranceWindow::get_autosave_path();
+        if path.exists() {
+            remove_file(path).expect("Could not delete autosave");
+        }
+    }
+
+    fn get_autosave_path() -> PathBuf {
+        let mut path = PathBuf::new();
+        if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu",  "Furtherance") {
+            path = PathBuf::from(proj_dirs.data_dir());
+            create_dir_all(path.clone()).expect("Unable to create autosave directory");
+            path.extend(&["furtherance_autosave.txt"]);
+        }
+        path
+    }
+
+    fn split_tags_and_task(&self) -> (String, String) {
+        let imp = imp::FurtheranceWindow::from_instance(self);
+        let task_input_text = imp.task_input.text();
+        let mut split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
+        // Remove task name from tags list
+        let task_name = *split_tags.first().unwrap();
+        split_tags.remove(0);
+        // Trim whitespace around each tag
+        split_tags = split_tags.iter().map(|x| x.trim()).collect();
+        // Don't allow empty tags
+        split_tags.retain(|&x| !x.trim().is_empty());
+        // Handle duplicate tags before they are ever saved
+        split_tags = split_tags.into_iter().unique().collect();
+        // Lowercase tags
+        let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
+        let tag_list = lower_tags.join(" #");
+        (task_name.trim().to_string(), tag_list)
+    }
+
+    fn check_for_autosave(&self) {
+        let path = FurtheranceWindow::get_autosave_path();
+        if path.exists() {
+            let autosave = FurtheranceWindow::read_autosave().unwrap();
+
+            database::write_autosave(&autosave[0], &autosave[1], &autosave[2], &autosave[3])
+                .expect("Could not write autosave");
+
+            let dialog = gtk::MessageDialog::new(
+                Some(self),
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Info,
+                gtk::ButtonsType::Ok,
+                &gettext("Autosave Restored"),
+            );
+            dialog.set_secondary_text(Some(
+                &gettext("Furtherance shut down improperly. An autosave was restored.")
+            ));
+
+            dialog.connect_response(clone!(
+                @weak self as this,
+                @strong dialog => move |_, resp| {
+                if resp == gtk::ResponseType::Ok {
+                    this.reset_history_box();
+                    dialog.close();
+                }
+            }));
+
+            dialog.show();
+            FurtheranceWindow::delete_autosave();
+        }
+    }
+
+    fn read_autosave() -> io::Result<Vec<String>> {
+        let path = FurtheranceWindow::get_autosave_path();
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+        let mut vars = Vec::new();
+
+        for line in reader.lines() {
+            vars.push(line?);
+        }
+        // Add empty string if there are no tags
+        if vars.len() == 3 {
+            vars.push("".to_string());
+        }
+
+        Ok(vars)
     }
 
     pub fn reset_idle(&self) {
