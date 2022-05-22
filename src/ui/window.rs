@@ -323,7 +323,7 @@ impl FurtheranceWindow {
             let task_name_edit = gtk::Entry::new();
             task_name_edit.set_placeholder_text(Some(&gettext("Task Name")));
             let task_tags_edit = gtk::Entry::new();
-            let tags_placeholder = format!("#{}", &gettext("Tags"));
+            let tags_placeholder = format!("#{}", &gettext("tags"));
             task_tags_edit.set_placeholder_text(Some(&tags_placeholder));
 
             let labels_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
