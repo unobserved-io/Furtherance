@@ -44,6 +44,8 @@ mod imp {
 
         #[template_child]
         pub task_name_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub edit_task_names_btn: TemplateChild<gtk::Button>,
 
         #[template_child]
         pub main_box: TemplateChild<gtk::Box>,
@@ -485,6 +487,72 @@ impl FurTaskDetails {
                 label.add_css_class("title-2");
             }
         });
+
+        // Change all task names at once
+        imp.edit_task_names_btn.connect_clicked(clone!(@weak self as this => move|_| {
+            let window = FurtheranceWindow::default();
+
+            let dialog = gtk::MessageDialog::new(
+                Some(&window),
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Question,
+                gtk::ButtonsType::OkCancel,
+                &format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Edit Task")),
+            );
+            dialog.set_use_markup(true);
+
+            let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
+            let new_name_entry = gtk::Entry::new();
+            new_name_entry.set_placeholder_text(Some("New Name #tags"));
+            let cant_be_empty = gtk::Label::new(Some("Task name cannot be empty."));
+            cant_be_empty.add_css_class("error_message");
+            cant_be_empty.hide();
+            message_area.append(&new_name_entry);
+            message_area.append(&cant_be_empty);
+
+            dialog.connect_response(move |dialog, resp| {
+                cant_be_empty.hide();
+                if resp == gtk::ResponseType::Ok {
+                    let new_name_text = new_name_entry.text();
+                    let mut split_tags: Vec<&str> = new_name_text.trim().split("#").collect();
+                    // Remove task name from tags list
+                    let new_task_name = *split_tags.first().unwrap();
+                    split_tags.remove(0);
+                    // Trim whitespace around each tag
+                    split_tags = split_tags.iter().map(|x| x.trim()).collect();
+                    // Don't allow empty tags
+                    split_tags.retain(|&x| !x.trim().is_empty());
+                    // Handle duplicate tags before they are ever saved
+                    split_tags = split_tags.into_iter().unique().collect();
+                    // Lowercase tags
+                    let lower_tags: Vec<String> = split_tags.iter().map(|x| x.to_lowercase()).collect();
+                    let tag_list = lower_tags.join(" #");
+
+                    if !new_task_name.is_empty() {
+                        // Change all task names & tags
+                        let imp2 = imp::FurTaskDetails::from_instance(&this);
+                        for id in &*imp2.all_task_ids.borrow() {
+                            database::update_task_name(*id, new_task_name.trim().to_string())
+                                .expect("Could not update group of task names");
+                            database::update_tags(*id, tag_list.clone())
+                                .expect("Could not update tags of group");
+                        }
+                        imp2.all_task_ids.borrow_mut().clear();
+                        window.reset_history_box();
+                        dialog.close();
+                        this.close();
+                    } else {
+                        // Clear any spaces from entry
+                        new_name_entry.set_text("");
+                        cant_be_empty.show();
+                    }
+                } else if resp == gtk::ResponseType::Cancel {
+                    dialog.close();
+                }
+            });
+
+            dialog.show();
+        }));
     }
 
     fn setup_delete_all(&self) {

@@ -49,12 +49,27 @@
                         <property name="margin-top">48</property>
                         <property name="tightening-threshold">200</property>
                         <child>
-                          <object class="GtkLabel" id="task_name_label">
-                            <property name="wrap">True</property>
-                            <property name="justify">center</property>
-                            <property name="ellipsize">end</property>
-                            <property name="lines">3</property>
-                            <property name="wrap-mode">word-char</property>
+                          <object class="GtkBox" id="task_name_box">
+                            <property name="spacing">9</property>
+                            <property name="halign">center</property>
+                            <child>
+                              <object class="GtkLabel" id="task_name_label">
+                                <property name="wrap">True</property>
+                                <property name="justify">center</property>
+                                <property name="ellipsize">end</property>
+                                <property name="lines">3</property>
+                                <property name="wrap-mode">word-char</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="edit_task_names_btn">
+                                <property name="icon-name">text-editor-symbolic</property>
+                                <property name="valign">center</property>
+                                <style>
+                                  <class name="circular"/>
+                                </style>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
