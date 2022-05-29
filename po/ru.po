@@ -404,13 +404,10 @@ msgstr "Furtherance был закрыт неправильно. Автосохр
 msgid "Stop the timer to duplicate a task."
 msgstr "Остановите таймер, чтобы дублировать задачу"
 
+#: src/ui/task_details.rs:506
+msgid "New Name #tags"
+msgstr "Новое название #тег"
 
-
-#extras
-# src/ui/task_details.rs:506 				DOESN'T WORK!!!
-#msgid "New Name #tags"
-#msgstr "Новое название #тег"
-
-# src/ui/task_details.rs:507  				DOESN'T WORK!!!
-#msgid "Task name cannot be empty."
-#msgstr "Название задачи не может быть пустым"
+#: src/ui/task_details.rs:507
+msgid "Task name cannot be empty."
+msgstr "Название задачи не может быть пустым"
