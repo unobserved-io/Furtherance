@@ -503,8 +503,8 @@ impl FurTaskDetails {
 
             let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
             let new_name_entry = gtk::Entry::new();
-            new_name_entry.set_placeholder_text(Some("New Name #tags"));
-            let cant_be_empty = gtk::Label::new(Some("Task name cannot be empty."));
+            new_name_entry.set_placeholder_text(Some(&gettext("New Name #tags")));
+            let cant_be_empty = gtk::Label::new(Some(&gettext("Task name cannot be empty.")));
             cant_be_empty.add_css_class("error_message");
             cant_be_empty.hide();
             message_area.append(&new_name_entry);
