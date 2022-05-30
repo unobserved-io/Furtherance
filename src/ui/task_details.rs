@@ -165,7 +165,7 @@ impl FurTaskDetails {
             start.connect_clicked(clone!(@weak self as this => move |_|{
                 let window = FurtheranceWindow::default();
                 let dialog = gtk::MessageDialog::new(
-                    Some(&window),
+                    Some(&this),
                     gtk::DialogFlags::MODAL,
                     gtk::MessageType::Question,
                     gtk::ButtonsType::OkCancel,
@@ -250,7 +250,7 @@ impl FurTaskDetails {
                     @strong task, @strong dialog, @weak this => move |_| {
 
                     let delete_confirmation = gtk::MessageDialog::with_markup(
-                        Some(&window),
+                        Some(&dialog),
                         gtk::DialogFlags::MODAL,
                         gtk::MessageType::Question,
                         gtk::ButtonsType::OkCancel,
@@ -490,10 +490,8 @@ impl FurTaskDetails {
 
         // Change all task names at once
         imp.edit_task_names_btn.connect_clicked(clone!(@weak self as this => move|_| {
-            let window = FurtheranceWindow::default();
-
             let dialog = gtk::MessageDialog::new(
-                Some(&window),
+                Some(&this),
                 gtk::DialogFlags::MODAL,
                 gtk::MessageType::Question,
                 gtk::ButtonsType::OkCancel,
@@ -511,6 +509,7 @@ impl FurTaskDetails {
             message_area.append(&cant_be_empty);
 
             dialog.connect_response(move |dialog, resp| {
+                let window = FurtheranceWindow::default();
                 cant_be_empty.hide();
                 if resp == gtk::ResponseType::Ok {
                     let new_name_text = new_name_entry.text();
@@ -561,7 +560,7 @@ impl FurTaskDetails {
 
         imp.delete_all_btn.connect_clicked(clone!(@weak self as this => move |_|{
             let dialog = gtk::MessageDialog::with_markup(
-                Some(&window),
+                Some(&this),
                 gtk::DialogFlags::MODAL,
                 gtk::MessageType::Warning,
                 gtk::ButtonsType::None,
