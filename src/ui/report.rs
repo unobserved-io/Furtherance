@@ -304,7 +304,6 @@ impl FurReport {
                                                                         (1, &total_time_str)
                                                                     ]);
         }
-        // TODO Bold "All Results"
 
         if imp.sort_by_task.is_active() {
             let mut tasks_by_name: Vec<Vec<(database::Task, i64)>> = Vec::new();

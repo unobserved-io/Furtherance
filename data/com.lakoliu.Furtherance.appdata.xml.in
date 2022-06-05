@@ -39,6 +39,14 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.4.0" date="2022-06-05">
+      <description>
+        <ul>
+          <li>Generate reports of task history over a specified timeframe</li>
+          <li>Bug fixes and improvements</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.3.0" date="2022-05-26">
       <description>
         <ul>
