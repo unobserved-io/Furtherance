@@ -93,7 +93,7 @@
         <attribute name="action">app.preferences</attribute>
       </item>
       <item>
-        <attribute name="label" translatable="yes">_Time Report</attribute>
+        <attribute name="label" translatable="yes">_Generate Report</attribute>
         <attribute name="action">app.report</attribute>
       </item>
       <item>

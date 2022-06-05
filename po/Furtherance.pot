@@ -339,7 +339,7 @@ msgid "_Preferences"
 msgstr ""
 
 #: src/gtk/window.ui:96
-msgid "_Time Report"
+msgid "_Generate Report"
 msgstr ""
 
 #: src/gtk/window.ui:100
