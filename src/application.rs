@@ -23,7 +23,7 @@ use log::debug;
 use std::sync::Mutex;
 
 use crate::config;
-use crate::ui::{FurtheranceWindow, FurPreferencesWindow};
+use crate::ui::{FurtheranceWindow, FurPreferencesWindow, FurReport};
 use crate::database;
 use crate::settings_manager;
 
@@ -110,6 +110,13 @@ impl FurtheranceApplication {
         }));
         self.set_accels_for_action("app.preferences", &["<primary>comma"]);
         self.add_action(&preferences_action);
+
+        let report_action = gio::SimpleAction::new("report", None);
+        report_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            FurReport::new().show();
+        }));
+        self.set_accels_for_action("app.report", &["<primary>R"]);
+        self.add_action(&report_action);
 
         let about_action = gio::SimpleAction::new("about", None);
         about_action.connect_activate(clone!(@weak self as app => move |_, _| {

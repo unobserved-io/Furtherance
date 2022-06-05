@@ -14,18 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod window;
 mod history_box;
-mod tasks_page;
-mod tasks_group;
-mod task_row;
-mod task_details;
 mod preferences_window;
+mod report;
+mod task_details;
+mod tasks_group;
+mod tasks_page;
+mod task_row;
+pub mod window;
 
-pub use window::FurtheranceWindow;
 pub use history_box::FurHistoryBox;
-pub use tasks_page::FurTasksPage;
-pub use tasks_group::FurTasksGroup;
-pub use task_row::FurTaskRow;
-pub use task_details::FurTaskDetails;
 pub use preferences_window::FurPreferencesWindow;
+pub use report::FurReport;
+pub use task_details::FurTaskDetails;
+pub use tasks_group::FurTasksGroup;
+pub use tasks_page::FurTasksPage;
+pub use task_row::FurTaskRow;
+pub use window::FurtheranceWindow;

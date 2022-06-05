@@ -120,6 +120,32 @@ pub fn retrieve() -> Result<Vec<Task>, rusqlite::Error> {
 
 }
 
+// pub fn retrieve_date_range() -> Result<Vec<Task>, rusqlite::Error> {
+    // Retrieve all tasks from the database
+//     let conn = Connection::open(get_directory())?;
+
+//     let mut query = conn.prepare("SELECT * FROM tasks ORDER BY start_time")?;
+//     let task_iter = query.query_map([], |row| {
+//         Ok(Task {
+//             id: row.get(0)?,
+//             task_name: row.get(1)?,
+//             start_time: row.get(2)?,
+//             stop_time: row.get(3)?,
+//             tags: row.get(4)?,
+//         })
+//     })?;
+
+//     let mut tasks_vec: Vec<Task> = Vec::new();
+//     for task_item in task_iter {
+//         let start = DateTime::parse_from_rfc3339(&task_item.start_time).unwrap();
+//         let stop = DateTime::parse_from_rfc3339(&task_item.stop_time).unwrap();
+//         tasks_vec.push(task_item.unwrap());
+//     }
+
+//     Ok(tasks_vec)
+
+// }
+
 pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
     let conn = Connection::open(get_directory())?;
 

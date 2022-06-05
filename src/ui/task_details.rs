@@ -163,7 +163,6 @@ impl FurTaskDetails {
             imp.all_boxes.borrow_mut().push(task_box);
 
             start.connect_clicked(clone!(@weak self as this => move |_|{
-                let window = FurtheranceWindow::default();
                 let dialog = gtk::MessageDialog::new(
                     Some(&this),
                     gtk::DialogFlags::MODAL,
@@ -556,8 +555,6 @@ impl FurTaskDetails {
 
     fn setup_delete_all(&self) {
         let imp = imp::FurTaskDetails::from_instance(self);
-        let window = FurtheranceWindow::default();
-
         imp.delete_all_btn.connect_clicked(clone!(@weak self as this => move |_|{
             let dialog = gtk::MessageDialog::with_markup(
                 Some(&this),
