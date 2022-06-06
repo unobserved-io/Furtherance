@@ -58,6 +58,8 @@ This project is created and maintained by [Ricky Kresslein](https://kressle.in) 
 Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via: 
 * [Ko-fi](https://ko-fi.com/lakoliu) 
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
-* **Ethereum**: 0x03234A3D17af11e640d742414d16bCc1d037106D
+* **Bitcoin**: bc1q70czd5evhsxnjcd45cj2n4s3dr6qmhvrlljjlk
+* **Ethereum**: 0x1fe9C92693eFd9D2429eE3d265e8aB453AFc4FDb
+* **Dogecoin**: DCEHKYq6EnSjYnouAUB6kVTqcAfGrXCTkU
 
 Thank you so much!
