@@ -124,7 +124,7 @@ msgstr ""
 msgid "_Dark theme"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:28 src/ui/window.rs:556
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:562
 msgid "Idle"
 msgstr ""
 
@@ -306,7 +306,7 @@ msgid "Task Details"
 msgstr ""
 
 #: src/gtk/task_details.ui:96 src/application.rs:287 src/ui/task_details.rs:191
-#: src/ui/window.rs:333 src/ui/window.rs:595
+#: src/ui/window.rs:333 src/ui/window.rs:601
 msgid "Stop"
 msgstr ""
 
@@ -378,16 +378,16 @@ msgstr ""
 msgid "DELETE"
 msgstr ""
 
-#: src/application.rs:264 src/ui/window.rs:559
+#: src/application.rs:264 src/ui/window.rs:565
 msgid "Discard"
 msgstr ""
 
-#: src/application.rs:265 src/application.rs:286 src/ui/window.rs:560
-#: src/ui/window.rs:594
+#: src/application.rs:265 src/application.rs:286 src/ui/window.rs:566
+#: src/ui/window.rs:600
 msgid "Continue"
 msgstr ""
 
-#: src/application.rs:276 src/ui/window.rs:591
+#: src/application.rs:276 src/ui/window.rs:597
 msgid "Time's up!"
 msgstr ""
 
@@ -419,11 +419,11 @@ msgstr ""
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/task_details.rs:210
+#: src/ui/task_details.rs:210 src/ui/window.rs:355
 msgid "*Use your local format XX/XX/XX HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:212
+#: src/ui/task_details.rs:212 src/ui/window.rs:357
 msgid "*Use your local format XX/XX/XX HH:MM"
 msgstr ""
 
@@ -483,36 +483,28 @@ msgstr ""
 msgid "tags"
 msgstr ""
 
-#: src/ui/window.rs:355
-msgid "*Use the format MMM DD YYYY HH:MM:SS"
-msgstr ""
-
-#: src/ui/window.rs:357
-msgid "*Use the format MMM DD YYYY HH:MM"
-msgstr ""
-
 #: src/ui/window.rs:373
 msgid "*Task name cannot be blank."
 msgstr ""
 
-#: src/ui/window.rs:547
+#: src/ui/window.rs:553
 msgid "You have been idle for "
 msgstr ""
 
-#: src/ui/window.rs:548
+#: src/ui/window.rs:554
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
 msgstr ""
 
-#: src/ui/window.rs:689
+#: src/ui/window.rs:695
 msgid "Autosave Restored"
 msgstr ""
 
-#: src/ui/window.rs:692
+#: src/ui/window.rs:698
 msgid "Furtherance shut down improperly. An autosave was restored."
 msgstr ""
 
-#: src/ui/window.rs:751
+#: src/ui/window.rs:757
 msgid "Stop the timer to duplicate a task."
 msgstr ""

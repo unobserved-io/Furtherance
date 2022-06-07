@@ -338,13 +338,13 @@ impl FurtheranceWindow {
             let stop_time = Local::now();
             let start_time = stop_time - ChronDur::seconds(1);
 
-            let mut start_time_w_year = start_time.format("%h %d %Y %H:%M:%S").to_string();
+            let mut start_time_w_year = start_time.format("%x %H:%M:%S").to_string();
             if !settings_manager::get_bool("show-seconds") {
-                start_time_w_year = start_time.format("%h %d %Y %H:%M").to_string();
+                start_time_w_year = start_time.format("%x %H:%M").to_string();
             }
-            let mut stop_time_w_year = stop_time.format("%h %d %Y %H:%M:%S").to_string();
+            let mut stop_time_w_year = stop_time.format("%x %H:%M:%S").to_string();
             if !settings_manager::get_bool("show-seconds") {
-                stop_time_w_year = stop_time.format("%h %d %Y %H:%M").to_string();
+                stop_time_w_year = stop_time.format("%x %H:%M").to_string();
             }
             let start_time_edit = gtk::Entry::new();
             start_time_edit.set_text(&start_time_w_year);
@@ -352,9 +352,9 @@ impl FurtheranceWindow {
             stop_time_edit.set_text(&stop_time_w_year);
 
             let instructions = gtk::Label::new(Some(
-                &gettext("*Use the format MMM DD YYYY HH:MM:SS")));
+                &gettext("*Use your local format XX/XX/XX HH:MM:SS")));
             if !settings_manager::get_bool("show-seconds") {
-                instructions.set_text(&gettext("*Use the format MMM DD YYYY HH:MM"));
+                instructions.set_text(&gettext("*Use your local format XX/XX/XX HH:MM"));
             }
             instructions.set_visible(false);
             instructions.add_css_class("error_message");
@@ -410,11 +410,11 @@ impl FurtheranceWindow {
                     if settings_manager::get_bool("show-seconds") {
                         new_start_time = NaiveDateTime::parse_from_str(
                                             &new_start_time_str,
-                                            "%h %d %Y %H:%M:%S");
+                                            "%x %H:%M:%S");
                     } else {
                         new_start_time = NaiveDateTime::parse_from_str(
                                                 &new_start_time_str,
-                                                "%h %d %Y %H:%M");
+                                                "%x %H:%M");
                     }
                     if let Err(_) = new_start_time {
                         instructions.set_visible(true);
@@ -433,11 +433,11 @@ impl FurtheranceWindow {
                     if settings_manager::get_bool("show-seconds") {
                         new_stop_time = NaiveDateTime::parse_from_str(
                                             &new_stop_time_str,
-                                            "%h %d %Y %H:%M:%S");
+                                            "%x %H:%M:%S");
                     } else {
                         new_stop_time = NaiveDateTime::parse_from_str(
                                                 &new_stop_time_str,
-                                                "%h %d %Y %H:%M");
+                                                "%x %H:%M");
                     }
                     if let Err(_) = new_stop_time {
                         instructions.set_visible(true);
@@ -448,6 +448,12 @@ impl FurtheranceWindow {
                             future_error.set_visible(true);
                             do_not_close = true;
                         }
+                    }
+
+                    // Start time can't be later than stop time
+                    if !do_not_close && (new_stop_time_local - new_start_time_local).num_seconds() < 0 {
+                        time_error.set_visible(true);
+                        do_not_close = true;
                     }
 
                     // Tags
