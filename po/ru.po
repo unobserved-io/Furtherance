@@ -3,96 +3,104 @@
 # This file is distributed under the same license as the PACKAGE package.
 # Mikhail Kositsyn <r3pll@yandex.ru>, 2022.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-28 14:09+0300\n"
-"PO-Revision-Date: 2022-05-29 16:00+0300\n"
+"POT-Creation-Date: 2022-06-05 12:46+0300\n"
+"PO-Revision-Date: 2022-06-07 16:26+0300\n"
 "Last-Translator: Mikhail Kositsyn <r3pll@yandex.ru>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language-Team: \n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:166
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:173
 msgid "Track your time without being tracked."
-msgstr "Отслеживайте свое время."
+msgstr "Отслеживайте свое время без слежки за собой"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:13
 msgid ""
 "Furtherance is a time tracking app built for GNOME with Rust and GTK4. In "
 "addition to tracking time spent on tasks, you can edit that time, delete "
 "entries, and change settings. It even has idle detection."
-msgstr "Furtherance - приложение для отслеживания времени, сделанное на Rust и GTK4"
-"для GNOME. В дополнение к отслеживанию времени, потраченного на задачи,"
-"Вы можете редактировать это время, удалять записи и изменять настройки."
+msgstr ""
+"Furtherance - приложение для отслеживания времени, написанное на Rust и GTK4 "
+"для GNOME. В дополнение к отслеживанию времени, потраченного на задачи, вы "
+"можете редактировать это время, удалять записи и изменять настройки."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Generate reports of task history over a specified timeframe"
+msgstr "Создание отчетов по истории задач за определенный период времени"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "Bug fixes and improvements"
+msgstr "Исправление ошибок и улучшения"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:53
 msgid "Ability to add tasks manually"
 msgstr "Возможность добавлять задачи вручную"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
 msgid "Auto-save option"
 msgstr "Опция автосохранения"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+#: data/com.lakoliu.Furtherance.appdata.xml.in:55
 msgid "Task names can now be changed for an entire group"
-msgstr "Названия задачи теперь могут быть изменены для целой группы"
+msgstr "Названия задач теперь могут быть изменены для целой группы"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+#: data/com.lakoliu.Furtherance.appdata.xml.in:62
 msgid "Added Pomodoro-style countdown timer!"
 msgstr "Добавлен Pomodoro-режим обратного отсчета!"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:55
+#: data/com.lakoliu.Furtherance.appdata.xml.in:63
 msgid "Bug fixes"
 msgstr "Исправлены ошибки"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:62
+#: data/com.lakoliu.Furtherance.appdata.xml.in:70
 msgid "Ability to add tags!"
 msgstr "Возможность добавлять теги!"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:63
+#: data/com.lakoliu.Furtherance.appdata.xml.in:71
 msgid "Fixed icon positioning"
 msgstr "Исправлено расположение иконки"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:64
+#: data/com.lakoliu.Furtherance.appdata.xml.in:72
 msgid "Changed start button color and behavior"
 msgstr "Изменен цвет и поведение кнопки запуска"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:65
+#: data/com.lakoliu.Furtherance.appdata.xml.in:73
 msgid "Changed color of delete buttons"
 msgstr "Изменен цвет кнопок удаления"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:66
+#: data/com.lakoliu.Furtherance.appdata.xml.in:74
 msgid "Dutch, Brazilian Portuguese, and French translations"
-msgstr "Переведено на немецкий, бразильский португальский,русский и французский"
+msgstr "Переведено на немецкий, бразильский португальский и французский"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:73
+#: data/com.lakoliu.Furtherance.appdata.xml.in:81
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
-msgstr "У Futureance новая иконка! И множество улучшений и исправлений ошибок."
+msgstr "У Futureance новая иконка! И множество улучшений и исправлений ошибок"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:82
+#: data/com.lakoliu.Furtherance.appdata.xml.in:90
 msgid "First stable release of Furtherance."
 msgstr "Первый стабильный релиз Furtherance."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:86
+#: data/com.lakoliu.Furtherance.appdata.xml.in:94
 msgid "Track time spent on tasks"
 msgstr "Отслеживание времени, потраченного на задачи"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:87
+#: data/com.lakoliu.Furtherance.appdata.xml.in:95
 msgid "Change/delete recorded times"
 msgstr "Изменение/удаление записанного времени"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:88
+#: data/com.lakoliu.Furtherance.appdata.xml.in:96
 msgid "Idle detection"
 msgstr "Определение бездействия"
 
 #: src/gtk/history_box.ui:25
 msgid "Start Tracking"
-msgstr "Начать отсчет"
+msgstr "Начать отслеживание"
 
 #: src/gtk/history_box.ui:44
 msgid "Type your task and press start"
@@ -104,7 +112,7 @@ msgstr "Предыдущие задачи будут показываться з
 
 #: src/gtk/history_box.ui:82
 msgid "Right-click a task to duplicate it"
-msgstr "Щелкните правой кнопкой мыши задачу, чтобы продублировать ее"
+msgstr "Правый клик на задачу, чтобы продублировать ее"
 
 #: src/gtk/preferences_window.ui:7
 msgid "General"
@@ -132,7 +140,7 @@ msgstr "(только для GNOME)"
 
 #: src/gtk/preferences_window.ui:38
 msgid "_Minutes to idle"
-msgstr "_Минуты до неактивности "
+msgstr "_Минуты до неактивности"
 
 #: src/gtk/preferences_window.ui:39
 msgid "Number of minutes before the user is considered idle"
@@ -214,15 +222,92 @@ msgstr "Предотвращение потерь из-за неправильн
 msgid "Autosave every X _minutes"
 msgstr "Автосохранение каждые Х _минут"
 
+#: src/gtk/report.ui:8
+msgid "Report"
+msgstr "Отчет"
+
+#: src/gtk/report.ui:33
+msgid "Past week"
+msgstr "Последняя неделя"
+
+#: src/gtk/report.ui:34
+msgid "This month"
+msgstr "Текущий месяц"
+
+#: src/gtk/report.ui:35
+msgid "Past 30 days"
+msgstr "Последние 30 дней"
+
+#: src/gtk/report.ui:36
+msgid "Past 180 days"
+msgstr "Последние 180 дней"
+
+#: src/gtk/report.ui:37
+msgid "Past year"
+msgstr "Последний год"
+
+#: src/gtk/report.ui:38
+msgid "Date range"
+msgstr "Диапазон дат"
+
+#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:189
+#: src/ui/window.rs:331
+msgid "Start"
+msgstr "Начало"
+
+#: src/gtk/report.ui:58 src/gtk/report.ui:74
+msgid "MM/DD/YYYY"
+msgstr "ММ/ДД/ГГГГ"
+
+#: src/gtk/report.ui:68
+msgid "End"
+msgstr "Конец"
+
+#: src/gtk/report.ui:83
+msgid "Use the format MM/DD/YYYY"
+msgstr "Используйте формать ММ/ДД/ГГГГ"
+
+#: src/gtk/report.ui:92
+msgid "Start date must be before end date"
+msgstr "Дата начала должна быть раньше даты конца"
+
+#: src/gtk/report.ui:105
+msgid "Sort by:"
+msgstr "Сортировать по:"
+
+#: src/gtk/report.ui:110 src/gtk/task_row.ui:22 src/ui/report.rs:155
+msgid "Task"
+msgstr "задачам"
+
+#: src/gtk/report.ui:117
+msgid "Tag"
+msgstr "тегам"
+
+#: src/gtk/report.ui:124
+msgid "Filter by task or tags"
+msgstr "Фильтровать по задаче или тегам"
+
+#: src/gtk/report.ui:136
+msgid "Tasks"
+msgstr "Задачи"
+
+#: src/gtk/report.ui:137 src/ui/task_details.rs:180
+msgid "Tags"
+msgstr "теги"
+
+#: src/gtk/report.ui:143 src/ui/report.rs:144
+msgid "Task, Task 2"
+msgstr "задача 1, задача 2"
+
+#: src/gtk/report.ui:150
+msgid "Refresh"
+msgstr "Обновить"
+
 #: src/gtk/task_details.ui:8
 msgid "Task Details"
 msgstr "Подробности задачи"
 
-#: src/gtk/task_details.ui:88 src/ui/task_details.rs:190 src/ui/window.rs:331
-msgid "Start"
-msgstr "Начало"
-
-#: src/gtk/task_details.ui:96 src/application.rs:280 src/ui/task_details.rs:192
+#: src/gtk/task_details.ui:96 src/application.rs:287 src/ui/task_details.rs:191
 #: src/ui/window.rs:333 src/ui/window.rs:595
 msgid "Stop"
 msgstr "Конец"
@@ -235,11 +320,7 @@ msgstr "Всего"
 msgid "Delete all"
 msgstr "Удалить все"
 
-#: src/gtk/task_row.ui:22
-msgid "Task"
-msgstr "Задача"
-
-#: src/gtk/task_row.ui:45
+#: src/gtk/task_row.ui:47
 msgid "Time"
 msgstr "Время"
 
@@ -260,97 +341,125 @@ msgid "_Preferences"
 msgstr "_Настройки"
 
 #: src/gtk/window.ui:96
-msgid "_Delete history"
-msgstr "_Очистить историю"
+msgid "_Generate Report"
+msgstr "_Создать отчет"
 
 #: src/gtk/window.ui:100
+msgid "_Delete history"
+msgstr "_Удалить историю"
+
+#: src/gtk/window.ui:104
 msgid "_About Furtherance"
 msgstr "_О Furtherance"
 
-#: src/application.rs:169
+#: src/application.rs:176
 msgid "translator-credits"
 msgstr "Mikhail Kositsyn <r3pll@yandex.ru>"
 
-#: src/application.rs:185
+#: src/application.rs:192
 msgid "Delete history?"
 msgstr "Очистить историю?"
 
-#: src/application.rs:188 src/ui/task_details.rs:572 src/ui/window.rs:317
+#: src/application.rs:195 src/ui/task_details.rs:568 src/ui/window.rs:317
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/application.rs:189 src/ui/task_details.rs:573
+#: src/application.rs:196 src/ui/task_details.rs:569
 msgid "Delete"
 msgstr "Удалить"
 
-#: src/application.rs:196
+#: src/application.rs:203
 msgid "This will delete ALL of your task history."
-msgstr "Это удалит ВСЮ вашу историю задач"
+msgstr "Это удалит ВСЮ вашу историю задач."
 
-#: src/application.rs:198
+#: src/application.rs:205
 msgid "Type DELETE in the box below then click Delete to proceed."
-msgstr "Введите DELETE в поле ниже, затем кликните Удалить, чтобы продолжить"
+msgstr "Введите DELETE в поле ниже, затем кликните Удалить, чтобы продолжить."
 
-#: src/application.rs:207
+#: src/application.rs:214
 msgid "DELETE"
 msgstr "DELETE"
 
-#: src/application.rs:257 src/ui/window.rs:559
+#: src/application.rs:264 src/ui/window.rs:559
 msgid "Discard"
 msgstr "Отменить"
 
-#: src/application.rs:258 src/application.rs:279 src/ui/window.rs:560
+#: src/application.rs:265 src/application.rs:286 src/ui/window.rs:560
 #: src/ui/window.rs:594
 msgid "Continue"
 msgstr "Продолжить"
 
-#: src/application.rs:269 src/ui/window.rs:591
+#: src/application.rs:276 src/ui/window.rs:591
 msgid "Time's up!"
 msgstr "Время вышло!"
 
-#: src/application.rs:270
+#: src/application.rs:277
 msgid "Your Furtherance timer ended."
-msgstr "Ваш Furtherance таймер закончился"
+msgstr "Ваш Furtherance таймер закончился."
 
-#: src/ui/task_details.rs:172 src/ui/task_details.rs:500
+#: src/ui/report.rs:146
+msgid "tag, tag 2"
+msgstr "тег 1, тег 2"
+
+#: src/ui/report.rs:158
+msgid "Duration"
+msgstr "Продолжительность"
+
+#: src/ui/report.rs:295
+msgid "No Results"
+msgstr "Нет результатов"
+
+#: src/ui/report.rs:303
+msgid "All Results"
+msgstr "Все результаты"
+
+#: src/ui/report.rs:445
+msgid "no tags"
+msgstr "нет тегов"
+
+#: src/ui/task_details.rs:171 src/ui/task_details.rs:497
 msgid "Edit Task"
 msgstr "Редактировать задачу"
 
-#: src/ui/task_details.rs:181
-msgid "Tags"
-msgstr "Тег"
+#: src/ui/task_details.rs:210
+msgid "*Use your local format XX/XX/XX HH:MM:SS"
+msgstr "*Используйте свой местный формат ХХ/ХХ/ХХ HH:MM:SS"
 
-#: src/ui/task_details.rs:211 src/ui/window.rs:355
-msgid "*Use the format MMM DD YYYY HH:MM:SS"
-msgstr "*Использовать формат МММ ДД ГГГГ ЧЧ:ММ:СС"
+#: src/ui/task_details.rs:212
+msgid "*Use your local format XX/XX/XX HH:MM"
+msgstr "*Используйте свой местный формат ХХ/ХХ/ХХ HH:MM:SS"
 
-#: src/ui/task_details.rs:213 src/ui/window.rs:357
-msgid "*Use the format MMM DD YYYY HH:MM"
-msgstr "*Использовать формат МММ ДД ГГГГ ЧЧ:ММ"
-
-#: src/ui/task_details.rs:219 src/ui/window.rs:363
+#: src/ui/task_details.rs:218 src/ui/window.rs:363
 msgid "*Start time cannot be later than stop time."
-msgstr "*Время начала не может быть позже времени завершения"
+msgstr "*Время начала не может быть позже времени завершения."
 
-#: src/ui/task_details.rs:224 src/ui/window.rs:368
+#: src/ui/task_details.rs:223 src/ui/window.rs:368
 msgid "*Time cannot be in the future."
-msgstr "*Время не может быть в будущем"
+msgstr "*Время окончания не может быть в будущем."
 
-#: src/ui/task_details.rs:230
+#: src/ui/task_details.rs:229
 msgid "Delete task"
 msgstr "Удалить задачу"
 
-#: src/ui/task_details.rs:257
+#: src/ui/task_details.rs:256
 msgid "Delete task?"
 msgstr "Удалить задачу?"
 
-#: src/ui/task_details.rs:568
+#: src/ui/task_details.rs:503
+msgid "New Name #tags"
+msgstr "Новое имя #тег"
+
+#: src/ui/task_details.rs:504
+msgid "Task name cannot be empty."
+msgstr "Имя задачи не может быть пустым."
+
+#: src/ui/task_details.rs:564
 msgid "Delete All?"
 msgstr "Удалить все?"
 
-#: src/ui/task_details.rs:570
+#: src/ui/task_details.rs:566
 msgid "This will delete all occurrences of this task on this day."
-msgstr "Это удалит все записи это задачи за сегодня"
+msgstr "Это удалит все записи этой задачи за сегодня."
 
 #: src/ui/tasks_page.rs:146
 msgid "Today"
@@ -376,9 +485,17 @@ msgstr "Название задачи"
 msgid "tags"
 msgstr "тег"
 
+#: src/ui/window.rs:355
+msgid "*Use the format MMM DD YYYY HH:MM:SS"
+msgstr "*Используйте формат МММ ДД ГГГГ ЧЧ:ММ:СС"
+
+#: src/ui/window.rs:357
+msgid "*Use the format MMM DD YYYY HH:MM"
+msgstr "*Используйте формат МММ ДД ГГГГ ЧЧ:ММ"
+
 #: src/ui/window.rs:373
 msgid "*Task name cannot be blank."
-msgstr "*Название задачи не может быть пустым"
+msgstr "*Название задачи не может быть пустым."
 
 #: src/ui/window.rs:547
 msgid "You have been idle for "
@@ -390,7 +507,7 @@ msgid ""
 "Would you like to discard that time, or continue the clock?"
 msgstr ""
 "\n"
-"Вы хотели бы сбросить это время или продолжить отсчет?"
+"Вы хотели бы сбросить время или продолжить отсчет?"
 
 #: src/ui/window.rs:689
 msgid "Autosave Restored"
@@ -398,16 +515,8 @@ msgstr "Автосохранение восстановлено"
 
 #: src/ui/window.rs:692
 msgid "Furtherance shut down improperly. An autosave was restored."
-msgstr "Furtherance был закрыт неправильно. Автосохранение было восстановлено"
+msgstr "Furtherance был закрыт неправильно. Автосохранение было восстановлено."
 
 #: src/ui/window.rs:751
 msgid "Stop the timer to duplicate a task."
-msgstr "Остановите таймер, чтобы дублировать задачу"
-
-#: src/ui/task_details.rs:506
-msgid "New Name #tags"
-msgstr "Новое название #тег"
-
-#: src/ui/task_details.rs:507
-msgid "Task name cannot be empty."
-msgstr "Название задачи не может быть пустым"
+msgstr "Остановите таймер, чтобы дублировать задачу."
