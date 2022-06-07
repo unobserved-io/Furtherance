@@ -81,10 +81,9 @@ impl FurTasksGroup {
         // Check if tasks have the same name. If they do, make one listbox row for all of them.
         // If they don't, move on.
         let mut tasks_by_name: Vec<Vec<database::Task>> = Vec::new();
-        let mut unique: bool;
 
         for task in &tasks {
-            unique = true;
+            let mut unique = true;
             for i in 0..tasks_by_name.len() {
                 if tasks_by_name[i][0].task_name == task.task_name
                     && ( ( settings_manager::get_bool("show-tags")

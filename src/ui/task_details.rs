@@ -163,9 +163,8 @@ impl FurTaskDetails {
             imp.all_boxes.borrow_mut().push(task_box);
 
             start.connect_clicked(clone!(@weak self as this => move |_|{
-                let window = FurtheranceWindow::default();
                 let dialog = gtk::MessageDialog::new(
-                    Some(&window),
+                    Some(&this),
                     gtk::DialogFlags::MODAL,
                     gtk::MessageType::Question,
                     gtk::ButtonsType::OkCancel,
@@ -250,7 +249,7 @@ impl FurTaskDetails {
                     @strong task, @strong dialog, @weak this => move |_| {
 
                     let delete_confirmation = gtk::MessageDialog::with_markup(
-                        Some(&window),
+                        Some(&dialog),
                         gtk::DialogFlags::MODAL,
                         gtk::MessageType::Question,
                         gtk::ButtonsType::OkCancel,
@@ -490,10 +489,8 @@ impl FurTaskDetails {
 
         // Change all task names at once
         imp.edit_task_names_btn.connect_clicked(clone!(@weak self as this => move|_| {
-            let window = FurtheranceWindow::default();
-
             let dialog = gtk::MessageDialog::new(
-                Some(&window),
+                Some(&this),
                 gtk::DialogFlags::MODAL,
                 gtk::MessageType::Question,
                 gtk::ButtonsType::OkCancel,
@@ -503,14 +500,15 @@ impl FurTaskDetails {
 
             let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
             let new_name_entry = gtk::Entry::new();
-            new_name_entry.set_placeholder_text(Some("New Name #tags"));
-            let cant_be_empty = gtk::Label::new(Some("Task name cannot be empty."));
+            new_name_entry.set_placeholder_text(Some(&gettext("New Name #tags")));
+            let cant_be_empty = gtk::Label::new(Some(&gettext("Task name cannot be empty.")));
             cant_be_empty.add_css_class("error_message");
             cant_be_empty.hide();
             message_area.append(&new_name_entry);
             message_area.append(&cant_be_empty);
 
             dialog.connect_response(move |dialog, resp| {
+                let window = FurtheranceWindow::default();
                 cant_be_empty.hide();
                 if resp == gtk::ResponseType::Ok {
                     let new_name_text = new_name_entry.text();
@@ -557,11 +555,9 @@ impl FurTaskDetails {
 
     fn setup_delete_all(&self) {
         let imp = imp::FurTaskDetails::from_instance(self);
-        let window = FurtheranceWindow::default();
-
         imp.delete_all_btn.connect_clicked(clone!(@weak self as this => move |_|{
             let dialog = gtk::MessageDialog::with_markup(
-                Some(&window),
+                Some(&this),
                 gtk::DialogFlags::MODAL,
                 gtk::MessageType::Warning,
                 gtk::ButtonsType::None,
