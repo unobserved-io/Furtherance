@@ -7,6 +7,7 @@ src/gtk/history_box.ui
 src/gtk/preferences_window.ui
 src/gtk/task_details.ui
 src/gtk/task_row.ui
+src/gtk/dialogs.ui
 src/gtk/window.ui
 
 # Rust code
