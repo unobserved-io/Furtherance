@@ -4,8 +4,8 @@
     <child>
       <object class="GtkBox" id="row_box">
         <property name="orientation">horizontal</property>
-        <property name="margin_top">10</property>
-        <property name="margin_bottom">10</property>
+        <property name="margin_top">5</property>
+        <property name="margin_bottom">5</property>
         <property name="margin_end">12</property>
         <property name="margin_start">12</property>
         <property name="hexpand">True</property>
@@ -40,13 +40,23 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="total_time_label">
+          <object class="GtkBox">
             <property name="halign">end</property>
-            <property name="label" translatable="yes">Time</property>
-            <property name="single_line_mode">True</property>
-            <style>
-              <class name="numeric"/>
-            </style>
+            <child>
+              <object class="GtkLabel" id="total_time_label">
+                <property name="label" translatable="yes">Time</property>
+                <property name="single_line_mode">True</property>
+                <style>
+                  <class name="numeric"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="restart_task_btn">
+                <property name="icon-name">view-refresh-symbolic</property>
+                <property name="has-frame">false</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

@@ -752,7 +752,7 @@ impl FurtheranceWindow {
         }
     }
 
-    pub fn refresh_timer (&self) {
+    pub fn refresh_timer(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
         if settings_manager::get_bool("pomodoro") {
             let mut mins = settings_manager::get_int("pomodoro-time");
@@ -778,3 +778,4 @@ impl Default for FurtheranceWindow {
             .unwrap()
     }
 }
+
