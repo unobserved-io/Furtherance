@@ -306,9 +306,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4a2fc0bd03d59383fc10b71a8cb731a1fac2998732a36a0c03e9b1de1513218"
+checksum = "4fabb7cf843c26b085a5d68abb95d0c0bf27a9ae2eeff9c4adb503a1eb580876"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -322,9 +322,9 @@ dependencies = [
 
 [[package]]
 name = "gdk4-sys"
-version = "0.4.2"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48a39e34abe35ee2cf54a1e29dd983accecd113ad30bdead5050418fa92f2a1b"
+checksum = "efe7dcb44f5c00aeabff3f69abfc5673de46559070f89bd3fbb7b66485d9cef2"
 dependencies = [
  "cairo-sys-rs",
  "gdk-pixbuf-sys",
@@ -479,9 +479,9 @@ dependencies = [
 
 [[package]]
 name = "gsk4"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14d5a47a78c682bb67496b562495ed84972c0512ba0654888c4dc92b80a85bd3"
+checksum = "05e9020d333280b3aa38d496495bfa9b50712eebf1ad63f0ec5bcddb5eb61be4"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -495,9 +495,9 @@ dependencies = [
 
 [[package]]
 name = "gsk4-sys"
-version = "0.4.2"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e31d21d7ce02ba261bb24c50c4ab238a10b41a2c97c32afffae29471b7cca69b"
+checksum = "7add39ccf60078508c838643a2dcc91f045c46ed63b5ea6ab701b2e25bda3fea"
 dependencies = [
  "cairo-sys-rs",
  "gdk4-sys",
@@ -511,9 +511,9 @@ dependencies = [
 
 [[package]]
 name = "gtk4"
-version = "0.4.6"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e841556e3fe55d8a43ada76b7b08a5f65570bbdfe3b8f72c333053b8832c626"
+checksum = "c64f0c2a3d80e899dc3febddad5bac193ffcf74a0fd7e31037f30dd34d6f7396"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -534,23 +534,24 @@ dependencies = [
 
 [[package]]
 name = "gtk4-macros"
-version = "0.4.3"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "573db42bb64973a4d5f718b73caa7204285a1a665308a23b11723d0ee56ec305"
+checksum = "fafbcc920af4eb677d7d164853e7040b9de5a22379c596f570190c675d45f7a7"
 dependencies = [
  "anyhow",
  "proc-macro-crate",
  "proc-macro-error",
  "proc-macro2",
+ "quick-xml",
  "quote",
  "syn",
 ]
 
 [[package]]
 name = "gtk4-sys"
-version = "0.4.5"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c47c075e8f795c38f6e9a47b51a73eab77b325f83c0154979ed4d4245c36490d"
+checksum = "5bc8006eea634b7c72da3ff79e24606e45f21b3b832a3c5a1f543f5f97eb0f63"
 dependencies = [
  "cairo-sys-rs",
  "gdk-pixbuf-sys",
@@ -662,9 +663,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.23.2"
+version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2cafc7c74096c336d9d27145f7ebd4f4b6f95ba16aa5a282387267e6925cb58"
+checksum = "898745e570c7d0453cc1fbc4a701eb6c662ed54e8fec8b7d14be137ebeeb9d14"
 dependencies = [
  "pkg-config",
  "vcpkg",
@@ -766,9 +767,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.9.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
+checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
 
 [[package]]
 name = "pango"
@@ -866,6 +867,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quick-xml"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8533f14c8382aaad0d592c812ac3b826162128b65662331e1127b45c3d18536b"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -912,9 +922,9 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "rusqlite"
-version = "0.26.3"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ba4d3462c8b2e4d7f4fcfcf2b296dc6b65404fbbc7b63daa37fd485c149daf7"
+checksum = "85127183a999f7db96d1a976a309eebbfb6ea3b0b400ddd8340190129de6eb7a"
 dependencies = [
  "bitflags",
  "fallible-iterator",
