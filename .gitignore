@@ -1,2 +1,5 @@
 com.lakoliu.Furtherance.json~
 src/config.rs
+/.flatpak
+/.vscode
+/target

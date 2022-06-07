@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use adw::prelude::{PreferencesGroupExt, PreferencesPageExt};
 use adw::subclass::prelude::*;
-use adw::prelude::{PreferencesPageExt, PreferencesGroupExt};
+use chrono::{DateTime, Duration, Local};
 use gettextrs::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*};
-use chrono::{DateTime, Local, Duration};
 
-use crate::ui::FurTasksGroup;
-use crate::database;
+use crate::database::{self, SortOrder, TaskSort};
 use crate::settings_manager;
+use crate::ui::FurTasksGroup;
 
 mod imp {
     use super::*;
@@ -36,7 +36,6 @@ mod imp {
     pub struct FurTasksPage {
         pub all_groups: RefCell<Vec<FurTasksGroup>>,
     }
-
 
     #[glib::object_subclass]
     impl ObjectSubclass for FurTasksPage {
@@ -88,10 +87,8 @@ impl FurTasksPage {
     pub fn build_task_list(&self) {
         let imp = imp::FurTasksPage::from_instance(&self);
 
-        let mut tasks_list = database::retrieve().unwrap();
+        let tasks_list = database::retrieve(TaskSort::StartTime, SortOrder::Descending).unwrap();
 
-        // Reversing chronological order of tasks_list
-        tasks_list.reverse();
         let mut uniq_date_list: Vec<String> = Vec::new();
         let mut same_date_list: Vec<database::Task> = Vec::new();
         let mut tasks_sorted_by_day: Vec<Vec<database::Task>> = Vec::new();
@@ -144,7 +141,7 @@ impl FurTasksPage {
             let group = FurTasksGroup::new();
             if uniq_date_list[i] == today {
                 group.set_title(&gettext("Today"));
-            } else if uniq_date_list[i] == yesterday{
+            } else if uniq_date_list[i] == yesterday {
                 group.set_title(&gettext("Yesterday"));
             } else {
                 group.set_title(&uniq_date_list[i]);
@@ -171,4 +168,3 @@ impl FurTasksPage {
         }
     }
 }
-
