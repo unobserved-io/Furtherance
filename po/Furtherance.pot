@@ -318,7 +318,7 @@ msgstr ""
 msgid "Delete all"
 msgstr ""
 
-#: src/gtk/task_row.ui:45
+#: src/gtk/task_row.ui:47
 msgid "Time"
 msgstr ""
 
@@ -419,12 +419,12 @@ msgstr ""
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/task_details.rs:210 src/ui/window.rs:355
-msgid "*Use the format MMM DD YYYY HH:MM:SS"
+#: src/ui/task_details.rs:210
+msgid "*Use your local format XX/XX/XX HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:212 src/ui/window.rs:357
-msgid "*Use the format MMM DD YYYY HH:MM"
+#: src/ui/task_details.rs:212
+msgid "*Use your local format XX/XX/XX HH:MM"
 msgstr ""
 
 #: src/ui/task_details.rs:218 src/ui/window.rs:363
@@ -481,6 +481,14 @@ msgstr ""
 
 #: src/ui/window.rs:326
 msgid "tags"
+msgstr ""
+
+#: src/ui/window.rs:355
+msgid "*Use the format MMM DD YYYY HH:MM:SS"
+msgstr ""
+
+#: src/ui/window.rs:357
+msgid "*Use the format MMM DD YYYY HH:MM"
 msgstr ""
 
 #: src/ui/window.rs:373
