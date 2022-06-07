@@ -42,6 +42,8 @@ mod imp {
         pub task_tags_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub total_time_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub restart_task_btn: TemplateChild<gtk::Button>,
 
         pub tasks: Lazy<Mutex<Vec<Task>>>,
         pub total_time: RefCell<i64>,
@@ -116,8 +118,6 @@ impl FurTaskRow {
         } else {
             let task_tags = format!("#{}", task_list[0].tags);
             imp.task_tags_label.set_text(&task_tags);
-            imp.row_box.set_margin_top(5);
-            imp.row_box.set_margin_bottom(5);
         }
 
         // Create right-click gesture
@@ -130,6 +130,11 @@ impl FurTaskRow {
         }));
 
         self.add_controller(&gesture);
+
+        imp.restart_task_btn.connect_clicked(clone!(@strong task_list => move |_| {
+            let window = FurtheranceWindow::default();
+            window.duplicate_task(task_list[0].clone());
+        }));
 
         // Add up all durations for task of said name to create total_time
         for task in &task_list {
