@@ -15,17 +15,17 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use adw::subclass::prelude::*;
+use chrono::{offset::TimeZone, DateTime, Local, NaiveDateTime, ParseError};
 use gettextrs::*;
 use glib::clone;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
-use chrono::{DateTime, NaiveDateTime, Local, ParseError, offset::TimeZone};
 use itertools::Itertools;
 
-use crate::FurtheranceApplication;
-use crate::ui::FurtheranceWindow;
 use crate::database;
 use crate::settings_manager;
+use crate::ui::FurtheranceWindow;
+use crate::FurtheranceApplication;
 
 mod imp {
     use super::*;
@@ -75,7 +75,6 @@ mod imp {
     }
 
     impl ObjectImpl for FurTaskDetails {
-
         fn constructed(&self, obj: &Self::Type) {
             obj.setup_signals();
             obj.setup_delete_all();
@@ -413,7 +412,7 @@ impl FurTaskDetails {
                 dialog.show();
             }));
 
-            stop.connect_clicked(move |_|{
+            stop.connect_clicked(move |_| {
                 start.emit_clicked();
             });
         }
@@ -438,7 +437,8 @@ impl FurTaskDetails {
                 let start_time_str = start_time.format("%x").to_string();
                 if imp.this_day.borrow().to_string() != start_time_str
                     || imp.task_name_label.text() != task.task_name
-                    || imp.orig_tags.borrow().to_string() != task.tags {
+                    || imp.orig_tags.borrow().to_string() != task.tags
+                {
                     false
                 } else {
                     true
@@ -590,13 +590,10 @@ impl FurTaskDetails {
             }
 
         }));
-
     }
 
     fn delete_all(&self) {
         let imp = imp::FurTaskDetails::from_instance(self);
         let _ = database::delete_by_ids(imp.all_task_ids.borrow().to_vec());
     }
-
 }
-

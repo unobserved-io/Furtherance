@@ -87,7 +87,6 @@ mod imp {
     }
 
     impl ObjectImpl for FurPreferencesWindow {
-
         fn constructed(&self, obj: &Self::Type) {
             let window = FurtheranceWindow::default();
             obj.set_transient_for(Some(&window));
@@ -133,11 +132,7 @@ impl FurPreferencesWindow {
     fn setup_signals(&self) {
         let imp = imp::FurPreferencesWindow::from_instance(self);
 
-        settings_manager::bind_property(
-            "dark-mode",
-            &*imp.dark_theme_switch,
-            "active"
-        );
+        settings_manager::bind_property("dark-mode", &*imp.dark_theme_switch, "active");
 
         settings_manager::bind_property(
             "notify-of-idle",
@@ -145,11 +140,7 @@ impl FurPreferencesWindow {
             "enable-expansion",
         );
 
-        settings_manager::bind_property(
-            "idle-time",
-            &*imp.notify_of_idle_spin,
-            "value",
-        );
+        settings_manager::bind_property("idle-time", &*imp.notify_of_idle_spin, "value");
 
         settings_manager::bind_property(
             "limit-tasks",
@@ -157,100 +148,68 @@ impl FurPreferencesWindow {
             "enable-expansion",
         );
 
-        settings_manager::bind_property(
-            "limit-days",
-            &*imp.limit_days_spin,
-            "value",
-        );
+        settings_manager::bind_property("limit-days", &*imp.limit_days_spin, "value");
 
         settings_manager::bind_property(
             "delete-confirmation",
             &*imp.delete_confirmation_switch,
-            "active"
+            "active",
         );
 
-        settings_manager::bind_property(
-            "show-seconds",
-            &*imp.show_seconds_switch,
-            "active"
-        );
+        settings_manager::bind_property("show-seconds", &*imp.show_seconds_switch, "active");
 
-        settings_manager::bind_property(
-            "show-daily-sums",
-            &*imp.show_daily_sums_switch,
-            "active"
-        );
+        settings_manager::bind_property("show-daily-sums", &*imp.show_daily_sums_switch, "active");
 
-        settings_manager::bind_property(
-            "show-tags",
-            &*imp.show_tags_switch,
-            "active"
-        );
+        settings_manager::bind_property("show-tags", &*imp.show_tags_switch, "active");
 
-        settings_manager::bind_property(
-            "pomodoro",
-            &*imp.pomodoro_expander,
-            "enable-expansion"
-        );
+        settings_manager::bind_property("pomodoro", &*imp.pomodoro_expander, "enable-expansion");
 
-        settings_manager::bind_property(
-            "pomodoro-time",
-            &*imp.pomodoro_spin,
-            "value"
-        );
+        settings_manager::bind_property("pomodoro-time", &*imp.pomodoro_spin, "value");
 
-        settings_manager::bind_property(
-            "autosave",
-            &*imp.autosave_expander,
-            "enable-expansion"
-        );
+        settings_manager::bind_property("autosave", &*imp.autosave_expander, "enable-expansion");
 
-        settings_manager::bind_property(
-            "autosave-time",
-            &*imp.autosave_spin,
-            "value"
-        );
+        settings_manager::bind_property("autosave-time", &*imp.autosave_spin, "value");
 
-        imp.dark_theme_switch.connect_active_notify(move |_|{
+        imp.dark_theme_switch.connect_active_notify(move |_| {
             let app = FurtheranceApplication::default();
             app.update_light_dark();
         });
 
-        imp.limit_tasks_expander.connect_enable_expansion_notify(move |_|{
+        imp.limit_tasks_expander
+            .connect_enable_expansion_notify(move |_| {
+                let window = FurtheranceWindow::default();
+                window.reset_history_box();
+            });
+
+        imp.limit_days_spin.connect_value_changed(move |_| {
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
 
-        imp.limit_days_spin.connect_value_changed(move |_|{
+        imp.show_seconds_switch.connect_active_notify(move |_| {
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
 
-        imp.show_seconds_switch.connect_active_notify(move |_|{
+        imp.show_daily_sums_switch.connect_active_notify(move |_| {
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
 
-        imp.show_daily_sums_switch.connect_active_notify(move |_|{
+        imp.show_tags_switch.connect_active_notify(move |_| {
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
 
-        imp.show_tags_switch.connect_active_notify(move |_|{
-            let window = FurtheranceWindow::default();
-            window.reset_history_box();
-        });
+        imp.pomodoro_expander
+            .connect_enable_expansion_notify(move |_| {
+                let window = FurtheranceWindow::default();
+                window.refresh_timer();
+            });
 
-        imp.pomodoro_expander.connect_enable_expansion_notify(move |_|{
-            let window = FurtheranceWindow::default();
-            window.refresh_timer();
-        });
-
-        imp.pomodoro_spin.connect_value_changed(move |_|{
+        imp.pomodoro_spin.connect_value_changed(move |_| {
             let window = FurtheranceWindow::default();
             window.refresh_timer();
         });
     }
 }
-
-

@@ -14,15 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use glib::subclass;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
-use glib::subclass;
 
-use crate::ui::{FurtheranceWindow, FurTasksPage};
-use crate::FurtheranceApplication;
-use crate::database;
 use crate::config;
+use crate::database;
+use crate::ui::{FurTasksPage, FurtheranceWindow};
+use crate::FurtheranceApplication;
 
 enum View {
     Loading,
@@ -60,7 +60,6 @@ mod imp {
         fn instance_init(obj: &subclass::InitializingObject<Self>) {
             obj.init_template();
         }
-
     }
 
     impl ObjectImpl for FurHistoryBox {
@@ -68,7 +67,6 @@ mod imp {
             obj.setup_widgets();
             self.parent_constructed(obj);
         }
-
     }
     impl WidgetImpl for FurHistoryBox {}
     impl BoxImpl for FurHistoryBox {}
@@ -79,7 +77,6 @@ glib::wrapper! {
         ObjectSubclass<imp::FurHistoryBox>)
         @extends gtk::Widget, gtk::Box;
 }
-
 
 impl FurHistoryBox {
     fn setup_widgets(&self) {
@@ -97,9 +94,9 @@ impl FurHistoryBox {
         // Change "empty" page icon for development mode
         let imp = imp::FurHistoryBox::from_instance(self);
         if config::PROFILE == "development" {
-            imp.welcome_page.set_icon_name(Some("com.lakoliu.Furtherance.Devel"));
+            imp.welcome_page
+                .set_icon_name(Some("com.lakoliu.Furtherance.Devel"));
         }
-
     }
 
     fn set_view(&self, view: View) {
@@ -147,5 +144,4 @@ impl FurHistoryBox {
         let window = FurtheranceWindow::default();
         window.set_height_request(390);
     }
-
 }

@@ -23,9 +23,9 @@ use log::debug;
 use std::sync::Mutex;
 
 use crate::config;
-use crate::ui::{FurtheranceWindow, FurPreferencesWindow, FurReport};
 use crate::database;
 use crate::settings_manager;
+use crate::ui::{FurPreferencesWindow, FurReport, FurtheranceWindow};
 
 mod imp {
     use super::*;
@@ -74,8 +74,15 @@ mod imp {
 
             // Load style.css
             let css_file = gtk::CssProvider::new();
-            gtk::CssProvider::load_from_resource(&css_file, "/com/lakoliu/Furtherance/gtk/style.css");
-            gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &css_file, 500);
+            gtk::CssProvider::load_from_resource(
+                &css_file,
+                "/com/lakoliu/Furtherance/gtk/style.css",
+            );
+            gtk::StyleContext::add_provider_for_display(
+                &gdk::Display::default().unwrap(),
+                &css_file,
+                500,
+            );
 
             // Ask the window manager/compositor to present the window
             window.present();
@@ -196,20 +203,27 @@ impl FurtheranceApplication {
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Question,
             gtk::ButtonsType::None,
-            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Delete history?"))),
+            Some(&format!(
+                "<span size='x-large' weight='bold'>{}</span>",
+                &gettext("Delete history?")
+            )),
         );
         dialog.add_buttons(&[
             (&gettext("Cancel"), gtk::ResponseType::Reject),
-            (&gettext("Delete"), gtk::ResponseType::Accept)
+            (&gettext("Delete"), gtk::ResponseType::Accept),
         ]);
         dialog.set_default_response(gtk::ResponseType::Accept);
-        let delete_btn = dialog.widget_for_response(gtk::ResponseType::Accept).unwrap();
+        let delete_btn = dialog
+            .widget_for_response(gtk::ResponseType::Accept)
+            .unwrap();
         delete_btn.add_css_class("destructive-action");
 
         let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
-        let explanation = gtk::Label::new(Some(&gettext("This will delete ALL of your task history.")));
-        let instructions = gtk::Label::new(Some(
-            &gettext("Type DELETE in the box below then click Delete to proceed.")));
+        let explanation =
+            gtk::Label::new(Some(&gettext("This will delete ALL of your task history.")));
+        let instructions = gtk::Label::new(Some(&gettext(
+            "Type DELETE in the box below then click Delete to proceed.",
+        )));
         let delete_entry = gtk::Entry::new();
         delete_entry.set_activates_default(true);
         message_area.append(&explanation);
@@ -308,5 +322,3 @@ impl Default for FurtheranceApplication {
             .unwrap()
     }
 }
-
-

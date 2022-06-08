@@ -18,16 +18,16 @@ mod history_box;
 mod preferences_window;
 mod report;
 mod task_details;
+mod task_row;
 mod tasks_group;
 mod tasks_page;
-mod task_row;
 pub mod window;
 
 pub use history_box::FurHistoryBox;
 pub use preferences_window::FurPreferencesWindow;
 pub use report::FurReport;
 pub use task_details::FurTaskDetails;
+pub use task_row::FurTaskRow;
 pub use tasks_group::FurTasksGroup;
 pub use tasks_page::FurTasksPage;
-pub use task_row::FurTaskRow;
 pub use window::FurtheranceWindow;

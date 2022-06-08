@@ -18,9 +18,9 @@ use adw::subclass::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*};
 
-use crate::ui::FurTaskRow;
 use crate::database;
 use crate::settings_manager;
+use crate::ui::FurTaskRow;
 
 mod imp {
     use super::*;
@@ -86,9 +86,10 @@ impl FurTasksGroup {
             let mut unique = true;
             for i in 0..tasks_by_name.len() {
                 if tasks_by_name[i][0].task_name == task.task_name
-                    && ( ( settings_manager::get_bool("show-tags")
-                        && tasks_by_name[i][0].tags == task.tags ) ||
-                            !settings_manager::get_bool("show-tags") ) {
+                    && ((settings_manager::get_bool("show-tags")
+                        && tasks_by_name[i][0].tags == task.tags)
+                        || !settings_manager::get_bool("show-tags"))
+                {
                     tasks_by_name[i].push(task.clone());
                     unique = false;
                 }
@@ -118,4 +119,3 @@ impl FurTasksGroup {
         *imp.day_total_time.borrow()
     }
 }
-

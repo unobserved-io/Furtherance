@@ -16,16 +16,16 @@
 
 mod application;
 mod config;
-mod ui;
 mod database;
 mod settings_manager;
+mod ui;
 
 use self::application::FurtheranceApplication;
 
-use config::{GETTEXT_PACKAGE, LOCALEDIR, PKGDATADIR, APP_ID};
+use config::{APP_ID, GETTEXT_PACKAGE, LOCALEDIR, PKGDATADIR};
 use gettextrs::{bind_textdomain_codeset, bindtextdomain, textdomain};
-use gtk::{gio, glib};
 use gtk::prelude::*;
+use gtk::{gio, glib};
 
 fn main() {
     // Initialize GTK

@@ -14,17 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use gtk::subclass::prelude::*;
-use gtk::{glib, gio, prelude::*, CompositeTemplate};
 use chrono::DateTime;
-use std::sync::Mutex;
-use once_cell::sync::Lazy;
 use glib::clone;
+use gtk::subclass::prelude::*;
+use gtk::{gio, glib, prelude::*, CompositeTemplate};
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 use crate::database::Task;
-use crate::ui::{FurTaskDetails, FurtheranceWindow};
 use crate::settings_manager;
-
+use crate::ui::{FurTaskDetails, FurtheranceWindow};
 
 mod imp {
     use super::*;
@@ -110,7 +109,8 @@ impl FurTaskRow {
         }
 
         // Display task's name
-        imp.task_name_label.set_text(&imp.tasks.lock().unwrap()[0].task_name);
+        imp.task_name_label
+            .set_text(&imp.tasks.lock().unwrap()[0].task_name);
 
         // Display task's tags
         if task_list[0].tags.trim().is_empty() || !settings_manager::get_bool("show-tags") {
@@ -131,10 +131,11 @@ impl FurTaskRow {
 
         self.add_controller(&gesture);
 
-        imp.restart_task_btn.connect_clicked(clone!(@strong task_list => move |_| {
-            let window = FurtheranceWindow::default();
-            window.duplicate_task(task_list[0].clone());
-        }));
+        imp.restart_task_btn
+            .connect_clicked(clone!(@strong task_list => move |_| {
+                let window = FurtheranceWindow::default();
+                window.duplicate_task(task_list[0].clone());
+            }));
 
         // Add up all durations for task of said name to create total_time
         for task in &task_list {
@@ -169,4 +170,3 @@ impl FurTaskRow {
         *imp.total_time.borrow()
     }
 }
-

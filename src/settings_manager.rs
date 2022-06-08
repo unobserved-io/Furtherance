@@ -14,14 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use gtk::{gio, gio::prelude::*, glib};
 use crate::config;
+use gtk::{gio, gio::prelude::*, glib};
 
 pub fn get_settings() -> gio::Settings {
     let app_id = config::APP_ID.trim_end_matches(".Devel");
     gio::Settings::new(app_id)
 }
-
 
 pub fn bind_property<P: IsA<glib::Object>>(key: &str, object: &P, property: &str) {
     let settings = get_settings();
