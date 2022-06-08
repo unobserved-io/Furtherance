@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use rusqlite::{Connection, Result};
 use chrono::{DateTime, Local};
 use directories::ProjectDirs;
-use std::path::PathBuf;
+use gtk::glib;
+use rusqlite::{Connection, Result};
+use std::convert::TryFrom;
 use std::fs::create_dir_all;
+use std::path::PathBuf;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Task {
     pub id: i32,
     pub task_name: String,
@@ -29,12 +31,104 @@ pub struct Task {
     pub tags: String,
 }
 
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    num_derive::FromPrimitive,
+    num_derive::ToPrimitive,
+    glib::Enum,
+)]
+#[enum_type(name = "SortOrder")]
+pub enum SortOrder {
+    #[enum_value(name = "Ascending", nick = "ascending")]
+    Ascending = 0,
+    #[enum_value(name = "Descending", nick = "descending")]
+    Descending,
+}
+
+impl Default for SortOrder {
+    fn default() -> Self {
+        // matches the default in sqlite
+        Self::Ascending
+    }
+}
+
+impl TryFrom<u32> for SortOrder {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        num_traits::FromPrimitive::from_u32(value)
+            .ok_or_else(|| anyhow::anyhow!("SortOrder from_u32() failed for value {}", value))
+    }
+}
+
+impl SortOrder {
+    fn to_sqlite(&self) -> &str {
+        match self {
+            SortOrder::Ascending => "ASC",
+            SortOrder::Descending => "DESC",
+        }
+    }
+}
+
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    num_derive::ToPrimitive,
+    num_derive::FromPrimitive,
+    glib::Enum,
+)]
+#[enum_type(name = "TaskSort")]
+pub enum TaskSort {
+    #[enum_value(name = "StartTime", nick = "start time")]
+    StartTime,
+    #[enum_value(name = "StopTime", nick = "stop time")]
+    StopTime,
+    #[enum_value(name = "TaskName", nick = "task name")]
+    TaskName,
+}
+
+impl Default for TaskSort {
+    fn default() -> Self {
+        Self::StartTime
+    }
+}
+
+impl TryFrom<u32> for TaskSort {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        num_traits::FromPrimitive::from_u32(value)
+            .ok_or_else(|| anyhow::anyhow!("TaskSort from_u32() failed for value {}", value))
+    }
+}
+
+impl TaskSort {
+    fn to_sqlite(&self) -> &str {
+        match self {
+            Self::StartTime => "start_time",
+            Self::StopTime => "stop_time",
+            Self::TaskName => "task_name",
+        }
+    }
+}
+
 pub fn get_directory() -> PathBuf {
-    if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu",  "Furtherance") {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu", "Furtherance") {
         let mut path = PathBuf::from(proj_dirs.data_dir());
         create_dir_all(path.clone()).expect("Unable to create database directory");
         path.extend(&["furtherance.db"]);
-        return path
+        return path;
     }
     PathBuf::new()
 }
@@ -58,33 +152,39 @@ pub fn upgrade_old_db() -> Result<()> {
     // Update from old DB w/o tags
     let conn = Connection::open(get_directory())?;
 
-    conn.execute(
-        "ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ' '",
-        [],
-    )?;
+    conn.execute("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ' '", [])?;
 
     Ok(())
 }
 
-pub fn db_write(task_name: &str,
-                start_time: DateTime<Local>,
-                stop_time: DateTime<Local>,
-                tags: String) -> Result<()> {
+pub fn db_write(
+    task_name: &str,
+    start_time: DateTime<Local>,
+    stop_time: DateTime<Local>,
+    tags: String,
+) -> Result<()> {
     // Write data into database
     let conn = Connection::open(get_directory())?;
 
     conn.execute(
         "INSERT INTO tasks (task_name, start_time, stop_time, tags) values (?1, ?2, ?3, ?4)",
-        &[&task_name.to_string(), &start_time.to_rfc3339(), &stop_time.to_rfc3339(), &tags],
+        &[
+            &task_name.to_string(),
+            &start_time.to_rfc3339(),
+            &stop_time.to_rfc3339(),
+            &tags,
+        ],
     )?;
 
     Ok(())
 }
 
-pub fn write_autosave(task_name: &str,
-                start_time: &str,
-                stop_time: &str,
-                tags: &str) -> Result<()> {
+pub fn write_autosave(
+    task_name: &str,
+    start_time: &str,
+    stop_time: &str,
+    tags: &str,
+) -> Result<()> {
     // Write data into database
     let conn = Connection::open(get_directory())?;
 
@@ -96,11 +196,18 @@ pub fn write_autosave(task_name: &str,
     Ok(())
 }
 
-pub fn retrieve() -> Result<Vec<Task>, rusqlite::Error> {
+pub fn retrieve(sort: TaskSort, order: SortOrder) -> Result<Vec<Task>, rusqlite::Error> {
     // Retrieve all tasks from the database
     let conn = Connection::open(get_directory())?;
 
-    let mut query = conn.prepare("SELECT * FROM tasks ORDER BY start_time")?;
+    let mut query = conn.prepare(
+        format!(
+            "SELECT * FROM tasks ORDER BY {0} {1}",
+            sort.to_sqlite(),
+            order.to_sqlite()
+        )
+        .as_str(),
+    )?;
     let task_iter = query.query_map([], |row| {
         Ok(Task {
             id: row.get(0)?,
@@ -117,11 +224,27 @@ pub fn retrieve() -> Result<Vec<Task>, rusqlite::Error> {
     }
 
     Ok(tasks_vec)
+}
 
+/// Exports the database as CSV.
+/// The delimiter parameter is interpreted as a ASCII character.
+pub fn export_as_csv(sort: TaskSort, order: SortOrder, delimiter: u8) -> anyhow::Result<String> {
+    let mut csv_writer = csv::WriterBuilder::new()
+        .delimiter(delimiter)
+        .from_writer(vec![]);
+    let tasks = retrieve(sort, order)?;
+
+    for task in tasks {
+        csv_writer.serialize(task)?;
+    }
+
+    csv_writer.flush()?;
+
+    Ok(String::from_utf8(csv_writer.into_inner()?)?)
 }
 
 // pub fn retrieve_date_range() -> Result<Vec<Task>, rusqlite::Error> {
-    // Retrieve all tasks from the database
+// Retrieve all tasks from the database
 //     let conn = Connection::open(get_directory())?;
 
 //     let mut query = conn.prepare("SELECT * FROM tasks ORDER BY start_time")?;
@@ -151,7 +274,7 @@ pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET start_time = (?1) WHERE id = (?2)",
-        &[&start_time, &id.to_string()]
+        &[&start_time, &id.to_string()],
     )?;
 
     Ok(())
@@ -162,7 +285,7 @@ pub fn update_stop_time(id: i32, stop_time: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET stop_time = (?1) WHERE id = (?2)",
-        &[&stop_time, &id.to_string()]
+        &[&stop_time, &id.to_string()],
     )?;
 
     Ok(())
@@ -173,7 +296,7 @@ pub fn update_task_name(id: i32, task_name: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET task_name = (?1) WHERE id = (?2)",
-        &[&task_name, &id.to_string()]
+        &[&task_name, &id.to_string()],
     )?;
 
     Ok(())
@@ -184,7 +307,7 @@ pub fn update_tags(id: i32, tags: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET tags = (?1) WHERE id = (?2)",
-        &[&tags, &id.to_string()]
+        &[&tags, &id.to_string()],
     )?;
 
     Ok(())
@@ -195,8 +318,7 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
     let mut tasks_vec: Vec<Task> = Vec::new();
 
     for id in id_list {
-        let mut query = conn.prepare(
-            "SELECT * FROM tasks WHERE id = :id;")?;
+        let mut query = conn.prepare("SELECT * FROM tasks WHERE id = :id;")?;
         let task_iter = query.query_map(&[(":id", &id.to_string())], |row| {
             Ok(Task {
                 id: row.get(0)?,
@@ -247,7 +369,7 @@ pub fn delete_all() -> Result<()> {
     // Delete everything from the database
     let conn = Connection::open(get_directory())?;
 
-    conn.execute("delete from tasks",[],)?;
+    conn.execute("delete from tasks", [])?;
 
     Ok(())
 }

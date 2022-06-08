@@ -14,31 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use adw::prelude::*;
 use adw::subclass::prelude::AdwApplicationWindowImpl;
+use chrono::{offset::TimeZone, DateTime, Duration as ChronDur, Local, NaiveDateTime, ParseError};
+use dbus::blocking::Connection;
+use directories::ProjectDirs;
 use gettextrs::*;
-use gtk::prelude::*;
+use glib::{clone, timeout_add_local};
 use gtk::subclass::prelude::*;
 use gtk::{gio, glib, CompositeTemplate};
-use glib::{clone, timeout_add_local};
-use std::time::Duration;
-use std::sync::Mutex;
-use std::rc::Rc;
-use std::cell::RefCell;
-use chrono::{DateTime, Local, NaiveDateTime, ParseError, Duration as ChronDur, offset::TimeZone};
-use dbus::blocking::Connection;
 use itertools::Itertools;
-use std::fs::{File, create_dir_all, remove_file};
-use std::io::{self, BufWriter, Write, BufReader, BufRead};
-use directories::ProjectDirs;
+use std::cell::RefCell;
+use std::convert::TryFrom;
+use std::fs::{create_dir_all, remove_file, File};
+use std::io::{self, BufRead, BufReader, BufWriter, Write};
 use std::path::PathBuf;
+use std::rc::Rc;
+use std::sync::Mutex;
+use std::time::Duration;
 
+use crate::config;
+use crate::database::{self, SortOrder, TaskSort};
+use crate::settings_manager;
 use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
-use crate::database;
-use crate::settings_manager;
-use crate::config;
 
 mod imp {
+    use crate::database::{SortOrder, TaskSort};
+
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
@@ -68,6 +71,9 @@ mod imp {
         pub running: Mutex<bool>,
         pub pomodoro_continue: Mutex<bool>,
         pub idle_dialog: Mutex<gtk::MessageDialog>,
+
+        // We have to keep a reference to the current popped up filechooser dialog
+        pub filechooser: RefCell<gtk::FileChooserNative>,
     }
 
     #[glib::object_subclass]
@@ -78,6 +84,8 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             FurHistoryBox::static_type();
+            TaskSort::static_type();
+            SortOrder::static_type();
             Self::bind_template(klass);
         }
 
@@ -133,7 +141,8 @@ impl FurtheranceWindow {
         let imp = imp::FurtheranceWindow::from_instance(self);
 
         if *imp.subtract_idle.lock().unwrap() {
-            let idle_start = DateTime::parse_from_rfc3339(&imp.idle_start_time.lock().unwrap()).unwrap();
+            let idle_start =
+                DateTime::parse_from_rfc3339(&imp.idle_start_time.lock().unwrap()).unwrap();
             stop_time = idle_start.with_timezone(&Local);
             *imp.subtract_idle.lock().unwrap() = false;
         }
@@ -186,16 +195,17 @@ impl FurtheranceWindow {
         let start_time = Rc::new(RefCell::new(Local::now()));
         let stop_time = Rc::new(RefCell::new(Local::now()));
 
-        imp.task_input.connect_changed(clone!(@weak self as this => move |task_input| {
-            let imp2 = imp::FurtheranceWindow::from_instance(&this);
-            let task_input_text = task_input.text();
-            let split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
-            if split_tags[0].trim().is_empty() {
-                imp2.start_button.set_sensitive(false);
-            } else {
-                imp2.start_button.set_sensitive(true);
-            }
-        }));
+        imp.task_input
+            .connect_changed(clone!(@weak self as this => move |task_input| {
+                let imp2 = imp::FurtheranceWindow::from_instance(&this);
+                let task_input_text = task_input.text();
+                let split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
+                if split_tags[0].trim().is_empty() {
+                    imp2.start_button.set_sensitive(false);
+                } else {
+                    imp2.start_button.set_sensitive(true);
+                }
+            }));
 
         imp.start_button.connect_clicked(clone!(@weak self as this => move |button| {
             let imp2 = imp::FurtheranceWindow::from_instance(&this);
@@ -502,11 +512,13 @@ impl FurtheranceWindow {
     fn get_idle_time(&self) -> Result<u64, Box<dyn std::error::Error>> {
         let c = Connection::new_session()?;
 
-        let p = c.with_proxy("org.gnome.Mutter.IdleMonitor",
+        let p = c.with_proxy(
+            "org.gnome.Mutter.IdleMonitor",
             "/org/gnome/Mutter/IdleMonitor/Core",
-            Duration::from_millis(5000)
+            Duration::from_millis(5000),
         );
-        let (idle_time,): (u64,) = p.method_call("org.gnome.Mutter.IdleMonitor", "GetIdletime", ())?;
+        let (idle_time,): (u64,) =
+            p.method_call("org.gnome.Mutter.IdleMonitor", "GetIdletime", ())?;
 
         Ok(idle_time / 1000)
     }
@@ -521,20 +533,20 @@ impl FurtheranceWindow {
         // If user was idle and has now returned...
         if idle_time < (settings_manager::get_int("idle-time") * 60) as u64
             && *imp.idle_time_reached.lock().unwrap()
-            && !*imp.idle_notified.lock().unwrap() {
-
-                *imp.idle_notified.lock().unwrap() = true;
-                self.resume_from_idle();
+            && !*imp.idle_notified.lock().unwrap()
+        {
+            *imp.idle_notified.lock().unwrap() = true;
+            self.resume_from_idle();
         }
         *imp.stored_idle.lock().unwrap() = idle_time;
 
         // If user is idle but has not returned...
         if *imp.stored_idle.lock().unwrap() >= (settings_manager::get_int("idle-time") * 60) as u64
-            && !*imp.idle_time_reached.lock().unwrap() {
-
+            && !*imp.idle_time_reached.lock().unwrap()
+        {
             *imp.idle_time_reached.lock().unwrap() = true;
-            let true_idle_start_time = Local::now() -
-                ChronDur::seconds((settings_manager::get_int("idle-time") * 60) as i64);
+            let true_idle_start_time = Local::now()
+                - ChronDur::seconds((settings_manager::get_int("idle-time") * 60) as i64);
             *imp.idle_start_time.lock().unwrap() = true_idle_start_time.to_rfc3339();
         }
     }
@@ -543,14 +555,21 @@ impl FurtheranceWindow {
         let imp = imp::FurtheranceWindow::from_instance(self);
 
         let resume_time = Local::now();
-        let idle_start = DateTime::parse_from_rfc3339(&imp.idle_start_time.lock().unwrap()).unwrap();
+        let idle_start =
+            DateTime::parse_from_rfc3339(&imp.idle_start_time.lock().unwrap()).unwrap();
         let idle_start = idle_start.with_timezone(&Local);
         let idle_time = resume_time - idle_start;
         let idle_time = idle_time.num_seconds();
         let h = idle_time / 60 / 60;
         let m = (idle_time / 60) - (h * 60);
         let s = idle_time - (m * 60);
-        let idle_time_str = format!("{}{:02}:{:02}:{:02}", gettext("You have been idle for "), h, m, s);
+        let idle_time_str = format!(
+            "{}{:02}:{:02}:{:02}",
+            gettext("You have been idle for "),
+            h,
+            m,
+            s
+        );
         let question_str = gettext("\nWould you like to discard that time, or continue the clock?");
         let idle_time_msg = format!("{}{}", idle_time_str, question_str);
 
@@ -559,11 +578,14 @@ impl FurtheranceWindow {
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Warning,
             gtk::ButtonsType::None,
-            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Idle"))),
+            Some(&format!(
+                "<span size='x-large' weight='bold'>{}</span>",
+                &gettext("Idle")
+            )),
         );
         dialog.add_buttons(&[
             (&gettext("Discard"), gtk::ResponseType::Reject),
-            (&gettext("Continue"), gtk::ResponseType::Accept)
+            (&gettext("Continue"), gtk::ResponseType::Accept),
         ]);
         dialog.set_secondary_text(Some(&idle_time_msg));
 
@@ -594,11 +616,14 @@ impl FurtheranceWindow {
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Warning,
             gtk::ButtonsType::None,
-            Some(&format!("<span size='x-large' weight='bold'>{}</span>", &gettext("Time's up!"))),
+            Some(&format!(
+                "<span size='x-large' weight='bold'>{}</span>",
+                &gettext("Time's up!")
+            )),
         );
         dialog.add_buttons(&[
             (&gettext("Continue"), gtk::ResponseType::Accept),
-            (&gettext("Stop"), gtk::ResponseType::Reject)
+            (&gettext("Stop"), gtk::ResponseType::Reject),
         ]);
 
         let app = FurtheranceApplication::default();
@@ -652,7 +677,7 @@ impl FurtheranceWindow {
 
     fn get_autosave_path() -> PathBuf {
         let mut path = PathBuf::new();
-        if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu",  "Furtherance") {
+        if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu", "Furtherance") {
             path = PathBuf::from(proj_dirs.data_dir());
             create_dir_all(path.clone()).expect("Unable to create autosave directory");
             path.extend(&["furtherance_autosave.txt"]);
@@ -694,9 +719,9 @@ impl FurtheranceWindow {
                 gtk::ButtonsType::Ok,
                 &gettext("Autosave Restored"),
             );
-            dialog.set_secondary_text(Some(
-                &gettext("Furtherance shut down improperly. An autosave was restored.")
-            ));
+            dialog.set_secondary_text(Some(&gettext(
+                "Furtherance shut down improperly. An autosave was restored.",
+            )));
 
             dialog.connect_response(clone!(
                 @weak self as this,
@@ -773,6 +798,118 @@ impl FurtheranceWindow {
             imp.watch.set_text("00:00:00");
         }
     }
+
+    pub async fn export_csv_to_file(
+        sort: TaskSort,
+        order: SortOrder,
+        file: &gio::File,
+    ) -> anyhow::Result<()> {
+        async fn overwrite_file_future(file: &gio::File, bytes: Vec<u8>) -> anyhow::Result<()> {
+            let output_stream = file
+                .replace_future(
+                    None,
+                    false,
+                    gio::FileCreateFlags::REPLACE_DESTINATION,
+                    glib::PRIORITY_DEFAULT,
+                )
+                .await?;
+
+            output_stream
+                .write_all_future(bytes, glib::PRIORITY_DEFAULT)
+                .await
+                .map_err(|e| anyhow::anyhow!(e.1))?;
+            output_stream.close_future(glib::PRIORITY_DEFAULT).await?;
+
+            Ok(())
+        }
+
+        let csv = database::export_as_csv(sort, order, b',')?;
+        overwrite_file_future(file, csv.into_bytes()).await
+    }
+
+    pub fn open_csv_export_dialog(&self) {
+        let builder = gtk::Builder::from_resource("/com/lakoliu/Furtherance/gtk/dialogs.ui");
+        let dialog = builder.object::<gtk::Dialog>("dialog_csv_export").unwrap();
+        let tasksort_row = builder
+            .object::<adw::ComboRow>("csv_export_tasksort_row")
+            .unwrap();
+        let sortorder_row = builder
+            .object::<adw::ComboRow>("csv_export_sortorder_row")
+            .unwrap();
+        let filechooser_button = builder
+            .object::<gtk::Button>("csv_export_filechooser_button")
+            .unwrap();
+        let chosenfile_label = builder
+            .object::<gtk::Label>("csv_export_chosenfile_label")
+            .unwrap();
+
+        dialog.set_transient_for(Some(self));
+
+        let filefilter = gtk::FileFilter::new();
+        filefilter.add_mime_type("text/csv");
+        filefilter.add_pattern("*.csv");
+
+        let filechooser = gtk::FileChooserNative::builder()
+            .title(&gettext("Create or choose a CSV file"))
+            .modal(true)
+            .transient_for(self)
+            .action(gtk::FileChooserAction::Save)
+            .accept_label(&gettext("Accept"))
+            .cancel_label(&gettext("Cancel"))
+            .select_multiple(false)
+            .filter(&filefilter)
+            .build();
+
+        filechooser.set_current_name("data.csv");
+
+        filechooser_button.connect_clicked(
+            clone!(@weak self as window, @weak filechooser, @weak dialog => move |_| {
+                dialog.hide();
+                filechooser.show();
+            }),
+        );
+
+        filechooser.connect_response(
+            clone!(@weak dialog, @weak chosenfile_label => move |filechooser, response| {
+                if response == gtk::ResponseType::Accept {
+                    if let Some(path) = filechooser.file().and_then(|file| file.path()) {
+                        chosenfile_label.set_label(&path.to_string_lossy());
+                    } else {
+                        chosenfile_label.set_label(&gettext(" - no file selected - "));
+                    }
+                }
+
+                dialog.show();
+            }),
+        );
+
+        dialog.connect_response(clone!(@weak self as window, @weak filechooser, @weak tasksort_row, @weak sortorder_row => move |dialog, response| {
+            match response {
+                gtk::ResponseType::Apply => {
+                    let sort = TaskSort::try_from(tasksort_row.selected()).unwrap_or_default();
+                    let order = SortOrder::try_from(sortorder_row.selected()).unwrap_or_default();
+
+                    if let Some(file) = filechooser.file() {
+                        glib::MainContext::default().spawn_local(clone!(@strong window, @strong file => async move {
+                            if let Err(e) = FurtheranceWindow::export_csv_to_file(sort, order, &file).await {
+                                log::error!("replace file {:?} failed, Err {}", file, e);
+                                window.display_toast(&gettext("Exporting as CSV failed."));
+                            } else {
+                                window.display_toast(&gettext("Exported as CSV successfully."));
+                            };
+                        }));
+                    }
+                }
+                _ => {}
+            }
+
+            dialog.close();
+        }));
+
+        *self.imp().filechooser.borrow_mut() = filechooser;
+
+        dialog.show()
+    }
 }
 
 impl Default for FurtheranceWindow {
@@ -784,4 +921,3 @@ impl Default for FurtheranceWindow {
             .unwrap()
     }
 }
-

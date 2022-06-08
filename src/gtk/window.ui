@@ -101,6 +101,10 @@
         <attribute name="action">app.delete-history</attribute>
       </item>
       <item>
+        <attribute name="label" translatable="yes">_Export as CSV</attribute>
+        <attribute name="action">app.export-csv</attribute>
+      </item>
+      <item>
         <attribute name="label" translatable="yes">_About Furtherance</attribute>
         <attribute name="action">app.about</attribute>
       </item>

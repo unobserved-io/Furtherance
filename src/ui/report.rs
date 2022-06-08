@@ -15,16 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use adw::subclass::prelude::*;
+use chrono::{offset::TimeZone, Date, DateTime, Datelike, Duration, Local, NaiveDate};
 use gettextrs::*;
 use glib::clone;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
-use chrono::{DateTime, NaiveDate, Local, Duration, Date, Datelike, offset::TimeZone};
 use itertools::Itertools;
 
-use crate::FurtheranceApplication;
+use crate::database::{self, SortOrder, TaskSort};
 use crate::ui::FurtheranceWindow;
-use crate::database;
+use crate::FurtheranceApplication;
 
 mod imp {
     use super::*;
@@ -81,7 +81,6 @@ mod imp {
     }
 
     impl ObjectImpl for FurReport {
-
         fn constructed(&self, obj: &Self::Type) {
             obj.setup_widgets();
             self.parent_constructed(obj);
@@ -119,43 +118,49 @@ impl FurReport {
         imp.range_combo.set_active_id(Some("week_item"));
         imp.filter_combo.set_active_id(Some("tasks_item"));
 
-        imp.range_combo.connect_changed(clone!(@weak self as this => move |combo|{
-            let imp = imp::FurReport::from_instance(&this);
-            if combo.active_id().unwrap() != "date_range_item" {
-                imp.date_range_box.set_visible(false);
+        imp.range_combo
+            .connect_changed(clone!(@weak self as this => move |combo|{
+                let imp = imp::FurReport::from_instance(&this);
+                if combo.active_id().unwrap() != "date_range_item" {
+                    imp.date_range_box.set_visible(false);
+                    this.refresh_report();
+                } else {
+                    imp.date_range_box.set_visible(true);
+                }
+            }));
+
+        imp.filter_check
+            .connect_toggled(clone!(@weak self as this => move |_|{
+                let imp = imp::FurReport::from_instance(&this);
+                if imp.filter_box.get_visible() {
+                    imp.filter_box.set_visible(false);
+                } else {
+                    imp.filter_box.set_visible(true);
+                }
+            }));
+
+        imp.filter_combo
+            .connect_changed(clone!(@weak self as this => move |combo|{
+                let imp = imp::FurReport::from_instance(&this);
+                if combo.active_id().unwrap() == "tasks_item" {
+                    imp.filter_entry.set_placeholder_text(Some(&gettext("Task, Task 2")));
+                } else {
+                    imp.filter_entry.set_placeholder_text(Some(&gettext("tag, tag 2")));
+                }
+            }));
+
+        imp.refresh_btn
+            .connect_clicked(clone!(@weak self as this => move |_|{
                 this.refresh_report();
-            } else {
-                imp.date_range_box.set_visible(true);
-            }
-        }));
-
-        imp.filter_check.connect_toggled(clone!(@weak self as this => move |_|{
-            let imp = imp::FurReport::from_instance(&this);
-            if imp.filter_box.get_visible() {
-                imp.filter_box.set_visible(false);
-            } else {
-                imp.filter_box.set_visible(true);
-            }
-        }));
-
-        imp.filter_combo.connect_changed(clone!(@weak self as this => move |combo|{
-            let imp = imp::FurReport::from_instance(&this);
-            if combo.active_id().unwrap() == "tasks_item" {
-                imp.filter_entry.set_placeholder_text(Some(&gettext("Task, Task 2")));
-            } else {
-                imp.filter_entry.set_placeholder_text(Some(&gettext("tag, tag 2")));
-            }
-        }));
-
-        imp.refresh_btn.connect_clicked(clone!(@weak self as this => move |_|{
-            this.refresh_report();
-        }));
+            }));
 
         let renderer = gtk::CellRendererText::new();
-        let task_column = gtk::TreeViewColumn::with_attributes(&gettext("Task"), &renderer, &[("text", 0)]);
+        let task_column =
+            gtk::TreeViewColumn::with_attributes(&gettext("Task"), &renderer, &[("text", 0)]);
         task_column.set_expand(true);
         task_column.set_resizable(true);
-        let duration_column = gtk::TreeViewColumn::with_attributes(&gettext("Duration"), &renderer, &[("text", 1)]);
+        let duration_column =
+            gtk::TreeViewColumn::with_attributes(&gettext("Duration"), &renderer, &[("text", 1)]);
         duration_column.set_expand(false);
         duration_column.set_resizable(true);
         imp.results_tree.append_column(&task_column);
@@ -172,8 +177,7 @@ impl FurReport {
 
         let results_model = gtk::TreeStore::new(&[String::static_type(), String::static_type()]);
 
-        let mut task_list = database::retrieve().unwrap();
-        task_list.reverse();
+        let task_list = database::retrieve(TaskSort::StartTime, SortOrder::Descending).unwrap();
 
         // Get date range
         let active_range = imp.range_combo.active_id().unwrap();
@@ -192,26 +196,27 @@ impl FurReport {
         } else if active_range == "year_item" {
             range_start_date = today - Duration::days(365);
         } else {
-            let input_start_date = NaiveDate::parse_from_str(&imp.start_date_entry.text(), "%m/%d/%Y");
+            let input_start_date =
+                NaiveDate::parse_from_str(&imp.start_date_entry.text(), "%m/%d/%Y");
             let input_end_date = NaiveDate::parse_from_str(&imp.end_date_entry.text(), "%m/%d/%Y");
             // Check if user entered dates properly
             if let Err(_) = input_start_date {
                 imp.format_error.set_visible(true);
                 results_model.clear();
                 imp.results_tree.set_model(Some(&results_model));
-                return
+                return;
             }
             if let Err(_) = input_end_date {
                 imp.format_error.set_visible(true);
                 results_model.clear();
                 imp.results_tree.set_model(Some(&results_model));
-                return
+                return;
             }
             // Start date cannot be after end date
             if (input_end_date.unwrap() - input_start_date.unwrap()).num_days() < 0 {
                 imp.start_end_error.set_visible(true);
                 results_model.clear();
-                return
+                return;
             }
             range_start_date = Local.from_local_date(&input_start_date.unwrap()).unwrap();
             range_end_date = Local.from_local_date(&input_end_date.unwrap()).unwrap();
@@ -222,8 +227,12 @@ impl FurReport {
         let mut user_chosen_tags: Vec<String> = Vec::new();
         let mut only_this_tag = false;
         for task in task_list {
-            let start = DateTime::parse_from_rfc3339(&task.start_time).unwrap().with_timezone(&Local);
-            let stop = DateTime::parse_from_rfc3339(&task.stop_time).unwrap().with_timezone(&Local);
+            let start = DateTime::parse_from_rfc3339(&task.start_time)
+                .unwrap()
+                .with_timezone(&Local);
+            let stop = DateTime::parse_from_rfc3339(&task.stop_time)
+                .unwrap()
+                .with_timezone(&Local);
             // Check if start time is in date range and if not remove it from task_list
             let start_date = start.date();
             if start_date >= range_start_date && start_date <= range_end_date {
@@ -240,7 +249,8 @@ impl FurReport {
                         // Handle duplicate tasks
                         split_tasks = split_tasks.into_iter().unique().collect();
                         // Lowercase tags
-                        let lower_tasks: Vec<String> = split_tasks.iter().map(|x| x.to_lowercase()).collect();
+                        let lower_tasks: Vec<String> =
+                            split_tasks.iter().map(|x| x.to_lowercase()).collect();
 
                         if lower_tasks.contains(&task.task_name.to_lowercase()) {
                             let duration = stop - start;
@@ -248,7 +258,6 @@ impl FurReport {
                             tasks_in_range.push((task, duration));
                             total_time += duration;
                         }
-
                     } else if imp.filter_combo.active_id().unwrap() == "tags_item" {
                         // Split user chosen tags
                         let chosen_tasgs = imp.filter_entry.text();
@@ -287,22 +296,20 @@ impl FurReport {
             }
         }
 
-        let all_tasks_iter:gtk::TreeIter;
+        let all_tasks_iter: gtk::TreeIter;
         if tasks_in_range.is_empty() {
-            all_tasks_iter = results_model.insert_with_values(None,
-                                                                None,
-                                                                &[
-                                                                    (0, &gettext("No Results")),
-                                                                    (1, &"")
-                                                                ]);
+            all_tasks_iter = results_model.insert_with_values(
+                None,
+                None,
+                &[(0, &gettext("No Results")), (1, &"")],
+            );
         } else {
             let total_time_str = FurReport::format_duration(total_time);
-            all_tasks_iter = results_model.insert_with_values(None,
-                                                                    None,
-                                                                    &[
-                                                                        (0, &gettext("All Results")),
-                                                                        (1, &total_time_str)
-                                                                    ]);
+            all_tasks_iter = results_model.insert_with_values(
+                None,
+                None,
+                &[(0, &gettext("All Results")), (1, &total_time_str)],
+            );
         }
 
         if imp.sort_by_task.is_active() {
@@ -368,12 +375,12 @@ impl FurReport {
                     let _child_iter = results_model.insert_with_values(
                         Some(&header_iter),
                         None,
-                        &[(0, &task), (1, &FurReport::format_duration(task_duration))]
+                        &[(0, &task), (1, &FurReport::format_duration(task_duration))],
                     );
                 }
                 results_model.set(
                     &header_iter,
-                    &[(0, &stbd.0), (1, &FurReport::format_duration(stbd.1))]
+                    &[(0, &stbd.0), (1, &FurReport::format_duration(stbd.1))],
                 );
             }
         } else if imp.sort_by_tag.is_active() {
@@ -432,13 +439,15 @@ impl FurReport {
             }
 
             for mut stbd in sorted_tasks_by_duration {
-                if !only_this_tag || (only_this_tag && user_chosen_tags.contains(&stbd.0[1..].to_string())) {
+                if !only_this_tag
+                    || (only_this_tag && user_chosen_tags.contains(&stbd.0[1..].to_string()))
+                {
                     let header_iter = results_model.append(Some(&all_tasks_iter));
                     for (task, task_duration) in stbd.2 {
                         let _child_iter = results_model.insert_with_values(
                             Some(&header_iter),
                             None,
-                            &[(0, &task), (1, &FurReport::format_duration(task_duration))]
+                            &[(0, &task), (1, &FurReport::format_duration(task_duration))],
                         );
                     }
                     if stbd.0 == "#" {
@@ -446,7 +455,7 @@ impl FurReport {
                     }
                     results_model.set(
                         &header_iter,
-                        &[(0, &stbd.0), (1, &FurReport::format_duration(stbd.1))]
+                        &[(0, &stbd.0), (1, &FurReport::format_duration(stbd.1))],
                     );
                 }
             }
@@ -459,11 +468,10 @@ impl FurReport {
     }
 
     fn format_duration(total_time: i64) -> String {
-         // Format total time to readable string
+        // Format total time to readable string
         let h = total_time / 3600;
         let m = total_time % 3600 / 60;
         let s = total_time % 60;
         format!("{:02}:{:02}:{:02}", h, m, s)
     }
 }
-
