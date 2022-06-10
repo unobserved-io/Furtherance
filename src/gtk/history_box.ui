@@ -21,73 +21,7 @@
           <object class="GtkStackPage">
             <property name="name">empty</property>
             <property name="child">
-              <object class="AdwStatusPage" id="welcome_page">
-                <property name="title" translatable="yes">Start Tracking</property>
-                <property name="icon_name">com.lakoliu.Furtherance</property>
-                <property name="child">
-                  <object class="GtkGrid">
-                    <property name="halign">center</property>
-                    <property name="row_spacing">12</property>
-                    <property name="column_spacing">12</property>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon_name">input-keyboard-symbolic</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">0</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">Type your task and press start</property>
-                        <layout>
-                          <property name="column">1</property>
-                          <property name="row">0</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon_name">accessories-text-editor-symbolic</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">1</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">Prior tasks will show up here</property>
-                        <layout>
-                          <property name="column">1</property>
-                          <property name="row">1</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon_name">input-mouse-symbolic</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">2</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="halign">start</property>
-                        <property name="label" translatable="yes">Right-click a task to duplicate it</property>
-                        <layout>
-                          <property name="column">1</property>
-                          <property name="row">2</property>
-                        </layout>
-                      </object>
-                    </child>
-                  </object>
-                </property>
+              <object class="AdwStatusPage">
               </object>
             </property>
           </object>

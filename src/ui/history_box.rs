@@ -19,7 +19,6 @@ use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
 
-use crate::config;
 use crate::database;
 use crate::ui::{FurTasksPage, FurtheranceWindow};
 use crate::FurtheranceApplication;
@@ -41,8 +40,6 @@ mod imp {
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
         pub spinner: TemplateChild<gtk::Spinner>,
-        #[template_child]
-        pub welcome_page: TemplateChild<adw::StatusPage>,
         #[template_child]
         pub tasks_page: TemplateChild<FurTasksPage>,
     }
@@ -90,13 +87,6 @@ impl FurHistoryBox {
         } else {
             self.set_view(View::Empty);
         }
-
-        // Change "empty" page icon for development mode
-        let imp = imp::FurHistoryBox::from_instance(self);
-        if config::PROFILE == "development" {
-            imp.welcome_page
-                .set_icon_name(Some("com.lakoliu.Furtherance.Devel"));
-        }
     }
 
     fn set_view(&self, view: View) {
@@ -129,19 +119,20 @@ impl FurHistoryBox {
             Err(_) => false,
         };
         if is_saved_task {
+            window.vertical_align(gtk::Align::Start);
             self.set_view(View::Loading);
             imp.tasks_page.build_task_list();
             self.set_view(View::Tasks);
-            window.set_height_request(300);
         } else {
             self.set_view(View::Empty);
-            window.set_height_request(390);
+            window.vertical_align(gtk::Align::Center);
         }
     }
 
     pub fn empty_view(&self) {
         self.set_view(View::Empty);
         let window = FurtheranceWindow::default();
-        window.set_height_request(390);
+        window.vertical_align(gtk::Align::Center);
     }
 }
+

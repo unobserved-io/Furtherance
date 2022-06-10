@@ -52,6 +52,9 @@ mod imp {
         pub header_bar: TemplateChild<adw::HeaderBar>,
         #[template_child]
         pub add_task: TemplateChild<gtk::Button>,
+
+        #[template_child]
+        pub win_box: TemplateChild<gtk::Box>,
         #[template_child]
         pub watch: TemplateChild<gtk::Label>,
         #[template_child]
@@ -162,15 +165,13 @@ impl FurtheranceWindow {
     fn setup_widgets(&self) {
         let imp = imp::FurtheranceWindow::from_instance(self);
 
-        // Set initial minimum height
+        // Set initial minimum height and alignment
         let is_saved_task: bool = match database::check_for_tasks() {
             Ok(_) => true,
             Err(_) => false,
         };
         if is_saved_task {
-            self.set_height_request(300);
-        } else {
-            self.set_height_request(390);
+            self.vertical_align(gtk::Align::Start);
         }
 
         // Development mode
@@ -910,6 +911,12 @@ impl FurtheranceWindow {
 
         dialog.show()
     }
+
+    pub fn vertical_align(&self, align: gtk::Align) {
+        let imp = imp::FurtheranceWindow::from_instance(self);
+        imp.win_box.set_valign(align);
+    }
+
 }
 
 impl Default for FurtheranceWindow {

@@ -34,53 +34,54 @@
               </object>
             </child>
             <child>
-            <object class="GtkBox" id="win_box">
-              <property name="orientation">vertical</property>
-              <property name="spacing">10</property>
-              <property name="halign">center</property>
-              <property name="width_request">400</property>
-              <property name="vexpand">True</property>
-              <child>
-                <object class="GtkLabel" id="watch">
-                  <property name="label">00:00:00</property>
-                  <property name="margin_start">12</property>
-                  <property name="margin_end">12</property>
-                  <attributes>
-                    <attribute name="weight" value="bold"/>
-                    <attribute name="scale" value="5"/>
-                  </attributes>
-                  <style>
-                    <class name="numeric"/>
-                  </style>
-                </object>
-              </child>
-              <child>
-                <object class="GtkBox">
-                  <property name="spacing">5</property>
-                  <property name="margin_start">12</property>
-                  <property name="margin_end">8</property>
-                  <child>
-                    <object class="GtkEntry" id="task_input">
-                      <property name="placeholder-text" translatable="yes">Task Name #tags</property>
-                      <property name="hexpand">True</property>
-                      <property name="hexpand-set">True</property>
-                    </object>
-                  </child>
-                  <child>
-                    <object class="GtkButton" id="start_button">
-                      <property name="icon-name">media-playback-start-symbolic</property>
-                      <style>
-                        <class name="circular"/>
-                      </style>
-                    </object>
-                  </child>
-                </object>
-              </child>
-              <child>
-                <object class="FurHistoryBox" id="history_box" />
-              </child>
-            </object>
-          </child>
+              <object class="GtkBox" id="win_box">
+                <property name="orientation">vertical</property>
+                <property name="spacing">10</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="width_request">400</property>
+                <property name="vexpand">True</property>
+                <child>
+                  <object class="GtkLabel" id="watch">
+                    <property name="label">00:00:00</property>
+                    <property name="margin_start">12</property>
+                    <property name="margin_end">12</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="scale" value="5"/>
+                    </attributes>
+                    <style>
+                      <class name="numeric"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <property name="margin_start">12</property>
+                    <property name="margin_end">8</property>
+                    <child>
+                      <object class="GtkEntry" id="task_input">
+                        <property name="placeholder-text" translatable="yes">Task Name #tags</property>
+                        <property name="hexpand">True</property>
+                        <property name="hexpand-set">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="start_button">
+                        <property name="icon-name">media-playback-start-symbolic</property>
+                        <style>
+                          <class name="circular"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="FurHistoryBox" id="history_box" />
+                </child>
+              </object>
+            </child>
           </object>
         </property>
       </object>
