@@ -39,6 +39,16 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.5.0" date="2022-06-10">
+      <description>
+        <ul>
+          <li>Added a button to restart tasks</li>
+          <li>CSV Export</li>
+          <li>Timer centered on empty state</li>
+          <li>Uses local date format</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.4.0" date="2022-06-05">
       <description>
         <ul>
