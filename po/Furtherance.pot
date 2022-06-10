@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-08 14:17+0300\n"
+"POT-Creation-Date: 2022-06-10 15:44+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:180
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:187
 msgid "Track your time without being tracked."
 msgstr ""
 
@@ -100,8 +100,8 @@ msgstr ""
 msgid "Export as CSV"
 msgstr ""
 
-#: src/gtk/dialogs.ui:10 src/application.rs:202 src/ui/task_details.rs:568
-#: src/ui/window.rs:327 src/ui/window.rs:858
+#: src/gtk/dialogs.ui:10 src/application.rs:212 src/ui/task_details.rs:568
+#: src/ui/window.rs:328 src/ui/window.rs:859
 msgid "Cancel"
 msgstr ""
 
@@ -109,28 +109,12 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
-#: src/gtk/dialogs.ui:47 src/ui/window.rs:878
+#: src/gtk/dialogs.ui:47 src/ui/window.rs:879
 msgid " - no file selected - "
 msgstr ""
 
 #: src/gtk/dialogs.ui:65
 msgid "CSV export preferences"
-msgstr ""
-
-#: src/gtk/history_box.ui:25
-msgid "Start Tracking"
-msgstr ""
-
-#: src/gtk/history_box.ui:44
-msgid "Type your task and press start"
-msgstr ""
-
-#: src/gtk/history_box.ui:63
-msgid "Prior tasks will show up here"
-msgstr ""
-
-#: src/gtk/history_box.ui:82
-msgid "Right-click a task to duplicate it"
 msgstr ""
 
 #: src/gtk/preferences_window.ui:7
@@ -145,7 +129,7 @@ msgstr ""
 msgid "_Dark theme"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:28 src/ui/window.rs:583
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:584
 msgid "Idle"
 msgstr ""
 
@@ -269,8 +253,8 @@ msgstr ""
 msgid "Date range"
 msgstr ""
 
-#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:189
-#: src/ui/window.rs:341
+#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:188
+#: src/ui/window.rs:342
 msgid "Start"
 msgstr ""
 
@@ -310,7 +294,7 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
-#: src/gtk/report.ui:137 src/ui/task_details.rs:180
+#: src/gtk/report.ui:137 src/ui/task_details.rs:179
 msgid "Tags"
 msgstr ""
 
@@ -326,8 +310,8 @@ msgstr ""
 msgid "Task Details"
 msgstr ""
 
-#: src/gtk/task_details.ui:96 src/application.rs:294 src/ui/task_details.rs:191
-#: src/ui/window.rs:343 src/ui/window.rs:626
+#: src/gtk/task_details.ui:96 src/application.rs:308 src/ui/task_details.rs:190
+#: src/ui/window.rs:344 src/ui/window.rs:627
 msgid "Stop"
 msgstr ""
 
@@ -351,68 +335,68 @@ msgstr ""
 msgid "Main Menu"
 msgstr ""
 
-#: src/gtk/window.ui:64
+#: src/gtk/window.ui:65
 msgid "Task Name #tags"
 msgstr ""
 
-#: src/gtk/window.ui:92
+#: src/gtk/window.ui:93
 msgid "_Preferences"
 msgstr ""
 
-#: src/gtk/window.ui:96
+#: src/gtk/window.ui:97
 msgid "_Generate Report"
 msgstr ""
 
-#: src/gtk/window.ui:100
+#: src/gtk/window.ui:101
 msgid "_Delete history"
 msgstr ""
 
-#: src/gtk/window.ui:104
+#: src/gtk/window.ui:105
 msgid "_Export as CSV"
 msgstr ""
 
-#: src/gtk/window.ui:108
+#: src/gtk/window.ui:109
 msgid "_About Furtherance"
 msgstr ""
 
-#: src/application.rs:183
+#: src/application.rs:190
 msgid "translator-credits"
 msgstr ""
 
-#: src/application.rs:199
+#: src/application.rs:208
 msgid "Delete history?"
 msgstr ""
 
-#: src/application.rs:203 src/ui/task_details.rs:569
+#: src/application.rs:213 src/ui/task_details.rs:569
 msgid "Delete"
 msgstr ""
 
-#: src/application.rs:210
+#: src/application.rs:223
 msgid "This will delete ALL of your task history."
 msgstr ""
 
-#: src/application.rs:212
+#: src/application.rs:225
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 
-#: src/application.rs:221
+#: src/application.rs:235
 msgid "DELETE"
 msgstr ""
 
-#: src/application.rs:271 src/ui/window.rs:587
+#: src/application.rs:285 src/ui/window.rs:588
 msgid "Discard"
 msgstr ""
 
-#: src/application.rs:272 src/application.rs:293 src/ui/window.rs:588
-#: src/ui/window.rs:625
+#: src/application.rs:286 src/application.rs:307 src/ui/window.rs:589
+#: src/ui/window.rs:626
 msgid "Continue"
 msgstr ""
 
-#: src/application.rs:283 src/ui/window.rs:621
+#: src/application.rs:297 src/ui/window.rs:622
 msgid "Time's up!"
 msgstr ""
 
-#: src/application.rs:284
+#: src/application.rs:298
 msgid "Your Furtherance timer ended."
 msgstr ""
 
@@ -436,31 +420,31 @@ msgstr ""
 msgid "no tags"
 msgstr ""
 
-#: src/ui/task_details.rs:171 src/ui/task_details.rs:497
+#: src/ui/task_details.rs:170 src/ui/task_details.rs:497
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/task_details.rs:210 src/ui/window.rs:365
+#: src/ui/task_details.rs:209 src/ui/window.rs:366
 msgid "*Use your local format XX/XX/XX HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:212 src/ui/window.rs:367
+#: src/ui/task_details.rs:211 src/ui/window.rs:368
 msgid "*Use your local format XX/XX/XX HH:MM"
 msgstr ""
 
-#: src/ui/task_details.rs:218 src/ui/window.rs:373
+#: src/ui/task_details.rs:217 src/ui/window.rs:374
 msgid "*Start time cannot be later than stop time."
 msgstr ""
 
-#: src/ui/task_details.rs:223 src/ui/window.rs:378
+#: src/ui/task_details.rs:222 src/ui/window.rs:379
 msgid "*Time cannot be in the future."
 msgstr ""
 
-#: src/ui/task_details.rs:229
+#: src/ui/task_details.rs:228
 msgid "Delete task"
 msgstr ""
 
-#: src/ui/task_details.rs:256
+#: src/ui/task_details.rs:255
 msgid "Delete task?"
 msgstr ""
 
@@ -488,60 +472,60 @@ msgstr ""
 msgid "Yesterday"
 msgstr ""
 
-#: src/ui/window.rs:323
+#: src/ui/window.rs:324
 msgid "New Task"
 msgstr ""
 
-#: src/ui/window.rs:328
+#: src/ui/window.rs:329
 msgid "Add"
 msgstr ""
 
-#: src/ui/window.rs:334
+#: src/ui/window.rs:335
 msgid "Task Name"
 msgstr ""
 
-#: src/ui/window.rs:336
+#: src/ui/window.rs:337
 msgid "tags"
 msgstr ""
 
-#: src/ui/window.rs:383
+#: src/ui/window.rs:384
 msgid "*Task name cannot be blank."
 msgstr ""
 
-#: src/ui/window.rs:568
+#: src/ui/window.rs:569
 msgid "You have been idle for "
 msgstr ""
 
-#: src/ui/window.rs:573
+#: src/ui/window.rs:574
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
 msgstr ""
 
-#: src/ui/window.rs:720
+#: src/ui/window.rs:721
 msgid "Autosave Restored"
 msgstr ""
 
-#: src/ui/window.rs:723
+#: src/ui/window.rs:724
 msgid "Furtherance shut down improperly. An autosave was restored."
 msgstr ""
 
-#: src/ui/window.rs:782
+#: src/ui/window.rs:783
 msgid "Stop the timer to duplicate a task."
 msgstr ""
 
-#: src/ui/window.rs:853
+#: src/ui/window.rs:854
 msgid "Create or choose a CSV file"
 msgstr ""
 
-#: src/ui/window.rs:857
+#: src/ui/window.rs:858
 msgid "Accept"
 msgstr ""
 
-#: src/ui/window.rs:896
+#: src/ui/window.rs:897
 msgid "Exporting as CSV failed."
 msgstr ""
 
-#: src/ui/window.rs:898
+#: src/ui/window.rs:899
 msgid "Exported as CSV successfully."
 msgstr ""
