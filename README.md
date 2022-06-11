@@ -43,16 +43,11 @@ To uninstall, run `sudo ninja uninstall` in the same directory.
 ### Use
 Type in the name of the task you are working on, add some #tags, and press start. That's really all there is to it.
 
-## Project Details
+## Contribute
 
-### Built With
-Furtherance is written in Rust using the Gtk-rs bindings for GTK 4.
-
-### License
-This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
-
-### Author
-This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [lakoliu](https://lakoliu.com). More information at [Furtherance.app](https://furtherance.app).
+### Translations
+If you speak another language, it would be greatly appreciated if you could help translate Furtherance to make it available to more people!
+You can get started easily using [Weblate](https://hosted.weblate.org/projects/furtherance/translations/).
 
 ### Tips
 Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via: 
@@ -63,3 +58,14 @@ Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. I
 * **Dogecoin**: DCEHKYq6EnSjYnouAUB6kVTqcAfGrXCTkU
 
 Thank you so much!
+
+## Project Details
+
+### Built With
+Furtherance is written in Rust using the Gtk-rs bindings for GTK 4.
+
+### License
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
+
+### Author
+This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [lakoliu](https://lakoliu.com). More information at [Furtherance.app](https://furtherance.app).
