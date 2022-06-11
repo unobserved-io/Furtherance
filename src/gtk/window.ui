@@ -90,20 +90,22 @@
   <menu id="primary_menu">
     <section>
       <item>
-        <attribute name="label" translatable="yes">_Preferences</attribute>
-        <attribute name="action">app.preferences</attribute>
-      </item>
-      <item>
         <attribute name="label" translatable="yes">_Generate Report</attribute>
         <attribute name="action">app.report</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Export as CSV</attribute>
+        <attribute name="action">app.export-csv</attribute>
       </item>
       <item>
         <attribute name="label" translatable="yes">_Delete history</attribute>
         <attribute name="action">app.delete-history</attribute>
       </item>
+    </section>
+    <section>
       <item>
-        <attribute name="label" translatable="yes">_Export as CSV</attribute>
-        <attribute name="action">app.export-csv</attribute>
+        <attribute name="label" translatable="yes">_Preferences</attribute>
+        <attribute name="action">app.preferences</attribute>
       </item>
       <item>
         <attribute name="label" translatable="yes">_About Furtherance</attribute>
