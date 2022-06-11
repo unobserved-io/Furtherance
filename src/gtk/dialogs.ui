@@ -66,7 +66,7 @@
                 <property name="halign">fill</property>
                 <child>
                   <object class="AdwComboRow" id="csv_export_tasksort_row">
-                    <property name="title">Sort by</property>
+                    <property name="title" translatable="yes">Sort by</property>
                     <property name="model">
                       <object class="AdwEnumListModel">
                         <property name="enum-type">TaskSort</property>
@@ -79,7 +79,7 @@
                 </child>
                 <child>
                   <object class="AdwComboRow" id="csv_export_sortorder_row">
-                    <property name="title">Sort order</property>
+                    <property name="title" translatable="yes">Sort order</property>
                     <property name="model">
                       <object class="AdwEnumListModel">
                         <property name="enum-type">SortOrder</property>

@@ -3,15 +3,17 @@ data/com.lakoliu.Furtherance.appdata.xml.in
 data/com.lakoliu.Furtherance.desktop.in
 
 # UI files
+src/gtk/dialogs.ui
 src/gtk/history_box.ui
 src/gtk/preferences_window.ui
+src/gtk/report.ui
 src/gtk/task_details.ui
 src/gtk/task_row.ui
-src/gtk/dialogs.ui
 src/gtk/window.ui
 
 # Rust code
 src/application.rs
+src/ui/report.rs
 src/ui/task_details.rs
 src/ui/tasks_page.rs
 src/ui/window.rs
