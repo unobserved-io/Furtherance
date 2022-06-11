@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-10 15:56+0300\n"
+"POT-Creation-Date: 2022-06-11 11:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:187
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:180
 msgid "Track your time without being tracked."
 msgstr ""
 
@@ -112,11 +112,24 @@ msgstr ""
 msgid "Idle detection"
 msgstr ""
 
+#: data/com.lakoliu.Furtherance.desktop.in:4
+msgid "Time Tracker"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.desktop.in:5
+msgid "Track your time without being tracked"
+msgstr ""
+
+#. Translators: search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/com.lakoliu.Furtherance.desktop.in:12
+msgid "timer;tracker;clock;tasks;productivity;"
+msgstr ""
+
 #: src/gtk/dialogs.ui:7
 msgid "Export as CSV"
 msgstr ""
 
-#: src/gtk/dialogs.ui:10 src/application.rs:212 src/ui/task_details.rs:568
+#: src/gtk/dialogs.ui:10 src/application.rs:205 src/ui/task_details.rs:568
 #: src/ui/window.rs:328 src/ui/window.rs:859
 msgid "Cancel"
 msgstr ""
@@ -131,6 +144,14 @@ msgstr ""
 
 #: src/gtk/dialogs.ui:65
 msgid "CSV export preferences"
+msgstr ""
+
+#: src/gtk/dialogs.ui:69
+msgid "Sort by"
+msgstr ""
+
+#: src/gtk/dialogs.ui:82
+msgid "Sort order"
 msgstr ""
 
 #: src/gtk/preferences_window.ui:7
@@ -294,7 +315,7 @@ msgstr ""
 msgid "Sort by:"
 msgstr ""
 
-#: src/gtk/report.ui:110 src/gtk/task_row.ui:22 src/ui/report.rs:159
+#: src/gtk/report.ui:110 src/gtk/task_row.ui:23 src/ui/report.rs:159
 msgid "Task"
 msgstr ""
 
@@ -326,7 +347,7 @@ msgstr ""
 msgid "Task Details"
 msgstr ""
 
-#: src/gtk/task_details.ui:96 src/application.rs:308 src/ui/task_details.rs:190
+#: src/gtk/task_details.ui:96 src/application.rs:314 src/ui/task_details.rs:190
 #: src/ui/window.rs:344 src/ui/window.rs:627
 msgid "Stop"
 msgstr ""
@@ -339,7 +360,7 @@ msgstr ""
 msgid "Delete all"
 msgstr ""
 
-#: src/gtk/task_row.ui:47
+#: src/gtk/task_row.ui:48
 msgid "Time"
 msgstr ""
 
@@ -356,63 +377,63 @@ msgid "Task Name #tags"
 msgstr ""
 
 #: src/gtk/window.ui:93
-msgid "_Preferences"
+msgid "_Generate Report"
 msgstr ""
 
 #: src/gtk/window.ui:97
-msgid "_Generate Report"
+msgid "_Export as CSV"
 msgstr ""
 
 #: src/gtk/window.ui:101
 msgid "_Delete history"
 msgstr ""
 
-#: src/gtk/window.ui:105
-msgid "_Export as CSV"
+#: src/gtk/window.ui:107
+msgid "_Preferences"
 msgstr ""
 
-#: src/gtk/window.ui:109
+#: src/gtk/window.ui:111
 msgid "_About Furtherance"
 msgstr ""
 
-#: src/application.rs:190
+#: src/application.rs:183
 msgid "translator-credits"
 msgstr ""
 
-#: src/application.rs:208
+#: src/application.rs:201
 msgid "Delete history?"
 msgstr ""
 
-#: src/application.rs:213 src/ui/task_details.rs:569
+#: src/application.rs:206 src/ui/task_details.rs:569
 msgid "Delete"
 msgstr ""
 
-#: src/application.rs:223
+#: src/application.rs:216
 msgid "This will delete ALL of your task history."
 msgstr ""
 
-#: src/application.rs:225
+#: src/application.rs:218
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 
-#: src/application.rs:235
+#: src/application.rs:228
 msgid "DELETE"
 msgstr ""
 
-#: src/application.rs:285 src/ui/window.rs:588
+#: src/application.rs:291 src/ui/window.rs:588
 msgid "Discard"
 msgstr ""
 
-#: src/application.rs:286 src/application.rs:307 src/ui/window.rs:589
+#: src/application.rs:292 src/application.rs:313 src/ui/window.rs:589
 #: src/ui/window.rs:626
 msgid "Continue"
 msgstr ""
 
-#: src/application.rs:297 src/ui/window.rs:622
+#: src/application.rs:303 src/ui/window.rs:622
 msgid "Time's up!"
 msgstr ""
 
-#: src/application.rs:298
+#: src/application.rs:304
 msgid "Your Furtherance timer ended."
 msgstr ""
 
