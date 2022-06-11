@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-05 12:46+0300\n"
-"PO-Revision-Date: 2022-06-05 18:36+0200\n"
+"POT-Creation-Date: 2022-06-11 11:07+0200\n"
+"PO-Revision-Date: 2022-06-11 11:10+0200\n"
 "Last-Translator: musiclover <musiclover382@protonmail.com>\n"
 "Language-Team: \n"
 "Language: it\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:173
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:180
 msgid "Track your time without being tracked."
 msgstr "Traccia il tuo tempo senza essere tracciato."
 
@@ -35,90 +35,134 @@ msgstr ""
 "l'inattività."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Added a button to restart tasks"
+msgstr "Aggiunto un pulsante per far ripartire le attività"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "CSV Export"
+msgstr "Esportazione come CSV"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+msgid "Timer centered on empty state"
+msgstr "Il timer è stato spostato al centro della zona vuota"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+msgid "Uses local date format"
+msgstr "Formato data localizzato"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:55
 msgid "Generate reports of task history over a specified timeframe"
 msgstr "Genera resoconti delle attività svolte in un determinato periodo"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+#: data/com.lakoliu.Furtherance.appdata.xml.in:56
 msgid "Bug fixes and improvements"
 msgstr "Correzioni di bug e miglioramenti"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:53
+#: data/com.lakoliu.Furtherance.appdata.xml.in:63
 msgid "Ability to add tasks manually"
 msgstr "È possibile aggiungere attività manualmente"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+#: data/com.lakoliu.Furtherance.appdata.xml.in:64
 msgid "Auto-save option"
 msgstr "Opzione di salvataggio automatico"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:55
+#: data/com.lakoliu.Furtherance.appdata.xml.in:65
 msgid "Task names can now be changed for an entire group"
 msgstr "Il nome delle attività può essere cambiato per un intero gruppo"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:62
+#: data/com.lakoliu.Furtherance.appdata.xml.in:72
 msgid "Added Pomodoro-style countdown timer!"
 msgstr "Aggiunto conto alla rovescia in stile Pomodoro!"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:63
+#: data/com.lakoliu.Furtherance.appdata.xml.in:73
 msgid "Bug fixes"
 msgstr "Correzione di bug"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:70
+#: data/com.lakoliu.Furtherance.appdata.xml.in:80
 msgid "Ability to add tags!"
 msgstr "Aggiunti i tag"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:71
+#: data/com.lakoliu.Furtherance.appdata.xml.in:81
 msgid "Fixed icon positioning"
 msgstr "La posizione dell'icona è stata corretta"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:72
+#: data/com.lakoliu.Furtherance.appdata.xml.in:82
 msgid "Changed start button color and behavior"
 msgstr "Il colore e il funzionamento del pulsante avvia sono stati modificati"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:73
+#: data/com.lakoliu.Furtherance.appdata.xml.in:83
 msgid "Changed color of delete buttons"
 msgstr "Il colore del pulsante elimina è stato cambiato"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:74
+#: data/com.lakoliu.Furtherance.appdata.xml.in:84
 msgid "Dutch, Brazilian Portuguese, and French translations"
 msgstr "Traduzioni olandese, brasiliana e francese"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:81
+#: data/com.lakoliu.Furtherance.appdata.xml.in:91
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 "Furtherance ha una nuova icona! Oltre a diversi miglioramenti e correzioni "
 "di bug."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:90
+#: data/com.lakoliu.Furtherance.appdata.xml.in:100
 msgid "First stable release of Furtherance."
 msgstr "La prima versione stabile di Furtherance."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:94
+#: data/com.lakoliu.Furtherance.appdata.xml.in:104
 msgid "Track time spent on tasks"
 msgstr "Traccia il tempo speso compiendo delle attività"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:95
+#: data/com.lakoliu.Furtherance.appdata.xml.in:105
 msgid "Change/delete recorded times"
 msgstr "Cambia/elimina i tempi registrati"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:96
+#: data/com.lakoliu.Furtherance.appdata.xml.in:106
 msgid "Idle detection"
 msgstr "Rilevamento di inattività"
 
-#: src/gtk/history_box.ui:25
-msgid "Start Tracking"
-msgstr "Inizia il tracciamento"
+#: data/com.lakoliu.Furtherance.desktop.in:4
+msgid "Time Tracker"
+msgstr "Tracciamento del tempo"
 
-#: src/gtk/history_box.ui:44
-msgid "Type your task and press start"
-msgstr "Inserisci la tua attività e avvia il timer"
+#: data/com.lakoliu.Furtherance.desktop.in:5
+msgid "Track your time without being tracked"
+msgstr "Traccia il tuo tempo senza essere tracciato"
 
-#: src/gtk/history_box.ui:63
-msgid "Prior tasks will show up here"
-msgstr "Le attività svolte verranno mostrate qui"
+#. Translators: search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: data/com.lakoliu.Furtherance.desktop.in:12
+msgid "timer;tracker;clock;tasks;productivity;"
+msgstr ""
+"timer;tracker;clock;tasks;productivity;tempo;tracciare;orologio;attività;"
+"compiti;produttività;"
 
-#: src/gtk/history_box.ui:82
-msgid "Right-click a task to duplicate it"
-msgstr "Clicca con il tasto destro per duplicare un'attività"
+#: src/gtk/dialogs.ui:7
+msgid "Export as CSV"
+msgstr "Esporta come CSV"
+
+#: src/gtk/dialogs.ui:10 src/application.rs:205 src/ui/task_details.rs:568
+#: src/ui/window.rs:328 src/ui/window.rs:859
+msgid "Cancel"
+msgstr "Annulla"
+
+#: src/gtk/dialogs.ui:15
+msgid "Export"
+msgstr "Esporta"
+
+#: src/gtk/dialogs.ui:47 src/ui/window.rs:879
+msgid " - no file selected - "
+msgstr " - nessun file selezionato - "
+
+#: src/gtk/dialogs.ui:65
+msgid "CSV export preferences"
+msgstr "Preferenze esportazione come CSV"
+
+#: src/gtk/dialogs.ui:69
+msgid "Sort by"
+msgstr "Ordina per"
+
+#: src/gtk/dialogs.ui:82
+msgid "Sort order"
+msgstr "Ordine"
 
 #: src/gtk/preferences_window.ui:7
 msgid "General"
@@ -132,7 +176,7 @@ msgstr "Aspetto"
 msgid "_Dark theme"
 msgstr "Tema scuro"
 
-#: src/gtk/preferences_window.ui:28 src/ui/window.rs:556
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:584
 msgid "Idle"
 msgstr "Inattività"
 
@@ -257,8 +301,8 @@ msgstr "Ultimo anno"
 msgid "Date range"
 msgstr "Personalizzato"
 
-#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:189
-#: src/ui/window.rs:331
+#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:188
+#: src/ui/window.rs:342
 msgid "Start"
 msgstr "Inizio"
 
@@ -282,7 +326,7 @@ msgstr "La data iniziale dev'essere prima della data iniziale"
 msgid "Sort by:"
 msgstr "Ordina per:"
 
-#: src/gtk/report.ui:110 src/gtk/task_row.ui:22 src/ui/report.rs:155
+#: src/gtk/report.ui:110 src/gtk/task_row.ui:23 src/ui/report.rs:159
 msgid "Task"
 msgstr "Attività"
 
@@ -298,11 +342,11 @@ msgstr "Filtra per attività o tag"
 msgid "Tasks"
 msgstr "Attività"
 
-#: src/gtk/report.ui:137 src/ui/task_details.rs:180
+#: src/gtk/report.ui:137 src/ui/task_details.rs:179
 msgid "Tags"
 msgstr "Tag"
 
-#: src/gtk/report.ui:143 src/ui/report.rs:144
+#: src/gtk/report.ui:143 src/ui/report.rs:146
 msgid "Task, Task 2"
 msgstr "Attività, Attività 2"
 
@@ -314,8 +358,8 @@ msgstr "Aggiorna"
 msgid "Task Details"
 msgstr "Dettagli attività"
 
-#: src/gtk/task_details.ui:96 src/application.rs:287 src/ui/task_details.rs:191
-#: src/ui/window.rs:333 src/ui/window.rs:595
+#: src/gtk/task_details.ui:96 src/application.rs:314 src/ui/task_details.rs:190
+#: src/ui/window.rs:344 src/ui/window.rs:627
 msgid "Stop"
 msgstr "Fine"
 
@@ -327,7 +371,7 @@ msgstr "Totale"
 msgid "Delete all"
 msgstr "Elimina tutto"
 
-#: src/gtk/task_row.ui:45
+#: src/gtk/task_row.ui:48
 msgid "Time"
 msgstr "Tempo"
 
@@ -339,118 +383,118 @@ msgstr "Aggiungi attività"
 msgid "Main Menu"
 msgstr "Menu principale"
 
-#: src/gtk/window.ui:64
+#: src/gtk/window.ui:65
 msgid "Task Name #tags"
 msgstr "Nome attività #Tag"
 
-#: src/gtk/window.ui:92
-msgid "_Preferences"
-msgstr "Preferenze"
-
-#: src/gtk/window.ui:96
+#: src/gtk/window.ui:93
 msgid "_Generate Report"
 msgstr "Resoconto"
 
-#: src/gtk/window.ui:100
+#: src/gtk/window.ui:97
+msgid "_Export as CSV"
+msgstr "Esporta come CSV"
+
+#: src/gtk/window.ui:101
 msgid "_Delete history"
 msgstr "Cancella cronologia"
 
-#: src/gtk/window.ui:104
+#: src/gtk/window.ui:107
+msgid "_Preferences"
+msgstr "Preferenze"
+
+#: src/gtk/window.ui:111
 msgid "_About Furtherance"
 msgstr "Informazioni"
 
-#: src/application.rs:176
+#: src/application.rs:183
 msgid "translator-credits"
 msgstr "Musiclover382 <musiclover382@protonmail.com>"
 
-#: src/application.rs:192
+#: src/application.rs:201
 msgid "Delete history?"
 msgstr "Cancellare la cronologia?"
 
-#: src/application.rs:195 src/ui/task_details.rs:568 src/ui/window.rs:317
-msgid "Cancel"
-msgstr "Annulla"
-
-#: src/application.rs:196 src/ui/task_details.rs:569
+#: src/application.rs:206 src/ui/task_details.rs:569
 msgid "Delete"
 msgstr "Elimina"
 
-#: src/application.rs:203
+#: src/application.rs:216
 msgid "This will delete ALL of your task history."
 msgstr "Verranno eliminate TUTTE le attività svolte."
 
-#: src/application.rs:205
+#: src/application.rs:218
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 "Scrivere ELIMINA nella casella sottostante, poi cliccare Elimina per "
 "continuare."
 
-#: src/application.rs:214
+#: src/application.rs:228
 msgid "DELETE"
 msgstr "ELIMINA"
 
-#: src/application.rs:264 src/ui/window.rs:559
+#: src/application.rs:291 src/ui/window.rs:588
 msgid "Discard"
 msgstr "Scarta"
 
-#: src/application.rs:265 src/application.rs:286 src/ui/window.rs:560
-#: src/ui/window.rs:594
+#: src/application.rs:292 src/application.rs:313 src/ui/window.rs:589
+#: src/ui/window.rs:626
 msgid "Continue"
 msgstr "Continua"
 
-#: src/application.rs:276 src/ui/window.rs:591
+#: src/application.rs:303 src/ui/window.rs:622
 msgid "Time's up!"
 msgstr "Tempo scaduto!"
 
-#: src/application.rs:277
+#: src/application.rs:304
 msgid "Your Furtherance timer ended."
 msgstr "Il timer di Furtherance è concluso."
 
-#: src/ui/report.rs:146
+#: src/ui/report.rs:148
 msgid "tag, tag 2"
 msgstr "Tag, Tag 2"
 
-#: src/ui/report.rs:158
+#: src/ui/report.rs:163
 msgid "Duration"
 msgstr "Tempo"
 
-#: src/ui/report.rs:295
+#: src/ui/report.rs:304
 msgid "No Results"
 msgstr "Nessun risultato"
 
-#: src/ui/report.rs:303
+#: src/ui/report.rs:311
 msgid "All Results"
 msgstr "Tutti i risultati"
 
-#: src/ui/report.rs:445
+#: src/ui/report.rs:454
 msgid "no tags"
 msgstr "Nessun tag"
 
-#: src/ui/task_details.rs:171 src/ui/task_details.rs:497
+#: src/ui/task_details.rs:170 src/ui/task_details.rs:497
 msgid "Edit Task"
 msgstr "Modifica attività"
 
-#: src/ui/task_details.rs:210 src/ui/window.rs:355
-msgid "*Use the format MMM DD YYYY HH:MM:SS"
-msgstr "*Usare il formato MMM GG AAAA HH:MM:SS"
+#: src/ui/task_details.rs:209 src/ui/window.rs:366
+msgid "*Use your local format XX/XX/XX HH:MM:SS"
+msgstr "*Usare il formato GG/MM/AA HH:MM:SS"
 
-#: src/ui/task_details.rs:212 src/ui/window.rs:357
-msgid "*Use the format MMM DD YYYY HH:MM"
-msgstr "*Usare il formato MMM GG AAAA HH:MM"
+#: src/ui/task_details.rs:211 src/ui/window.rs:368
+msgid "*Use your local format XX/XX/XX HH:MM"
+msgstr "*Usare il formato GG/MM/AA HH:MM:SS"
 
-#: src/ui/task_details.rs:218 src/ui/window.rs:363
+#: src/ui/task_details.rs:217 src/ui/window.rs:374
 msgid "*Start time cannot be later than stop time."
 msgstr "*Il tempo iniziale non può essere successivo al tempo finale."
 
-#: src/ui/task_details.rs:223 src/ui/window.rs:368
+#: src/ui/task_details.rs:222 src/ui/window.rs:379
 msgid "*Time cannot be in the future."
 msgstr "*Il tempo non può essere futuro."
 
-#: src/ui/task_details.rs:229
+#: src/ui/task_details.rs:228
 msgid "Delete task"
 msgstr "Elimina attività"
 
-#: src/ui/task_details.rs:256
+#: src/ui/task_details.rs:255
 msgid "Delete task?"
 msgstr "Eliminare l'attività?"
 
@@ -470,39 +514,39 @@ msgstr "Eliminare tutto?"
 msgid "This will delete all occurrences of this task on this day."
 msgstr "Verranno eliminate tutte le attività con questo nome in questo giorno."
 
-#: src/ui/tasks_page.rs:146
+#: src/ui/tasks_page.rs:143
 msgid "Today"
 msgstr "Oggi"
 
-#: src/ui/tasks_page.rs:148
+#: src/ui/tasks_page.rs:145
 msgid "Yesterday"
 msgstr "Ieri"
 
-#: src/ui/window.rs:313
+#: src/ui/window.rs:324
 msgid "New Task"
 msgstr "Nuova attività"
 
-#: src/ui/window.rs:318
+#: src/ui/window.rs:329
 msgid "Add"
 msgstr "Aggiungi"
 
-#: src/ui/window.rs:324
+#: src/ui/window.rs:335
 msgid "Task Name"
 msgstr "Nome attività"
 
-#: src/ui/window.rs:326
+#: src/ui/window.rs:337
 msgid "tags"
 msgstr "tag"
 
-#: src/ui/window.rs:373
+#: src/ui/window.rs:384
 msgid "*Task name cannot be blank."
 msgstr "*Il nome dell'attività non può essere vuoto."
 
-#: src/ui/window.rs:547
+#: src/ui/window.rs:569
 msgid "You have been idle for "
 msgstr "Sei stato inattivo per "
 
-#: src/ui/window.rs:548
+#: src/ui/window.rs:574
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
@@ -510,27 +554,50 @@ msgstr ""
 "\n"
 "Vuoi scartare tale lasso di tempo o continuare regolarmente?"
 
-#: src/ui/window.rs:689
+#: src/ui/window.rs:721
 msgid "Autosave Restored"
 msgstr "Salvataggio automatico ripristinato"
 
-#: src/ui/window.rs:692
+#: src/ui/window.rs:724
 msgid "Furtherance shut down improperly. An autosave was restored."
 msgstr ""
 "Furtherance non si è chiuso correttamente. I dati salvati automaticamente "
 "sono stati ripristinati."
 
-#: src/ui/window.rs:751
+#: src/ui/window.rs:783
 msgid "Stop the timer to duplicate a task."
 msgstr "Ferma il timer per duplicare un'attività."
 
-#~ msgid "Time Tracker"
-#~ msgstr "Tracciamento del tempo"
+#: src/ui/window.rs:854
+msgid "Create or choose a CSV file"
+msgstr "Crea o scegli un file CSV"
 
-#~ msgid "Track your time without being tracked"
-#~ msgstr "Traccia il tuo tempo senza essere tracciato"
+#: src/ui/window.rs:858
+msgid "Accept"
+msgstr "Conferma"
 
-#~ msgid "timer;tracker;clock;tasks;productivity;"
-#~ msgstr ""
-#~ "timer;tracker;clock;tasks;productivity;tempo;tracciare;orologio;attività;"
-#~ "compiti;produttività;"
+#: src/ui/window.rs:897
+msgid "Exporting as CSV failed."
+msgstr "Impossibile esportare come CSV."
+
+#: src/ui/window.rs:899
+msgid "Exported as CSV successfully."
+msgstr "Esportazione come CSV completata."
+
+#~ msgid "Start Tracking"
+#~ msgstr "Inizia il tracciamento"
+
+#~ msgid "Type your task and press start"
+#~ msgstr "Inserisci la tua attività e avvia il timer"
+
+#~ msgid "Prior tasks will show up here"
+#~ msgstr "Le attività svolte verranno mostrate qui"
+
+#~ msgid "Right-click a task to duplicate it"
+#~ msgstr "Clicca con il tasto destro per duplicare un'attività"
+
+#~ msgid "*Use the format MMM DD YYYY HH:MM:SS"
+#~ msgstr "*Usare il formato MMM GG AAAA HH:MM:SS"
+
+#~ msgid "*Use the format MMM DD YYYY HH:MM"
+#~ msgstr "*Usare il formato MMM GG AAAA HH:MM"
