@@ -163,13 +163,6 @@ impl FurtheranceApplication {
             imp.pomodoro_dialog.lock().unwrap().response(gtk::ResponseType::Reject);
         }));
         self.add_action(&stop_pomodoro_action);
-
-        let export_csv_action = gio::SimpleAction::new("export-csv", None);
-        export_csv_action.connect_activate(clone!(@weak self as app => move |_, _| {
-            let window = FurtheranceWindow::default();
-            window.open_csv_export_dialog();
-        }));
-        self.add_action(&export_csv_action);
     }
 
     fn setup_application(&self) {
@@ -254,6 +247,19 @@ impl FurtheranceApplication {
             self.add_action(&delete_history_action);
         } else {
             self.remove_action("delete-history");
+        }
+    }
+
+    pub fn export_csv_enabled(&self, enabled: bool) {
+        if enabled {
+            let export_csv_action = gio::SimpleAction::new("export-csv", None);
+            export_csv_action.connect_activate(clone!(@weak self as app => move |_, _| {
+                let window = FurtheranceWindow::default();
+                window.open_csv_export_dialog();
+            }));
+            self.add_action(&export_csv_action);
+        } else {
+            self.remove_action("export-csv");
         }
     }
 

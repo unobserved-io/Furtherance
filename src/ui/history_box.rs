@@ -93,6 +93,7 @@ impl FurHistoryBox {
         let imp = imp::FurHistoryBox::from_instance(self);
         let app = FurtheranceApplication::default();
         app.delete_enabled(false);
+        app.export_csv_enabled(false);
         imp.spinner.set_spinning(false);
 
         let name = match view {
@@ -103,6 +104,7 @@ impl FurHistoryBox {
             View::Empty => "empty",
             View::Tasks => {
                 app.delete_enabled(true);
+                app.export_csv_enabled(true);
                 "tasks"
             }
         };
