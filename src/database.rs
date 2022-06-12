@@ -21,6 +21,7 @@ use rusqlite::{Connection, Result};
 use std::convert::TryFrom;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
+use gettextrs::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Task {
@@ -45,9 +46,9 @@ pub struct Task {
 )]
 #[enum_type(name = "SortOrder")]
 pub enum SortOrder {
-    #[enum_value(name = "Ascending", nick = "ascending")]
+    #[enum_value(name = "Ascending", nick = "Ascending")]
     Ascending = 0,
-    #[enum_value(name = "Descending", nick = "descending")]
+    #[enum_value(name = "Descending", nick = "Descending")]
     Descending,
 }
 
@@ -90,11 +91,11 @@ impl SortOrder {
 )]
 #[enum_type(name = "TaskSort")]
 pub enum TaskSort {
-    #[enum_value(name = "StartTime", nick = "start time")]
+    #[enum_value(name = "StartTime", nick = "Start time")]
     StartTime,
-    #[enum_value(name = "StopTime", nick = "stop time")]
+    #[enum_value(name = "StopTime", nick = "Stop time")]
     StopTime,
-    #[enum_value(name = "TaskName", nick = "task name")]
+    #[enum_value(name = "TaskName", nick = "Task name")]
     TaskName,
 }
 
@@ -242,32 +243,6 @@ pub fn export_as_csv(sort: TaskSort, order: SortOrder, delimiter: u8) -> anyhow:
 
     Ok(String::from_utf8(csv_writer.into_inner()?)?)
 }
-
-// pub fn retrieve_date_range() -> Result<Vec<Task>, rusqlite::Error> {
-// Retrieve all tasks from the database
-//     let conn = Connection::open(get_directory())?;
-
-//     let mut query = conn.prepare("SELECT * FROM tasks ORDER BY start_time")?;
-//     let task_iter = query.query_map([], |row| {
-//         Ok(Task {
-//             id: row.get(0)?,
-//             task_name: row.get(1)?,
-//             start_time: row.get(2)?,
-//             stop_time: row.get(3)?,
-//             tags: row.get(4)?,
-//         })
-//     })?;
-
-//     let mut tasks_vec: Vec<Task> = Vec::new();
-//     for task_item in task_iter {
-//         let start = DateTime::parse_from_rfc3339(&task_item.start_time).unwrap();
-//         let stop = DateTime::parse_from_rfc3339(&task_item.stop_time).unwrap();
-//         tasks_vec.push(task_item.unwrap());
-//     }
-
-//     Ok(tasks_vec)
-
-// }
 
 pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
     let conn = Connection::open(get_directory())?;
