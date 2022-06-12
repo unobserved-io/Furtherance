@@ -16,7 +16,6 @@
 
 use chrono::{DateTime, Local};
 use directories::ProjectDirs;
-use gtk::glib;
 use rusqlite::{Connection, Result};
 use std::convert::TryFrom;
 use std::fs::create_dir_all;
@@ -41,13 +40,9 @@ pub struct Task {
     Ord,
     num_derive::FromPrimitive,
     num_derive::ToPrimitive,
-    glib::Enum,
 )]
-#[enum_type(name = "SortOrder")]
 pub enum SortOrder {
-    #[enum_value(name = "Ascending", nick = "Ascending")]
     Ascending = 0,
-    #[enum_value(name = "Descending", nick = "Descending")]
     Descending,
 }
 
@@ -86,15 +81,10 @@ impl SortOrder {
     Ord,
     num_derive::ToPrimitive,
     num_derive::FromPrimitive,
-    glib::Enum,
 )]
-#[enum_type(name = "TaskSort")]
 pub enum TaskSort {
-    #[enum_value(name = "StartTime", nick = "Start time")]
     StartTime,
-    #[enum_value(name = "StopTime", nick = "Stop time")]
     StopTime,
-    #[enum_value(name = "TaskName", nick = "Task name")]
     TaskName,
 }
 
