@@ -21,7 +21,6 @@ use rusqlite::{Connection, Result};
 use std::convert::TryFrom;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
-use gettextrs::*;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Task {
