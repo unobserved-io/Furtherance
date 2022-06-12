@@ -83,7 +83,7 @@ impl SortOrder {
     num_derive::FromPrimitive,
 )]
 pub enum TaskSort {
-    StartTime,
+    StartTime = 0,
     StopTime,
     TaskName,
 }
