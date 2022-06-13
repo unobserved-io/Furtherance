@@ -40,8 +40,6 @@ use crate::ui::FurHistoryBox;
 use crate::FurtheranceApplication;
 
 mod imp {
-    use crate::database::{SortOrder, TaskSort};
-
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
@@ -87,8 +85,6 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             FurHistoryBox::static_type();
-            TaskSort::static_type();
-            SortOrder::static_type();
             Self::bind_template(klass);
         }
 
@@ -916,7 +912,6 @@ impl FurtheranceWindow {
         let imp = imp::FurtheranceWindow::from_instance(self);
         imp.win_box.set_valign(align);
     }
-
 }
 
 impl Default for FurtheranceWindow {

@@ -68,12 +68,13 @@
                   <object class="AdwComboRow" id="csv_export_tasksort_row">
                     <property name="title" translatable="yes">Sort by</property>
                     <property name="model">
-                      <object class="AdwEnumListModel">
-                        <property name="enum-type">TaskSort</property>
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Start time</item>
+                          <item translatable="yes">Stop time</item>
+                          <item translatable="yes">Task name</item>
+                        </items>
                       </object>
-                    </property>
-                    <property name="expression">
-                      <lookup type="AdwEnumListItem" name="nick" />
                     </property>
                   </object>
                 </child>
@@ -81,12 +82,12 @@
                   <object class="AdwComboRow" id="csv_export_sortorder_row">
                     <property name="title" translatable="yes">Sort order</property>
                     <property name="model">
-                      <object class="AdwEnumListModel">
-                        <property name="enum-type">SortOrder</property>
+                      <object class="GtkStringList">
+                        <items>
+                          <item translatable="yes">Ascending</item>
+                          <item translatable="yes">Descending</item>
+                        </items>
                       </object>
-                    </property>
-                    <property name="expression">
-                      <lookup type="AdwEnumListItem" name="nick" />
                     </property>
                   </object>
                 </child>
