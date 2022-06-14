@@ -196,7 +196,7 @@ impl FurtheranceWindow {
             .connect_changed(clone!(@weak self as this => move |task_input| {
                 let imp2 = imp::FurtheranceWindow::from_instance(&this);
                 let task_input_text = task_input.text();
-                let split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
+                let split_tags: Vec<&str> = task_input_text.trim().split('#').collect();
                 if split_tags[0].trim().is_empty() {
                     imp2.start_button.set_sensitive(false);
                 } else {
@@ -212,7 +212,7 @@ impl FurtheranceWindow {
                     let mut secs: i32 = 0;
                     let mut mins: i32 = pomodoro_time;
                     let mut hrs: i32 = mins / 60;
-                    mins = mins % 60;
+                    mins %= 60;
 
                     *imp2.running.lock().unwrap() = true;
                     *start_time.borrow_mut() = Local::now();

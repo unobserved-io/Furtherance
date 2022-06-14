@@ -126,6 +126,7 @@ impl FurTaskDetails {
             task_box.set_homogeneous(true);
 
             let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
+            Local.from_local_datetime(&start_time).unwrap();
             let mut start_time_str = start_time.format("%H:%M:%S").to_string();
             if !settings_manager::get_bool("show-seconds") {
                 start_time_str = start_time.format("%H:%M").to_string();
