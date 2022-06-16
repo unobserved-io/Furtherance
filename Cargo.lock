@@ -259,7 +259,6 @@ dependencies = [
  "gtk4-macros",
  "itertools",
  "libadwaita",
- "libc-strftime",
  "log",
  "num-derive",
  "num-traits",
@@ -698,15 +697,6 @@ name = "libc"
 version = "0.2.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06e509672465a0504304aa87f9f176f2b2b716ed8fb105ebe5c02dc6dce96a94"
-
-[[package]]
-name = "libc-strftime"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3badb12f3d8623017f2cff9de476ff32f426ef45419253366fa088b8df6364cf"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "libdbus-sys"
