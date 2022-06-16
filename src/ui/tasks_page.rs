@@ -20,6 +20,7 @@ use chrono::{DateTime, Duration, Local};
 use gettextrs::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*};
+use libc_strftime::{epoch, strftime_local};
 
 use crate::database::{self, SortOrder, TaskSort};
 use crate::settings_manager;
@@ -86,6 +87,10 @@ impl FurTasksPage {
 
     pub fn build_task_list(&self) {
         let imp = imp::FurTasksPage::from_instance(&self);
+
+        let now = epoch(); // most likely a u64
+        let local = strftime_local("%h %e", now);
+        println!("On est: {}", local);
 
         let tasks_list = database::retrieve(TaskSort::StartTime, SortOrder::Descending).unwrap();
 
