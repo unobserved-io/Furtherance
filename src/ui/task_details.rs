@@ -206,9 +206,9 @@ impl FurTaskDetails {
                 stop_time_edit.set_text(&stop_time_w_year);
 
                 let instructions = gtk::Label::new(Some(
-                    &gettext("*Use your local format XX/XX/XX HH:MM:SS")));
+                    &gettext("*Use the format MM/DD/YY HH:MM:SS")));
                 if !settings_manager::get_bool("show-seconds") {
-                    instructions.set_text(&gettext("*Use your local format XX/XX/XX HH:MM"));
+                    instructions.set_text(&gettext("*Use the format MM/DD/YY HH:MM"));
                 }
                 instructions.set_visible(false);
                 instructions.add_css_class("error_message");
