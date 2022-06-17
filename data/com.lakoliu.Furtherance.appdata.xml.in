@@ -3,7 +3,7 @@
 	<id>com.lakoliu.Furtherance</id>
   <launchable type="desktop-id">com.lakoliu.Furtherance.desktop</launchable>
   <name>Furtherance</name>
-  <summary>Track your time without being tracked.</summary>
+  <summary>Track your time without being tracked</summary>
   <developer_name>Ricky Kresslein</developer_name>
   <update_contact>rk@lakoliu.com</update_contact>
   <translation type="gettext">furtherance</translation>
