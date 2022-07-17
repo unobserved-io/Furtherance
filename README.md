@@ -24,6 +24,7 @@ It allows you to track time spent on different activities without worrying about
 <a href="https://flathub.org/apps/details/com.lakoliu.Furtherance"><img width='240' alt='Download on Flathub' src="https://flathub.org/assets/badges/flathub-badge-en.png"/></a>
 * The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
 * Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
+
 **Windows**
 * Furtherance for Windows is availaible from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W). It uses a different codebase to provide a better experience on Windows, and it is not open-source.
 
