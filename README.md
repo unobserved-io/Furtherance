@@ -19,9 +19,12 @@ It allows you to track time spent on different activities without worrying about
 ## Getting Started
 
 ### Install
+**Linux**
 <a href="https://flathub.org/apps/details/com.lakoliu.Furtherance"><img width='240' alt='Download on Flathub' src="https://flathub.org/assets/badges/flathub-badge-en.png"/></a>
 * The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
 * Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
+**Windows**
+* Furtherance for Windows is availaible from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W). It uses a different codebase to provide a better experience on Windows, and it is not open-source.
 
 ### Build
 The easiest way to build Furtherance is with [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder).
@@ -55,6 +58,7 @@ Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. I
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
 * **Bitcoin**: bc1q70czd5evhsxnjcd45cj2n4s3dr6qmhvrlljjlk
 * **Ethereum**: 0x1fe9C92693eFd9D2429eE3d265e8aB453AFc4FDb
+* **Monero**: 4BBuKqc2RWnJp9fDxCuHNUVsjM9XNrFBsGHNoBGpvwUveT6EgR9DAD6QPXRGhEfoxnbEnMsC79bsHU5G6Mc6pxyfBv1pbyS
 * **Dogecoin**: DCEHKYq6EnSjYnouAUB6kVTqcAfGrXCTkU
 
 Thank you so much!
