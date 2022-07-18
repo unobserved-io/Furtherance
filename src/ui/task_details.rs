@@ -112,13 +112,16 @@ impl FurTaskDetails {
 
         imp.task_name_label.set_text(&task_group[0].task_name);
         let this_day_str = DateTime::parse_from_rfc3339(&task_group[0].start_time).unwrap();
-        *imp.this_day.borrow_mut() = this_day_str.format("%x").to_string();
+        *imp.this_day.borrow_mut() = this_day_str.format("%F").to_string();
         *imp.orig_tags.borrow_mut() = task_group[0].tags.clone();
 
         for task in task_group.clone() {
             imp.all_task_ids.borrow_mut().push(task.id);
         }
 
+        // Using ISO 8601 format until a localized option is possible
+        let time_formatter = "%F %H:%M:%S";
+        let time_formatter_no_secs = "%F %H:%M";
         let task_group_len = task_group.len();
         task_group.reverse();
         for task in task_group {
@@ -192,13 +195,13 @@ impl FurTaskDetails {
                 let times_box = gtk::Box::new(gtk::Orientation::Horizontal, 5);
                 times_box.set_homogeneous(true);
 
-                let mut start_time_w_year = start_time.format("%x %H:%M:%S").to_string();
+                let mut start_time_w_year = start_time.format(time_formatter).to_string();
                 if !settings_manager::get_bool("show-seconds") {
-                    start_time_w_year = start_time.format("%x %H:%M").to_string();
+                    start_time_w_year = start_time.format(time_formatter_no_secs).to_string();
                 }
-                let mut stop_time_w_year = stop_time.format("%x %H:%M:%S").to_string();
+                let mut stop_time_w_year = stop_time.format(time_formatter).to_string();
                 if !settings_manager::get_bool("show-seconds") {
-                    stop_time_w_year = stop_time.format("%x %H:%M").to_string();
+                    stop_time_w_year = stop_time.format(time_formatter_no_secs).to_string();
                 }
                 let start_time_edit = gtk::Entry::new();
                 start_time_edit.set_text(&start_time_w_year);
@@ -206,9 +209,9 @@ impl FurTaskDetails {
                 stop_time_edit.set_text(&stop_time_w_year);
 
                 let instructions = gtk::Label::new(Some(
-                    &gettext("*Use the format MM/DD/YY HH:MM:SS")));
+                    &gettext("*Use the format YYYY-MM-DD HH:MM:SS")));
                 if !settings_manager::get_bool("show-seconds") {
-                    instructions.set_text(&gettext("*Use the format MM/DD/YY HH:MM"));
+                    instructions.set_text(&gettext("*Use the format YYYY-MM-DD HH:MM"));
                 }
                 instructions.set_visible(false);
                 instructions.add_css_class("error_message");
@@ -308,16 +311,20 @@ impl FurTaskDetails {
                                 if settings_manager::get_bool("show-seconds") {
                                     new_start_time = NaiveDateTime::parse_from_str(
                                                         &new_start_time_str,
-                                                        "%x %H:%M:%S");
+                                                        time_formatter);
                                 } else {
                                     new_start_time = NaiveDateTime::parse_from_str(
                                                             &new_start_time_str,
-                                                            "%x %H:%M");
+                                                            time_formatter_no_secs);
                                 }
+
                                 if let Err(_) = new_start_time {
                                     instructions.set_visible(true);
                                     do_not_close = true;
-                                } else {
+                                } else if (Local::now() - Local.from_local_datetime(&new_start_time.unwrap()).unwrap()).num_seconds() < 0 {
+                                    future_error.set_visible(true);
+                                    do_not_close = true;
+                                }else {
                                     new_start_time_local = Local.from_local_datetime(&new_start_time.unwrap()).unwrap();
                                     new_start_time_edited = new_start_time_local.to_rfc3339();
                                     start_successful = true;
@@ -329,11 +336,11 @@ impl FurTaskDetails {
                                 if settings_manager::get_bool("show-seconds") {
                                     new_stop_time = NaiveDateTime::parse_from_str(
                                                         &new_stop_time_str,
-                                                        "%x %H:%M:%S");
+                                                        time_formatter);
                                 } else {
                                     new_stop_time = NaiveDateTime::parse_from_str(
                                                             &new_stop_time_str,
-                                                            "%x %H:%M");
+                                                            time_formatter_no_secs);
                                 }
                                 if let Err(_) = new_stop_time {
                                     instructions.set_visible(true);
@@ -434,7 +441,7 @@ impl FurTaskDetails {
         updated_list.retain(|task| {
             let delete = {
                 let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
-                let start_time_str = start_time.format("%x").to_string();
+                let start_time_str = start_time.format("%F").to_string();
                 if imp.this_day.borrow().to_string() != start_time_str
                     || imp.task_name_label.text() != task.task_name
                     || imp.orig_tags.borrow().to_string() != task.tags

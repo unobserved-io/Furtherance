@@ -137,4 +137,3 @@ impl FurHistoryBox {
         window.vertical_align(gtk::Align::Center);
     }
 }
-
