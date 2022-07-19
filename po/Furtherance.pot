@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-18 09:44+0300\n"
+"POT-Creation-Date: 2022-07-19 06:34+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,87 +28,95 @@ msgid ""
 "entries, and change settings. It even has idle detection."
 msgstr ""
 
+#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "New icon!"
+msgstr ""
+
 #: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "Dates are now ISO 8601 format"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:54
 msgid "Added a button to restart tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+#: data/com.lakoliu.Furtherance.appdata.xml.in:55
 msgid "CSV Export"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+#: data/com.lakoliu.Furtherance.appdata.xml.in:56
 msgid "Timer centered on empty state"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+#: data/com.lakoliu.Furtherance.appdata.xml.in:57
 msgid "Uses local date format"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:56
+#: data/com.lakoliu.Furtherance.appdata.xml.in:64
 msgid "Generate reports of task history over a specified timeframe"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:57
+#: data/com.lakoliu.Furtherance.appdata.xml.in:65
 msgid "Bug fixes and improvements"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:64
+#: data/com.lakoliu.Furtherance.appdata.xml.in:72
 msgid "Ability to add tasks manually"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:65
+#: data/com.lakoliu.Furtherance.appdata.xml.in:73
 msgid "Auto-save option"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:66
+#: data/com.lakoliu.Furtherance.appdata.xml.in:74
 msgid "Task names can now be changed for an entire group"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:73
+#: data/com.lakoliu.Furtherance.appdata.xml.in:81
 msgid "Added Pomodoro-style countdown timer!"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:74
+#: data/com.lakoliu.Furtherance.appdata.xml.in:82
 msgid "Bug fixes"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:81
+#: data/com.lakoliu.Furtherance.appdata.xml.in:89
 msgid "Ability to add tags!"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:82
+#: data/com.lakoliu.Furtherance.appdata.xml.in:90
 msgid "Fixed icon positioning"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:83
+#: data/com.lakoliu.Furtherance.appdata.xml.in:91
 msgid "Changed start button color and behavior"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:84
+#: data/com.lakoliu.Furtherance.appdata.xml.in:92
 msgid "Changed color of delete buttons"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:85
+#: data/com.lakoliu.Furtherance.appdata.xml.in:93
 msgid "Dutch, Brazilian Portuguese, and French translations"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:92
+#: data/com.lakoliu.Furtherance.appdata.xml.in:100
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:101
+#: data/com.lakoliu.Furtherance.appdata.xml.in:109
 msgid "First stable release of Furtherance."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:105
+#: data/com.lakoliu.Furtherance.appdata.xml.in:113
 msgid "Track time spent on tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:106
+#: data/com.lakoliu.Furtherance.appdata.xml.in:114
 msgid "Change/delete recorded times"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:107
+#: data/com.lakoliu.Furtherance.appdata.xml.in:115
 msgid "Idle detection"
 msgstr ""
 

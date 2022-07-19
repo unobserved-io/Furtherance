@@ -39,6 +39,14 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.5.2" date="2022-07-19">
+      <description>
+        <ul>
+          <li>New icon!</li>
+          <li>Dates are now ISO 8601 format</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.5.1" date="2022-06-16"/>
     <release version="1.5.0" date="2022-06-10">
       <description>
