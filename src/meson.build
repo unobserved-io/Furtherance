@@ -1,5 +1,4 @@
 pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
-gnome = import('gnome')
 
 gnome.compile_resources('furtherance',
   'furtherance.gresource.xml',
@@ -25,8 +24,8 @@ configure_file(
 # Copy the config.rs output to the source directory.
 run_command(
   'cp',
-  join_paths(meson.build_root(), 'src', 'config.rs'),
-  join_paths(meson.source_root(), 'src', 'config.rs'),
+  join_paths(meson.project_build_root(), 'src', 'config.rs'),
+  join_paths(meson.project_source_root(), 'src', 'config.rs'),
   check: true
 )
 
@@ -50,7 +49,7 @@ rust_sources = files(
 
 sources = [cargo_sources, rust_sources]
 
-cargo_script = find_program(join_paths(meson.source_root(), 'build-aux/cargo.sh'))
+cargo_script = find_program(join_paths(meson.project_source_root(), 'build-aux/cargo.sh'))
 cargo_release = custom_target(
   'cargo-build',
   build_by_default: true,
@@ -61,8 +60,8 @@ cargo_release = custom_target(
   install_dir: get_option('bindir'),
   command: [
     cargo_script,
-    meson.build_root(),
-    meson.source_root(),
+    meson.project_build_root(),
+    meson.project_source_root(),
     '@OUTPUT@',
     get_option('buildtype'),
     meson.project_name(),
