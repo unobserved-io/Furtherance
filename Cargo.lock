@@ -261,7 +261,7 @@ dependencies = [
 
 [[package]]
 name = "furtherance"
-version = "1.5.3"
+version = "1.5.1"
 dependencies = [
  "anyhow",
  "chrono",
