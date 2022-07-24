@@ -2,21 +2,22 @@
 # Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
 # Pedro Sader Azevedo <pedro.saderazevedo@protonmail.com>, 2022.
-#
+# Rodrigo dos Santos <rodrigo.sabbat@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-04-02 16:51+0200\n"
-"PO-Revision-Date: 2022-04-16 18:35-0300\n"
-"Last-Translator: Pedro Sader Azevedo <pedro.saderazevedo@protonmail.com>\n"
-"Language-Team: Brazilian Portuguese <pedro.saderazevedo@protonmail.com>\n"
+"PO-Revision-Date: 2022-07-22 14:36+0000\n"
+"Last-Translator: Rodrigo dos Santos <rodrigo.sabbat@gmail.com>\n"
+"Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
+"furtherance/translations/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
-"X-Generator: Gtranslator 42.0\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:6
 #: data/com.lakoliu.Furtherance.desktop.in:4 src/application.rs:128
@@ -45,7 +46,7 @@ msgstr "A primeira versão estável de Furtherance."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:58
 msgid "Track time spent on tasks"
-msgstr "Monitore o tempo gasto em diferentes atividades."
+msgstr "Monitore o tempo gasto nas atividades"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:59
 msgid "Change/delete recorded times"
