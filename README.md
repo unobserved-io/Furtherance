@@ -27,7 +27,7 @@ It allows you to track time spent on different activities without worrying about
 
 **Windows**
 
-<a href="https://apps.microsoft.com/store/detail/furtherance/9NHG98S3VR3W"><img alt="Download from Microsoft Store" src="https://getbadgecdn.azureedge.net/images/en-us%20dark.svg"/></a>
+<a href="https://apps.microsoft.com/store/detail/furtherance/9NHG98S3VR3W"><img width='240' alt="Download from Microsoft Store" src="https://getbadgecdn.azureedge.net/images/en-us%20dark.svg"/></a>
 * Furtherance for Windows is availaible from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W). It uses a different codebase to provide a better experience on Windows, and it is not open-source.
 
 ### Build
