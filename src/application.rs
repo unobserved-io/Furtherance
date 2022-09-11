@@ -67,7 +67,7 @@ mod imp {
                 window
             } else {
                 let window = FurtheranceWindow::new(application);
-                window.set_default_size(400, 600);
+                window.set_default_size(360, 600);
                 window.set_title(Some("Furtherance"));
                 window.upcast()
             };
