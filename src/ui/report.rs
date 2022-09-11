@@ -190,11 +190,11 @@ impl FurReport {
             let days_ago = today.day() - 1;
             range_start_date = today - Duration::days(days_ago.into());
         } else if active_range == "30_days_item" {
-            range_start_date = today - Duration::days(30);
+            range_start_date = today - Duration::days(29);
         } else if active_range == "six_months_item" {
-            range_start_date = today - Duration::days(180);
+            range_start_date = today - Duration::days(179);
         } else if active_range == "year_item" {
-            range_start_date = today - Duration::days(365);
+            range_start_date = today - Duration::days(364);
         } else {
             let input_start_date =
                 NaiveDate::parse_from_str(&imp.start_date_entry.text(), "%m/%d/%Y");

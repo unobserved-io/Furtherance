@@ -926,3 +926,4 @@ impl Default for FurtheranceWindow {
             .unwrap()
     }
 }
+
