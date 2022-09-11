@@ -57,6 +57,7 @@ mod imp {
         pub all_task_ids: RefCell<Vec<i32>>,
         pub this_day: RefCell<String>,
         pub orig_tags: RefCell<String>,
+        pub orig_name_with_tags: RefCell<String>,
     }
 
     #[glib::object_subclass]
@@ -114,6 +115,7 @@ impl FurTaskDetails {
         let this_day_str = DateTime::parse_from_rfc3339(&task_group[0].start_time).unwrap();
         *imp.this_day.borrow_mut() = this_day_str.format("%F").to_string();
         *imp.orig_tags.borrow_mut() = task_group[0].tags.clone();
+        *imp.orig_name_with_tags.borrow_mut() = task_group[0].task_name.clone() + " #" + &task_group[0].tags.clone();
 
         for task in task_group.clone() {
             imp.all_task_ids.borrow_mut().push(task.id);
@@ -508,6 +510,8 @@ impl FurTaskDetails {
             let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
             let new_name_entry = gtk::Entry::new();
             new_name_entry.set_placeholder_text(Some(&gettext("New Name #tags")));
+            let imp3 = imp::FurTaskDetails::from_instance(&this);
+            new_name_entry.set_text(&imp3.orig_name_with_tags.borrow().to_string());
             let cant_be_empty = gtk::Label::new(Some(&gettext("Task name cannot be empty.")));
             cant_be_empty.add_css_class("error_message");
             cant_be_empty.hide();
