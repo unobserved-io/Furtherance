@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-19 06:34+0300\n"
+"POT-Creation-Date: 2022-09-14 14:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,95 +28,95 @@ msgid ""
 "entries, and change settings. It even has idle detection."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+#: data/com.lakoliu.Furtherance.appdata.xml.in:47
 msgid "New icon!"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+#: data/com.lakoliu.Furtherance.appdata.xml.in:48
 msgid "Dates are now ISO 8601 format"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:54
+#: data/com.lakoliu.Furtherance.appdata.xml.in:56
 msgid "Added a button to restart tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:55
+#: data/com.lakoliu.Furtherance.appdata.xml.in:57
 msgid "CSV Export"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:56
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
 msgid "Timer centered on empty state"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:57
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
 msgid "Uses local date format"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:64
+#: data/com.lakoliu.Furtherance.appdata.xml.in:66
 msgid "Generate reports of task history over a specified timeframe"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:65
+#: data/com.lakoliu.Furtherance.appdata.xml.in:67
 msgid "Bug fixes and improvements"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:72
+#: data/com.lakoliu.Furtherance.appdata.xml.in:74
 msgid "Ability to add tasks manually"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:73
+#: data/com.lakoliu.Furtherance.appdata.xml.in:75
 msgid "Auto-save option"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:74
+#: data/com.lakoliu.Furtherance.appdata.xml.in:76
 msgid "Task names can now be changed for an entire group"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:81
+#: data/com.lakoliu.Furtherance.appdata.xml.in:83
 msgid "Added Pomodoro-style countdown timer!"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:82
+#: data/com.lakoliu.Furtherance.appdata.xml.in:84
 msgid "Bug fixes"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:89
+#: data/com.lakoliu.Furtherance.appdata.xml.in:91
 msgid "Ability to add tags!"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:90
+#: data/com.lakoliu.Furtherance.appdata.xml.in:92
 msgid "Fixed icon positioning"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:91
+#: data/com.lakoliu.Furtherance.appdata.xml.in:93
 msgid "Changed start button color and behavior"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:92
+#: data/com.lakoliu.Furtherance.appdata.xml.in:94
 msgid "Changed color of delete buttons"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:93
+#: data/com.lakoliu.Furtherance.appdata.xml.in:95
 msgid "Dutch, Brazilian Portuguese, and French translations"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:100
+#: data/com.lakoliu.Furtherance.appdata.xml.in:102
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:109
+#: data/com.lakoliu.Furtherance.appdata.xml.in:111
 msgid "First stable release of Furtherance."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:113
+#: data/com.lakoliu.Furtherance.appdata.xml.in:115
 msgid "Track time spent on tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:114
+#: data/com.lakoliu.Furtherance.appdata.xml.in:116
 msgid "Change/delete recorded times"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:115
+#: data/com.lakoliu.Furtherance.appdata.xml.in:117
 msgid "Idle detection"
 msgstr ""
 
@@ -124,7 +124,7 @@ msgstr ""
 msgid "Export as CSV"
 msgstr ""
 
-#: src/gtk/dialogs.ui:10 src/application.rs:205 src/ui/task_details.rs:575
+#: src/gtk/dialogs.ui:10 src/application.rs:205 src/ui/task_details.rs:579
 #: src/ui/window.rs:324 src/ui/window.rs:858
 msgid "Cancel"
 msgstr ""
@@ -305,7 +305,7 @@ msgstr ""
 msgid "Date range"
 msgstr ""
 
-#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:191
+#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:193
 #: src/ui/window.rs:338
 msgid "Start"
 msgstr ""
@@ -346,7 +346,7 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
-#: src/gtk/report.ui:137 src/ui/task_details.rs:182
+#: src/gtk/report.ui:137 src/ui/task_details.rs:184
 msgid "Tags"
 msgstr ""
 
@@ -362,7 +362,7 @@ msgstr ""
 msgid "Task Details"
 msgstr ""
 
-#: src/gtk/task_details.ui:96 src/application.rs:314 src/ui/task_details.rs:193
+#: src/gtk/task_details.ui:96 src/application.rs:314 src/ui/task_details.rs:195
 #: src/ui/window.rs:340 src/ui/window.rs:626
 msgid "Stop"
 msgstr ""
@@ -419,7 +419,7 @@ msgstr ""
 msgid "Delete history?"
 msgstr ""
 
-#: src/application.rs:206 src/ui/task_details.rs:576
+#: src/application.rs:206 src/ui/task_details.rs:580
 msgid "Delete"
 msgstr ""
 
@@ -472,47 +472,47 @@ msgstr ""
 msgid "no tags"
 msgstr ""
 
-#: src/ui/task_details.rs:173 src/ui/task_details.rs:504
+#: src/ui/task_details.rs:175 src/ui/task_details.rs:506
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/task_details.rs:212 src/ui/window.rs:365
+#: src/ui/task_details.rs:214 src/ui/window.rs:365
 msgid "*Use the format YYYY-MM-DD HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:214 src/ui/window.rs:367
+#: src/ui/task_details.rs:216 src/ui/window.rs:367
 msgid "*Use the format YYYY-MM-DD HH:MM"
 msgstr ""
 
-#: src/ui/task_details.rs:220 src/ui/window.rs:373
+#: src/ui/task_details.rs:222 src/ui/window.rs:373
 msgid "*Start time cannot be later than stop time."
 msgstr ""
 
-#: src/ui/task_details.rs:225 src/ui/window.rs:378
+#: src/ui/task_details.rs:227 src/ui/window.rs:378
 msgid "*Time cannot be in the future."
 msgstr ""
 
-#: src/ui/task_details.rs:231
+#: src/ui/task_details.rs:233
 msgid "Delete task"
 msgstr ""
 
-#: src/ui/task_details.rs:258
+#: src/ui/task_details.rs:260
 msgid "Delete task?"
 msgstr ""
 
-#: src/ui/task_details.rs:510
+#: src/ui/task_details.rs:512
 msgid "New Name #tags"
 msgstr ""
 
-#: src/ui/task_details.rs:511
+#: src/ui/task_details.rs:515
 msgid "Task name cannot be empty."
 msgstr ""
 
-#: src/ui/task_details.rs:571
+#: src/ui/task_details.rs:575
 msgid "Delete All?"
 msgstr ""
 
-#: src/ui/task_details.rs:573
+#: src/ui/task_details.rs:577
 msgid "This will delete all occurrences of this task on this day."
 msgstr ""
 
