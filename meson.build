@@ -30,7 +30,6 @@ i18n = import('i18n')
 
 cargo_sources = files(
   'Cargo.toml',
-  'Cargo.lock',
 )
 
 subdir('data')
