@@ -16,11 +16,17 @@
 
 use chrono::{DateTime, Local};
 use directories::ProjectDirs;
+use gettextrs::*;
+use glib::clone;
+use gtk::prelude::*;
+use gtk::glib;
 use rusqlite::{Connection, Result, backup};
 use std::convert::TryFrom;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
+
+use crate::ui::FurtheranceWindow;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Task {
@@ -312,6 +318,16 @@ pub fn check_for_tasks() -> Result<String> {
     )
 }
 
+pub fn check_db_validity(db_path: String) -> Result<String> {
+    let conn = Connection::open(db_path)?;
+
+    conn.query_row(
+        "SELECT task_name FROM tasks ORDER BY ROWID ASC LIMIT 1",
+        [],
+        |row| row.get(0),
+    )
+}
+
 pub fn delete_by_ids(id_list: Vec<i32>) -> Result<()> {
     let conn = Connection::open(get_directory())?;
 
@@ -344,4 +360,38 @@ pub fn backup_db(backup_file: String) -> Result<()> {
     let conn = Connection::open(get_directory())?;
     let backup = backup::Backup::new(&conn, &mut bkup_conn)?;
     backup.run_to_completion(5, Duration::from_millis(250), None)
+}
+
+pub fn import_db(new_db: String) -> Result<()> {
+    let new_conn = Connection::open(new_db.clone())?;
+    let valid = match check_db_validity(new_db) {
+        Ok(_) => true,
+        Err(_) => false
+    };
+
+    if valid {
+        let mut conn = Connection::open(get_directory())?;
+        let backup = backup::Backup::new(&new_conn, &mut conn)?;
+        backup.run_to_completion(5, Duration::from_millis(250), None)
+    } else {
+        let window = FurtheranceWindow::default();
+        let dialog = gtk::MessageDialog::with_markup(
+            Some(&window),
+            gtk::DialogFlags::MODAL,
+            gtk::MessageType::Error,
+            gtk::ButtonsType::Ok,
+            Some(&format!(
+                "<span size='large' weight='bold'>{}</span>",
+                &gettext("Not a valid database")
+            )),
+        );
+
+        dialog.connect_response(clone!(@weak dialog = > move |_, _| {
+            dialog.close();
+        }));
+
+        dialog.show();
+
+        Ok(())
+    }
 }

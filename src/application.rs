@@ -137,6 +137,12 @@ impl FurtheranceApplication {
         }));
         self.add_action(&backup_database_action);
 
+        let import_database_action = gio::SimpleAction::new("import-database", None);
+        import_database_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            app.import_database();
+        }));
+        self.add_action(&import_database_action);
+
         let discard_idle_action = gio::SimpleAction::new("discard-idle-action", None);
         discard_idle_action.connect_activate(clone!(@weak self as app => move |_, _| {
             let window = FurtheranceWindow::default();
@@ -326,6 +332,7 @@ impl FurtheranceApplication {
     }
 
     pub fn backup_database(&self) {
+        // TODO Disable if db is empty
         let window = self.active_window().unwrap();
         let dialog = gtk::FileChooserDialog::new(
             Some(&gettext("Backup Database")),
@@ -361,6 +368,45 @@ impl FurtheranceApplication {
 
         dialog.show();
 
+    }
+
+    pub fn import_database(&self) {
+        let window = self.active_window().unwrap();
+        let dialog = gtk::FileChooserDialog::new(
+            Some(&gettext("Backup Database")),
+            Some(&window),
+            gtk::FileChooserAction::Open,
+            &[
+                (&gettext("Cancel"), gtk::ResponseType::Reject),
+                (&gettext("Save"), gtk::ResponseType::Accept),
+            ]
+        );
+        dialog.set_modal(true);
+
+        // Set a filter to show only SQLite files
+        let filter = gtk::FileFilter::new();
+        gtk::FileFilter::set_name(&filter, Some("*.db"));
+        filter.add_mime_type("application/x-sqlite3");
+        dialog.add_filter(&filter);
+
+        dialog.connect_response(
+            clone!(@strong dialog, @weak self as this => move |filechooser, resp| {
+                if resp == gtk::ResponseType::Accept {
+                    if let Some(path) = filechooser.file().and_then(|file| file.path()) {
+                        let path = &path.to_string_lossy();
+                        let _bkup = database::import_db(path.to_string());
+
+                        let window = FurtheranceWindow::default();
+                        window.reset_history_box();
+                    }
+                    dialog.close();
+                } else {
+                    dialog.close();
+                }
+            }),
+        );
+
+        dialog.show();
     }
 }
 

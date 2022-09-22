@@ -107,6 +107,10 @@
         <attribute name="label" translatable="yes">_Export as CSV</attribute>
         <attribute name="action">app.export-csv</attribute>
       </item>
+      <item>
+        <attribute name="label" translatable="yes">Import</attribute>
+        <attribute name="action">app.import-database</attribute>
+      </item>
     </section>
     <section>
       <item>
