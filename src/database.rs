@@ -16,10 +16,11 @@
 
 use chrono::{DateTime, Local};
 use directories::ProjectDirs;
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection, Result, backup};
 use std::convert::TryFrom;
 use std::fs::create_dir_all;
 use std::path::PathBuf;
+use std::time::Duration;
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Task {
@@ -336,4 +337,11 @@ pub fn delete_all() -> Result<()> {
     conn.execute("delete from tasks", [])?;
 
     Ok(())
+}
+
+pub fn backup_db(backup_file: String) -> Result<()> {
+    let mut bkup_conn = Connection::open(backup_file)?;
+    let conn = Connection::open(get_directory())?;
+    let backup = backup::Backup::new(&conn, &mut bkup_conn)?;
+    backup.run_to_completion(5, Duration::from_millis(250), None)
 }

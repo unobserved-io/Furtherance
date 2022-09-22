@@ -94,12 +94,18 @@
         <attribute name="action">app.report</attribute>
       </item>
       <item>
-        <attribute name="label" translatable="yes">_Export as CSV</attribute>
-        <attribute name="action">app.export-csv</attribute>
-      </item>
-      <item>
         <attribute name="label" translatable="yes">_Delete history</attribute>
         <attribute name="action">app.delete-history</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">Back up</attribute>
+        <attribute name="action">app.backup-database</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Export as CSV</attribute>
+        <attribute name="action">app.export-csv</attribute>
       </item>
     </section>
     <section>

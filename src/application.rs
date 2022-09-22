@@ -131,6 +131,12 @@ impl FurtheranceApplication {
         }));
         self.add_action(&about_action);
 
+        let backup_database_action = gio::SimpleAction::new("backup-database", None);
+        backup_database_action.connect_activate(clone!(@weak self as app => move |_, _| {
+            app.backup_database();
+        }));
+        self.add_action(&backup_database_action);
+
         let discard_idle_action = gio::SimpleAction::new("discard-idle-action", None);
         discard_idle_action.connect_activate(clone!(@weak self as app => move |_, _| {
             let window = FurtheranceWindow::default();
@@ -317,6 +323,44 @@ impl FurtheranceApplication {
 
         self.withdraw_notification("idle");
         self.send_notification(Some("pomodoro"), &notification);
+    }
+
+    pub fn backup_database(&self) {
+        let window = self.active_window().unwrap();
+        let dialog = gtk::FileChooserDialog::new(
+            Some(&gettext("Backup Database")),
+            Some(&window),
+            gtk::FileChooserAction::Save,
+            &[
+                (&gettext("Cancel"), gtk::ResponseType::Reject),
+                (&gettext("Save"), gtk::ResponseType::Accept),
+            ]
+        );
+        dialog.set_modal(true);
+
+        // Set a filter to show only SQLite files
+        let filter = gtk::FileFilter::new();
+        gtk::FileFilter::set_name(&filter, Some("*.db"));
+        filter.add_mime_type("application/x-sqlite3");
+        dialog.add_filter(&filter);
+        dialog.set_current_name("furtherance_bkup.db");
+
+        dialog.connect_response(
+            clone!(@strong dialog, @weak self as this => move |filechooser, resp| {
+                if resp == gtk::ResponseType::Accept {
+                    if let Some(path) = filechooser.file().and_then(|file| file.path()) {
+                        let path = &path.to_string_lossy();
+                        let _bkup = database::backup_db(path.to_string());
+                    }
+                    dialog.close();
+                } else {
+                    dialog.close();
+                }
+            }),
+        );
+
+        dialog.show();
+
     }
 }
 
