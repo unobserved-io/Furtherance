@@ -41,3 +41,9 @@ pub fn get_int(key: &str) -> i32 {
     let settings = get_settings();
     settings.int(key)
 }
+
+#[allow(dead_code)]
+pub fn get_string(key: &str) -> String {
+    let settings = get_settings();
+    settings.string(key).to_string()
+}

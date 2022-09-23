@@ -131,12 +131,6 @@ impl FurtheranceApplication {
         }));
         self.add_action(&about_action);
 
-        let backup_database_action = gio::SimpleAction::new("backup-database", None);
-        backup_database_action.connect_activate(clone!(@weak self as app => move |_, _| {
-            app.backup_database();
-        }));
-        self.add_action(&backup_database_action);
-
         let import_database_action = gio::SimpleAction::new("import-database", None);
         import_database_action.connect_activate(clone!(@weak self as app => move |_, _| {
             app.import_database();
@@ -275,6 +269,18 @@ impl FurtheranceApplication {
         }
     }
 
+    pub fn backup_database_enabled(&self, enabled: bool) {
+        if enabled {
+            let backup_database_action = gio::SimpleAction::new("backup-database", None);
+            backup_database_action.connect_activate(clone!(@weak self as app => move |_, _| {
+                app.backup_database();
+            }));
+            self.add_action(&backup_database_action);
+        } else {
+            self.remove_action("backup-database");
+        }
+    }
+
     pub fn update_light_dark(&self) {
         let manager = adw::StyleManager::default();
 
@@ -332,7 +338,6 @@ impl FurtheranceApplication {
     }
 
     pub fn backup_database(&self) {
-        // TODO Disable if db is empty
         let window = self.active_window().unwrap();
         let dialog = gtk::FileChooserDialog::new(
             Some(&gettext("Backup Database")),
@@ -378,7 +383,7 @@ impl FurtheranceApplication {
             gtk::FileChooserAction::Open,
             &[
                 (&gettext("Cancel"), gtk::ResponseType::Reject),
-                (&gettext("Save"), gtk::ResponseType::Accept),
+                (&gettext("Open"), gtk::ResponseType::Accept),
             ]
         );
         dialog.set_modal(true);

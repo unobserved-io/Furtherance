@@ -94,6 +94,7 @@ impl FurHistoryBox {
         let app = FurtheranceApplication::default();
         app.delete_enabled(false);
         app.export_csv_enabled(false);
+        app.backup_database_enabled(false);
         imp.spinner.set_spinning(false);
 
         let name = match view {
@@ -105,6 +106,7 @@ impl FurHistoryBox {
             View::Tasks => {
                 app.delete_enabled(true);
                 app.export_csv_enabled(true);
+                app.backup_database_enabled(true);
                 "tasks"
             }
         };

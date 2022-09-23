@@ -93,10 +93,6 @@
         <attribute name="label" translatable="yes">_Generate Report</attribute>
         <attribute name="action">app.report</attribute>
       </item>
-      <item>
-        <attribute name="label" translatable="yes">_Delete history</attribute>
-        <attribute name="action">app.delete-history</attribute>
-      </item>
     </section>
     <section>
       <item>
@@ -110,6 +106,10 @@
       <item>
         <attribute name="label" translatable="yes">Import</attribute>
         <attribute name="action">app.import-database</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Delete history</attribute>
+        <attribute name="action">app.delete-history</attribute>
       </item>
     </section>
     <section>
