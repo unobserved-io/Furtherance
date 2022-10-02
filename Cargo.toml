@@ -1,6 +1,6 @@
 [package]
 name = "furtherance"
-version = "1.5.4"
+version = "1.6.0"
 authors = ["Ricky Kresslein <rk@lakoliu.com>"]
 edition = "2018"
 
