@@ -155,13 +155,10 @@
             <object class="GtkScrolledWindow">
               <property name="vexpand">true</property>
               <child>
-                <object class="GtkTreeView" id="results_tree">
-
-                </object>
+                <object class="GtkTreeView" id="results_tree"></object>
               </child>
             </object>
           </child>
-
         </object>
       </child>
     </object>

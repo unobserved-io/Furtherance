@@ -158,6 +158,7 @@ impl FurReport {
         let task_column =
             gtk::TreeViewColumn::with_attributes(&gettext("Task"), &renderer, &[("text", 0)]);
         task_column.set_expand(true);
+        task_column.set_fixed_width(100);
         task_column.set_resizable(true);
         let duration_column =
             gtk::TreeViewColumn::with_attributes(&gettext("Duration"), &renderer, &[("text", 1)]);
@@ -475,3 +476,4 @@ impl FurReport {
         format!("{:02}:{:02}:{:02}", h, m, s)
     }
 }
+
