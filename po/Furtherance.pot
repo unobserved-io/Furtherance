@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-02 14:33+0200\n"
+"POT-Creation-Date: 2022-10-18 11:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -139,7 +139,8 @@ msgstr ""
 
 #: src/gtk/dialogs.ui:10 src/application.rs:211 src/application.rs:347
 #: src/application.rs:385 src/ui/preferences_window.rs:233
-#: src/ui/task_details.rs:579 src/ui/window.rs:324 src/ui/window.rs:858
+#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:324
+#: src/ui/window.rs:858
 msgid "Cancel"
 msgstr ""
 
@@ -331,8 +332,8 @@ msgstr ""
 msgid "Date range"
 msgstr ""
 
-#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:193
-#: src/ui/window.rs:338
+#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
+#: src/ui/task_details.rs:642 src/ui/window.rs:338
 msgid "Start"
 msgstr ""
 
@@ -372,7 +373,7 @@ msgstr ""
 msgid "Tasks"
 msgstr ""
 
-#: src/gtk/report.ui:137 src/ui/task_details.rs:184
+#: src/gtk/report.ui:137 src/ui/task_details.rs:191
 msgid "Tags"
 msgstr ""
 
@@ -388,8 +389,8 @@ msgstr ""
 msgid "Task Details"
 msgstr ""
 
-#: src/gtk/task_details.ui:96 src/application.rs:332 src/ui/task_details.rs:195
-#: src/ui/window.rs:340 src/ui/window.rs:626
+#: src/gtk/task_details.ui:96 src/application.rs:332 src/ui/task_details.rs:202
+#: src/ui/task_details.rs:644 src/ui/window.rs:340 src/ui/window.rs:626
 msgid "Stop"
 msgstr ""
 
@@ -397,7 +398,11 @@ msgstr ""
 msgid "Total"
 msgstr ""
 
-#: src/gtk/task_details.ui:131
+#: src/gtk/task_details.ui:135
+msgid "Add Similar Task"
+msgstr ""
+
+#: src/gtk/task_details.ui:144
 msgid "Delete all"
 msgstr ""
 
@@ -453,7 +458,7 @@ msgstr ""
 msgid "Delete history?"
 msgstr ""
 
-#: src/application.rs:212 src/ui/task_details.rs:580
+#: src/application.rs:212 src/ui/task_details.rs:587
 msgid "Delete"
 msgstr ""
 
@@ -523,48 +528,60 @@ msgstr ""
 msgid "no tags"
 msgstr ""
 
-#: src/ui/task_details.rs:175 src/ui/task_details.rs:506
+#: src/ui/task_details.rs:182 src/ui/task_details.rs:513
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/task_details.rs:214 src/ui/window.rs:365
+#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:365
 msgid "*Use the format YYYY-MM-DD HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:216 src/ui/window.rs:367
+#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:367
 msgid "*Use the format YYYY-MM-DD HH:MM"
 msgstr ""
 
-#: src/ui/task_details.rs:222 src/ui/window.rs:373
+#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:373
 msgid "*Start time cannot be later than stop time."
 msgstr ""
 
-#: src/ui/task_details.rs:227 src/ui/window.rs:378
+#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:378
 msgid "*Time cannot be in the future."
 msgstr ""
 
-#: src/ui/task_details.rs:233
+#: src/ui/task_details.rs:240
 msgid "Delete task"
 msgstr ""
 
-#: src/ui/task_details.rs:260
+#: src/ui/task_details.rs:267
 msgid "Delete task?"
 msgstr ""
 
-#: src/ui/task_details.rs:512
+#: src/ui/task_details.rs:519
 msgid "New Name #tags"
 msgstr ""
 
-#: src/ui/task_details.rs:515
+#: src/ui/task_details.rs:522
 msgid "Task name cannot be empty."
 msgstr ""
 
-#: src/ui/task_details.rs:575
+#: src/ui/task_details.rs:582
 msgid "Delete All?"
 msgstr ""
 
-#: src/ui/task_details.rs:577
+#: src/ui/task_details.rs:584
 msgid "This will delete all occurrences of this task on this day."
+msgstr ""
+
+#: src/ui/task_details.rs:622 src/ui/window.rs:320
+msgid "New Task"
+msgstr ""
+
+#: src/ui/task_details.rs:627 src/ui/window.rs:325
+msgid "Add"
+msgstr ""
+
+#: src/ui/task_details.rs:687 src/ui/window.rs:383
+msgid "*Task name cannot be blank."
 msgstr ""
 
 #: src/ui/tasks_page.rs:156
@@ -575,24 +592,12 @@ msgstr ""
 msgid "Yesterday"
 msgstr ""
 
-#: src/ui/window.rs:320
-msgid "New Task"
-msgstr ""
-
-#: src/ui/window.rs:325
-msgid "Add"
-msgstr ""
-
 #: src/ui/window.rs:331
 msgid "Task Name"
 msgstr ""
 
 #: src/ui/window.rs:333
 msgid "tags"
-msgstr ""
-
-#: src/ui/window.rs:383
-msgid "*Task name cannot be blank."
 msgstr ""
 
 #: src/ui/window.rs:568

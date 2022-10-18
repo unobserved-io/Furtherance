@@ -126,12 +126,27 @@
             <property name="halign">end</property>
             <property name="valign">end</property>
             <child>
-              <object class="GtkButton" id="delete_all_btn">
-                <property name="icon-name">user-trash-symbolic</property>
-                <property name="tooltip-text" translatable="yes">Delete all</property>
-                <style>
-                  <class name="delete-all-button"/>
-                </style>
+              <object class="GtkBox">
+                <property name="halign">end</property>
+                <property name="spacing">12</property>
+                <child>
+                  <object class="GtkButton" id="add_similar_btn">
+                    <property name="icon-name">list-add-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Add Similar Task</property>
+                    <style>
+                      <class name="add-similar-button"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="delete_all_btn">
+                    <property name="icon-name">user-trash-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">Delete all</property>
+                    <style>
+                      <class name="delete-all-button"/>
+                    </style>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
