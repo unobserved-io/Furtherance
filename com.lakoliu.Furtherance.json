@@ -42,8 +42,8 @@
             "buildsystem" : "meson",
             "sources" : [
                 {
-                    "type" : "git",
-                    "url" : "file:///home/ricky/Documents/SoftwareDev/Rust/furtherance"
+                    "type" : "dir",
+                    "path" : "./"
                 }
             ]
         }
