@@ -1,7 +1,7 @@
 {
     "app-id" : "com.lakoliu.Furtherance.Devel",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "42",
+    "runtime-version" : "43",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
@@ -15,7 +15,8 @@
         "--socket=fallback-x11",
         "--device=dri",
         "--socket=wayland",
-        "--talk-name=org.gnome.Mutter.IdleMonitor"
+        "--talk-name=org.gnome.Mutter.IdleMonitor",
+        "--filesystem=xdg-documents"
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
