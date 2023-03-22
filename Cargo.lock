@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "furtherance"
-version = "1.6.0"
+version = "1.7.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -590,9 +590,9 @@ dependencies = [
 
 [[package]]
 name = "gtk4"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c64f0c2a3d80e899dc3febddad5bac193ffcf74a0fd7e31037f30dd34d6f7396"
+checksum = "4e8ae5aef2793bc3551b5e5e3fa062a5de54bb1eccf10dfa4effe9e4384fbbbc"
 dependencies = [
  "bitflags",
  "cairo-rs",
@@ -613,9 +613,9 @@ dependencies = [
 
 [[package]]
 name = "gtk4-macros"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fafbcc920af4eb677d7d164853e7040b9de5a22379c596f570190c675d45f7a7"
+checksum = "d9a4a8077b3a392dd7d637924529e1213d2e0c8e4d531177bc3355e86c257a54"
 dependencies = [
  "anyhow",
  "proc-macro-crate",

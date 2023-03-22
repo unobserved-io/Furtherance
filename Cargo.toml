@@ -1,6 +1,6 @@
 [package]
 name = "furtherance"
-version = "1.6.0"
+version = "1.7.0"
 authors = ["Ricky Kresslein <rk@lakoliu.com>"]
 edition = "2018"
 
@@ -24,7 +24,7 @@ serde = { version = "1.0", features = ["derive"] }
 
 [dependencies.gtk]
 package = "gtk4"
-version = "0.4.8"
+version = "0.4.9"
 
 [dependencies.adw]
 package = "libadwaita"

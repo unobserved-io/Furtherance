@@ -184,7 +184,7 @@ impl FurtheranceApplication {
             .logo_icon_name(config::APP_ID)
             .version(config::VERSION)
             .comments(&gettext("Track your time without being tracked"))
-            .copyright("© 2022 Ricky Kresslein")
+            .copyright("© 2023 LakoLiu")
             .authors(vec!["Ricky Kresslein <rk@lakoliu.com>".into()])
             .translator_credits(&gettext("translator-credits"))
             .website("https://furtherance.app")
@@ -423,3 +423,4 @@ impl Default for FurtheranceApplication {
             .unwrap()
     }
 }
+
