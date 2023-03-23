@@ -18,7 +18,6 @@ use adw::subclass::prelude::*;
 use chrono::{offset::TimeZone, Date, DateTime, Datelike, Duration, Local, NaiveDate};
 use gettextrs::*;
 use glib::clone;
-use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
 use itertools::Itertools;
 
@@ -81,9 +80,10 @@ mod imp {
     }
 
     impl ObjectImpl for FurReport {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            let obj = self.obj();
             obj.setup_widgets();
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
 
@@ -101,7 +101,7 @@ glib::wrapper! {
 
 impl FurReport {
     pub fn new() -> Self {
-        let dialog: Self = glib::Object::new(&[]).unwrap();
+        let dialog: Self = glib::Object::new::<FurReport>();
 
         let window = FurtheranceWindow::default();
         dialog.set_transient_for(Some(&window));
@@ -113,14 +113,14 @@ impl FurReport {
     }
 
     pub fn setup_widgets(&self) {
-        let imp = imp::FurReport::from_instance(self);
+        let imp = imp::FurReport::from_obj(self);
 
         imp.range_combo.set_active_id(Some("week_item"));
         imp.filter_combo.set_active_id(Some("tasks_item"));
 
         imp.range_combo
             .connect_changed(clone!(@weak self as this => move |combo|{
-                let imp = imp::FurReport::from_instance(&this);
+                let imp = imp::FurReport::from_obj(&this);
                 if combo.active_id().unwrap() != "date_range_item" {
                     imp.date_range_box.set_visible(false);
                     this.refresh_report();
@@ -131,7 +131,7 @@ impl FurReport {
 
         imp.filter_check
             .connect_toggled(clone!(@weak self as this => move |_|{
-                let imp = imp::FurReport::from_instance(&this);
+                let imp = imp::FurReport::from_obj(&this);
                 if imp.filter_box.get_visible() {
                     imp.filter_box.set_visible(false);
                 } else {
@@ -141,7 +141,7 @@ impl FurReport {
 
         imp.filter_combo
             .connect_changed(clone!(@weak self as this => move |combo|{
-                let imp = imp::FurReport::from_instance(&this);
+                let imp = imp::FurReport::from_obj(&this);
                 if combo.active_id().unwrap() == "tasks_item" {
                     imp.filter_entry.set_placeholder_text(Some(&gettext("Task, Task 2")));
                 } else {
@@ -172,7 +172,7 @@ impl FurReport {
     }
 
     fn refresh_report(&self) {
-        let imp = imp::FurReport::from_instance(self);
+        let imp = imp::FurReport::from_obj(self);
         imp.format_error.set_visible(false);
         imp.start_end_error.set_visible(false);
 

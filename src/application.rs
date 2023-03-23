@@ -43,8 +43,9 @@ mod imp {
     }
 
     impl ObjectImpl for FurtheranceApplication {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            self.parent_constructed();
+            let obj = self.obj();
 
             obj.setup_gactions();
             obj.setup_application();
@@ -57,16 +58,17 @@ mod imp {
         // has been launched. Additionally, this callback notifies us when the user
         // tries to launch a "second instance" of the application. When they try
         // to do that, we'll just present any existing window.
-        fn activate(&self, application: &Self::Type) {
+        fn activate(&self) {
             // Initialize the database
             let _ = database::db_init();
             let _ = database::upgrade_old_db();
 
             // Get the current window or create one if necessary
+            let application = self.obj();
             let window = if let Some(window) = application.active_window() {
                 window
             } else {
-                let window = FurtheranceWindow::new(application);
+                let window = FurtheranceWindow::new(&application.clone().upcast());
                 window.set_default_size(360, 600);
                 window.set_title(Some("Furtherance"));
                 window.upcast()
@@ -100,8 +102,10 @@ glib::wrapper! {
 
 impl FurtheranceApplication {
     pub fn new(application_id: &str, flags: &gio::ApplicationFlags) -> Self {
-        glib::Object::new(&[("application-id", &application_id), ("flags", flags)])
-            .expect("Failed to create FurtheranceApplication")
+        glib::Object::builder()
+            .property("application-id", application_id)
+            .property("flags", flags)
+            .build()
     }
 
     fn setup_gactions(&self) {
@@ -158,14 +162,14 @@ impl FurtheranceApplication {
 
         let continue_pomodoro_action = gio::SimpleAction::new("continue-pomodoro-action", None);
         continue_pomodoro_action.connect_activate(clone!(@weak self as app => move |_, _| {
-            let imp = imp::FurtheranceApplication::from_instance(&app);
+            let imp = imp::FurtheranceApplication::from_obj(&app);
             imp.pomodoro_dialog.lock().unwrap().response(gtk::ResponseType::Accept);
         }));
         self.add_action(&continue_pomodoro_action);
 
         let stop_pomodoro_action = gio::SimpleAction::new("stop-pomodoro-action", None);
         stop_pomodoro_action.connect_activate(clone!(@weak self as app => move |_, _| {
-            let imp = imp::FurtheranceApplication::from_instance(&app);
+            let imp = imp::FurtheranceApplication::from_obj(&app);
             imp.pomodoro_dialog.lock().unwrap().response(gtk::ResponseType::Reject);
         }));
         self.add_action(&stop_pomodoro_action);
@@ -185,7 +189,7 @@ impl FurtheranceApplication {
             .version(config::VERSION)
             .comments(&gettext("Track your time without being tracked"))
             .copyright("© 2023 LakoLiu")
-            .authors(vec!["Ricky Kresslein <rk@lakoliu.com>".into()])
+            .authors(vec!["Ricky Kresslein <rk@lakoliu.com>"])
             .translator_credits(&gettext("translator-credits"))
             .website("https://furtherance.app")
             .license_type(gtk::License::Gpl30)
@@ -315,7 +319,7 @@ impl FurtheranceApplication {
     }
 
     pub fn system_pomodoro_notification(&self, dialog: gtk::MessageDialog) {
-        let imp = imp::FurtheranceApplication::from_instance(self);
+        let imp = imp::FurtheranceApplication::from_obj(self);
         *imp.pomodoro_dialog.lock().unwrap() = dialog;
         let icon = Some("alarm-symbolic");
         let notification = gio::Notification::new(&gettext("Time's up!"));

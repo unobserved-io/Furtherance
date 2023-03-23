@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use adw::subclass::prelude::*;
-use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*};
 
 use crate::database;
@@ -67,11 +66,11 @@ glib::wrapper! {
 
 impl FurTasksGroup {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create `FurTaskGroup`.")
+        glib::Object::new::<FurTasksGroup>()
     }
 
     pub fn add_task_model(&self, tasks: Vec<database::Task>) {
-        let imp = imp::FurTasksGroup::from_instance(&self);
+        let imp = imp::FurTasksGroup::from_obj(&self);
 
         let listbox = gtk::ListBox::new();
         listbox.add_css_class("content");
@@ -115,7 +114,7 @@ impl FurTasksGroup {
     }
 
     pub fn get_total_day_time(&self) -> i64 {
-        let imp = imp::FurTasksGroup::from_instance(&self);
+        let imp = imp::FurTasksGroup::from_obj(&self);
         *imp.day_total_time.borrow()
     }
 }

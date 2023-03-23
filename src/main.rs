@@ -31,7 +31,7 @@ fn main() {
     // Initialize GTK
     gtk::init().expect("Failed to initialize GTK.");
     // Initialize libadwaita
-    adw::init();
+    let _ = adw::init();
 
     // Set up gettext translations
     bindtextdomain(GETTEXT_PACKAGE, LOCALEDIR).expect("Unable to bind the text domain");
@@ -55,5 +55,5 @@ fn main() {
     // exits. Upon return, we have our exit code to return to the shell. (This
     // is the code you see when you do `echo $?` after running a command in a
     // terminal.
-    std::process::exit(app.run());
+    std::process::exit(app.run().into());
 }

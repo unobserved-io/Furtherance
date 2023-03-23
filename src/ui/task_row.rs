@@ -64,9 +64,10 @@ mod imp {
     }
 
     impl ObjectImpl for FurTaskRow {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            let obj = self.obj();
             obj.setup_signals();
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
 
@@ -85,7 +86,7 @@ impl FurTaskRow {
     pub fn new() -> Self {
         /* This should take a model, object, or vec filled with the description
         details and fill out the labels based on those. */
-        glib::Object::new(&[]).expect("Failed to create `FurTaskRow`.")
+        glib::Object::new::<FurTaskRow>()
     }
 
     fn setup_signals(&self) {
@@ -103,7 +104,7 @@ impl FurTaskRow {
     }
 
     pub fn set_row_labels(&self, task_list: Vec<Task>) {
-        let imp = imp::FurTaskRow::from_instance(&self);
+        let imp = imp::FurTaskRow::from_obj(&self);
         for task in task_list.clone() {
             imp.tasks.lock().unwrap().push(task);
         }
@@ -129,7 +130,7 @@ impl FurTaskRow {
             window.duplicate_task(task_list[0].clone());
         }));
 
-        self.add_controller(&gesture);
+        self.add_controller(gesture);
 
         imp.restart_task_btn
             .connect_clicked(clone!(@strong task_list => move |_| {
@@ -161,12 +162,12 @@ impl FurTaskRow {
     }
 
     pub fn get_tasks(&self) -> Vec<Task> {
-        let imp = imp::FurTaskRow::from_instance(&self);
+        let imp = imp::FurTaskRow::from_obj(&self);
         imp.tasks.lock().unwrap().to_vec()
     }
 
     pub fn get_total_time(&self) -> i64 {
-        let imp = imp::FurTaskRow::from_instance(&self);
+        let imp = imp::FurTaskRow::from_obj(&self);
         *imp.total_time.borrow()
     }
 }

@@ -22,7 +22,7 @@ use directories::ProjectDirs;
 use gettextrs::*;
 use glib::{clone, timeout_add_local};
 use gtk::subclass::prelude::*;
-use gtk::{gio, glib, CompositeTemplate};
+use gtk::{Application, gio, glib, CompositeTemplate};
 use itertools::Itertools;
 use std::cell::RefCell;
 use std::convert::TryFrom;
@@ -94,11 +94,12 @@ mod imp {
     }
 
     impl ObjectImpl for FurtheranceWindow {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            let obj = self.obj();
             obj.setup_widgets();
             obj.setup_signals();
             obj.setup_settings();
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
     impl WidgetImpl for FurtheranceWindow {}
@@ -114,21 +115,23 @@ glib::wrapper! {
 }
 
 impl FurtheranceWindow {
-    pub fn new<P: glib::IsA<gtk::Application>>(application: &P) -> Self {
-        glib::Object::new(&[("application", application)])
-            .expect("Failed to create FurtheranceWindow")
+    pub fn new(app: &Application) -> Self {
+        glib::Object::builder()
+            .property("application", Some(app))
+            .build()
     }
+
 
     pub fn display_toast(&self, text: &str) {
         // Display in-app notifications
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         let toast = adw::Toast::new(text);
-        imp.toast_overlay.add_toast(&toast);
+        imp.toast_overlay.add_toast(toast);
     }
 
     fn set_watch_time(&self, text: &str) {
         // Update watch time while timer is running
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         imp.watch.set_text(text);
         if settings_manager::get_bool("notify-of-idle") {
             self.check_user_idle();
@@ -137,7 +140,7 @@ impl FurtheranceWindow {
 
     pub fn save_task(&self, start_time: DateTime<Local>, mut stop_time: DateTime<Local>) {
         // Save the most recent task to the database and clear the task_input field
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
 
         if *imp.subtract_idle.lock().unwrap() {
             let idle_start =
@@ -154,12 +157,12 @@ impl FurtheranceWindow {
     }
 
     pub fn reset_history_box(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         imp.history_box.create_tasks_page();
     }
 
     fn setup_widgets(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
 
         // Set initial minimum height and alignment
         let is_saved_task: bool = match database::check_for_tasks() {
@@ -187,14 +190,14 @@ impl FurtheranceWindow {
     }
 
     fn setup_signals(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         *imp.running.lock().unwrap() = false;
         let start_time = Rc::new(RefCell::new(Local::now()));
         let stop_time = Rc::new(RefCell::new(Local::now()));
 
         imp.task_input
             .connect_changed(clone!(@weak self as this => move |task_input| {
-                let imp2 = imp::FurtheranceWindow::from_instance(&this);
+                let imp2 = imp::FurtheranceWindow::from_obj(&this);
                 let task_input_text = task_input.text();
                 let split_tags: Vec<&str> = task_input_text.trim().split('#').collect();
                 if split_tags[0].trim().is_empty() {
@@ -205,7 +208,7 @@ impl FurtheranceWindow {
             }));
 
         imp.start_button.connect_clicked(clone!(@weak self as this => move |button| {
-            let imp2 = imp::FurtheranceWindow::from_instance(&this);
+            let imp2 = imp::FurtheranceWindow::from_obj(&this);
             if !*imp2.running.lock().unwrap() {
                 if settings_manager::get_bool("pomodoro") && !*imp2.pomodoro_continue.lock().unwrap() {
                     let pomodoro_time = settings_manager::get_int("pomodoro-time");
@@ -220,7 +223,7 @@ impl FurtheranceWindow {
                     imp2.task_input.set_sensitive(false);
                     let duration = Duration::new(1,0);
                     timeout_add_local(duration, clone!(@strong this as this_clone => move || {
-                        let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
+                        let imp3 = imp::FurtheranceWindow::from_obj(&this_clone);
                         if *imp3.running.lock().unwrap() {
                             secs -= 1;
                             if secs < 0 {
@@ -274,7 +277,7 @@ impl FurtheranceWindow {
                     let autosave_start = *start_time.borrow();
                     let duration = Duration::new(1,0);
                     timeout_add_local(duration, clone!(@strong this as this_clone => move || {
-                        let imp3 = imp::FurtheranceWindow::from_instance(&this_clone);
+                        let imp3 = imp::FurtheranceWindow::from_obj(&this_clone);
                         if *imp3.running.lock().unwrap() {
                             secs += 1;
                             if secs > 59 {
@@ -500,7 +503,7 @@ impl FurtheranceWindow {
     }
 
     fn setup_settings(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         self.reset_idle();
 
         // Enter starts timer
@@ -524,7 +527,7 @@ impl FurtheranceWindow {
     }
 
     fn check_user_idle(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         // Check for user idle
         let idle_time = match self.get_idle_time() {
             Ok(val) => val,
@@ -552,7 +555,7 @@ impl FurtheranceWindow {
     }
 
     fn resume_from_idle(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
 
         let resume_time = Local::now();
         let idle_start =
@@ -631,7 +634,7 @@ impl FurtheranceWindow {
         dialog.connect_response(clone!(
             @weak self as this,
             @strong dialog => move |_, resp| {
-            let imp = imp::FurtheranceWindow::from_instance(&this);
+            let imp = imp::FurtheranceWindow::from_obj(&this);
             if resp == gtk::ResponseType::Reject {
                 imp.start_button.set_icon_name("media-playback-start-symbolic");
                 this.refresh_timer();
@@ -647,7 +650,7 @@ impl FurtheranceWindow {
             }
         }));
 
-        let imp2 = imp::FurtheranceWindow::from_instance(self);
+        let imp2 = imp::FurtheranceWindow::from_obj(self);
         imp2.idle_dialog.lock().unwrap().close();
 
         dialog.show();
@@ -686,7 +689,7 @@ impl FurtheranceWindow {
     }
 
     fn split_tags_and_task(&self) -> (String, String) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         let task_input_text = imp.task_input.text();
         let mut split_tags: Vec<&str> = task_input_text.trim().split("#").collect();
         // Remove task name from tags list
@@ -755,7 +758,7 @@ impl FurtheranceWindow {
     }
 
     pub fn reset_idle(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         *imp.stored_idle.lock().unwrap() = 0;
         *imp.idle_notified.lock().unwrap() = false;
         *imp.idle_time_reached.lock().unwrap() = false;
@@ -763,12 +766,12 @@ impl FurtheranceWindow {
     }
 
     pub fn set_subtract_idle(&self, val: bool) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         *imp.subtract_idle.lock().unwrap() = val;
     }
 
     pub fn duplicate_task(&self, task: database::Task) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         if !*imp.running.lock().unwrap() {
             let task_text: String;
             if task.tags.trim().is_empty() {
@@ -784,7 +787,7 @@ impl FurtheranceWindow {
     }
 
     pub fn refresh_timer(&self) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         if settings_manager::get_bool("pomodoro") {
             let mut mins = settings_manager::get_int("pomodoro-time");
             let mut hrs: i32 = 0;
@@ -912,7 +915,7 @@ impl FurtheranceWindow {
     }
 
     pub fn vertical_align(&self, align: gtk::Align) {
-        let imp = imp::FurtheranceWindow::from_instance(self);
+        let imp = imp::FurtheranceWindow::from_obj(self);
         imp.win_box.set_valign(align);
     }
 }

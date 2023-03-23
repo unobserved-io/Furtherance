@@ -19,8 +19,7 @@ use adw::subclass::prelude::*;
 use chrono::{DateTime, Duration, Local};
 use chrono_locale::LocaleDate;
 use gettextrs::*;
-use gtk::subclass::prelude::*;
-use gtk::{glib, prelude::*};
+use gtk::glib;
 use std::env;
 
 use crate::database::{self, SortOrder, TaskSort};
@@ -55,9 +54,10 @@ mod imp {
     }
 
     impl ObjectImpl for FurTasksPage {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            let obj = self.obj();
             obj.setup_widgets();
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
 
@@ -77,7 +77,7 @@ impl FurTasksPage {
     }
 
     pub fn clear_task_list(&self) {
-        let imp = imp::FurTasksPage::from_instance(&self);
+        let imp = imp::FurTasksPage::from_obj(&self);
 
         for group in &*imp.all_groups.borrow() {
             self.remove(group);
@@ -87,7 +87,7 @@ impl FurTasksPage {
     }
 
     pub fn build_task_list(&self) {
-        let imp = imp::FurTasksPage::from_instance(&self);
+        let imp = imp::FurTasksPage::from_obj(&self);
 
         // Get user's locale for date formatting
         let locale_env = env::var("LANG");

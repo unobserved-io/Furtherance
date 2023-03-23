@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use glib::subclass;
-use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 use gtk::{glib, CompositeTemplate};
 
@@ -60,9 +59,10 @@ mod imp {
     }
 
     impl ObjectImpl for FurHistoryBox {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            let obj = self.obj();
             obj.setup_widgets();
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
     impl WidgetImpl for FurHistoryBox {}
@@ -90,7 +90,7 @@ impl FurHistoryBox {
     }
 
     fn set_view(&self, view: View) {
-        let imp = imp::FurHistoryBox::from_instance(self);
+        let imp = imp::FurHistoryBox::from_obj(self);
         let app = FurtheranceApplication::default();
         app.delete_enabled(false);
         app.export_csv_enabled(false);
@@ -115,7 +115,7 @@ impl FurHistoryBox {
     }
 
     pub fn create_tasks_page(&self) {
-        let imp = imp::FurHistoryBox::from_instance(self);
+        let imp = imp::FurHistoryBox::from_obj(self);
         let window = FurtheranceWindow::default();
         imp.tasks_page.clear_task_list();
         let is_saved_task: bool = match database::check_for_tasks() {

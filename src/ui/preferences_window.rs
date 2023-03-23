@@ -19,7 +19,6 @@ use adw::subclass::prelude::*;
 use gettextrs::*;
 use glib::clone;
 use gtk::glib;
-use gtk::subclass::prelude::*;
 use gtk::CompositeTemplate;
 
 use crate::settings_manager;
@@ -95,14 +94,15 @@ mod imp {
     }
 
     impl ObjectImpl for FurPreferencesWindow {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
             let window = FurtheranceWindow::default();
+            let obj = self.obj();
             obj.set_transient_for(Some(&window));
 
             obj.setup_signals();
             obj.setup_widgets();
 
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
 
@@ -124,13 +124,13 @@ glib::wrapper! {
 
 impl FurPreferencesWindow {
     pub fn new() -> Self {
-        glib::Object::new::<FurPreferencesWindow>(&[]).unwrap()
+        glib::Object::new::<FurPreferencesWindow>()
     }
 
     fn setup_widgets(&self) {
         self.set_search_enabled(false);
 
-        let imp = imp::FurPreferencesWindow::from_instance(self);
+        let imp = imp::FurPreferencesWindow::from_obj(self);
 
         let manager = adw::StyleManager::default();
         let support_darkmode = manager.system_supports_color_schemes();
@@ -141,7 +141,7 @@ impl FurPreferencesWindow {
     }
 
     fn setup_signals(&self) {
-        let imp = imp::FurPreferencesWindow::from_instance(self);
+        let imp = imp::FurPreferencesWindow::from_obj(self);
 
         settings_manager::bind_property("dark-mode", &*imp.dark_theme_switch, "active");
 
@@ -253,7 +253,7 @@ impl FurPreferencesWindow {
                             let settings = settings_manager::get_settings();
                             let _ = settings.set_string("database-loc", &path.to_string());
 
-                            let imp2 = imp::FurPreferencesWindow::from_instance(&this2);
+                            let imp2 = imp::FurPreferencesWindow::from_obj(&this2);
                             imp2.database_loc_row.set_subtitle(&path.to_string());
 
                             let window = FurtheranceWindow::default();
@@ -271,3 +271,4 @@ impl FurPreferencesWindow {
         }));
     }
 }
+

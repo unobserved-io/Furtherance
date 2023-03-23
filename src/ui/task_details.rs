@@ -18,7 +18,6 @@ use adw::subclass::prelude::*;
 use chrono::{offset::TimeZone, DateTime, Local, NaiveDateTime, ParseError, Duration};
 use gettextrs::*;
 use glib::clone;
-use gtk::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
 use itertools::Itertools;
 
@@ -80,11 +79,12 @@ mod imp {
     }
 
     impl ObjectImpl for FurTaskDetails {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
+            let obj = self.obj();
             obj.setup_signals();
             obj.setup_delete_all();
             obj.setup_add_similar();
-            self.parent_constructed(obj);
+            self.parent_constructed();
         }
     }
 
@@ -102,7 +102,7 @@ glib::wrapper! {
 
 impl FurTaskDetails {
     pub fn new() -> Self {
-        let dialog: Self = glib::Object::new(&[]).unwrap();
+        let dialog: Self = glib::Object::new::<FurTaskDetails>();
 
         let window = FurtheranceWindow::default();
         dialog.set_transient_for(Some(&window));
@@ -114,7 +114,7 @@ impl FurTaskDetails {
     }
 
     pub fn setup_widgets(&self, mut task_group: Vec<database::Task>) {
-        let imp = imp::FurTaskDetails::from_instance(self);
+        let imp = imp::FurTaskDetails::from_obj(self);
 
         imp.task_name_label.set_text(&task_group[0].task_name);
         let this_day_str = DateTime::parse_from_rfc3339(&task_group[0].start_time).unwrap();
@@ -435,7 +435,7 @@ impl FurTaskDetails {
     }
 
     fn clear_task_list(&self) {
-        let imp = imp::FurTaskDetails::from_instance(&self);
+        let imp = imp::FurTaskDetails::from_obj(&self);
 
         for task_box in &*imp.all_boxes.borrow() {
             imp.main_box.remove(task_box);
@@ -474,12 +474,12 @@ impl FurTaskDetails {
     }
 
     fn setup_signals(&self) {
-        let imp = imp::FurTaskDetails::from_instance(self);
+        let imp = imp::FurTaskDetails::from_obj(self);
 
         // Add headerbar to dialog when scrolled far
         imp.scrolled_window.vadjustment().connect_value_notify(
             clone!(@weak self as this => move |adj|{
-                let imp = imp::FurTaskDetails::from_instance(&this);
+                let imp = imp::FurTaskDetails::from_obj(&this);
                 if adj.value() < 120.0 {
                     imp.headerbar.add_css_class("hidden");
                     imp.dialog_title.set_visible(false);
@@ -517,7 +517,7 @@ impl FurTaskDetails {
             let message_area = dialog.message_area().downcast::<gtk::Box>().unwrap();
             let new_name_entry = gtk::Entry::new();
             new_name_entry.set_placeholder_text(Some(&gettext("New Name #tags")));
-            let imp3 = imp::FurTaskDetails::from_instance(&this);
+            let imp3 = imp::FurTaskDetails::from_obj(&this);
             new_name_entry.set_text(&imp3.orig_name_with_tags.borrow().to_string());
             let cant_be_empty = gtk::Label::new(Some(&gettext("Task name cannot be empty.")));
             cant_be_empty.add_css_class("error_message");
@@ -546,7 +546,7 @@ impl FurTaskDetails {
 
                     if !new_task_name.is_empty() {
                         // Change all task names & tags
-                        let imp2 = imp::FurTaskDetails::from_instance(&this);
+                        let imp2 = imp::FurTaskDetails::from_obj(&this);
                         for id in &*imp2.all_task_ids.borrow() {
                             database::update_task_name(*id, new_task_name.trim().to_string())
                                 .expect("Could not update group of task names");
@@ -572,7 +572,7 @@ impl FurTaskDetails {
     }
 
     fn setup_delete_all(&self) {
-        let imp = imp::FurTaskDetails::from_instance(self);
+        let imp = imp::FurTaskDetails::from_obj(self);
         imp.delete_all_btn.connect_clicked(clone!(@weak self as this => move |_|{
             let dialog = gtk::MessageDialog::with_markup(
                 Some(&this),
@@ -611,9 +611,9 @@ impl FurTaskDetails {
     }
 
     fn setup_add_similar(&self) {
-        let imp = imp::FurTaskDetails::from_instance(self);
+        let imp = imp::FurTaskDetails::from_obj(self);
         imp.add_similar_btn.connect_clicked(clone!(@weak self as this => move |_|{
-            let imp2 = imp::FurTaskDetails::from_instance(&this);
+            let imp2 = imp::FurTaskDetails::from_obj(&this);
             let dialog = gtk::MessageDialog::new(
                 Some(&this),
                 gtk::DialogFlags::MODAL,
@@ -806,7 +806,7 @@ impl FurTaskDetails {
     }
 
     fn delete_all(&self) {
-        let imp = imp::FurTaskDetails::from_instance(self);
+        let imp = imp::FurTaskDetails::from_obj(self);
         let _ = database::delete_by_ids(imp.all_task_ids.borrow().to_vec());
     }
 }
