@@ -174,7 +174,9 @@ impl FurTasksPage {
                 if !settings_manager::get_bool("show-seconds") {
                     total_time_str = format!("{:02}:{:02}", h, m);
                 }
-                group.set_description(Some(&total_time_str));
+
+                let total_time_label = gtk::Label::new(Some(&total_time_str));
+                group.set_header_suffix(Some(&total_time_label));
             }
 
             imp.all_groups.borrow_mut().push(group);
