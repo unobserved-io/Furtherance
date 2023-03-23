@@ -181,21 +181,21 @@ impl FurtheranceApplication {
 
     fn show_about(&self) {
         let window = self.active_window().unwrap();
-        let dialog = gtk::AboutDialog::builder()
+        let dialog = adw::AboutWindow::builder()
+            .application_name("Furtherance")
+            .application_icon(config::APP_ID)
+            .developer_name(gettext("Ricky Kresslein"))
+            .license_type(gtk::License::Gpl30)
+            .website("https://furtherance.app")
+            .issue_url("https://github.com/lakoliu/Furtherance/issues")
+            .version(config::VERSION)
             .transient_for(&window)
             .modal(true)
-            .program_name("Furtherance")
-            .logo_icon_name(config::APP_ID)
-            .version(config::VERSION)
-            .comments(&gettext("Track your time without being tracked"))
-            .copyright("© 2023 LakoLiu")
-            .authors(vec!["Ricky Kresslein <rk@lakoliu.com>"])
-            .translator_credits(&gettext("translator-credits"))
-            .website("https://furtherance.app")
-            .license_type(gtk::License::Gpl30)
+            .copyright(gettext("© 2023 LakoLiu"))
+            .translator_credits(gettext("translator-credits"))
             .build();
 
-        dialog.present();
+        dialog.show();
     }
 
     fn delete_history(&self) {
