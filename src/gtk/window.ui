@@ -37,9 +37,10 @@
               <object class="GtkBox" id="win_box">
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
-                <property name="halign">center</property>
+                <property name="halign">fill</property>
                 <property name="valign">center</property>
                 <property name="width_request">360</property>
+                <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <child>
                   <object class="GtkLabel" id="watch">
