@@ -241,13 +241,33 @@ pub fn retrieve(sort: TaskSort, order: SortOrder) -> Result<Vec<Task>, rusqlite:
 /// Exports the database as CSV.
 /// The delimiter parameter is interpreted as a ASCII character.
 pub fn export_as_csv(sort: TaskSort, order: SortOrder, delimiter: u8) -> anyhow::Result<String> {
+    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+    struct CSVTask {
+        pub id: i32,
+        pub task_name: String,
+        pub start_time: String,
+        pub stop_time: String,
+        pub tags: String,
+        pub seconds: i64,
+    }
+
     let mut csv_writer = csv::WriterBuilder::new()
         .delimiter(delimiter)
         .from_writer(vec![]);
     let tasks = retrieve(sort, order)?;
 
     for task in tasks {
-        csv_writer.serialize(task)?;
+        let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
+        let stop_time = DateTime::parse_from_rfc3339(&task.stop_time).unwrap();
+        let duration = stop_time - start_time;
+        csv_writer.serialize(CSVTask{
+            id: task.id,
+            task_name: task.task_name,
+            start_time: task.start_time,
+            stop_time: task.stop_time,
+            tags: task.tags,
+            seconds: duration.num_seconds(),
+        })?;
     }
 
     csv_writer.flush()?;
