@@ -47,3 +47,9 @@ pub fn get_string(key: &str) -> String {
     let settings = get_settings();
     settings.string(key).to_string()
 }
+
+#[allow(dead_code)]
+pub fn set_int(key: &str, val: i32) {
+    let settings = get_settings();
+    _ = settings.set_int(key, val);
+}

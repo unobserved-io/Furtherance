@@ -216,9 +216,10 @@ impl FurPreferencesWindow {
             .connect_enable_expansion_notify(move |_| {
                 let window = FurtheranceWindow::default();
                 window.refresh_timer();
-            });
+        });
 
-        imp.pomodoro_spin.connect_value_changed(move |_| {
+        imp.pomodoro_spin.connect_value_changed(move |new_val| {
+            settings_manager::set_int("pomodoro-time", new_val.value() as i32);
             let window = FurtheranceWindow::default();
             window.refresh_timer();
         });
