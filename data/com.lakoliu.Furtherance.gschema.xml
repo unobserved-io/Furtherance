@@ -40,6 +40,9 @@
 	  <key name="autosave-time" type="i">
       <default>5</default>
     </key>
+	  <key name="inclusive-total" type="b">
+      <default>false</default>
+    </key>
 	  <key name="database-loc" type="s">
       <default>"default"</default>
     </key>

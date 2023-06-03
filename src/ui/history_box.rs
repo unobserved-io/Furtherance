@@ -133,6 +133,16 @@ impl FurHistoryBox {
         }
     }
 
+    pub fn set_todays_time(&self, added_time: i32) {
+        let imp = imp::FurHistoryBox::from_obj(self);
+        imp.tasks_page.add_to_todays_time(added_time);
+    }
+
+    pub fn set_todays_stored_secs(&self, new_time: i32) {
+        let imp = imp::FurHistoryBox::from_obj(self);
+        imp.tasks_page.set_todays_stored_secs(new_time)
+    }
+
     pub fn empty_view(&self) {
         self.set_view(View::Empty);
         let window = FurtheranceWindow::default();

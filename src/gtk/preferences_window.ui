@@ -204,6 +204,21 @@
                 </child>
               </object>
             </child>
+
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">Inclusive total time</property>
+                <property name="use_underline">True</property>
+                <property name="activatable_widget">inclusive_total_switch</property>
+                <property name="subtitle" translatable="yes">Today's total time includes the ongoing timer</property>
+                <child>
+                  <object class="GtkSwitch" id="inclusive_total_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+
           </object>
         </child>
         <child>

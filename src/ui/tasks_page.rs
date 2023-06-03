@@ -21,6 +21,7 @@ use chrono_locale::LocaleDate;
 use gettextrs::*;
 use gtk::glib;
 use std::env;
+use std::sync::Mutex;
 
 use crate::database::{self, SortOrder, TaskSort};
 use crate::settings_manager;
@@ -36,6 +37,7 @@ mod imp {
     #[template(resource = "/com/lakoliu/Furtherance/gtk/tasks_page.ui")]
     pub struct FurTasksPage {
         pub all_groups: RefCell<Vec<FurTasksGroup>>,
+        pub today_stored_secs: Mutex<i32>,
     }
 
     #[glib::object_subclass]
@@ -76,6 +78,35 @@ impl FurTasksPage {
         self.build_task_list();
     }
 
+    pub fn add_to_todays_time(&self, added_time: i32) {
+        let imp = imp::FurTasksPage::from_obj(&self);
+        if imp.all_groups.borrow().len() > 0 {
+            let today_group = imp.all_groups.borrow()[0].clone();
+            if today_group.title() == "Today" {
+                // Add the time to the thing here
+                let new_total_time = added_time + *imp.today_stored_secs.lock().unwrap();
+
+                let h = new_total_time / 3600;
+                let m = new_total_time % 3600 / 60;
+                let s = new_total_time % 60;
+
+                let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+                if !settings_manager::get_bool("show-seconds") {
+                    total_time_str = format!("{:02}:{:02}", h, m);
+                }
+
+                let total_time_label = gtk::Label::new(Some(&total_time_str));
+                today_group.set_header_suffix(Some(&total_time_label));
+            }
+        }
+    }
+
+    pub fn set_todays_stored_secs(&self, new_time: i32) {
+        let imp = imp::FurTasksPage::from_obj(&self);
+        let old_time = *imp.today_stored_secs.lock().unwrap();
+        *imp.today_stored_secs.lock().unwrap() = old_time + new_time;
+    }
+
     pub fn clear_task_list(&self) {
         let imp = imp::FurTasksPage::from_obj(&self);
 
@@ -84,6 +115,7 @@ impl FurTasksPage {
         }
 
         imp.all_groups.borrow_mut().clear();
+        *imp.today_stored_secs.lock().unwrap() = 0;
     }
 
     pub fn build_task_list(&self) {
@@ -166,10 +198,15 @@ impl FurTasksPage {
             // Set total time for each day
             if settings_manager::get_bool("show-daily-sums") {
                 let day_total_time = group.get_total_day_time();
+                if uniq_date_list[i] == today {
+                    *imp.today_stored_secs.lock().unwrap() = day_total_time as i32;
+                }
+
                 // Format total time to readable string
                 let h = day_total_time / 3600;
                 let m = day_total_time % 3600 / 60;
                 let s = day_total_time % 60;
+
                 let mut total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
                 if !settings_manager::get_bool("show-seconds") {
                     total_time_str = format!("{:02}:{:02}", h, m);

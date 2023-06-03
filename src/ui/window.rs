@@ -213,6 +213,7 @@ impl FurtheranceWindow {
                 if settings_manager::get_bool("pomodoro") && !*imp2.pomodoro_continue.lock().unwrap() {
                     let pomodoro_time = settings_manager::get_int("pomodoro-time");
                     let mut secs: i32 = 0;
+                    let mut secs_only: i32 = 0;
                     let mut mins: i32 = pomodoro_time;
                     let mut hrs: i32 = mins / 60;
                     mins %= 60;
@@ -236,6 +237,11 @@ impl FurtheranceWindow {
                             }
                             let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
                             this_clone.set_watch_time(watch_text);
+
+                            if settings_manager::get_bool("inclusive-total") {
+                                secs_only += 1;
+                                imp3.history_box.set_todays_time(secs_only);
+                            }
                         }
                         if settings_manager::get_bool("autosave") {
                             let autosave_mins = settings_manager::get_int("autosave-time");
@@ -252,20 +258,25 @@ impl FurtheranceWindow {
                         Continue(*imp3.running.lock().unwrap())
                     }));
                 } else {
-                    let mut secs: u32 = 0;
-                    let mut mins: u32 = 0;
-                    let mut hrs: u32 = 0;
+                    let mut secs: i32 = 0;
+                    let mut secs_only: i32 = 0;
+                    let mut mins: i32 = 0;
+                    let mut hrs: i32 = 0;
 
                     if *imp2.pomodoro_continue.lock().unwrap() {
                         let pomodoro_start_time = *start_time.borrow();
                         let now_time = Local::now();
                         let continue_time = now_time - pomodoro_start_time;
-                        let continue_time = continue_time.num_seconds() as u32;
+                        let continue_time = continue_time.num_seconds() as i32;
                         hrs = continue_time / 3600;
                         mins = continue_time % 3600 / 60;
                         secs = continue_time % 60;
                         let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
                         this.set_watch_time(watch_text);
+
+                        if settings_manager::get_bool("inclusive-total") {
+                            imp2.history_box.set_todays_stored_secs(continue_time);
+                        }
 
                         *imp2.pomodoro_continue.lock().unwrap() = false;
                     } else {
@@ -291,8 +302,13 @@ impl FurtheranceWindow {
                             let watch_text: &str = &format!("{:02}:{:02}:{:02}", hrs, mins, secs).to_string();
                             this_clone.set_watch_time(watch_text);
 
+                            if settings_manager::get_bool("inclusive-total") {
+                                secs_only +=1;
+                                imp3.history_box.set_todays_time(secs_only);
+                            }
+
                             if settings_manager::get_bool("autosave") {
-                                let autosave_mins = settings_manager::get_int("autosave-time") as u32;
+                                let autosave_mins = settings_manager::get_int("autosave-time");
                                 let total_elapsed = (hrs * 3600) + (mins * 60) + secs;
                                 if total_elapsed % (autosave_mins * 60) == 0 {
                                     this_clone.write_autosave(autosave_start);

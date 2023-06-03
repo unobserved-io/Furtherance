@@ -73,6 +73,9 @@ mod imp {
         pub autosave_spin: TemplateChild<gtk::SpinButton>,
 
         #[template_child]
+        pub inclusive_total_switch: TemplateChild<gtk::Switch>,
+
+        #[template_child]
         pub database_loc_row: TemplateChild<adw::ActionRow>,
         #[template_child]
         pub database_browse_btn: TemplateChild<gtk::Button>,
@@ -181,6 +184,8 @@ impl FurPreferencesWindow {
 
         settings_manager::bind_property("autosave-time", &*imp.autosave_spin, "value");
 
+        settings_manager::bind_property("inclusive-total", &*imp.inclusive_total_switch, "active");
+
         imp.dark_theme_switch.connect_active_notify(move |_| {
             let app = FurtheranceApplication::default();
             app.update_light_dark();
@@ -222,6 +227,11 @@ impl FurPreferencesWindow {
             settings_manager::set_int("pomodoro-time", new_val.value() as i32);
             let window = FurtheranceWindow::default();
             window.refresh_timer();
+        });
+
+        imp.inclusive_total_switch.connect_active_notify(move |_| {
+            let window = FurtheranceWindow::default();
+            window.reset_history_box();
         });
 
         imp.database_browse_btn.connect_clicked(clone!(@weak self as this => move |_| {
