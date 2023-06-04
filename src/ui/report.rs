@@ -183,7 +183,7 @@ impl FurReport {
 
         // Get date range
         let active_range = imp.range_combo.active_id().unwrap();
-        let today = Local::today();
+        let today = Local::now().date();
         let range_start_date: Date<Local>;
         let mut range_end_date = today;
         if active_range == "this_week_item" {
