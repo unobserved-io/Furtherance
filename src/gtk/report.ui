@@ -30,7 +30,9 @@
             <object class="GtkComboBoxText" id="range_combo">
               <property name="halign">center</property>
                 <items>
-                  <item translatable="yes" id="week_item">Past week</item>
+                  <item translatable="yes" id="this_week_item">This Week</item>
+                  <item translatable="yes" id="last_week_item">Last Week</item>
+                  <item translatable="yes" id="week_item">Past 7 days</item>
                   <item translatable="yes" id="month_item">This month</item>
                   <item translatable="yes" id="30_days_item">Past 30 days</item>
                   <item translatable="yes" id="six_months_item">Past 180 days</item>

@@ -76,6 +76,9 @@ mod imp {
         pub inclusive_total_switch: TemplateChild<gtk::Switch>,
 
         #[template_child]
+        pub week_start_combo: TemplateChild<adw::ComboRow>,
+
+        #[template_child]
         pub database_loc_row: TemplateChild<adw::ActionRow>,
         #[template_child]
         pub database_browse_btn: TemplateChild<gtk::Button>,
@@ -185,6 +188,8 @@ impl FurPreferencesWindow {
         settings_manager::bind_property("autosave-time", &*imp.autosave_spin, "value");
 
         settings_manager::bind_property("inclusive-total", &*imp.inclusive_total_switch, "active");
+
+        settings_manager::bind_property("week-starts", &*imp.week_start_combo, "selected");
 
         imp.dark_theme_switch.connect_active_notify(move |_| {
             let app = FurtheranceApplication::default();

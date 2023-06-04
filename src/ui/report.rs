@@ -15,13 +15,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use adw::subclass::prelude::*;
-use chrono::{offset::TimeZone, Date, DateTime, Datelike, Duration, Local, NaiveDate};
+use chrono::{offset::TimeZone, Date, DateTime, Datelike, Duration, Local, NaiveDate, Weekday};
 use gettextrs::*;
 use glib::clone;
 use gtk::{glib, prelude::*, CompositeTemplate};
 use itertools::Itertools;
 
 use crate::database::{self, SortOrder, TaskSort};
+use crate::settings_manager;
 use crate::ui::FurtheranceWindow;
 use crate::FurtheranceApplication;
 
@@ -115,7 +116,7 @@ impl FurReport {
     pub fn setup_widgets(&self) {
         let imp = imp::FurReport::from_obj(self);
 
-        imp.range_combo.set_active_id(Some("week_item"));
+        imp.range_combo.set_active_id(Some("this_week_item"));
         imp.filter_combo.set_active_id(Some("tasks_item"));
 
         imp.range_combo
@@ -185,7 +186,13 @@ impl FurReport {
         let today = Local::today();
         let range_start_date: Date<Local>;
         let mut range_end_date = today;
-        if active_range == "week_item" {
+        if active_range == "this_week_item" {
+            let current_week = today.iso_week().week();
+            (range_start_date, range_end_date) = FurReport::week_bounds(today.weekday(), current_week);
+        } else if active_range == "last_week_item" {
+            let last_week = today.iso_week().week() - 1;
+            (range_start_date, range_end_date) = FurReport::week_bounds(today.weekday(), last_week);
+        } else if active_range == "week_item" {
             range_start_date = today - Duration::days(6);
         } else if active_range == "month_item" {
             let days_ago = today.day() - 1;
@@ -466,6 +473,29 @@ impl FurReport {
         // Automatically expand All Tasks row
         let all_tasks_path = gtk::TreePath::new_first();
         imp.results_tree.expand_row(&all_tasks_path, false);
+    }
+
+    fn week_bounds(weekday: Weekday, mut week: u32) -> (Date<Local>, Date<Local>) {
+        let mut week_starts_on = Weekday::Mon;
+        let mut week_ends_on = Weekday::Sun;
+        // If user set week to start Sunday
+        if settings_manager::get_int("week-starts") == 1 {
+            week_starts_on = Weekday::Sun;
+            week_ends_on = Weekday::Sat;
+        }
+
+        let current_year = chrono::offset::Local::now().year();
+        let week_start = NaiveDate::from_isoywd(current_year, week, week_starts_on);
+
+        // If weekday start Sunday, add 1 to the week number only after getting the week start date
+        if settings_manager::get_int("week-starts") == 1 && weekday == Weekday::Sun {
+            week += 1;
+        }
+
+        let week_end = NaiveDate::from_isoywd(current_year, week, week_ends_on);
+        let week_start_local = Local.from_local_date(&week_start).unwrap();
+        let week_end_local = Local.from_local_date(&week_end).unwrap();
+        (week_start_local, week_end_local)
     }
 
     fn format_duration(total_time: i64) -> String {

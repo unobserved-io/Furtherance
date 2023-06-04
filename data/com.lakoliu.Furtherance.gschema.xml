@@ -43,6 +43,9 @@
 	  <key name="inclusive-total" type="b">
       <default>false</default>
     </key>
+	  <key name="week-starts" type="i">
+      <default>0</default>
+    </key>
 	  <key name="database-loc" type="s">
       <default>"default"</default>
     </key>

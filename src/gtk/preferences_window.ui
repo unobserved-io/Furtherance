@@ -218,7 +218,26 @@
                 </child>
               </object>
             </child>
-
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="reports_group">
+            <property name="title" translatable="yes">Reports</property>
+            <property name="visible">True</property>
+            <child>
+              <object class="AdwComboRow" id="week_start_combo">
+                <property name="title" translatable="yes">Week starts on</property>
+                <property name="use_underline">True</property>
+                <property name="model">
+                  <object class="GtkStringList">
+                    <items>
+                      <item translatable="yes">Monday</item>
+                      <item translatable="yes">Sunday</item>
+                    </items>
+                  </object>
+                </property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
