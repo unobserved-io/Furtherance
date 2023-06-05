@@ -191,7 +191,7 @@ impl FurtheranceApplication {
             .version(config::VERSION)
             .transient_for(&window)
             .modal(true)
-            .copyright(gettext("© 2023 LakoLiu"))
+            .copyright(gettext("© 2023 Unobserved"))
             .translator_credits(gettext("translator-credits"))
             .build();
 

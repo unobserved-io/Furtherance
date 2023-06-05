@@ -536,10 +536,6 @@ msgstr ""
 msgid "_About Furtherance"
 msgstr ""
 
-#: src/application.rs:194
-msgid "2023 LakoLiu"
-msgstr ""
-
 #: src/application.rs:195
 msgid "translator-credits"
 msgstr ""
