@@ -39,6 +39,21 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.8.0" date="2023-06-05">
+      <description>
+        <p>1.8 is a big update for Furtherance!</p>
+        <ul>
+          <li>Add 'This week' and 'Last week' to Reports</li>
+          <li>Setting to update today's total time as timer ticks</li>
+          <li>Bug fix: Pomodoro no longer displays one minute off</li>
+          <li>Exported CSV now includes total seconds</li>
+          <li>Moved 'total time' across from the date</li>
+          <li>Preferences is now split into sections</li>
+          <li>Updated to Gnome 44 runtime</li>
+          <li>Now uses libadwaita AboutWindow</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.7.0" date="2023-03-22">
       <description>
         <ul>
