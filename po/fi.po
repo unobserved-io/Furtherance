@@ -1,0 +1,637 @@
+# LANGUAGE translation for Furtherance.
+# Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
+# This file is distributed under the same license as the Furtherance package.
+# Jiri Grönroos <jiri.gronroos@iki.fi>, 2023.
+msgid ""
+msgstr ""
+"Project-Id-Version: furtherance\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-10-18 11:58+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:186
+msgid "Track your time without being tracked"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:13
+msgid ""
+"Furtherance is a time tracking app built for GNOME with Rust and GTK4. In "
+"addition to tracking time spent on tasks, you can edit that time, delete "
+"entries, and change settings. It even has idle detection."
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "The location of the database is now changeable"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "Backup database"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+msgid "Import databases"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+#: data/com.lakoliu.Furtherance.appdata.xml.in:77
+msgid "Bug fixes and improvements"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:57
+msgid "New icon!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:58
+msgid "Dates are now ISO 8601 format"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:66
+msgid "Added a button to restart tasks"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:67
+msgid "CSV Export"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:68
+msgid "Timer centered on empty state"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:69
+msgid "Uses local date format"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:76
+msgid "Generate reports of task history over a specified timeframe"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:84
+msgid "Ability to add tasks manually"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:85
+msgid "Auto-save option"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:86
+msgid "Task names can now be changed for an entire group"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:93
+msgid "Added Pomodoro-style countdown timer!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:94
+msgid "Bug fixes"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:101
+msgid "Ability to add tags!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:102
+msgid "Fixed icon positioning"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:103
+msgid "Changed start button color and behavior"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:104
+msgid "Changed color of delete buttons"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:105
+msgid "Dutch, Brazilian Portuguese, and French translations"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:112
+msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:121
+msgid "First stable release of Furtherance."
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:125
+msgid "Track time spent on tasks"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:126
+msgid "Change/delete recorded times"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:127
+msgid "Idle detection"
+msgstr ""
+
+#: src/gtk/dialogs.ui:7
+msgid "Export as CSV"
+msgstr ""
+
+#: src/gtk/dialogs.ui:10 src/application.rs:211 src/application.rs:347
+#: src/application.rs:385 src/ui/preferences_window.rs:233
+#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:324
+#: src/ui/window.rs:858
+msgid "Cancel"
+msgstr ""
+
+#: src/gtk/dialogs.ui:15
+msgid "Export"
+msgstr ""
+
+#: src/gtk/dialogs.ui:47 src/ui/window.rs:878
+msgid " - no file selected - "
+msgstr ""
+
+#: src/gtk/dialogs.ui:65
+msgid "CSV export preferences"
+msgstr ""
+
+#: src/gtk/dialogs.ui:69
+msgid "Sort by"
+msgstr ""
+
+#: src/gtk/dialogs.ui:73
+msgid "Start time"
+msgstr ""
+
+#: src/gtk/dialogs.ui:74
+msgid "Stop time"
+msgstr ""
+
+#: src/gtk/dialogs.ui:75
+msgid "Task name"
+msgstr ""
+
+#: src/gtk/dialogs.ui:83
+msgid "Sort order"
+msgstr ""
+
+#: src/gtk/dialogs.ui:87
+msgid "Ascending"
+msgstr ""
+
+#: src/gtk/dialogs.ui:88
+msgid "Descending"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:7
+msgid "General"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:10
+msgid "Appearance"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:14
+msgid "_Dark theme"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:583
+msgid "Idle"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:32
+msgid "Notify of idle"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:33
+msgid "(GNOME only)"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:38
+msgid "_Minutes to idle"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:39
+msgid "Number of minutes before the user is considered idle"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:63
+msgid "Task List"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:67
+msgid "_Delete confirmation"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:79
+msgid "Limit tasks shown"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:80
+msgid "Only show X number of days in the saved tasks list"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:85
+msgid "_Days ago"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:86
+msgid "Number of days to display in the list"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:108
+msgid "Show daily sums"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:120
+msgid "_Show seconds"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:123
+msgid "Tasks list only. Seconds always show on timer"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:133
+msgid "Show tags"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:136
+msgid "Tags are saved, just not shown"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:148
+msgid "Timer"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:152
+msgid "_Pomodoro"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:153
+msgid "Timer counts down instead of up"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:158
+msgid "Interval"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:159
+msgid "Start time in minutes"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:181
+msgid "_Autosave"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:182
+msgid "Prevent losing tracked time due to improper shutdown"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:187
+msgid "Autosave every X _minutes"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:211
+msgid "Database"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:215
+msgid "Database location"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:220
+msgid "Browse"
+msgstr ""
+
+#: src/gtk/report.ui:8
+msgid "Report"
+msgstr ""
+
+#: src/gtk/report.ui:33
+msgid "Past week"
+msgstr ""
+
+#: src/gtk/report.ui:34
+msgid "This month"
+msgstr ""
+
+#: src/gtk/report.ui:35
+msgid "Past 30 days"
+msgstr ""
+
+#: src/gtk/report.ui:36
+msgid "Past 180 days"
+msgstr ""
+
+#: src/gtk/report.ui:37
+msgid "Past year"
+msgstr ""
+
+#: src/gtk/report.ui:38
+msgid "Date range"
+msgstr ""
+
+#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
+#: src/ui/task_details.rs:642 src/ui/window.rs:338
+msgid "Start"
+msgstr ""
+
+#: src/gtk/report.ui:58 src/gtk/report.ui:74
+msgid "MM/DD/YYYY"
+msgstr ""
+
+#: src/gtk/report.ui:68
+msgid "End"
+msgstr ""
+
+#: src/gtk/report.ui:83
+msgid "Use the format MM/DD/YYYY"
+msgstr ""
+
+#: src/gtk/report.ui:92
+msgid "Start date must be before end date"
+msgstr ""
+
+#: src/gtk/report.ui:105
+msgid "Sort by:"
+msgstr ""
+
+#: src/gtk/report.ui:110 src/gtk/task_row.ui:23 src/ui/report.rs:159
+msgid "Task"
+msgstr ""
+
+#: src/gtk/report.ui:117
+msgid "Tag"
+msgstr ""
+
+#: src/gtk/report.ui:124
+msgid "Filter by task or tags"
+msgstr ""
+
+#: src/gtk/report.ui:136
+msgid "Tasks"
+msgstr ""
+
+#: src/gtk/report.ui:137 src/ui/task_details.rs:191
+msgid "Tags"
+msgstr ""
+
+#: src/gtk/report.ui:143 src/ui/report.rs:146
+msgid "Task, Task 2"
+msgstr ""
+
+#: src/gtk/report.ui:150
+msgid "Refresh"
+msgstr ""
+
+#: src/gtk/task_details.ui:8
+msgid "Task Details"
+msgstr ""
+
+#: src/gtk/task_details.ui:96 src/application.rs:332 src/ui/task_details.rs:202
+#: src/ui/task_details.rs:644 src/ui/window.rs:340 src/ui/window.rs:626
+msgid "Stop"
+msgstr ""
+
+#: src/gtk/task_details.ui:104
+msgid "Total"
+msgstr ""
+
+#: src/gtk/task_details.ui:135
+msgid "Add Similar Task"
+msgstr ""
+
+#: src/gtk/task_details.ui:144
+msgid "Delete all"
+msgstr ""
+
+#: src/gtk/task_row.ui:48
+msgid "Time"
+msgstr ""
+
+#: src/gtk/window.ui:20
+msgid "Add Task"
+msgstr ""
+
+#: src/gtk/window.ui:26
+msgid "Main Menu"
+msgstr ""
+
+#: src/gtk/window.ui:65
+msgid "Task Name #tags"
+msgstr ""
+
+#: src/gtk/window.ui:93
+msgid "_Generate Report"
+msgstr ""
+
+#: src/gtk/window.ui:99
+msgid "Back up"
+msgstr ""
+
+#: src/gtk/window.ui:103
+msgid "_Export as CSV"
+msgstr ""
+
+#: src/gtk/window.ui:107
+msgid "Import"
+msgstr ""
+
+#: src/gtk/window.ui:111
+msgid "_Delete history"
+msgstr ""
+
+#: src/gtk/window.ui:117
+msgid "_Preferences"
+msgstr ""
+
+#: src/gtk/window.ui:121
+msgid "_About Furtherance"
+msgstr ""
+
+#: src/application.rs:189
+msgid "translator-credits"
+msgstr ""
+
+#: src/application.rs:207
+msgid "Delete history?"
+msgstr ""
+
+#: src/application.rs:212 src/ui/task_details.rs:587
+msgid "Delete"
+msgstr ""
+
+#: src/application.rs:222
+msgid "This will delete ALL of your task history."
+msgstr ""
+
+#: src/application.rs:224
+msgid "Type DELETE in the box below then click Delete to proceed."
+msgstr ""
+
+#: src/application.rs:234
+msgid "DELETE"
+msgstr ""
+
+#: src/application.rs:309 src/ui/window.rs:587
+msgid "Discard"
+msgstr ""
+
+#: src/application.rs:310 src/application.rs:331 src/ui/window.rs:588
+#: src/ui/window.rs:625
+msgid "Continue"
+msgstr ""
+
+#: src/application.rs:321 src/ui/window.rs:621
+msgid "Time's up!"
+msgstr ""
+
+#: src/application.rs:322
+msgid "Your Furtherance timer ended."
+msgstr ""
+
+#: src/application.rs:343 src/application.rs:381
+#: src/ui/preferences_window.rs:229
+msgid "Backup Database"
+msgstr ""
+
+#: src/application.rs:348 src/ui/preferences_window.rs:234
+msgid "Save"
+msgstr ""
+
+#: src/application.rs:386
+msgid "Open"
+msgstr ""
+
+#: src/database.rs:400
+msgid "Not a valid database"
+msgstr ""
+
+#: src/ui/report.rs:148
+msgid "tag, tag 2"
+msgstr ""
+
+#: src/ui/report.rs:164
+msgid "Duration"
+msgstr ""
+
+#: src/ui/report.rs:305
+msgid "No Results"
+msgstr ""
+
+#: src/ui/report.rs:312
+msgid "All Results"
+msgstr ""
+
+#: src/ui/report.rs:455
+msgid "no tags"
+msgstr ""
+
+#: src/ui/task_details.rs:182 src/ui/task_details.rs:513
+msgid "Edit Task"
+msgstr ""
+
+#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:365
+msgid "*Use the format YYYY-MM-DD HH:MM:SS"
+msgstr ""
+
+#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:367
+msgid "*Use the format YYYY-MM-DD HH:MM"
+msgstr ""
+
+#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:373
+msgid "*Start time cannot be later than stop time."
+msgstr ""
+
+#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:378
+msgid "*Time cannot be in the future."
+msgstr ""
+
+#: src/ui/task_details.rs:240
+msgid "Delete task"
+msgstr ""
+
+#: src/ui/task_details.rs:267
+msgid "Delete task?"
+msgstr ""
+
+#: src/ui/task_details.rs:519
+msgid "New Name #tags"
+msgstr ""
+
+#: src/ui/task_details.rs:522
+msgid "Task name cannot be empty."
+msgstr ""
+
+#: src/ui/task_details.rs:582
+msgid "Delete All?"
+msgstr ""
+
+#: src/ui/task_details.rs:584
+msgid "This will delete all occurrences of this task on this day."
+msgstr ""
+
+#: src/ui/task_details.rs:622 src/ui/window.rs:320
+msgid "New Task"
+msgstr ""
+
+#: src/ui/task_details.rs:627 src/ui/window.rs:325
+msgid "Add"
+msgstr ""
+
+#: src/ui/task_details.rs:687 src/ui/window.rs:383
+msgid "*Task name cannot be blank."
+msgstr ""
+
+#: src/ui/tasks_page.rs:156
+msgid "Today"
+msgstr ""
+
+#: src/ui/tasks_page.rs:158
+msgid "Yesterday"
+msgstr ""
+
+#: src/ui/window.rs:331
+msgid "Task Name"
+msgstr ""
+
+#: src/ui/window.rs:333
+msgid "tags"
+msgstr ""
+
+#: src/ui/window.rs:568
+msgid "You have been idle for "
+msgstr ""
+
+#: src/ui/window.rs:573
+msgid ""
+"\n"
+"Would you like to discard that time, or continue the clock?"
+msgstr ""
+
+#: src/ui/window.rs:720
+msgid "Autosave Restored"
+msgstr ""
+
+#: src/ui/window.rs:723
+msgid "Furtherance shut down improperly. An autosave was restored."
+msgstr ""
+
+#: src/ui/window.rs:782
+msgid "Stop the timer to duplicate a task."
+msgstr ""
+
+#: src/ui/window.rs:853
+msgid "Create or choose a CSV file"
+msgstr ""
+
+#: src/ui/window.rs:857
+msgid "Accept"
+msgstr ""
+
+#: src/ui/window.rs:896
+msgid "Exporting as CSV failed."
+msgstr ""
+
+#: src/ui/window.rs:898
+msgid "Exported as CSV successfully."
+msgstr ""
