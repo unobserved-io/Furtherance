@@ -1,14 +1,14 @@
 # German translation for Furtherance package.
-# Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
+# Copyright (C) 2023 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
-# Gabriel Brand <gabr.brand@gmail.com>, 2022.
+# Gabriel Brand <gabr.brand@gmail.com>, 2022,2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-02 14:33+0200\n"
-"PO-Revision-Date: 2022-10-04 15:40+0200\n"
+"POT-Creation-Date: 2023-06-05 11:45+0200\n"
+"PO-Revision-Date: 2023-06-06 14:52+0200\n"
 "Last-Translator: Gabriel Brand <gabr.brand@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -16,9 +16,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.3.1\n"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:186
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6
 msgid "Track your time without being tracked"
 msgstr "Erfassen Sie Ihre Zeit ohne getrackt zu werden"
 
@@ -33,114 +33,161 @@ msgstr ""
 "aufgewendeten Zeit können Sie diese Zeit bearbeiten, Einträge löschen und "
 "Einstellungen ändern. Es hat sogar eine Inaktivitätserkennung."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+#: data/com.lakoliu.Furtherance.appdata.xml.in:44
+msgid "1.8 is a big update for Furtherance!"
+msgstr "1.8 ist ein großes Update für Furtherance!"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+msgid "Add 'This week' and 'Last week' to Reports"
+msgstr "\"Diese Woche\" und \"Letzte Woche\" zu Berichten hinzugefügt"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+msgid "Setting to update today's total time as timer ticks"
+msgstr ""
+"Einstellung zur Aktualisierung der Gesamtzeit des heutigen Tages, wenn der "
+"Timer tickt"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:48
+msgid "Bug fix: Pomodoro no longer displays one minute off"
+msgstr ""
+"Fehlerbehebung: Pomodoro wird nicht mehr eine Minute abweichend angezeigt"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:49
+msgid "Exported CSV now includes total seconds"
+msgstr "Exportierte CSV-Datei enthält jetzt die Gesamtsekunden"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:50
+msgid "Moved 'total time' across from the date"
+msgstr "\"Gesamtzeit\" gegenüber dem Datum verschoben"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:51
+msgid "Preferences is now split into sections"
+msgstr "Einstellungen sind jetzt in mehrere Abschnitte unterteilt"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:52
+msgid "Updated to Gnome 44 runtime"
+msgstr "Auf Gnome 44-Laufzeitumgebung aktualisiert"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:53
+msgid "Now uses libadwaita AboutWindow"
+msgstr "Verwendet jetzt das Libadwaita AboutWindow"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
+msgid "Manually add new task to group"
+msgstr "Manuelles Hinzufügen einer neuen Aufgabe zur Gruppe"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:61
+msgid "Updated translations"
+msgstr "Aktualisierte Übersetzungen"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:68
 msgid "The location of the database is now changeable"
 msgstr "Der Speicherort der Datenbank kann jetzt verändert werden"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:46
+#: data/com.lakoliu.Furtherance.appdata.xml.in:69
 msgid "Backup database"
 msgstr "Datenbank sichern"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:47
+#: data/com.lakoliu.Furtherance.appdata.xml.in:70
 msgid "Import databases"
 msgstr "Datenbanken importieren"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
-#: data/com.lakoliu.Furtherance.appdata.xml.in:77
+#: data/com.lakoliu.Furtherance.appdata.xml.in:71
+#: data/com.lakoliu.Furtherance.appdata.xml.in:100
 msgid "Bug fixes and improvements"
 msgstr "Fehlerbehebungen und Verbesserungen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:57
+#: data/com.lakoliu.Furtherance.appdata.xml.in:80
 msgid "New icon!"
 msgstr "Neues Symbol!"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:58
+#: data/com.lakoliu.Furtherance.appdata.xml.in:81
 msgid "Dates are now ISO 8601 format"
 msgstr "Daten sind jetzt im ISO-8601-Format"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:66
+#: data/com.lakoliu.Furtherance.appdata.xml.in:89
 msgid "Added a button to restart tasks"
 msgstr "Knopf zum Neustarten von Aufgaben hinzugefügt"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:67
+#: data/com.lakoliu.Furtherance.appdata.xml.in:90
 msgid "CSV Export"
 msgstr "CSV-Export"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:68
+#: data/com.lakoliu.Furtherance.appdata.xml.in:91
 msgid "Timer centered on empty state"
 msgstr "Timer bei leerem Zustand zentriert"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:69
+#: data/com.lakoliu.Furtherance.appdata.xml.in:92
 msgid "Uses local date format"
 msgstr "Nutzt das lokale Datumsformat"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:76
+#: data/com.lakoliu.Furtherance.appdata.xml.in:99
 msgid "Generate reports of task history over a specified timeframe"
 msgstr ""
 "Generieren Sie Berichte über den Aufgabenverlauf über einen bestimmten "
 "Zeitraum"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:84
+#: data/com.lakoliu.Furtherance.appdata.xml.in:107
 msgid "Ability to add tasks manually"
 msgstr "Möglichkeit, Aufgaben manuell hinzuzufügen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:85
+#: data/com.lakoliu.Furtherance.appdata.xml.in:108
 msgid "Auto-save option"
 msgstr "Option zum automatischen Speichern"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:86
+#: data/com.lakoliu.Furtherance.appdata.xml.in:109
 msgid "Task names can now be changed for an entire group"
 msgstr "Aufgabennamen können jetzt für eine gesamte Gruppe geändert werden"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:93
+#: data/com.lakoliu.Furtherance.appdata.xml.in:116
 msgid "Added Pomodoro-style countdown timer!"
 msgstr "Pomodoro-Timer hinzugefügt!"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:94
+#: data/com.lakoliu.Furtherance.appdata.xml.in:117
 msgid "Bug fixes"
 msgstr "Fehlerbehebungen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:101
+#: data/com.lakoliu.Furtherance.appdata.xml.in:124
 msgid "Ability to add tags!"
 msgstr "Möglichkeit, Tags hinzuzufügen!"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:102
+#: data/com.lakoliu.Furtherance.appdata.xml.in:125
 msgid "Fixed icon positioning"
 msgstr "Symbolpositionierung korrigiert"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:103
+#: data/com.lakoliu.Furtherance.appdata.xml.in:126
 msgid "Changed start button color and behavior"
 msgstr "Veränderte Farbe und Verhalten des Start-Knopfes"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:104
+#: data/com.lakoliu.Furtherance.appdata.xml.in:127
 msgid "Changed color of delete buttons"
 msgstr "Veränderte Farbe der Löschen-Knöpfe"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:105
+#: data/com.lakoliu.Furtherance.appdata.xml.in:128
 msgid "Dutch, Brazilian Portuguese, and French translations"
 msgstr ""
 "Übersetzungen ins Niederländische, Brasilianische, Portugiesische und "
 "Französische"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:112
+#: data/com.lakoliu.Furtherance.appdata.xml.in:135
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 "Furtherance hat ein neues Symbol! Und viele Fehlerbehebungen und "
 "Verbesserungen."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:121
+#: data/com.lakoliu.Furtherance.appdata.xml.in:144
 msgid "First stable release of Furtherance."
 msgstr "Erste stabile Veröffentlichung von Furtherance."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:125
+#: data/com.lakoliu.Furtherance.appdata.xml.in:148
 msgid "Track time spent on tasks"
 msgstr "Für Aufgaben aufgewendete Zeit erfassen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:126
+#: data/com.lakoliu.Furtherance.appdata.xml.in:149
 msgid "Change/delete recorded times"
 msgstr "Erfasste Zeiten ändern/löschen"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:127
+#: data/com.lakoliu.Furtherance.appdata.xml.in:150
 msgid "Idle detection"
 msgstr "Inaktivitätserkennung"
 
@@ -148,9 +195,10 @@ msgstr "Inaktivitätserkennung"
 msgid "Export as CSV"
 msgstr "Als CSV exportieren"
 
-#: src/gtk/dialogs.ui:10 src/application.rs:211 src/application.rs:347
-#: src/application.rs:385 src/ui/preferences_window.rs:233
-#: src/ui/task_details.rs:579 src/ui/window.rs:324 src/ui/window.rs:858
+#: src/gtk/dialogs.ui:10 src/application.rs:215 src/application.rs:351
+#: src/application.rs:389 src/ui/preferences_window.rs:249
+#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:343
+#: src/ui/window.rs:877
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -158,7 +206,7 @@ msgstr "Abbrechen"
 msgid "Export"
 msgstr "Exportieren"
 
-#: src/gtk/dialogs.ui:47 src/ui/window.rs:878
+#: src/gtk/dialogs.ui:47 src/ui/window.rs:897
 msgid " - no file selected - "
 msgstr " - Keine Datei ausgewählt - "
 
@@ -206,7 +254,7 @@ msgstr "Erscheinungsbild"
 msgid "_Dark theme"
 msgstr "_Dunkles Thema"
 
-#: src/gtk/preferences_window.ui:28 src/ui/window.rs:583
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:602
 msgid "Idle"
 msgstr "Inaktivität"
 
@@ -227,92 +275,126 @@ msgid "Number of minutes before the user is considered idle"
 msgstr "Anzahl der Minuten, bevor der Benutzer als inaktiv betrachtet wird"
 
 #: src/gtk/preferences_window.ui:63
-msgid "Task List"
-msgstr "Aufgabenliste"
-
-#: src/gtk/preferences_window.ui:67
-msgid "_Delete confirmation"
-msgstr "_Löschen bestätigen"
-
-#: src/gtk/preferences_window.ui:79
-msgid "Limit tasks shown"
-msgstr "Angezeigte Aufgaben begrenzen"
-
-#: src/gtk/preferences_window.ui:80
-msgid "Only show X number of days in the saved tasks list"
-msgstr "Nur X Tage in der Liste der gespeicherten Aufgaben anzeigen"
-
-#: src/gtk/preferences_window.ui:85
-msgid "_Days ago"
-msgstr "Vor _Tagen"
-
-#: src/gtk/preferences_window.ui:86
-msgid "Number of days to display in the list"
-msgstr "Anzahl der Tage, die in der Liste angezeigt werden sollen"
-
-#: src/gtk/preferences_window.ui:108
-msgid "Show daily sums"
-msgstr "Tägliche Summe anzeigen"
-
-#: src/gtk/preferences_window.ui:120
-msgid "_Show seconds"
-msgstr "_Sekunden anzeigen"
-
-#: src/gtk/preferences_window.ui:123
-msgid "Tasks list only. Seconds always show on timer"
-msgstr "Nur in der Aufgabenliste. Sekunden werden immer im Timer angezeigt"
-
-#: src/gtk/preferences_window.ui:133
-msgid "Show tags"
-msgstr "Tags anzeigen"
-
-#: src/gtk/preferences_window.ui:136
-msgid "Tags are saved, just not shown"
-msgstr "Tags werden gespeichert, aber nicht angezeigt"
-
-#: src/gtk/preferences_window.ui:148
 msgid "Timer"
 msgstr "Timer"
 
-#: src/gtk/preferences_window.ui:152
+#: src/gtk/preferences_window.ui:67
 msgid "_Pomodoro"
 msgstr "_Pomodoro"
 
-#: src/gtk/preferences_window.ui:153
+#: src/gtk/preferences_window.ui:68
 msgid "Timer counts down instead of up"
 msgstr "Timer zählt runter statt hoch"
 
-#: src/gtk/preferences_window.ui:158
+#: src/gtk/preferences_window.ui:73
 msgid "Interval"
 msgstr "Intervall"
 
-#: src/gtk/preferences_window.ui:159
+#: src/gtk/preferences_window.ui:74
 msgid "Start time in minutes"
 msgstr "Startzeit in Minuten"
 
-#: src/gtk/preferences_window.ui:181
+#: src/gtk/preferences_window.ui:96
 msgid "_Autosave"
 msgstr "_Automatisches Speichern"
 
-#: src/gtk/preferences_window.ui:182
+#: src/gtk/preferences_window.ui:97
 msgid "Prevent losing tracked time due to improper shutdown"
 msgstr ""
-"Verhindern Sie, dass erfasste Zeiten durch unsachgemäßes Herunterfahren "
-"verloren gehen"
+"Verhindern Sie, dass erfasste Zeiten durch unsachgemäßes Beenden verloren "
+"gehen"
 
-#: src/gtk/preferences_window.ui:187
+#: src/gtk/preferences_window.ui:102
 msgid "Autosave every X _minutes"
 msgstr "Alle X _Minuten automatisch speichern"
 
-#: src/gtk/preferences_window.ui:211
+#: src/gtk/preferences_window.ui:124
+msgid "Inclusive total time"
+msgstr "Inklusive Gesamtzeit"
+
+#: src/gtk/preferences_window.ui:127
+msgid "Today's total time includes the ongoing timer"
+msgstr "Heutige Gesamtzeit beinhaltet den laufenden Timer"
+
+#: src/gtk/preferences_window.ui:142
+msgctxt "A page title of the preferences dialog"
+msgid "Tasks"
+msgstr "Aufgaben"
+
+#: src/gtk/preferences_window.ui:145
+msgid "Task List"
+msgstr "Aufgabenliste"
+
+#: src/gtk/preferences_window.ui:149
+msgid "_Delete confirmation"
+msgstr "_Löschen bestätigen"
+
+#: src/gtk/preferences_window.ui:161
+msgid "Limit tasks shown"
+msgstr "Angezeigte Aufgaben begrenzen"
+
+#: src/gtk/preferences_window.ui:162
+msgid "Only show X number of days in the saved tasks list"
+msgstr "Nur X Tage in der Liste der gespeicherten Aufgaben anzeigen"
+
+#: src/gtk/preferences_window.ui:167
+msgid "_Days ago"
+msgstr "Vor _Tagen"
+
+#: src/gtk/preferences_window.ui:168
+msgid "Number of days to display in the list"
+msgstr "Anzahl der Tage, die in der Liste angezeigt werden sollen"
+
+#: src/gtk/preferences_window.ui:190
+msgid "Show daily sums"
+msgstr "Tägliche Summe anzeigen"
+
+#: src/gtk/preferences_window.ui:202
+msgid "_Show seconds"
+msgstr "_Sekunden anzeigen"
+
+#: src/gtk/preferences_window.ui:205
+msgid "Tasks list only. Seconds always show on timer"
+msgstr "Nur in der Aufgabenliste. Sekunden werden immer im Timer angezeigt"
+
+#: src/gtk/preferences_window.ui:215
+msgid "Show tags"
+msgstr "Tags anzeigen"
+
+#: src/gtk/preferences_window.ui:218
+msgid "Tags are saved, just not shown"
+msgstr "Tags werden gespeichert, aber nicht angezeigt"
+
+#: src/gtk/preferences_window.ui:233
+msgctxt "A page title of the preferences dialog"
+msgid "Data"
+msgstr "Daten"
+
+#: src/gtk/preferences_window.ui:236
+msgid "Reports"
+msgstr "Berichte"
+
+#: src/gtk/preferences_window.ui:240
+msgid "Week starts on"
+msgstr "Woche beginnt am"
+
+#: src/gtk/preferences_window.ui:245
+msgid "Monday"
+msgstr "Montag"
+
+#: src/gtk/preferences_window.ui:246
+msgid "Sunday"
+msgstr "Sonntag"
+
+#: src/gtk/preferences_window.ui:256
 msgid "Database"
 msgstr "Datenbank"
 
-#: src/gtk/preferences_window.ui:215
+#: src/gtk/preferences_window.ui:260
 msgid "Database location"
 msgstr "Speicherort der Datenbank"
 
-#: src/gtk/preferences_window.ui:220
+#: src/gtk/preferences_window.ui:265
 msgid "Browse"
 msgstr "Suchen"
 
@@ -321,79 +403,87 @@ msgid "Report"
 msgstr "Bericht"
 
 #: src/gtk/report.ui:33
-msgid "Past week"
-msgstr "Letzte Woche"
+msgid "This Week"
+msgstr "Diese Woche"
 
 #: src/gtk/report.ui:34
+msgid "Last Week"
+msgstr "Letzte Woche"
+
+#: src/gtk/report.ui:35
+msgid "Past 7 days"
+msgstr "Letzte 7 Tage"
+
+#: src/gtk/report.ui:36
 msgid "This month"
 msgstr "Diesen Monat"
 
-#: src/gtk/report.ui:35
+#: src/gtk/report.ui:37
 msgid "Past 30 days"
 msgstr "Letzte 30 Tage"
 
-#: src/gtk/report.ui:36
+#: src/gtk/report.ui:38
 msgid "Past 180 days"
 msgstr "Letzte 180 Tage"
 
-#: src/gtk/report.ui:37
+#: src/gtk/report.ui:39
 msgid "Past year"
 msgstr "Letztes Jahr"
 
-#: src/gtk/report.ui:38
+#: src/gtk/report.ui:40
 msgid "Date range"
 msgstr "Datumsbereich"
 
-#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:193
-#: src/ui/window.rs:338
+#: src/gtk/report.ui:54 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
+#: src/ui/task_details.rs:642 src/ui/window.rs:357
 msgid "Start"
 msgstr "Start"
 
-#: src/gtk/report.ui:58 src/gtk/report.ui:74
+#: src/gtk/report.ui:60 src/gtk/report.ui:76
 msgid "MM/DD/YYYY"
 msgstr "MM/DD/YYYY"
 
-#: src/gtk/report.ui:68
+#: src/gtk/report.ui:70
 msgid "End"
 msgstr "Ende"
 
-#: src/gtk/report.ui:83
+#: src/gtk/report.ui:85
 msgid "Use the format MM/DD/YYYY"
 msgstr "Nutzen Sie das Format MM/DD/YYYY"
 
-#: src/gtk/report.ui:92
+#: src/gtk/report.ui:94
 msgid "Start date must be before end date"
 msgstr "Startdatum muss vor Enddatum liegen"
 
-#: src/gtk/report.ui:105
+#: src/gtk/report.ui:107
 msgid "Sort by:"
 msgstr "Sortieren nach:"
 
-#: src/gtk/report.ui:110 src/gtk/task_row.ui:23 src/ui/report.rs:159
+#: src/gtk/report.ui:112 src/gtk/task_row.ui:23 src/ui/report.rs:160
 msgid "Task"
 msgstr "Aufgabe"
 
-#: src/gtk/report.ui:117
+#: src/gtk/report.ui:119
 msgid "Tag"
 msgstr "Tag"
 
-#: src/gtk/report.ui:124
+#: src/gtk/report.ui:126
 msgid "Filter by task or tags"
 msgstr "Nach Aufgaben und Tags sortieren"
 
-#: src/gtk/report.ui:136
+#: src/gtk/report.ui:138
 msgid "Tasks"
 msgstr "Aufgaben"
 
-#: src/gtk/report.ui:137 src/ui/task_details.rs:184
+#: src/gtk/report.ui:139 src/ui/task_details.rs:191
 msgid "Tags"
 msgstr "Tags"
 
-#: src/gtk/report.ui:143 src/ui/report.rs:146
+#: src/gtk/report.ui:145 src/ui/report.rs:147
 msgid "Task, Task 2"
 msgstr "Aufgabe, Aufgabe 2"
 
-#: src/gtk/report.ui:150
+#: src/gtk/report.ui:152
 msgid "Refresh"
 msgstr "Aktualisieren"
 
@@ -401,8 +491,8 @@ msgstr "Aktualisieren"
 msgid "Task Details"
 msgstr "Aufgabendetails"
 
-#: src/gtk/task_details.ui:96 src/application.rs:332 src/ui/task_details.rs:195
-#: src/ui/window.rs:340 src/ui/window.rs:626
+#: src/gtk/task_details.ui:96 src/application.rs:336 src/ui/task_details.rs:202
+#: src/ui/task_details.rs:644 src/ui/window.rs:359 src/ui/window.rs:645
 msgid "Stop"
 msgstr "Stopp"
 
@@ -410,7 +500,11 @@ msgstr "Stopp"
 msgid "Total"
 msgstr "Gesamt"
 
-#: src/gtk/task_details.ui:131
+#: src/gtk/task_details.ui:135
+msgid "Add Similar Task"
+msgstr "Ähnliche Aufgabe hinzufügen"
+
+#: src/gtk/task_details.ui:144
 msgid "Delete all"
 msgstr "Alle löschen"
 
@@ -426,195 +520,195 @@ msgstr "Aufgabe hinzufügen"
 msgid "Main Menu"
 msgstr "Hauptmenü"
 
-#: src/gtk/window.ui:65
+#: src/gtk/window.ui:66
 msgid "Task Name #tags"
 msgstr "Aufgabenname #Tags"
 
-#: src/gtk/window.ui:93
+#: src/gtk/window.ui:94
 msgid "_Generate Report"
 msgstr "_Bericht erstellen"
 
-#: src/gtk/window.ui:99
+#: src/gtk/window.ui:100
 msgid "Back up"
 msgstr "Sichern"
 
-#: src/gtk/window.ui:103
+#: src/gtk/window.ui:104
 msgid "_Export as CSV"
 msgstr "Als CSV _exportieren"
 
-#: src/gtk/window.ui:107
+#: src/gtk/window.ui:108
 msgid "Import"
 msgstr "Importieren"
 
-#: src/gtk/window.ui:111
+#: src/gtk/window.ui:112
 msgid "_Delete history"
 msgstr "_Chronik löschen"
 
-#: src/gtk/window.ui:117
+#: src/gtk/window.ui:118
 msgid "_Preferences"
 msgstr "_Einstellungen"
 
-#: src/gtk/window.ui:121
+#: src/gtk/window.ui:122
 msgid "_About Furtherance"
 msgstr "_Info zu Furtherance"
 
-#: src/application.rs:189
+#: src/application.rs:195
 msgid "translator-credits"
 msgstr "Gabriel Brand <gabr.brand@gmail.com>"
 
-#: src/application.rs:207
+#: src/application.rs:211
 msgid "Delete history?"
 msgstr "Chronik löschen?"
 
-#: src/application.rs:212 src/ui/task_details.rs:580
+#: src/application.rs:216 src/ui/task_details.rs:587
 msgid "Delete"
 msgstr "Löschen"
 
-#: src/application.rs:222
+#: src/application.rs:226
 msgid "This will delete ALL of your task history."
 msgstr "Dadurch wird Ihre GESAMTE Aufgabenchronik gelöscht."
 
-#: src/application.rs:224
+#: src/application.rs:228
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr ""
 "Geben Sie LÖSCHEN in das Feld unten ein und klicken Sie dann auf Löschen, um "
 "fortzufahren."
 
-#: src/application.rs:234
+#: src/application.rs:238
 msgid "DELETE"
 msgstr "LÖSCHEN"
 
-#: src/application.rs:309 src/ui/window.rs:587
+#: src/application.rs:313 src/ui/window.rs:606
 msgid "Discard"
 msgstr "Verwerfen"
 
-#: src/application.rs:310 src/application.rs:331 src/ui/window.rs:588
-#: src/ui/window.rs:625
+#: src/application.rs:314 src/application.rs:335 src/ui/window.rs:607
+#: src/ui/window.rs:644
 msgid "Continue"
 msgstr "Fortsetzen"
 
-#: src/application.rs:321 src/ui/window.rs:621
+#: src/application.rs:325 src/ui/window.rs:640
 msgid "Time's up!"
 msgstr "Die Zeit ist um!"
 
-#: src/application.rs:322
+#: src/application.rs:326
 msgid "Your Furtherance timer ended."
 msgstr "Ihr Furtherance-Timer ist abgelaufen."
 
-#: src/application.rs:343 src/application.rs:381
-#: src/ui/preferences_window.rs:229
+#: src/application.rs:347 src/application.rs:385
+#: src/ui/preferences_window.rs:245
 msgid "Backup Database"
 msgstr "Sicherungsdatenbank"
 
-#: src/application.rs:348 src/ui/preferences_window.rs:234
+#: src/application.rs:352 src/ui/preferences_window.rs:250
 msgid "Save"
 msgstr "Speichern"
 
-#: src/application.rs:386
+#: src/application.rs:390
 msgid "Open"
 msgstr "Öffnen"
 
-#: src/database.rs:400
+#: src/database.rs:420
 msgid "Not a valid database"
 msgstr "Keine gültige Datenbank"
 
-#: src/ui/report.rs:148
+#: src/ui/report.rs:149
 msgid "tag, tag 2"
 msgstr "Tag, Tag 2"
 
-#: src/ui/report.rs:164
+#: src/ui/report.rs:165
 msgid "Duration"
 msgstr "Dauer"
 
-#: src/ui/report.rs:305
+#: src/ui/report.rs:312
 msgid "No Results"
 msgstr "Keine Ergebnisse"
 
-#: src/ui/report.rs:312
+#: src/ui/report.rs:319
 msgid "All Results"
 msgstr "Alle Ergebnisse"
 
-#: src/ui/report.rs:455
+#: src/ui/report.rs:462
 msgid "no tags"
 msgstr "Keine Tags"
 
-#: src/ui/task_details.rs:175 src/ui/task_details.rs:506
+#: src/ui/task_details.rs:182 src/ui/task_details.rs:513
 msgid "Edit Task"
 msgstr "Aufgabe bearbeiten"
 
-#: src/ui/task_details.rs:214 src/ui/window.rs:365
+#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:384
 msgid "*Use the format YYYY-MM-DD HH:MM:SS"
 msgstr "*Nutzen Sie das Format YYYY-MM-DD HH:MM:SS"
 
-#: src/ui/task_details.rs:216 src/ui/window.rs:367
+#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:386
 msgid "*Use the format YYYY-MM-DD HH:MM"
 msgstr "*Nutzen Sie das Format YYYY-MM-DD HH:MM"
 
-#: src/ui/task_details.rs:222 src/ui/window.rs:373
+#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:392
 msgid "*Start time cannot be later than stop time."
 msgstr "*Startzeit darf nicht nach der Endzeit liegen."
 
-#: src/ui/task_details.rs:227 src/ui/window.rs:378
+#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:397
 msgid "*Time cannot be in the future."
 msgstr "*Zeit darf nicht in der Zukunft liegen."
 
-#: src/ui/task_details.rs:233
+#: src/ui/task_details.rs:240
 msgid "Delete task"
 msgstr "Aufgabe löschen"
 
-#: src/ui/task_details.rs:260
+#: src/ui/task_details.rs:267
 msgid "Delete task?"
 msgstr "Aufgabe löschen?"
 
-#: src/ui/task_details.rs:512
+#: src/ui/task_details.rs:519
 msgid "New Name #tags"
 msgstr "Neuer Name #Tags"
 
-#: src/ui/task_details.rs:515
+#: src/ui/task_details.rs:522
 msgid "Task name cannot be empty."
 msgstr "Aufgabenname darf nicht leer sein."
 
-#: src/ui/task_details.rs:575
+#: src/ui/task_details.rs:582
 msgid "Delete All?"
 msgstr "Alle löschen?"
 
-#: src/ui/task_details.rs:577
+#: src/ui/task_details.rs:584
 msgid "This will delete all occurrences of this task on this day."
 msgstr "Dadurch werden alle Einträge dieser Aufgabe an diesem Tag gelöscht."
 
-#: src/ui/tasks_page.rs:156
-msgid "Today"
-msgstr "Heute"
-
-#: src/ui/tasks_page.rs:158
-msgid "Yesterday"
-msgstr "Gestern"
-
-#: src/ui/window.rs:320
+#: src/ui/task_details.rs:622 src/ui/window.rs:339
 msgid "New Task"
 msgstr "Neue Aufgabe"
 
-#: src/ui/window.rs:325
+#: src/ui/task_details.rs:627 src/ui/window.rs:344
 msgid "Add"
 msgstr "Hinzufügen"
 
-#: src/ui/window.rs:331
-msgid "Task Name"
-msgstr "Aufgabenname"
-
-#: src/ui/window.rs:333
-msgid "tags"
-msgstr "Tags"
-
-#: src/ui/window.rs:383
+#: src/ui/task_details.rs:687 src/ui/window.rs:402
 msgid "*Task name cannot be blank."
 msgstr "*Aufgabenname darf nicht leer sein."
 
-#: src/ui/window.rs:568
+#: src/ui/tasks_page.rs:188
+msgid "Today"
+msgstr "Heute"
+
+#: src/ui/tasks_page.rs:190
+msgid "Yesterday"
+msgstr "Gestern"
+
+#: src/ui/window.rs:350
+msgid "Task Name"
+msgstr "Aufgabenname"
+
+#: src/ui/window.rs:352
+msgid "tags"
+msgstr "Tags"
+
+#: src/ui/window.rs:587
 msgid "You have been idle for "
 msgstr "Sie waren inaktiv für "
 
-#: src/ui/window.rs:573
+#: src/ui/window.rs:592
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
@@ -622,33 +716,33 @@ msgstr ""
 "\n"
 "Möchten Sie diese Zeit verwerfen oder die Uhr fortsetzen?"
 
-#: src/ui/window.rs:720
+#: src/ui/window.rs:739
 msgid "Autosave Restored"
 msgstr "Automatische Speicherung wiederhergestellt"
 
-#: src/ui/window.rs:723
+#: src/ui/window.rs:742
 msgid "Furtherance shut down improperly. An autosave was restored."
 msgstr ""
-"Furtherance wurde nicht ordnungsgemäß heruntergefahren. Eine automatische "
-"Speicherung wurde wiederhergestellt."
+"Furtherance wurde nicht ordnungsgemäß beendet. Eine automatische Speicherung "
+"wurde wiederhergestellt."
 
-#: src/ui/window.rs:782
+#: src/ui/window.rs:801
 msgid "Stop the timer to duplicate a task."
 msgstr "Stoppen Sie den Timer, um eine Aufgabe zu duplizieren."
 
-#: src/ui/window.rs:853
+#: src/ui/window.rs:872
 msgid "Create or choose a CSV file"
 msgstr "Erstellen oder wählen Sie eine CSV-Datei aus"
 
-#: src/ui/window.rs:857
+#: src/ui/window.rs:876
 msgid "Accept"
-msgstr "Annehmen"
+msgstr "Auswählen"
 
-#: src/ui/window.rs:896
+#: src/ui/window.rs:915
 msgid "Exporting as CSV failed."
 msgstr "Exportieren als CSV fehlgeschlagen."
 
-#: src/ui/window.rs:898
+#: src/ui/window.rs:917
 msgid "Exported as CSV successfully."
 msgstr "Erfolgreich als CSV exportiert."
 
