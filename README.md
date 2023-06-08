@@ -1,9 +1,9 @@
 # Furtherance
-Furtherance is a time tracking app written in Rust with GTK 4.
+Furtherance is a time tracking app, with a native interface on Gnome, Windows, and Mac.
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 
-<p float="left">
-    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-screen.gif" alt="Furtherance demo"/>
+<p align="center">
+    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-2023-06-06.png" alt="Furtherance screenshot"/>
 </p>
 
 ## Features
@@ -65,22 +65,22 @@ You can get started easily using [Weblate](https://hosted.weblate.org/projects/f
 
 ### Tips
 Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via: 
-* [Ko-fi](https://ko-fi.com/lakoliu) 
+* [Ko-fi](https://ko-fi.com/unobserved) 
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
 * **Bitcoin**: bc1q70czd5evhsxnjcd45cj2n4s3dr6qmhvrlljjlk
-* **Ethereum**: 0x1fe9C92693eFd9D2429eE3d265e8aB453AFc4FDb
-* **Monero**: 4BBuKqc2RWnJp9fDxCuHNUVsjM9XNrFBsGHNoBGpvwUveT6EgR9DAD6QPXRGhEfoxnbEnMsC79bsHU5G6Mc6pxyfBv1pbyS
-* **Dogecoin**: DCEHKYq6EnSjYnouAUB6kVTqcAfGrXCTkU
 
 Thank you so much!
 
 ## Project Details
 
 ### Built With
-Furtherance is written in Rust using the Gtk-rs bindings for GTK 4.
+* Linux: Written in Rust using the Gtk-rs bindings for GTK 4.
+* Windows: Written in C# using WinUI 3
+* Mac: Written in Swift using SwifUI
+* Android: Written in Dart using Flutter
 
 ### License
-This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details. (This only applies to the Linux version, the source code you see in this repository)
 
 ### Author
-This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [lakoliu](https://lakoliu.com). More information at [Furtherance.app](https://furtherance.app).
+This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [Unobserved](https://unobserved.io). More information at [Furtherance.app](https://furtherance.app).
