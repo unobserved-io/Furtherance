@@ -3,7 +3,7 @@ Furtherance is a time tracking app, with a native interface on Gnome, Windows, a
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 
 <p align="center">
-    <img src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-2023-06-06.png" alt="Furtherance screenshot"/>
+    <img width="500px" src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-2023-06-06.png" alt="Furtherance screenshot"/>
 </p>
 
 ## Features
