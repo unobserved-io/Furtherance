@@ -25,12 +25,12 @@ It allows you to track time spent on different activities without worrying about
 **Mac**
 
 <a href="https://apps.apple.com/app/furtherance/id1659277200"><img width='240' alt="Download on the Mac App Store" src="https://furtherance.app/images/app-store-dark.svg"/></a>
-* Furtherance for Mac is availaible from the [Mac App Store](https://apps.apple.com/app/furtherance/id1659277200). It uses a different codebase (Swift & SwiftUI) to provide a native experience on Mac, and it is not open-source.
+* Furtherance for Mac is available from the [Mac App Store](https://apps.apple.com/app/furtherance/id1659277200). It uses a different codebase (Swift & SwiftUI) to provide a native experience on Mac, and it is not open-source.
 
 **Windows**
 
 <a href="https://apps.microsoft.com/store/detail/furtherance/9NHG98S3VR3W"><img width='240' alt="Download from Microsoft Store" src="https://furtherance.app/images/microsoft-store-dark.svg"/></a>
-* Furtherance for Windows is availaible from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W). It uses a different codebase to provide a better experience on Windows, and it is not open-source.
+* Furtherance for Windows is available from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W). It uses a different codebase to provide a better experience on Windows, and it is not open-source.
 
 **Android**
 
