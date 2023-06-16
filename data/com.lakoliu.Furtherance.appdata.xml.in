@@ -39,6 +39,11 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.8.1" date="2023-06-16">
+      <description>
+        <p>Translation improvements</p>
+      </description>
+    </release>
     <release version="1.8.0" date="2023-06-05">
       <description>
         <p>1.8 is a big update for Furtherance!</p>
