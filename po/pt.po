@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: furtherances\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-05 11:45+0200\n"
-"PO-Revision-Date: 2023-06-27 16:50+0000\n"
+"PO-Revision-Date: 2023-06-28 17:52+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/furtherance/"
 "translations/pt/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:6
 msgid "Track your time without being tracked"
-msgstr ""
+msgstr "Monitorize o seu tempo sem ser monitorizado"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:13
 msgid ""
@@ -35,39 +35,41 @@ msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:44
 msgid "1.8 is a big update for Furtherance!"
-msgstr ""
+msgstr "1.8 é uma grande atualização para a Furtherance!"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:46
 msgid "Add 'This week' and 'Last week' to Reports"
-msgstr ""
+msgstr "Adicionar \"Esta semana\" e \"Semana passada\" aos relatórios"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:47
 msgid "Setting to update today's total time as timer ticks"
 msgstr ""
+"Definição para atualizar o tempo total de hoje à medida que o temporizador "
+"avança"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:48
 msgid "Bug fix: Pomodoro no longer displays one minute off"
-msgstr ""
+msgstr "Correção de erros: O Pomodoro já não apresenta um minuto de atraso"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:49
 msgid "Exported CSV now includes total seconds"
-msgstr ""
+msgstr "O CSV exportado agora inclui o total de segundos"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:50
 msgid "Moved 'total time' across from the date"
-msgstr ""
+msgstr "Deslocação do \"tempo total\" para o outro lado da data"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:51
 msgid "Preferences is now split into sections"
-msgstr ""
+msgstr "As preferências estão agora divididas em secções"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:52
 msgid "Updated to Gnome 44 runtime"
-msgstr ""
+msgstr "Atualizado para o runtime do Gnome 44"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:53
 msgid "Now uses libadwaita AboutWindow"
-msgstr ""
+msgstr "Agora usa o AboutWindow do libadwaita"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:60
 msgid "Manually add new task to group"
@@ -75,11 +77,11 @@ msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:61
 msgid "Updated translations"
-msgstr ""
+msgstr "Traduções atualizadas"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:68
 msgid "The location of the database is now changeable"
-msgstr ""
+msgstr "O local do banco de dados agora pode ser alterado"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:69
 msgid "Backup database"
@@ -87,28 +89,28 @@ msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:70
 msgid "Import databases"
-msgstr ""
+msgstr "Importar bases de dados"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:71
 #: data/com.lakoliu.Furtherance.appdata.xml.in:100
 msgid "Bug fixes and improvements"
-msgstr ""
+msgstr "Correcções de erros e melhorias"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:80
 msgid "New icon!"
-msgstr ""
+msgstr "Novo ícone!"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:81
 msgid "Dates are now ISO 8601 format"
-msgstr ""
+msgstr "As datas agora estão no formato ISO 8601"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:89
 msgid "Added a button to restart tasks"
-msgstr ""
+msgstr "Adicionado um botão para reiniciar tarefas"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:90
 msgid "CSV Export"
-msgstr ""
+msgstr "Exportar CSV"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:91
 msgid "Timer centered on empty state"
