@@ -22,10 +22,10 @@ It allows you to track time spent on different activities without worrying about
 * The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
 * Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
 
-**Mac**
+**Mac / iOS**
 
-<a href="https://apps.apple.com/app/furtherance/id1659277200"><img width='240' alt="Download on the Mac App Store" src="https://furtherance.app/images/app-store-dark.svg"/></a>
-* Furtherance for Mac is available from the [Mac App Store](https://apps.apple.com/app/furtherance/id1659277200). It uses a different codebase (Swift & SwiftUI) to provide a native experience on Mac, and it is not open-source.
+<a href="https://apps.apple.com/app/furtherance/id1659277200"><img width='240' alt="Download Furtherance on the App Store" src="https://furtherance.app/images/app-store-black.svg"/></a>
+* Furtherance for Mac & iOS is available on the [App Store](https://apps.apple.com/app/furtherance/id1659277200). It uses a different codebase (Swift & SwiftUI) to provide a native experience, and it is not open-source.
 
 **Windows**
 
