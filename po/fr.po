@@ -2,21 +2,22 @@
 # Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
 # Mathieu Heurtevin <mathieu.heurtevinruiz@protonmail.com>, 2022.
-#
+# "J. Lavoie" <j.lavoie@net-c.ca>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-07-19 06:34+0300\n"
-"PO-Revision-Date: 2022-07-19 22:26+0200\n"
-"Last-Translator: Irénée Thirion <irenee.thirion@e.email>\n"
-"Language-Team: French - France <mathieu.heurtevinruiz@protonmail.com>\n"
-"Language: fr_FR\n"
+"PO-Revision-Date: 2023-07-13 15:53+0000\n"
+"Last-Translator: \"J. Lavoie\" <j.lavoie@net-c.ca>\n"
+"Language-Team: French <https://hosted.weblate.org/projects/furtherance/"
+"translations/fr/>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.1.1\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:180
 msgid "Track your time without being tracked"
@@ -376,7 +377,7 @@ msgstr "Détails de la tâche"
 #: src/gtk/task_details.ui:96 src/application.rs:314 src/ui/task_details.rs:193
 #: src/ui/window.rs:340 src/ui/window.rs:626
 msgid "Stop"
-msgstr "Fin"
+msgstr "Arrêter"
 
 #: src/gtk/task_details.ui:104
 msgid "Total"
@@ -517,7 +518,7 @@ msgstr "Nouveau nom #étiquette"
 
 #: src/ui/task_details.rs:511
 msgid "Task name cannot be empty."
-msgstr "* Le nom de la tâche ne peut être vide."
+msgstr "Le nom de la tâche ne peut pas être vide."
 
 #: src/ui/task_details.rs:571
 msgid "Delete All?"
@@ -553,7 +554,7 @@ msgstr "étiquettes"
 
 #: src/ui/window.rs:383
 msgid "*Task name cannot be blank."
-msgstr "* Le nom de la tâche ne peut être vide."
+msgstr "*Le nom de la tâche ne peut pas être vide."
 
 #: src/ui/window.rs:568
 msgid "You have been idle for "
