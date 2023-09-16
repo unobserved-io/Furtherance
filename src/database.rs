@@ -354,7 +354,7 @@ pub fn get_list_by_name(task_name: String) -> Result<Vec<Task>, rusqlite::Error>
     let mut tasks_vec: Vec<Task> = Vec::new();
     let name_param = format!("%{}%", task_name);
 
-    let mut query = conn.prepare("SELECT * FROM tasks WHERE lower(task_name) LIKE lower(:task_name)")?;
+    let mut query = conn.prepare("SELECT * FROM tasks WHERE lower(task_name) LIKE lower(:task_name) ORDER BY task_name")?;
     let task_iter = query.query_map(&[(":task_name", &name_param)], |row| {
         Ok(Task {
             id: row.get(0)?,
