@@ -343,6 +343,29 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
     Ok(tasks_vec)
 }
 
+pub fn get_list_by_name_or_tag(task_name: String) -> Result<Vec<Task>, rusqlite::Error> {
+    let conn = Connection::open(get_directory())?;
+    let mut tasks_vec: Vec<Task> = Vec::new();
+    let name_param = format!("%{}%", task_name);
+
+    let mut query = conn.prepare("SELECT * FROM tasks WHERE lower(task_name) LIKE lower(:task_name)")?;
+    let task_iter = query.query_map(&[(":task_name", &name_param)], |row| {
+        Ok(Task {
+            id: row.get(0)?,
+            task_name: row.get(1)?,
+            start_time: row.get(2)?,
+            stop_time: row.get(3)?,
+            tags: row.get(4)?,
+        })
+    })?;
+
+    for task_item in task_iter {
+        tasks_vec.push(task_item.unwrap());
+    }
+
+    Ok(tasks_vec)
+}
+
 pub fn check_for_tasks() -> Result<String> {
     let conn = Connection::open(get_directory())?;
 
