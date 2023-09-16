@@ -349,7 +349,7 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
     Ok(tasks_vec)
 }
 
-pub fn get_list_by_name_or_tag(task_name: String) -> Result<Vec<Task>, rusqlite::Error> {
+pub fn get_list_by_name(task_name: String) -> Result<Vec<Task>, rusqlite::Error> {
     let conn = Connection::open(get_directory())?;
     let mut tasks_vec: Vec<Task> = Vec::new();
     let name_param = format!("%{}%", task_name);
