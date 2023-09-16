@@ -38,6 +38,12 @@ pub struct Task {
     pub tags: String,
 }
 
+impl ToString for Task {
+    fn to_string(&self) -> String {
+        format!("{} #{}", self.task_name, self.tags)
+    }
+}
+
 #[derive(
     Debug,
     Clone,
