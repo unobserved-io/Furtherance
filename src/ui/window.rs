@@ -115,6 +115,8 @@ glib::wrapper! {
 }
 
 impl FurtheranceWindow {
+    const MIN_PREFIX_LENGTH: i32 = 3;
+
     pub fn new(app: &Application) -> Self {
         glib::Object::builder()
             .property("application", Some(app))
@@ -182,6 +184,13 @@ impl FurtheranceWindow {
         imp.start_button.set_sensitive(false);
         imp.start_button.add_css_class("suggested-action");
         self.refresh_timer();
+
+        let task_autocomplete = gtk::EntryCompletion::new();
+        task_autocomplete.set_text_column(0);
+        task_autocomplete.set_minimum_key_length(FurtheranceWindow::MIN_PREFIX_LENGTH);
+        task_autocomplete.set_match_func(|_ac, _s, _it| { true });
+        imp.task_input.set_completion(Some(&task_autocomplete));
+
         imp.task_input.grab_focus();
 
         if settings_manager::get_bool("autosave") {
@@ -200,10 +209,17 @@ impl FurtheranceWindow {
                 let imp2 = imp::FurtheranceWindow::from_obj(&this);
                 let task_input_text = task_input.text();
                 let split_tags: Vec<&str> = task_input_text.trim().split('#').collect();
-                if split_tags[0].trim().is_empty() {
+                let task_name = split_tags[0];
+                if task_name.trim().is_empty() {
                     imp2.start_button.set_sensitive(false);
                 } else {
                     imp2.start_button.set_sensitive(true);
+                }
+
+                if task_input.text().len() >= FurtheranceWindow::MIN_PREFIX_LENGTH.try_into().unwrap() {
+                    let task_autocomplete = task_input.completion().unwrap();
+                    let model = Self::update_list_model(task_name.to_string());
+                    task_autocomplete.set_model(Some(&model));
                 }
             }));
 
@@ -526,6 +542,18 @@ impl FurtheranceWindow {
         let start = imp.start_button.clone();
         self.set_default_widget(Some(&start));
         imp.task_input.set_activates_default(true);
+    }
+
+    fn update_list_model(task_name: String) -> gtk::ListStore {
+        let col_types: [glib::Type; 1] = [glib::Type::STRING];
+        let mut task_list = database::get_list_by_name(task_name).unwrap();
+        task_list.dedup_by(|a, b| a.task_name == b.task_name && a.tags == b.tags);
+        let store = gtk::ListStore::new(&col_types);
+
+        for task in task_list {
+            store.set(&store.append(), &[(0, &task.to_string())]);
+        }
+        store
     }
 
     fn get_idle_time(&self) -> Result<u64, Box<dyn std::error::Error>> {
