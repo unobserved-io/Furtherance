@@ -218,7 +218,7 @@ impl FurtheranceWindow {
 
                 if task_input.text().len() >= FurtheranceWindow::MIN_PREFIX_LENGTH.try_into().unwrap() {
                     let task_autocomplete = task_input.completion().unwrap();
-                    let model = Self::update_list_model(task_name.to_string());
+                    let model = Self::update_list_model(task_name.to_string()).unwrap();
                     task_autocomplete.set_model(Some(&model));
                 }
             }));
@@ -544,16 +544,16 @@ impl FurtheranceWindow {
         imp.task_input.set_activates_default(true);
     }
 
-    fn update_list_model(task_name: String) -> gtk::ListStore {
+    fn update_list_model(task_name: String) -> Result<gtk::ListStore, anyhow::Error> {
         let col_types: [glib::Type; 1] = [glib::Type::STRING];
-        let mut task_list = database::get_list_by_name(task_name).unwrap();
+        let mut task_list = database::get_list_by_name(task_name)?;
         task_list.dedup_by(|a, b| a.task_name == b.task_name && a.tags == b.tags);
         let store = gtk::ListStore::new(&col_types);
 
         for task in task_list {
             store.set(&store.append(), &[(0, &task.to_string())]);
         }
-        store
+        Ok(store)
     }
 
     fn get_idle_time(&self) -> Result<u64, Box<dyn std::error::Error>> {
