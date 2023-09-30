@@ -349,13 +349,23 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
     Ok(tasks_vec)
 }
 
-pub fn get_list_by_name(task_name: String) -> Result<Vec<Task>, rusqlite::Error> {
+pub fn get_list_by_name_and_tags(task_name: String, tag_list: Vec<String>) -> Result<Vec<Task>, rusqlite::Error> {
     let conn = Connection::open(get_directory())?;
-    let mut tasks_vec: Vec<Task> = Vec::new();
-    let name_param = format!("%{}%", task_name);
 
-    let mut query = conn.prepare("SELECT * FROM tasks WHERE lower(task_name) LIKE lower(:task_name) ORDER BY task_name")?;
-    let task_iter = query.query_map(&[(":task_name", &name_param)], |row| {
+    let name_param = format!("%{}%", task_name);
+    let tag_list_params: Vec<String> = tag_list.iter().map(|tag| format!("%{}%", tag)).collect();
+
+    let mut sql_query = String::from("SELECT * FROM tasks WHERE lower(task_name) LIKE lower(?)");
+    tag_list_params.iter().for_each(|_| sql_query.push_str(" AND lower(tags) LIKE lower(?)"));
+    sql_query.push_str(" ORDER BY task_name");
+
+    let mut query = conn.prepare(sql_query.as_str())?;
+    query.raw_bind_parameter(1, name_param)?;
+    for (i, tag) in tag_list_params.iter().enumerate() {
+        query.raw_bind_parameter(i + 2, tag)?;
+    }
+
+    let tasks_vec = query.raw_query().mapped(|row| {
         Ok(Task {
             id: row.get(0)?,
             task_name: row.get(1)?,
@@ -363,11 +373,7 @@ pub fn get_list_by_name(task_name: String) -> Result<Vec<Task>, rusqlite::Error>
             stop_time: row.get(3)?,
             tags: row.get(4)?,
         })
-    })?;
-
-    for task_item in task_iter {
-        tasks_vec.push(task_item.unwrap());
-    }
+    }).map(|task_item| task_item.unwrap()).collect();
 
     Ok(tasks_vec)
 }
