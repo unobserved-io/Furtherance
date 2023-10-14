@@ -20,7 +20,7 @@ use chrono::{offset::TimeZone, DateTime, Duration as ChronDur, Local, NaiveDateT
 use dbus::blocking::Connection;
 use directories::ProjectDirs;
 use gettextrs::*;
-use glib::{clone, timeout_add_local};
+use glib::{clone, timeout_add_local, ControlFlow};
 use gtk::subclass::prelude::*;
 use gtk::{Application, gio, glib, CompositeTemplate};
 use itertools::Itertools;
@@ -271,7 +271,11 @@ impl FurtheranceWindow {
                             *imp3.running.lock().unwrap() = false;
                             this_clone.pomodoro_over(timer_start, timer_stop);
                         }
-                        Continue(*imp3.running.lock().unwrap())
+                        if *imp3.running.lock().unwrap() {
+                            ControlFlow::Continue
+                        } else {
+                            ControlFlow::Break
+                        }
                     }));
                 } else {
                     let mut secs: i32 = 0;
@@ -331,7 +335,11 @@ impl FurtheranceWindow {
                                 }
                             }
                         }
-                        Continue(*imp3.running.lock().unwrap())
+                        if *imp3.running.lock().unwrap() {
+                            ControlFlow::Continue
+                        } else {
+                            ControlFlow::Break
+                        }
                     }));
                 }
                 button.set_icon_name("media-playback-stop-symbolic");
@@ -857,15 +865,15 @@ impl FurtheranceWindow {
                     None,
                     false,
                     gio::FileCreateFlags::REPLACE_DESTINATION,
-                    glib::PRIORITY_DEFAULT,
+                    glib::source::Priority::DEFAULT,
                 )
                 .await?;
 
             output_stream
-                .write_all_future(bytes, glib::PRIORITY_DEFAULT)
+                .write_all_future(bytes, glib::source::Priority::DEFAULT)
                 .await
                 .map_err(|e| anyhow::anyhow!(e.1))?;
-            output_stream.close_future(glib::PRIORITY_DEFAULT).await?;
+            output_stream.close_future(glib::source::Priority::DEFAULT).await?;
 
             Ok(())
         }
