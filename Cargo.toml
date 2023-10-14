@@ -1,7 +1,7 @@
 [package]
 name = "furtherance"
 version = "1.8.1"
-authors = ["Ricky Kresslein <rk@lakoliu.com>"]
+authors = ["Ricky Kresslein <ricky@unobserved.io>"]
 edition = "2021"
 
 [dependencies]
