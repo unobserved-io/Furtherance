@@ -80,7 +80,7 @@ mod imp {
                 &css_file,
                 "/com/lakoliu/Furtherance/gtk/style.css",
             );
-            gtk::StyleContext::add_provider_for_display(
+            gtk::style_context_add_provider_for_display(
                 &gdk::Display::default().unwrap(),
                 &css_file,
                 500,
