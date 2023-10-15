@@ -40,7 +40,11 @@ pub struct Task {
 
 impl ToString for Task {
     fn to_string(&self) -> String {
-        format!("{} #{}", self.task_name, self.tags)
+        if !self.tags.is_empty() {
+            format!("{} #{}", self.task_name, self.tags)
+        } else {
+            self.task_name.to_string()
+        }
     }
 }
 
