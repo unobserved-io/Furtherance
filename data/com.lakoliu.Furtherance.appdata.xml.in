@@ -39,6 +39,14 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="1.8.2" date="2023-10-15">
+      <description>
+        <ul>
+          <li>Autocompletion</li>
+          <li>Bug fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.8.1" date="2023-06-16">
       <description>
         <p>Translation improvements</p>
