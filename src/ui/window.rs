@@ -163,6 +163,15 @@ impl FurtheranceWindow {
         imp.history_box.create_tasks_page();
     }
 
+    pub fn reset_autocomplete(&self) {
+        let imp = imp::FurtheranceWindow::from_obj(self);
+        if settings_manager::get_bool("autocomplete") {
+            imp.task_input.set_completion(Some(&FurtheranceWindow::create_autocomplete()));
+        } else {
+            imp.task_input.set_completion(None);
+        }
+    }
+
     fn setup_widgets(&self) {
         let imp = imp::FurtheranceWindow::from_obj(self);
 
@@ -214,10 +223,12 @@ impl FurtheranceWindow {
                     imp2.start_button.set_sensitive(true);
                 }
 
-                if task_input.text().len() >= FurtheranceWindow::MIN_PREFIX_LENGTH.try_into().unwrap() {
-                    let task_autocomplete = task_input.completion().unwrap();
-                    let model = Self::update_list_model(task_name.to_string(), split_tags).unwrap();
-                    task_autocomplete.set_model(Some(&model));
+                if settings_manager::get_bool("autocomplete") {
+                    if task_input.text().len() >= FurtheranceWindow::MIN_PREFIX_LENGTH.try_into().unwrap() {
+                        let task_autocomplete = task_input.completion().unwrap();
+                        let model = Self::update_list_model(task_name.to_string(), split_tags).unwrap();
+                        task_autocomplete.set_model(Some(&model));
+                    }
                 }
             }));
 

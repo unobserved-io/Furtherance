@@ -229,6 +229,11 @@ impl FurPreferencesWindow {
             window.reset_history_box();
         });
 
+        imp.autocomplete_switch.connect_active_notify(move |switch| {
+            let window = FurtheranceWindow::default();
+            window.reset_autocomplete();
+        });
+
         imp.pomodoro_expander
             .connect_enable_expansion_notify(move |_| {
                 let window = FurtheranceWindow::default();
