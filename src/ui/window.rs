@@ -185,11 +185,7 @@ impl FurtheranceWindow {
         imp.start_button.add_css_class("suggested-action");
         self.refresh_timer();
 
-        let task_autocomplete = gtk::EntryCompletion::new();
-        task_autocomplete.set_text_column(0);
-        task_autocomplete.set_minimum_key_length(FurtheranceWindow::MIN_PREFIX_LENGTH);
-        task_autocomplete.set_match_func(|_ac, _s, _it| { true });
-        imp.task_input.set_completion(Some(&task_autocomplete));
+        imp.task_input.set_completion(Some(&FurtheranceWindow::create_auto_complete()));
 
         imp.task_input.grab_focus();
 
@@ -226,6 +222,9 @@ impl FurtheranceWindow {
         imp.start_button.connect_clicked(clone!(@weak self as this => move |button| {
             let imp2 = imp::FurtheranceWindow::from_obj(&this);
             if !*imp2.running.lock().unwrap() {
+                // Remove auto-complete to prevent drop-down from sticking
+                imp2.task_input.set_completion(None);
+
                 if settings_manager::get_bool("pomodoro") && !*imp2.pomodoro_continue.lock().unwrap() {
                     let pomodoro_time = settings_manager::get_int("pomodoro-time");
                     let mut secs: i32 = 0;
@@ -349,6 +348,10 @@ impl FurtheranceWindow {
                 button.set_icon_name("media-playback-start-symbolic");
                 this.refresh_timer();
                 imp2.task_input.set_sensitive(true);
+
+                // Re-add auto-complete
+                imp2.task_input.set_completion(Some(&FurtheranceWindow::create_auto_complete()));
+
                 this.save_task(*start_time.borrow(), *stop_time.borrow());
                 FurtheranceWindow::delete_autosave();
             }
@@ -807,6 +810,14 @@ impl FurtheranceWindow {
         }
 
         Ok(vars)
+    }
+
+    fn create_auto_complete() -> gtk::EntryCompletion {
+        let task_autocomplete = gtk::EntryCompletion::new();
+        task_autocomplete.set_text_column(0);
+        task_autocomplete.set_minimum_key_length(FurtheranceWindow::MIN_PREFIX_LENGTH);
+        task_autocomplete.set_match_func(|_ac, _s, _it| { true });
+        task_autocomplete
     }
 
     pub fn reset_idle(&self) {
