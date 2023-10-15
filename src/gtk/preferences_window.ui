@@ -141,7 +141,7 @@
         <property name="icon_name">view-list-symbolic</property>
         <property name="title" translatable="yes" context="A page title of the preferences dialog">Tasks</property>
         <child>
-          <object class="AdwPreferencesGroup" id="task_group">
+          <object class="AdwPreferencesGroup" id="task_list_group">
             <property name="title" translatable="yes">Task List</property>
             <property name="visible">True</property>
             <child>
@@ -218,6 +218,24 @@
                 <property name="subtitle" translatable="yes">Tags are saved, just not shown</property>
                 <child>
                   <object class="GtkSwitch" id="show_tags_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwPreferencesGroup" id="task_input_group">
+            <property name="title" translatable="yes">Task Input</property>
+            <property name="visible">True</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title" translatable="yes">_Autocomplete</property>
+                <property name="use_underline">True</property>
+                <property name="activatable_widget">autocomplete_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="autocomplete_switch">
                     <property name="valign">center</property>
                   </object>
                 </child>

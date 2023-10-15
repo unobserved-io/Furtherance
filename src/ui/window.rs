@@ -185,7 +185,9 @@ impl FurtheranceWindow {
         imp.start_button.add_css_class("suggested-action");
         self.refresh_timer();
 
-        imp.task_input.set_completion(Some(&FurtheranceWindow::create_auto_complete()));
+        if settings_manager::get_bool("autocomplete") {
+            imp.task_input.set_completion(Some(&FurtheranceWindow::create_autocomplete()));
+        }
 
         imp.task_input.grab_focus();
 
@@ -350,7 +352,9 @@ impl FurtheranceWindow {
                 imp2.task_input.set_sensitive(true);
 
                 // Re-add auto-complete
-                imp2.task_input.set_completion(Some(&FurtheranceWindow::create_auto_complete()));
+                if settings_manager::get_bool("autocomplete") {
+                    imp2.task_input.set_completion(Some(&FurtheranceWindow::create_autocomplete()));
+                }
 
                 this.save_task(*start_time.borrow(), *stop_time.borrow());
                 FurtheranceWindow::delete_autosave();
@@ -812,7 +816,7 @@ impl FurtheranceWindow {
         Ok(vars)
     }
 
-    fn create_auto_complete() -> gtk::EntryCompletion {
+    fn create_autocomplete() -> gtk::EntryCompletion {
         let task_autocomplete = gtk::EntryCompletion::new();
         task_autocomplete.set_text_column(0);
         task_autocomplete.set_minimum_key_length(FurtheranceWindow::MIN_PREFIX_LENGTH);

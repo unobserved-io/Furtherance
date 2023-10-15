@@ -46,7 +46,7 @@ mod imp {
         pub notify_of_idle_spin: TemplateChild<gtk::SpinButton>,
 
         #[template_child]
-        pub task_group: TemplateChild<adw::PreferencesGroup>,
+        pub task_list_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub limit_tasks_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
@@ -59,6 +59,11 @@ mod imp {
         pub show_daily_sums_switch: TemplateChild<gtk::Switch>,
         #[template_child]
         pub show_tags_switch: TemplateChild<gtk::Switch>,
+
+        #[template_child]
+        pub task_input_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub autocomplete_switch: TemplateChild<gtk::Switch>,
 
         #[template_child]
         pub timer_group: TemplateChild<adw::PreferencesGroup>,
@@ -178,6 +183,8 @@ impl FurPreferencesWindow {
         settings_manager::bind_property("show-daily-sums", &*imp.show_daily_sums_switch, "active");
 
         settings_manager::bind_property("show-tags", &*imp.show_tags_switch, "active");
+
+        settings_manager::bind_property("autocomplete", &*imp.autocomplete_switch, "active");
 
         settings_manager::bind_property("pomodoro", &*imp.pomodoro_expander, "enable-expansion");
 
