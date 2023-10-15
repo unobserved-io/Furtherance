@@ -1,14 +1,14 @@
 # LANGUAGE translation for Furtherance.
-# Copyright (C) 2023 Ricky Kresslein <rk@lakoliu.com>
+# Copyright (C) 2023 Ricky Kresslein <ricky@unobserved.io>
 # This file is distributed under the same license as the Furtherance package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: furtherances\n"
+"Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-06-05 11:45+0200\n"
+"POT-Creation-Date: 2023-10-15 11:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,152 +28,161 @@ msgid ""
 "entries, and change settings. It even has idle detection."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:44
-msgid "1.8 is a big update for Furtherance!"
+#: data/com.lakoliu.Furtherance.appdata.xml.in:45
+msgid "Autocompletion"
 msgstr ""
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:46
-msgid "Add 'This week' and 'Last week' to Reports"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:47
-msgid "Setting to update today's total time as timer ticks"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
-msgid "Bug fix: Pomodoro no longer displays one minute off"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:49
-msgid "Exported CSV now includes total seconds"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:50
-msgid "Moved 'total time' across from the date"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:51
-msgid "Preferences is now split into sections"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:52
-msgid "Updated to Gnome 44 runtime"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:53
-msgid "Now uses libadwaita AboutWindow"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:60
-msgid "Manually add new task to group"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:61
-msgid "Updated translations"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:68
-msgid "The location of the database is now changeable"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:69
-msgid "Backup database"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:70
-msgid "Import databases"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:71
-#: data/com.lakoliu.Furtherance.appdata.xml.in:100
-msgid "Bug fixes and improvements"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:80
-msgid "New icon!"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:81
-msgid "Dates are now ISO 8601 format"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:89
-msgid "Added a button to restart tasks"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:90
-msgid "CSV Export"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:91
-msgid "Timer centered on empty state"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:92
-msgid "Uses local date format"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:99
-msgid "Generate reports of task history over a specified timeframe"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:107
-msgid "Ability to add tasks manually"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:108
-msgid "Auto-save option"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:109
-msgid "Task names can now be changed for an entire group"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:116
-msgid "Added Pomodoro-style countdown timer!"
-msgstr ""
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:117
+#: data/com.lakoliu.Furtherance.appdata.xml.in:130
 msgid "Bug fixes"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:124
+#: data/com.lakoliu.Furtherance.appdata.xml.in:52
+msgid "Translation improvements"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:57
+msgid "1.8 is a big update for Furtherance!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:59
+msgid "Add 'This week' and 'Last week' to Reports"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:60
+msgid "Setting to update today's total time as timer ticks"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:61
+msgid "Bug fix: Pomodoro no longer displays one minute off"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:62
+msgid "Exported CSV now includes total seconds"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:63
+msgid "Moved 'total time' across from the date"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:64
+msgid "Preferences is now split into sections"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:65
+msgid "Updated to Gnome 44 runtime"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:66
+msgid "Now uses libadwaita AboutWindow"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:73
+msgid "Manually add new task to group"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:74
+msgid "Updated translations"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:81
+msgid "The location of the database is now changeable"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:82
+msgid "Backup database"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:83
+msgid "Import databases"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:84
+#: data/com.lakoliu.Furtherance.appdata.xml.in:113
+msgid "Bug fixes and improvements"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:93
+msgid "New icon!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:94
+msgid "Dates are now ISO 8601 format"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:102
+msgid "Added a button to restart tasks"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:103
+msgid "CSV Export"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:104
+msgid "Timer centered on empty state"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:105
+msgid "Uses local date format"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:112
+msgid "Generate reports of task history over a specified timeframe"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:120
+msgid "Ability to add tasks manually"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:121
+msgid "Auto-save option"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:122
+msgid "Task names can now be changed for an entire group"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:129
+msgid "Added Pomodoro-style countdown timer!"
+msgstr ""
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:137
 msgid "Ability to add tags!"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:125
+#: data/com.lakoliu.Furtherance.appdata.xml.in:138
 msgid "Fixed icon positioning"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:126
+#: data/com.lakoliu.Furtherance.appdata.xml.in:139
 msgid "Changed start button color and behavior"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:127
+#: data/com.lakoliu.Furtherance.appdata.xml.in:140
 msgid "Changed color of delete buttons"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:128
+#: data/com.lakoliu.Furtherance.appdata.xml.in:141
 msgid "Dutch, Brazilian Portuguese, and French translations"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:135
+#: data/com.lakoliu.Furtherance.appdata.xml.in:148
 msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:144
+#: data/com.lakoliu.Furtherance.appdata.xml.in:157
 msgid "First stable release of Furtherance."
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:148
+#: data/com.lakoliu.Furtherance.appdata.xml.in:161
 msgid "Track time spent on tasks"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:149
+#: data/com.lakoliu.Furtherance.appdata.xml.in:162
 msgid "Change/delete recorded times"
 msgstr ""
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:150
+#: data/com.lakoliu.Furtherance.appdata.xml.in:163
 msgid "Idle detection"
 msgstr ""
 
@@ -182,9 +191,9 @@ msgid "Export as CSV"
 msgstr ""
 
 #: src/gtk/dialogs.ui:10 src/application.rs:215 src/application.rs:351
-#: src/application.rs:389 src/ui/preferences_window.rs:249
-#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:343
-#: src/ui/window.rs:877
+#: src/application.rs:389 src/ui/preferences_window.rs:261
+#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:385
+#: src/ui/window.rs:939
 msgid "Cancel"
 msgstr ""
 
@@ -192,7 +201,7 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
-#: src/gtk/dialogs.ui:47 src/ui/window.rs:897
+#: src/gtk/dialogs.ui:47 src/ui/window.rs:959
 msgid " - no file selected - "
 msgstr ""
 
@@ -240,7 +249,7 @@ msgstr ""
 msgid "_Dark theme"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:28 src/ui/window.rs:602
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:656
 msgid "Idle"
 msgstr ""
 
@@ -349,36 +358,44 @@ msgstr ""
 msgid "Tags are saved, just not shown"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:233
+#: src/gtk/preferences_window.ui:230
+msgid "Task Input"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:234
+msgid "_Autocomplete"
+msgstr ""
+
+#: src/gtk/preferences_window.ui:251
 msgctxt "A page title of the preferences dialog"
 msgid "Data"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:236
+#: src/gtk/preferences_window.ui:254
 msgid "Reports"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:240
+#: src/gtk/preferences_window.ui:258
 msgid "Week starts on"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:245
+#: src/gtk/preferences_window.ui:263
 msgid "Monday"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:246
+#: src/gtk/preferences_window.ui:264
 msgid "Sunday"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:256
+#: src/gtk/preferences_window.ui:274
 msgid "Database"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:260
+#: src/gtk/preferences_window.ui:278
 msgid "Database location"
 msgstr ""
 
-#: src/gtk/preferences_window.ui:265
+#: src/gtk/preferences_window.ui:283
 msgid "Browse"
 msgstr ""
 
@@ -419,7 +436,7 @@ msgid "Date range"
 msgstr ""
 
 #: src/gtk/report.ui:54 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
-#: src/ui/task_details.rs:642 src/ui/window.rs:357
+#: src/ui/task_details.rs:642 src/ui/window.rs:399
 msgid "Start"
 msgstr ""
 
@@ -476,7 +493,7 @@ msgid "Task Details"
 msgstr ""
 
 #: src/gtk/task_details.ui:96 src/application.rs:336 src/ui/task_details.rs:202
-#: src/ui/task_details.rs:644 src/ui/window.rs:359 src/ui/window.rs:645
+#: src/ui/task_details.rs:644 src/ui/window.rs:401 src/ui/window.rs:699
 msgid "Stop"
 msgstr ""
 
@@ -560,16 +577,16 @@ msgstr ""
 msgid "DELETE"
 msgstr ""
 
-#: src/application.rs:313 src/ui/window.rs:606
+#: src/application.rs:313 src/ui/window.rs:660
 msgid "Discard"
 msgstr ""
 
-#: src/application.rs:314 src/application.rs:335 src/ui/window.rs:607
-#: src/ui/window.rs:644
+#: src/application.rs:314 src/application.rs:335 src/ui/window.rs:661
+#: src/ui/window.rs:698
 msgid "Continue"
 msgstr ""
 
-#: src/application.rs:325 src/ui/window.rs:640
+#: src/application.rs:325 src/ui/window.rs:694
 msgid "Time's up!"
 msgstr ""
 
@@ -578,11 +595,11 @@ msgid "Your Furtherance timer ended."
 msgstr ""
 
 #: src/application.rs:347 src/application.rs:385
-#: src/ui/preferences_window.rs:245
+#: src/ui/preferences_window.rs:257
 msgid "Backup Database"
 msgstr ""
 
-#: src/application.rs:352 src/ui/preferences_window.rs:250
+#: src/application.rs:352 src/ui/preferences_window.rs:262
 msgid "Save"
 msgstr ""
 
@@ -590,7 +607,7 @@ msgstr ""
 msgid "Open"
 msgstr ""
 
-#: src/database.rs:420
+#: src/database.rs:459
 msgid "Not a valid database"
 msgstr ""
 
@@ -618,19 +635,19 @@ msgstr ""
 msgid "Edit Task"
 msgstr ""
 
-#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:384
+#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:426
 msgid "*Use the format YYYY-MM-DD HH:MM:SS"
 msgstr ""
 
-#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:386
+#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:428
 msgid "*Use the format YYYY-MM-DD HH:MM"
 msgstr ""
 
-#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:392
+#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:434
 msgid "*Start time cannot be later than stop time."
 msgstr ""
 
-#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:397
+#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:439
 msgid "*Time cannot be in the future."
 msgstr ""
 
@@ -658,15 +675,15 @@ msgstr ""
 msgid "This will delete all occurrences of this task on this day."
 msgstr ""
 
-#: src/ui/task_details.rs:622 src/ui/window.rs:339
+#: src/ui/task_details.rs:622 src/ui/window.rs:381
 msgid "New Task"
 msgstr ""
 
-#: src/ui/task_details.rs:627 src/ui/window.rs:344
+#: src/ui/task_details.rs:627 src/ui/window.rs:386
 msgid "Add"
 msgstr ""
 
-#: src/ui/task_details.rs:687 src/ui/window.rs:402
+#: src/ui/task_details.rs:687 src/ui/window.rs:444
 msgid "*Task name cannot be blank."
 msgstr ""
 
@@ -678,48 +695,48 @@ msgstr ""
 msgid "Yesterday"
 msgstr ""
 
-#: src/ui/window.rs:350
+#: src/ui/window.rs:392
 msgid "Task Name"
 msgstr ""
 
-#: src/ui/window.rs:352
+#: src/ui/window.rs:394
 msgid "tags"
 msgstr ""
 
-#: src/ui/window.rs:587
+#: src/ui/window.rs:641
 msgid "You have been idle for "
 msgstr ""
 
-#: src/ui/window.rs:592
+#: src/ui/window.rs:646
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
 msgstr ""
 
-#: src/ui/window.rs:739
+#: src/ui/window.rs:793
 msgid "Autosave Restored"
 msgstr ""
 
-#: src/ui/window.rs:742
+#: src/ui/window.rs:796
 msgid "Furtherance shut down improperly. An autosave was restored."
 msgstr ""
 
-#: src/ui/window.rs:801
+#: src/ui/window.rs:863
 msgid "Stop the timer to duplicate a task."
 msgstr ""
 
-#: src/ui/window.rs:872
+#: src/ui/window.rs:934
 msgid "Create or choose a CSV file"
 msgstr ""
 
-#: src/ui/window.rs:876
+#: src/ui/window.rs:938
 msgid "Accept"
 msgstr ""
 
-#: src/ui/window.rs:915
+#: src/ui/window.rs:977
 msgid "Exporting as CSV failed."
 msgstr ""
 
-#: src/ui/window.rs:917
+#: src/ui/window.rs:979
 msgid "Exported as CSV successfully."
 msgstr ""
