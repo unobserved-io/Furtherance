@@ -13,6 +13,8 @@ src/gtk/window.ui
 
 # Rust code
 src/application.rs
+src/database.rs
+src/ui/preferences_window.rs
 src/ui/report.rs
 src/ui/task_details.rs
 src/ui/tasks_page.rs
