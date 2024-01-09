@@ -4,7 +4,7 @@
   <launchable type="desktop-id">com.lakoliu.Furtherance.desktop</launchable>
   <name>Furtherance</name>
   <summary>Track your time without being tracked</summary>
-  <developer_name>Ricky Kresslein</developer_name>
+  <developer_name translatable="no">Ricky Kresslein</developer_name>
   <update_contact>rk@lakoliu.com</update_contact>
   <translation type="gettext">furtherance</translation>
 	<metadata_license>CC0-1.0</metadata_license>
@@ -40,7 +40,7 @@
 
   <releases>
     <release version="1.8.2" date="2023-10-15">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Autocompletion</li>
           <li>Bug fixes</li>
@@ -48,12 +48,12 @@
       </description>
     </release>
     <release version="1.8.1" date="2023-06-16">
-      <description>
+      <description translatable="no">
         <p>Translation improvements</p>
       </description>
     </release>
     <release version="1.8.0" date="2023-06-05">
-      <description>
+      <description translatable="no">
         <p>1.8 is a big update for Furtherance!</p>
         <ul>
           <li>Add 'This week' and 'Last week' to Reports</li>
@@ -68,7 +68,7 @@
       </description>
     </release>
     <release version="1.7.0" date="2023-03-22">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Manually add new task to group</li>
           <li>Updated translations</li>
@@ -76,7 +76,7 @@
       </description>
     </release>
     <release version="1.6.0" date="2022-10-02">
-      <description>
+      <description translatable="no">
         <ul>
           <li>The location of the database is now changeable</li>
           <li>Backup database</li>
@@ -88,7 +88,7 @@
     <release version="1.5.4" date="2022-09-14"/>
     <release version="1.5.3" date="2022-07-20"/>
     <release version="1.5.2" date="2022-07-19">
-      <description>
+      <description translatable="no">
         <ul>
           <li>New icon!</li>
           <li>Dates are now ISO 8601 format</li>
@@ -97,7 +97,7 @@
     </release>
     <release version="1.5.1" date="2022-06-16"/>
     <release version="1.5.0" date="2022-06-10">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Added a button to restart tasks</li>
           <li>CSV Export</li>
@@ -107,7 +107,7 @@
       </description>
     </release>
     <release version="1.4.0" date="2022-06-05">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Generate reports of task history over a specified timeframe</li>
           <li>Bug fixes and improvements</li>
@@ -115,7 +115,7 @@
       </description>
     </release>
     <release version="1.3.0" date="2022-05-26">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Ability to add tasks manually</li>
           <li>Auto-save option</li>
@@ -124,7 +124,7 @@
       </description>
     </release>
     <release version="1.2.0" date="2022-04-29">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Added Pomodoro-style countdown timer!</li>
           <li>Bug fixes</li>
@@ -132,7 +132,7 @@
       </description>
     </release>
     <release version="1.1.2" date="2022-04-22">
-      <description>
+      <description translatable="no">
         <ul>
           <li>Ability to add tags!</li>
           <li>Fixed icon positioning</li>
@@ -144,7 +144,7 @@
     </release>
     <release version="1.1.1" date="2022-04-14"/>
     <release version="1.1.0" date="2022-04-11">
-      <description>
+      <description translatable="no">
         <p>
           Furtherance has a new icon! And lots of bug fixes and improvements.
         </p>
@@ -153,7 +153,7 @@
     <release version="1.0.9" date="2022-04-02"/>
     <release version="1.0.8" date="2022-03-26"/>
     <release version="1.0.7" date="2022-03-18">
-      <description>
+      <description translatable="no">
         <p>
           First stable release of Furtherance.
         </p>

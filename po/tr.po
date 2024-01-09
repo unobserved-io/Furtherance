@@ -1,25 +1,31 @@
 # Turkish translation for com.lakoliu.Furtherance.
-# Copyright (C) 2022 com.lakoliu.Furtherance's COPYRIGHT HOLDER
+# Copyright (C) 2022-2024 com.lakoliu.Furtherance's COPYRIGHT HOLDER
 # This file is distributed under the same license as the com.lakoliu.Furtherance package.
 #
-# Sabri Ünal <libreajans@gmail.com>, 2022.
+# Sabri Ünal <libreajans@gmail.com>, 2022, 2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-18 11:58+0200\n"
-"PO-Revision-Date: 2022-10-19 02:47+0300\n"
+"POT-Creation-Date: 2024-01-06 17:16+0300\n"
+"PO-Revision-Date: 2024-01-06 17:20+0300\n"
 "Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
-"Language-Team: Turkish <gnome-turk@gnome.org>\n"
+"Language-Team: Turkish <takim@gnome.org.tr>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.4.2\n"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:186
+#: data/com.lakoliu.Furtherance.appdata.xml.in:5
+#: data/com.lakoliu.Furtherance.desktop.in:3
+msgid "Furtherance"
+msgstr "Furtherance"
+
+#: data/com.lakoliu.Furtherance.appdata.xml.in:6
+#: data/com.lakoliu.Furtherance.desktop.in:5
 msgid "Track your time without being tracked"
 msgstr "Takip edilmeden zamanınızı takip edin"
 
@@ -34,121 +40,22 @@ msgstr ""
 "düzenleyebilir, girdileri silebilir ve ayarları değiştirebilirsiniz. Hatta "
 "boşta geçen zamanı algılama özelliğine sahiptir."
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:45
-msgid "The location of the database is now changeable"
-msgstr "Veri tabanının konumu artık değiştirilebilir"
+#: data/com.lakoliu.Furtherance.desktop.in:4
+msgid "Time Tracker"
+msgstr "Zaman Takipçisi"
 
-#: data/com.lakoliu.Furtherance.appdata.xml.in:46
-msgid "Backup database"
-msgstr "Veri tabanını yedekle"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:47
-msgid "Import databases"
-msgstr "Veri tabanlarını içe aktar"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:48
-#: data/com.lakoliu.Furtherance.appdata.xml.in:77
-msgid "Bug fixes and improvements"
-msgstr "Hata düzeltmeler ve iyileştirmeler"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:57
-msgid "New icon!"
-msgstr "Yeni simge!"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:58
-msgid "Dates are now ISO 8601 format"
-msgstr "Tarihler artık ISO 8601 biçiminde"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:66
-msgid "Added a button to restart tasks"
-msgstr "Görevleri yeniden başlatmak için bir düğme eklendi"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:67
-msgid "CSV Export"
-msgstr "CSV Dışa Aktar"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:68
-msgid "Timer centered on empty state"
-msgstr "Zamanlayıcı ortalandı"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:69
-msgid "Uses local date format"
-msgstr "Yerel tarih biçimlerini kullan"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:76
-msgid "Generate reports of task history over a specified timeframe"
-msgstr "Belirli bir zaman aralığı için görev geçmişi raporları oluştur"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:84
-msgid "Ability to add tasks manually"
-msgstr "Elle görev ekleme desteği eklendi"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:85
-msgid "Auto-save option"
-msgstr "Otomatik kayıt seçeneği"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:86
-msgid "Task names can now be changed for an entire group"
-msgstr "Görev adları artık tüm grup için değiştirilebilir"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:93
-msgid "Added Pomodoro-style countdown timer!"
-msgstr "Pomodoro tarzı geri sayım sayacı eklendi!"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:94
-msgid "Bug fixes"
-msgstr "Hata düzeltmeler"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:101
-msgid "Ability to add tags!"
-msgstr "Etiket ekleme desteği!"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:102
-msgid "Fixed icon positioning"
-msgstr "Simge konumlandırma düzeltildi"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:103
-msgid "Changed start button color and behavior"
-msgstr "Başlat düğmesi rengi ve davranışı değiştirildi"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:104
-msgid "Changed color of delete buttons"
-msgstr "Sil düğmelerinin rengi değiştirildi"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:105
-msgid "Dutch, Brazilian Portuguese, and French translations"
-msgstr "Felemenkçe, Brezilya Portekizcesi ve Fransızca çeviriler"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:112
-msgid "Furtherance has a new icon! And lots of bug fixes and improvements."
-msgstr ""
-"Furtherance simgesi yenilendi! Ve birçok hata düzeltmesi ve iyileştirme "
-"yapıldı."
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:121
-msgid "First stable release of Furtherance."
-msgstr "Furtherance için ilk kararlı sürüm."
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:125
-msgid "Track time spent on tasks"
-msgstr "Görevler için harcanan süreyi takip et"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:126
-msgid "Change/delete recorded times"
-msgstr "Kaydedilen zamanları değiştir/sil"
-
-#: data/com.lakoliu.Furtherance.appdata.xml.in:127
-msgid "Idle detection"
-msgstr "Boşta algılama"
+#: data/com.lakoliu.Furtherance.desktop.in:12
+msgid "timer;tracker;clock;tasks;productivity;"
+msgstr "zaman;takipçi;saat;görev;üretkenlik;verimlilik;"
 
 #: src/gtk/dialogs.ui:7
 msgid "Export as CSV"
 msgstr "CVS Olarak Dışa Aktar"
 
-#: src/gtk/dialogs.ui:10 src/application.rs:211 src/application.rs:347
-#: src/application.rs:385 src/ui/preferences_window.rs:233
-#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:324
-#: src/ui/window.rs:858
+#: src/gtk/dialogs.ui:10 src/application.rs:215 src/application.rs:351
+#: src/application.rs:389 src/ui/preferences_window.rs:261
+#: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:385
+#: src/ui/window.rs:939
 msgid "Cancel"
 msgstr "İptal"
 
@@ -156,7 +63,7 @@ msgstr "İptal"
 msgid "Export"
 msgstr "Dışa Aktar"
 
-#: src/gtk/dialogs.ui:47 src/ui/window.rs:878
+#: src/gtk/dialogs.ui:47 src/ui/window.rs:959
 msgid " - no file selected - "
 msgstr " - hiçbir dosya seçilmedi - "
 
@@ -204,7 +111,7 @@ msgstr "Görünüm"
 msgid "_Dark theme"
 msgstr "_Koyu tema"
 
-#: src/gtk/preferences_window.ui:28 src/ui/window.rs:583
+#: src/gtk/preferences_window.ui:28 src/ui/window.rs:656
 msgid "Idle"
 msgstr "Boşta"
 
@@ -225,90 +132,132 @@ msgid "Number of minutes before the user is considered idle"
 msgstr "Kullanıcının boşta sayılmasından önceki dakika sayısı"
 
 #: src/gtk/preferences_window.ui:63
-msgid "Task List"
-msgstr "Görev Listesi"
-
-#: src/gtk/preferences_window.ui:67
-msgid "_Delete confirmation"
-msgstr "_Silme doğrulaması"
-
-#: src/gtk/preferences_window.ui:79
-msgid "Limit tasks shown"
-msgstr "Görev gösterimlerini sınırla"
-
-#: src/gtk/preferences_window.ui:80
-msgid "Only show X number of days in the saved tasks list"
-msgstr "Kaydedilen görevler listesinde yalnızca X gün sayısını göster"
-
-#: src/gtk/preferences_window.ui:85
-msgid "_Days ago"
-msgstr "_Gün önce"
-
-#: src/gtk/preferences_window.ui:86
-msgid "Number of days to display in the list"
-msgstr "Listede görüntülenecek gün sayısı"
-
-#: src/gtk/preferences_window.ui:108
-msgid "Show daily sums"
-msgstr "Günlük toplamları göster"
-
-#: src/gtk/preferences_window.ui:120
-msgid "_Show seconds"
-msgstr "_Saniyeleri göster"
-
-#: src/gtk/preferences_window.ui:123
-msgid "Tasks list only. Seconds always show on timer"
-msgstr "Yalnızca görevler listesi. Saniye her zaman zamanlayıcıda gösterilsin"
-
-#: src/gtk/preferences_window.ui:133
-msgid "Show tags"
-msgstr "Etiketleri göster"
-
-#: src/gtk/preferences_window.ui:136
-msgid "Tags are saved, just not shown"
-msgstr "Etiketler kaydedilir, ancak gösterilmez"
-
-#: src/gtk/preferences_window.ui:148
 msgid "Timer"
 msgstr "Zamanlayıcı"
 
-#: src/gtk/preferences_window.ui:152
+#: src/gtk/preferences_window.ui:67
 msgid "_Pomodoro"
 msgstr "_Pomodoro"
 
-#: src/gtk/preferences_window.ui:153
+#: src/gtk/preferences_window.ui:68
 msgid "Timer counts down instead of up"
 msgstr "Zamanlayıcı ileri yerine geri sayar"
 
-#: src/gtk/preferences_window.ui:158
+#: src/gtk/preferences_window.ui:73
 msgid "Interval"
 msgstr "Aralık"
 
-#: src/gtk/preferences_window.ui:159
+#: src/gtk/preferences_window.ui:74
 msgid "Start time in minutes"
 msgstr "Dakika olarak başlangıç zamanı"
 
-#: src/gtk/preferences_window.ui:181
+#: src/gtk/preferences_window.ui:96
 msgid "_Autosave"
 msgstr "_Otomatik kaydet"
 
-#: src/gtk/preferences_window.ui:182
+#: src/gtk/preferences_window.ui:97
 msgid "Prevent losing tracked time due to improper shutdown"
 msgstr "Yanlış kapatma nedeniyle izlenen zamanın kaybını önle"
 
-#: src/gtk/preferences_window.ui:187
+#: src/gtk/preferences_window.ui:102
 msgid "Autosave every X _minutes"
 msgstr "Her X _dakikada bir otomatik kaydet"
 
-#: src/gtk/preferences_window.ui:211
+#: src/gtk/preferences_window.ui:124
+msgid "Inclusive total time"
+msgstr "Toplam süre dahil"
+
+#: src/gtk/preferences_window.ui:127
+msgid "Today's total time includes the ongoing timer"
+msgstr "Bugünün toplam süresine devam eden zamanlayıcı dahildir"
+
+#: src/gtk/preferences_window.ui:142
+msgctxt "A page title of the preferences dialog"
+msgid "Tasks"
+msgstr "Görevler"
+
+#: src/gtk/preferences_window.ui:145
+msgid "Task List"
+msgstr "Görev Listesi"
+
+#: src/gtk/preferences_window.ui:149
+msgid "_Delete confirmation"
+msgstr "_Silme doğrulaması"
+
+#: src/gtk/preferences_window.ui:161
+msgid "Limit tasks shown"
+msgstr "Görev gösterimlerini sınırla"
+
+#: src/gtk/preferences_window.ui:162
+msgid "Only show X number of days in the saved tasks list"
+msgstr "Kaydedilen görevler listesinde yalnızca X gün sayısını göster"
+
+#: src/gtk/preferences_window.ui:167
+msgid "_Days ago"
+msgstr "_Gün önce"
+
+#: src/gtk/preferences_window.ui:168
+msgid "Number of days to display in the list"
+msgstr "Listede görüntülenecek gün sayısı"
+
+#: src/gtk/preferences_window.ui:190
+msgid "Show daily sums"
+msgstr "Günlük toplamları göster"
+
+#: src/gtk/preferences_window.ui:202
+msgid "_Show seconds"
+msgstr "_Saniyeleri göster"
+
+#: src/gtk/preferences_window.ui:205
+msgid "Tasks list only. Seconds always show on timer"
+msgstr "Yalnızca görevler listesi. Saniye her zaman zamanlayıcıda gösterilsin"
+
+#: src/gtk/preferences_window.ui:215
+msgid "Show tags"
+msgstr "Etiketleri göster"
+
+#: src/gtk/preferences_window.ui:218
+msgid "Tags are saved, just not shown"
+msgstr "Etiketler kaydedilir, ancak gösterilmez"
+
+#: src/gtk/preferences_window.ui:230
+msgid "Task Input"
+msgstr "Görev Girdisi"
+
+#: src/gtk/preferences_window.ui:234
+msgid "_Autocomplete"
+msgstr "_Kendiliğinden tamamla"
+
+#: src/gtk/preferences_window.ui:251
+msgctxt "A page title of the preferences dialog"
+msgid "Data"
+msgstr "Veri"
+
+#: src/gtk/preferences_window.ui:254
+msgid "Reports"
+msgstr "Raporlar"
+
+#: src/gtk/preferences_window.ui:258
+msgid "Week starts on"
+msgstr "Hafta başlangıcı"
+
+#: src/gtk/preferences_window.ui:263
+msgid "Monday"
+msgstr "Pazartesi"
+
+#: src/gtk/preferences_window.ui:264
+msgid "Sunday"
+msgstr "Pazar"
+
+#: src/gtk/preferences_window.ui:274
 msgid "Database"
 msgstr "Veri tabanı"
 
-#: src/gtk/preferences_window.ui:215
+#: src/gtk/preferences_window.ui:278
 msgid "Database location"
 msgstr "Veri tabanı konumu"
 
-#: src/gtk/preferences_window.ui:220
+#: src/gtk/preferences_window.ui:283
 msgid "Browse"
 msgstr "Gözat"
 
@@ -316,85 +265,93 @@ msgstr "Gözat"
 msgid "Report"
 msgstr "Raporla"
 
-# Past week ile Last week kullanım olarak Türkçe'de anladığımızdan biraz farklı. O sebeple, arayüzle de uyumlu olarak Bu hafta şeklinde çevirdim.
 #: src/gtk/report.ui:33
-msgid "Past week"
-msgstr "Bu hafta"
+msgid "This Week"
+msgstr "Bu Hafta"
 
+# Past week ile Last week kullanım olarak Türkçe'de anladığımızdan biraz farklı. O sebeple, arayüzle de uyumlu olarak Bu hafta şeklinde çevirdim.
 #: src/gtk/report.ui:34
+msgid "Last Week"
+msgstr "Geçen hafta"
+
+#: src/gtk/report.ui:35
+msgid "Past 7 days"
+msgstr "Son 7 gün"
+
+#: src/gtk/report.ui:36
 msgid "This month"
 msgstr "Bu ay"
 
-#: src/gtk/report.ui:35
+#: src/gtk/report.ui:37
 msgid "Past 30 days"
 msgstr "Son 30 gün"
 
-#: src/gtk/report.ui:36
+#: src/gtk/report.ui:38
 msgid "Past 180 days"
 msgstr "Son 180 gün"
 
 # Past week ile aynı şekilde arayüzle uyumlu olması sebebiyle bu şeklinde çevirdim.
-#: src/gtk/report.ui:37
+#: src/gtk/report.ui:39
 msgid "Past year"
 msgstr "Bu yıl"
 
-#: src/gtk/report.ui:38
+#: src/gtk/report.ui:40
 msgid "Date range"
 msgstr "Tarih aralığı"
 
-#: src/gtk/report.ui:52 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
-#: src/ui/task_details.rs:642 src/ui/window.rs:338
+#: src/gtk/report.ui:54 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
+#: src/ui/task_details.rs:642 src/ui/window.rs:399
 msgid "Start"
 msgstr "Başlangıç"
 
-#: src/gtk/report.ui:58 src/gtk/report.ui:74
+#: src/gtk/report.ui:60 src/gtk/report.ui:76
 msgid "MM/DD/YYYY"
 msgstr "AA/GG/YYYY"
 
-#: src/gtk/report.ui:68
+#: src/gtk/report.ui:70
 msgid "End"
 msgstr "Bitiş"
 
 # Ek bilgi eklendi.
-#: src/gtk/report.ui:83
+#: src/gtk/report.ui:85
 msgid "Use the format MM/DD/YYYY"
 msgstr ""
-"AA/DD/YYYY biçimini kullanın. Örn: 15 Ocak 2022 için 01/15/2022 şeklinde Ay/"
-"Gün/Yıl sıralamasını kullanın."
+"AA/GG/YYYY biçimini kullan. Ör: 15 Ocak 2022 için 01/15/2022 şeklinde Ay/Gün/"
+"Yıl sıralamasını kullanın."
 
-#: src/gtk/report.ui:92
+#: src/gtk/report.ui:94
 msgid "Start date must be before end date"
 msgstr "Başlangıç tarihi bitiş tarihinden önce olmalıdır."
 
-#: src/gtk/report.ui:105
+#: src/gtk/report.ui:107
 msgid "Sort by:"
 msgstr "Şuna göre sırala:"
 
-#: src/gtk/report.ui:110 src/gtk/task_row.ui:23 src/ui/report.rs:159
+#: src/gtk/report.ui:112 src/gtk/task_row.ui:23 src/ui/report.rs:160
 msgid "Task"
 msgstr "Görev"
 
-#: src/gtk/report.ui:117
+#: src/gtk/report.ui:119
 msgid "Tag"
 msgstr "Etiket"
 
-#: src/gtk/report.ui:124
+#: src/gtk/report.ui:126
 msgid "Filter by task or tags"
 msgstr "Görevleri ya da etiketleri buna göre sırala"
 
-#: src/gtk/report.ui:136
+#: src/gtk/report.ui:138
 msgid "Tasks"
 msgstr "Görev"
 
-#: src/gtk/report.ui:137 src/ui/task_details.rs:191
+#: src/gtk/report.ui:139 src/ui/task_details.rs:191
 msgid "Tags"
 msgstr "Etiket"
 
-#: src/gtk/report.ui:143 src/ui/report.rs:146
+#: src/gtk/report.ui:145 src/ui/report.rs:147
 msgid "Task, Task 2"
 msgstr "Görev, Görev 2"
 
-#: src/gtk/report.ui:150
+#: src/gtk/report.ui:152
 msgid "Refresh"
 msgstr "Yenile"
 
@@ -402,8 +359,8 @@ msgstr "Yenile"
 msgid "Task Details"
 msgstr "Görev Ayrıntıları"
 
-#: src/gtk/task_details.ui:96 src/application.rs:332 src/ui/task_details.rs:202
-#: src/ui/task_details.rs:644 src/ui/window.rs:340 src/ui/window.rs:626
+#: src/gtk/task_details.ui:96 src/application.rs:336 src/ui/task_details.rs:202
+#: src/ui/task_details.rs:644 src/ui/window.rs:401 src/ui/window.rs:699
 msgid "Stop"
 msgstr "Dur"
 
@@ -431,113 +388,113 @@ msgstr "Görev Ekle"
 msgid "Main Menu"
 msgstr "Ana Menü"
 
-#: src/gtk/window.ui:65
+#: src/gtk/window.ui:66
 msgid "Task Name #tags"
 msgstr "Görev Adı #etiket"
 
-#: src/gtk/window.ui:93
+#: src/gtk/window.ui:94
 msgid "_Generate Report"
 msgstr "Rapor _Oluştur"
 
-#: src/gtk/window.ui:99
+#: src/gtk/window.ui:100
 msgid "Back up"
 msgstr "Yedekle"
 
-#: src/gtk/window.ui:103
+#: src/gtk/window.ui:104
 msgid "_Export as CSV"
 msgstr "CVS Olarak _Dışa Aktar"
 
-#: src/gtk/window.ui:107
+#: src/gtk/window.ui:108
 msgid "Import"
 msgstr "İçe Aktar"
 
-#: src/gtk/window.ui:111
+#: src/gtk/window.ui:112
 msgid "_Delete history"
 msgstr "Geçmişi _Sil"
 
-#: src/gtk/window.ui:117
+#: src/gtk/window.ui:118
 msgid "_Preferences"
 msgstr "_Tercihler"
 
-#: src/gtk/window.ui:121
+#: src/gtk/window.ui:122
 msgid "_About Furtherance"
 msgstr "Furtherance _Hakkında"
 
-#: src/application.rs:189
+#: src/application.rs:195
 msgid "translator-credits"
 msgstr "Sabri Ünal <libreajans@gmail.com>, 2022."
 
-#: src/application.rs:207
+#: src/application.rs:211
 msgid "Delete history?"
 msgstr "Geçmiş silinsin mi?"
 
-#: src/application.rs:212 src/ui/task_details.rs:587
+#: src/application.rs:216 src/ui/task_details.rs:587
 msgid "Delete"
 msgstr "Sil"
 
-#: src/application.rs:222
+#: src/application.rs:226
 msgid "This will delete ALL of your task history."
 msgstr "Bu, TÜM görev geçmişinizi siler."
 
-#: src/application.rs:224
+#: src/application.rs:228
 msgid "Type DELETE in the box below then click Delete to proceed."
 msgstr "Aşağıdaki kutuya SİL yazın ve devam etmek için Sil'e tıklayın."
 
-#: src/application.rs:234
+#: src/application.rs:238
 msgid "DELETE"
 msgstr "SİL"
 
-#: src/application.rs:309 src/ui/window.rs:587
+#: src/application.rs:313 src/ui/window.rs:660
 msgid "Discard"
-msgstr "Vazgeç"
+msgstr "Gözden Çıkar"
 
-#: src/application.rs:310 src/application.rs:331 src/ui/window.rs:588
-#: src/ui/window.rs:625
+#: src/application.rs:314 src/application.rs:335 src/ui/window.rs:661
+#: src/ui/window.rs:698
 msgid "Continue"
 msgstr "Devam"
 
-#: src/application.rs:321 src/ui/window.rs:621
+#: src/application.rs:325 src/ui/window.rs:694
 msgid "Time's up!"
 msgstr "Süre doldu!"
 
-#: src/application.rs:322
+#: src/application.rs:326
 msgid "Your Furtherance timer ended."
 msgstr "Furtherance süreniz doldu."
 
-#: src/application.rs:343 src/application.rs:381
-#: src/ui/preferences_window.rs:229
+#: src/application.rs:347 src/application.rs:385
+#: src/ui/preferences_window.rs:257
 msgid "Backup Database"
 msgstr "Veri Tabanını Yedekle"
 
-#: src/application.rs:348 src/ui/preferences_window.rs:234
+#: src/application.rs:352 src/ui/preferences_window.rs:262
 msgid "Save"
 msgstr "Kaydet"
 
-#: src/application.rs:386
+#: src/application.rs:390
 msgid "Open"
 msgstr "Aç"
 
-#: src/database.rs:400
+#: src/database.rs:459
 msgid "Not a valid database"
 msgstr "Geçerli bir veri tabanı değil"
 
-#: src/ui/report.rs:148
+#: src/ui/report.rs:149
 msgid "tag, tag 2"
 msgstr "etiket, etiket 2"
 
-#: src/ui/report.rs:164
+#: src/ui/report.rs:165
 msgid "Duration"
 msgstr "Süre"
 
-#: src/ui/report.rs:305
+#: src/ui/report.rs:312
 msgid "No Results"
 msgstr "Sonuç Yok"
 
-#: src/ui/report.rs:312
+#: src/ui/report.rs:319
 msgid "All Results"
 msgstr "Tüm Sonuçlar"
 
-#: src/ui/report.rs:455
+#: src/ui/report.rs:462
 msgid "no tags"
 msgstr "etiket yok"
 
@@ -545,19 +502,19 @@ msgstr "etiket yok"
 msgid "Edit Task"
 msgstr "Görevi Düzenle"
 
-#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:365
+#: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:426
 msgid "*Use the format YYYY-MM-DD HH:MM:SS"
 msgstr "*YYYY-AA-GG SS:DD:SS biçimini kullan"
 
-#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:367
+#: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:428
 msgid "*Use the format YYYY-MM-DD HH:MM"
 msgstr "*YYYY-AA-GG SS:DD biçimini kullan"
 
-#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:373
+#: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:434
 msgid "*Start time cannot be later than stop time."
 msgstr "*Başlangıç zamanı bitiş zamanından sonra olamaz"
 
-#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:378
+#: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:439
 msgid "*Time cannot be in the future."
 msgstr "*Zaman gelecekte olamaz"
 
@@ -585,39 +542,39 @@ msgstr "Tümü Silinsin Mi?"
 msgid "This will delete all occurrences of this task on this day."
 msgstr "Bu işlem görevin bu gündeki tüm oluşumlarını siler"
 
-#: src/ui/task_details.rs:622 src/ui/window.rs:320
+#: src/ui/task_details.rs:622 src/ui/window.rs:381
 msgid "New Task"
 msgstr "Yeni Görev"
 
-#: src/ui/task_details.rs:627 src/ui/window.rs:325
+#: src/ui/task_details.rs:627 src/ui/window.rs:386
 msgid "Add"
 msgstr "Ekle"
 
-#: src/ui/task_details.rs:687 src/ui/window.rs:383
+#: src/ui/task_details.rs:687 src/ui/window.rs:444
 msgid "*Task name cannot be blank."
 msgstr "*Görev adı boş olamaz"
 
-#: src/ui/tasks_page.rs:156
+#: src/ui/tasks_page.rs:188
 msgid "Today"
 msgstr "Bugün"
 
-#: src/ui/tasks_page.rs:158
+#: src/ui/tasks_page.rs:190
 msgid "Yesterday"
 msgstr "Dün"
 
-#: src/ui/window.rs:331
+#: src/ui/window.rs:392
 msgid "Task Name"
 msgstr "Görev Adı"
 
-#: src/ui/window.rs:333
+#: src/ui/window.rs:394
 msgid "tags"
 msgstr "etiketler"
 
-#: src/ui/window.rs:568
+#: src/ui/window.rs:641
 msgid "You have been idle for "
 msgstr "Boşta olduğunuz süre"
 
-#: src/ui/window.rs:573
+#: src/ui/window.rs:646
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
@@ -625,30 +582,30 @@ msgstr ""
 "\n"
 "Bu zamanı gözden çıkarmak mı yoksa saate devam etmek mi istersiniz?"
 
-#: src/ui/window.rs:720
+#: src/ui/window.rs:793
 msgid "Autosave Restored"
 msgstr "Otomatik Kaydetme Geri Yüklendi"
 
-#: src/ui/window.rs:723
+#: src/ui/window.rs:796
 msgid "Furtherance shut down improperly. An autosave was restored."
 msgstr "Furtherance yanlış kapatıldı. Bir otomatik kaydetme geri yüklendi."
 
-#: src/ui/window.rs:782
+#: src/ui/window.rs:863
 msgid "Stop the timer to duplicate a task."
 msgstr "Bir görevi çoğaltmak için zamanlayıcıyı durdurun."
 
-#: src/ui/window.rs:853
+#: src/ui/window.rs:934
 msgid "Create or choose a CSV file"
 msgstr "Bir CSV dosyası oluştur veya seç"
 
-#: src/ui/window.rs:857
+#: src/ui/window.rs:938
 msgid "Accept"
 msgstr "Kabul et"
 
-#: src/ui/window.rs:896
+#: src/ui/window.rs:977
 msgid "Exporting as CSV failed."
 msgstr "CSV olarak dışa aktarma başarısız oldu."
 
-#: src/ui/window.rs:898
+#: src/ui/window.rs:979
 msgid "Exported as CSV successfully."
 msgstr "CSV olarak dışa aktarıldı."

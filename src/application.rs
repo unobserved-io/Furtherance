@@ -184,7 +184,7 @@ impl FurtheranceApplication {
         let dialog = adw::AboutWindow::builder()
             .application_name("Furtherance")
             .application_icon(config::APP_ID)
-            .developer_name(gettext("Ricky Kresslein"))
+            .developer_name("Ricky Kresslein")
             .license_type(gtk::License::Gpl30)
             .website("https://furtherance.app")
             .issue_url("https://github.com/lakoliu/Furtherance/issues")
