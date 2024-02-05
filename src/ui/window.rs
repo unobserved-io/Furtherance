@@ -225,9 +225,11 @@ impl FurtheranceWindow {
 
                 if settings_manager::get_bool("autocomplete") {
                     if task_input.text().len() >= FurtheranceWindow::MIN_PREFIX_LENGTH.try_into().unwrap() {
-                        let task_autocomplete = task_input.completion().unwrap();
-                        let model = Self::update_list_model(task_name.to_string(), split_tags).unwrap();
-                        task_autocomplete.set_model(Some(&model));
+                        if task_input.completion().is_some() {
+                            let task_autocomplete = task_input.completion().unwrap();
+                            let model = Self::update_list_model(task_name.to_string(), split_tags).unwrap();
+                            task_autocomplete.set_model(Some(&model));
+                        }
                     }
                 }
             }));
