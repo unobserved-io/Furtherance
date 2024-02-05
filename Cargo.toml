@@ -1,6 +1,6 @@
 [package]
 name = "furtherance"
-version = "1.8.2"
+version = "1.8.3"
 authors = ["Ricky Kresslein <ricky@unobserved.io>"]
 edition = "2021"
 
