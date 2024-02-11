@@ -36,49 +36,47 @@ mod imp {
         #[template_child]
         pub appearance_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
-        pub dark_theme_switch: TemplateChild<gtk::Switch>,
+        pub dark_theme_switch: TemplateChild<adw::SwitchRow>,
 
         #[template_child]
         pub idle_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub notify_of_idle_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
-        pub notify_of_idle_spin: TemplateChild<gtk::SpinButton>,
-
-        #[template_child]
-        pub task_list_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub limit_tasks_expander: TemplateChild<adw::ExpanderRow>,
-        #[template_child]
-        pub limit_days_spin: TemplateChild<gtk::SpinButton>,
-        #[template_child]
-        pub delete_confirmation_switch: TemplateChild<gtk::Switch>,
-        #[template_child]
-        pub show_seconds_switch: TemplateChild<gtk::Switch>,
-        #[template_child]
-        pub show_daily_sums_switch: TemplateChild<gtk::Switch>,
-        #[template_child]
-        pub show_tags_switch: TemplateChild<gtk::Switch>,
-
-        #[template_child]
-        pub task_input_group: TemplateChild<adw::PreferencesGroup>,
-        #[template_child]
-        pub autocomplete_switch: TemplateChild<gtk::Switch>,
+        pub notify_of_idle_spin: TemplateChild<adw::SpinRow>,
 
         #[template_child]
         pub timer_group: TemplateChild<adw::PreferencesGroup>,
         #[template_child]
         pub pomodoro_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
-        pub pomodoro_spin: TemplateChild<gtk::SpinButton>,
-
+        pub pomodoro_spin: TemplateChild<adw::SpinRow>,
         #[template_child]
         pub autosave_expander: TemplateChild<adw::ExpanderRow>,
         #[template_child]
-        pub autosave_spin: TemplateChild<gtk::SpinButton>,
+        pub autosave_spin: TemplateChild<adw::SpinRow>,
+        #[template_child]
+        pub inclusive_total_switch: TemplateChild<adw::SwitchRow>,
 
         #[template_child]
-        pub inclusive_total_switch: TemplateChild<gtk::Switch>,
+        pub task_list_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub delete_confirmation_switch: TemplateChild<adw::SwitchRow>,
+        #[template_child]
+        pub limit_tasks_expander: TemplateChild<adw::ExpanderRow>,
+        #[template_child]
+        pub limit_days_spin: TemplateChild<adw::SpinRow>,
+        #[template_child]
+        pub show_daily_sums_switch: TemplateChild<adw::SwitchRow>,
+        #[template_child]
+        pub show_seconds_switch: TemplateChild<adw::SwitchRow>,
+        #[template_child]
+        pub show_tags_switch: TemplateChild<adw::SwitchRow>,
+
+        #[template_child]
+        pub task_input_group: TemplateChild<adw::PreferencesGroup>,
+        #[template_child]
+        pub autocomplete_switch: TemplateChild<adw::SwitchRow>,
 
         #[template_child]
         pub week_start_combo: TemplateChild<adw::ComboRow>,
@@ -209,7 +207,7 @@ impl FurPreferencesWindow {
                 window.reset_history_box();
             });
 
-        imp.limit_days_spin.connect_value_changed(move |_| {
+        imp.limit_days_spin.connect_value_notify(move |_| {
             let window = FurtheranceWindow::default();
             window.reset_history_box();
         });
@@ -240,7 +238,7 @@ impl FurPreferencesWindow {
                 window.refresh_timer();
         });
 
-        imp.pomodoro_spin.connect_value_changed(move |new_val| {
+        imp.pomodoro_spin.connect_value_notify(move |new_val| {
             settings_manager::set_int("pomodoro-time", new_val.value() as i32);
             let window = FurtheranceWindow::default();
             window.refresh_timer();
@@ -299,4 +297,3 @@ impl FurPreferencesWindow {
         }));
     }
 }
-
