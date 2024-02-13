@@ -4,54 +4,43 @@
     <child>
       <object class="AdwPreferencesPage">
         <property name="icon_name">emblem-system-symbolic</property>
-        <property name="title" translatable="yes">General</property>
+        <property name="title" translatable="yes" context="A page title of the preferences dialog">_General</property>
+        <property name="use_underline">True</property>
         <child>
           <object class="AdwPreferencesGroup" id="appearance_group">
             <property name="title" translatable="yes">Appearance</property>
             <property name="visible">True</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">_Dark theme</property>
-                <property name="use_underline">True</property>
-                <property name="activatable_widget">dark_theme_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="dark_theme_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+              <object class="AdwSwitchRow" id="dark_theme_switch">
+                <property name="title" translatable="yes">Dark Theme</property>
               </object>
             </child>
           </object>
         </child>
         <child>
-          <object class="AdwPreferencesGroup" id="idle_group">
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Idle</property>
             <property name="visible">True</property>
             <child>
               <object class="AdwExpanderRow" id="notify_of_idle_expander">
-                <property name="title" translatable="yes">Notify of idle</property>
-                <property name="subtitle" translatable="yes">(GNOME only)</property>
+                <property name="title" translatable="yes">_Notify of Idle</property>
+                <property name="subtitle" translatable="yes">(GNOME Only)</property>
                 <property name="show_enable_switch">True</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">_Minutes to idle</property>
+                  <object class="AdwSpinRow" id="notify_of_idle_spin">
+                    <property name="title" translatable="yes">_Minutes to Idle</property>
                     <property name="subtitle" translatable="yes">Number of minutes before the user is considered idle</property>
                     <property name="use_underline">True</property>
-                    <child>
-                      <object class="GtkSpinButton" id="notify_of_idle_spin">
-                        <property name="valign">center</property>
-                        <property name="adjustment">
-                          <object class="GtkAdjustment">
-                            <property name="upper">60</property>
-                            <property name="lower">1</property>
-                            <property name="step_increment">1</property>
-                            <property name="page_increment">10</property>
-                          </object>
-                        </property>
-                        <property name="numeric">True</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="upper">60</property>
+                        <property name="lower">1</property>
+                        <property name="step_increment">1</property>
+                        <property name="page_increment">10</property>
                       </object>
-                    </child>
+                    </property>
+                    <property name="numeric">True</property>
                   </object>
                 </child>
               </object>
@@ -59,7 +48,7 @@
           </object>
         </child>
         <child>
-          <object class="AdwPreferencesGroup" id="timer_group">
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Timer</property>
             <property name="visible">True</property>
             <child>
@@ -69,24 +58,18 @@
                 <property name="show_enable_switch">True</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Interval</property>
-                    <property name="subtitle" translatable="yes">Start time in minutes</property>
+                  <object class="AdwSpinRow" id="pomodoro_spin">
+                    <property name="title" translatable="yes">_Start Time in Minutes</property>
                     <property name="use_underline">True</property>
-                    <child>
-                      <object class="GtkSpinButton" id="pomodoro_spin">
-                        <property name="valign">center</property>
-                        <property name="adjustment">
-                          <object class="GtkAdjustment">
-                            <property name="upper">999</property>
-                            <property name="lower">1</property>
-                            <property name="step_increment">1</property>
-                            <property name="page_increment">15</property>
-                          </object>
-                        </property>
-                        <property name="numeric">True</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="upper">999</property>
+                        <property name="lower">1</property>
+                        <property name="step_increment">1</property>
+                        <property name="page_increment">15</property>
                       </object>
-                    </child>
+                    </property>
+                    <property name="numeric">True</property>
                   </object>
                 </child>
               </object>
@@ -98,38 +81,27 @@
                 <property name="show_enable_switch">True</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">Autosave every X _minutes</property>
+                  <object class="AdwSpinRow" id="autosave_spin">
+                    <property name="title" translatable="yes">Autosave Every _X Minutes</property>
                     <property name="use_underline">True</property>
-                    <child>
-                      <object class="GtkSpinButton" id="autosave_spin">
-                        <property name="valign">center</property>
-                        <property name="adjustment">
-                          <object class="GtkAdjustment">
-                            <property name="upper">60</property>
-                            <property name="lower">1</property>
-                            <property name="step_increment">1</property>
-                            <property name="page_increment">10</property>
-                          </object>
-                        </property>
-                        <property name="numeric">True</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="upper">60</property>
+                        <property name="lower">1</property>
+                        <property name="step_increment">1</property>
+                        <property name="page_increment">10</property>
                       </object>
-                    </child>
+                    </property>
+                    <property name="numeric">True</property>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Inclusive total time</property>
-                <property name="use_underline">True</property>
-                <property name="activatable_widget">inclusive_total_switch</property>
+              <object class="AdwSwitchRow" id="inclusive_total_switch">
+                <property name="title" translatable="yes">In_clusive Total Time</property>
                 <property name="subtitle" translatable="yes">Today's total time includes the ongoing timer</property>
-                <child>
-                  <object class="GtkSwitch" id="inclusive_total_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+                <property name="use_underline">True</property>
               </object>
             </child>
           </object>
@@ -139,106 +111,71 @@
     <child>
       <object class="AdwPreferencesPage" id="tasks_page">
         <property name="icon_name">view-list-symbolic</property>
-        <property name="title" translatable="yes" context="A page title of the preferences dialog">Tasks</property>
+        <property name="title" translatable="yes" context="A page title of the preferences dialog">_Tasks</property>
+        <property name="use_underline">True</property>
         <child>
-          <object class="AdwPreferencesGroup" id="task_list_group">
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Task List</property>
             <property name="visible">True</property>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">_Delete confirmation</property>
+              <object class="AdwSwitchRow" id="delete_confirmation_switch">
+                <property name="title" translatable="yes">Delete _Confirmation</property>
                 <property name="use_underline">True</property>
-                <property name="activatable_widget">delete_confirmation_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="delete_confirmation_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
               </object>
             </child>
             <child>
               <object class="AdwExpanderRow" id="limit_tasks_expander">
-                <property name="title" translatable="yes">Limit tasks shown</property>
-                <property name="subtitle" translatable="yes">Only show X number of days in the saved tasks list</property>
+                <property name="title" translatable="yes">_Limit History Shown</property>
+                <property name="subtitle" translatable="yes">Only show the specified number of days in the tasks list</property>
                 <property name="show_enable_switch">True</property>
                 <property name="use_underline">True</property>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="title" translatable="yes">_Days ago</property>
-                    <property name="subtitle" translatable="yes">Number of days to display in the list</property>
+                  <object class="AdwSpinRow" id="limit_days_spin">
+                    <property name="title" translatable="yes">_Number of Days</property>
                     <property name="use_underline">True</property>
-                    <child>
-                      <object class="GtkSpinButton" id="limit_days_spin">
-                        <property name="valign">center</property>
-                        <property name="adjustment">
-                          <object class="GtkAdjustment">
-                            <property name="upper">365</property>
-                            <property name="lower">1</property>
-                            <property name="step_increment">1</property>
-                            <property name="page_increment">10</property>
-                          </object>
-                        </property>
-                        <property name="numeric">True</property>
+                    <property name="adjustment">
+                      <object class="GtkAdjustment">
+                        <property name="upper">365</property>
+                        <property name="lower">1</property>
+                        <property name="step_increment">1</property>
+                        <property name="page_increment">10</property>
                       </object>
-                    </child>
+                    </property>
+                    <property name="numeric">True</property>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Show daily sums</property>
+              <object class="AdwSwitchRow" id="show_daily_sums_switch">
+                <property name="title" translatable="yes">Show Daily S_ums</property>
                 <property name="use_underline">True</property>
-                <property name="activatable_widget">show_daily_sums_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="show_daily_sums_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">_Show seconds</property>
-                <property name="use_underline">True</property>
-                <property name="activatable_widget">show_seconds_switch</property>
+              <object class="AdwSwitchRow" id="show_seconds_switch">
+                <property name="title" translatable="yes">Show _Seconds</property>
                 <property name="subtitle" translatable="yes">Tasks list only. Seconds always show on timer</property>
-                <child>
-                  <object class="GtkSwitch" id="show_seconds_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+                <property name="use_underline">True</property>
               </object>
             </child>
             <child>
-              <object class="AdwActionRow">
-                <property name="title" translatable="yes">Show tags</property>
-                <property name="use_underline">True</property>
-                <property name="activatable_widget">show_tags_switch</property>
+              <object class="AdwSwitchRow" id="show_tags_switch">
+                <property name="title" translatable="yes">S_how Tags</property>
                 <property name="subtitle" translatable="yes">Tags are saved, just not shown</property>
-                <child>
-                  <object class="GtkSwitch" id="show_tags_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
+                <property name="use_underline">True</property>
               </object>
             </child>
           </object>
         </child>
         <child>
-          <object class="AdwPreferencesGroup" id="task_input_group">
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Task Input</property>
             <property name="visible">True</property>
             <child>
-              <object class="AdwActionRow">
+              <object class="AdwSwitchRow" id="autocomplete_switch">
                 <property name="title" translatable="yes">_Autocomplete</property>
                 <property name="use_underline">True</property>
-                <property name="activatable_widget">autocomplete_switch</property>
-                <child>
-                  <object class="GtkSwitch" id="autocomplete_switch">
-                    <property name="valign">center</property>
-                  </object>
-                </child>
               </object>
             </child>
           </object>
@@ -248,14 +185,15 @@
     <child>
       <object class="AdwPreferencesPage" id="data_page">
         <property name="icon_name">drive-harddisk-symbolic</property>
-        <property name="title" translatable="yes" context="A page title of the preferences dialog">Data</property>
+        <property name="title" translatable="yes" context="A page title of the preferences dialog">_Data</property>
+        <property name="use_underline">True</property>
         <child>
-          <object class="AdwPreferencesGroup" id="reports_group">
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Reports</property>
             <property name="visible">True</property>
             <child>
               <object class="AdwComboRow" id="week_start_combo">
-                <property name="title" translatable="yes">Week starts on</property>
+                <property name="title" translatable="yes">_Week Starts On</property>
                 <property name="use_underline">True</property>
                 <property name="model">
                   <object class="GtkStringList">
@@ -270,19 +208,21 @@
           </object>
         </child>
         <child>
-          <object class="AdwPreferencesGroup" id="database_group">
+          <object class="AdwPreferencesGroup">
             <property name="title" translatable="yes">Database</property>
             <property name="visible">True</property>
             <child>
               <object class="AdwActionRow" id="database_loc_row">
-                <property name="title" translatable="yes">Database location</property>
+                <property name="title" translatable="yes">Database _Location</property>
                 <property name="subtitle" translatable="no">/location/</property>
+                <property name="use_underline">True</property>
+                <property name="activatable_widget">database_browse_btn</property>
                 <child>
                   <object class="GtkButton" id="database_browse_btn">
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">Browse</property>
                     <style>
-                      <class name="flat"/>
+                      <class name="flat" />
                     </style>
                   </object>
                 </child>
@@ -294,4 +234,3 @@
     </child>
   </template>
 </interface>
-
