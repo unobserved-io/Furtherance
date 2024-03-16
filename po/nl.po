@@ -2,21 +2,22 @@
 # Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
 # Heimen Stoffels <vistausss@fastmail.com>, 2022.
-#
+# Philip Goto <philip.goto@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-10 15:56+0300\n"
-"PO-Revision-Date: 2022-06-10 20:30+0200\n"
-"Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
-"Language-Team: Dutch <>\n"
+"PO-Revision-Date: 2024-03-17 11:01+0000\n"
+"Last-Translator: Philip Goto <philip.goto@gmail.com>\n"
+"Language-Team: Dutch <https://hosted.weblate.org/projects/furtherance/"
+"translations/nl/>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.1\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 5.5-dev\n"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:187
 msgid "Track your time without being tracked."
@@ -28,9 +29,9 @@ msgid ""
 "addition to tracking time spent on tasks, you can edit that time, delete "
 "entries, and change settings. It even has idle detection."
 msgstr ""
-"Furtherance is een tijdnotatietoepassing voor GNOME, gemaakt met Rust en "
-"GKT4. U kunt tijden bijhouden en noteren, maar ook bewerken, wissen en "
-"allerlei voorkeuren aanpassen. Ook kan inactieve tijd worden bijgehouden."
+"Furtherance is een tijdnotatie-app voor GNOME, gemaakt met Rust en GTK 4. U "
+"kunt tijden bijhouden en noteren, maar ook bewerken, wissen en allerlei "
+"voorkeuren aanpassen. Ook kan inactieve tijd worden bijgehouden."
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:45
 msgid "Added a button to restart tasks"
