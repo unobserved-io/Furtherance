@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use adw::prelude::*;
+use adw::subclass::prelude::*;
 use gettextrs::*;
 use glib::clone;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
 use gtk::{gdk, gio, glib};
 use log::debug;
 use std::sync::Mutex;
@@ -181,7 +181,7 @@ impl FurtheranceApplication {
 
     fn show_about(&self) {
         let window = self.active_window().unwrap();
-        let dialog = adw::AboutWindow::builder()
+        let dialog = adw::AboutDialog::builder()
             .application_name("Furtherance")
             .application_icon(config::APP_ID)
             .developer_name("Ricky Kresslein")
@@ -189,13 +189,11 @@ impl FurtheranceApplication {
             .website("https://furtherance.app")
             .issue_url("https://github.com/lakoliu/Furtherance/issues")
             .version(config::VERSION)
-            .transient_for(&window)
-            .modal(true)
-            .copyright("© 2023 Unobserved")
+            .copyright("© 2024 Unobserved")
             .translator_credits(gettext("translator-credits"))
             .build();
 
-        dialog.show();
+        dialog.present(&window);
     }
 
     fn delete_history(&self) {
