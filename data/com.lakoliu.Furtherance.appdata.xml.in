@@ -5,7 +5,7 @@
   <name translatable="no">Furtherance</name>
   <summary>Track your time without being tracked</summary>
   <developer_name translatable="no">Ricky Kresslein</developer_name>
-  <developer id="kressle.in">
+  <developer id="in.kressle">
     <name translatable="no">Ricky Kresslein</name>
   </developer>
   <update_contact>rk@lakoliu.com</update_contact>
