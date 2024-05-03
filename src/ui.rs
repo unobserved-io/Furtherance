@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 mod history_box;
-mod preferences_window;
+mod preferences_dialog;
 mod report;
 mod task_details;
 mod task_row;
@@ -24,7 +24,7 @@ mod tasks_page;
 pub mod window;
 
 pub use history_box::FurHistoryBox;
-pub use preferences_window::FurPreferencesWindow;
+pub use preferences_dialog::FurPreferencesDialog;
 pub use report::FurReport;
 pub use task_details::FurTaskDetails;
 pub use task_row::FurTaskRow;

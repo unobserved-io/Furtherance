@@ -31,7 +31,7 @@ run_command(
 
 rust_sources = files(
   'ui.rs',
-  'ui/preferences_window.rs',
+  'ui/preferences_dialog.rs',
   'ui/report.rs',
   'ui/task_details.rs',
   'ui/task_row.rs',

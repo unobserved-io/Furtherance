@@ -31,8 +31,8 @@ mod imp {
     use glib::subclass;
 
     #[derive(Default, Debug, CompositeTemplate)]
-    #[template(resource = "/com/lakoliu/Furtherance/gtk/preferences_window.ui")]
-    pub struct FurPreferencesWindow {
+    #[template(resource = "/com/lakoliu/Furtherance/gtk/preferences_dialog.ui")]
+    pub struct FurPreferencesDialog {
         // General Page
         // Appearance Group
         #[template_child]
@@ -90,10 +90,10 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for FurPreferencesWindow {
-        const NAME: &'static str = "FurPreferencesWindow";
-        type ParentType = adw::PreferencesWindow;
-        type Type = super::FurPreferencesWindow;
+    impl ObjectSubclass for FurPreferencesDialog {
+        const NAME: &'static str = "FurPreferencesDialog";
+        type ParentType = adw::PreferencesDialog;
+        type Type = super::FurPreferencesDialog;
 
         fn class_init(klass: &mut Self::Class) {
             Self::bind_template(klass);
@@ -104,12 +104,9 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for FurPreferencesWindow {
+    impl ObjectImpl for FurPreferencesDialog {
         fn constructed(&self) {
-            let window = FurtheranceWindow::default();
             let obj = self.obj();
-            obj.set_transient_for(Some(&window));
-
             obj.setup_signals();
             obj.setup_widgets();
 
@@ -117,31 +114,27 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for FurPreferencesWindow {}
+    impl WidgetImpl for FurPreferencesDialog {}
 
-    impl WindowImpl for FurPreferencesWindow {}
+    impl AdwDialogImpl for FurPreferencesDialog {}
 
-    impl AdwWindowImpl for FurPreferencesWindow {}
-
-    impl PreferencesWindowImpl for FurPreferencesWindow {}
+    impl PreferencesDialogImpl for FurPreferencesDialog {}
 }
 
 glib::wrapper! {
-    pub struct FurPreferencesWindow(
-        ObjectSubclass<imp::FurPreferencesWindow>)
-        @extends gtk::Widget, gtk::Window, adw::Window, adw::PreferencesWindow;
+    pub struct FurPreferencesDialog(
+        ObjectSubclass<imp::FurPreferencesDialog>)
+        @extends gtk::Widget, adw::Dialog, adw::PreferencesDialog;
 
 }
 
-impl FurPreferencesWindow {
+impl FurPreferencesDialog {
     pub fn new() -> Self {
-        glib::Object::new::<FurPreferencesWindow>()
+        glib::Object::new::<FurPreferencesDialog>()
     }
 
     fn setup_widgets(&self) {
-        self.set_search_enabled(false);
-
-        let imp = imp::FurPreferencesWindow::from_obj(self);
+        let imp = imp::FurPreferencesDialog::from_obj(self);
 
         let manager = adw::StyleManager::default();
         let support_darkmode = manager.system_supports_color_schemes();
@@ -152,7 +145,7 @@ impl FurPreferencesWindow {
     }
 
     fn setup_signals(&self) {
-        let imp = imp::FurPreferencesWindow::from_obj(self);
+        let imp = imp::FurPreferencesDialog::from_obj(self);
 
         settings_manager::bind_property("dark-mode", &*imp.dark_theme_switch, "active");
 
@@ -281,7 +274,7 @@ impl FurPreferencesWindow {
                             let settings = settings_manager::get_settings();
                             let _ = settings.set_string("database-loc", &path.to_string());
 
-                            let imp2 = imp::FurPreferencesWindow::from_obj(&this2);
+                            let imp2 = imp::FurPreferencesDialog::from_obj(&this2);
                             imp2.database_loc_row.set_subtitle(&path.to_string());
 
                             let window = FurtheranceWindow::default();

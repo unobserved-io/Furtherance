@@ -25,7 +25,7 @@ use std::sync::Mutex;
 use crate::config;
 use crate::database;
 use crate::settings_manager;
-use crate::ui::{FurPreferencesWindow, FurReport, FurtheranceWindow};
+use crate::ui::{FurPreferencesDialog, FurReport, FurtheranceWindow};
 
 mod imp {
     use super::*;
@@ -117,7 +117,8 @@ impl FurtheranceApplication {
 
         let preferences_action = gio::SimpleAction::new("preferences", None);
         preferences_action.connect_activate(clone!(@weak self as app => move |_, _| {
-            FurPreferencesWindow::new().show();
+            let window = FurtheranceWindow::default();
+            FurPreferencesDialog::new().present(&window);
         }));
         self.set_accels_for_action("app.preferences", &["<primary>comma"]);
         self.add_action(&preferences_action);

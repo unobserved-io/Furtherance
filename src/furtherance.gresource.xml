@@ -2,7 +2,7 @@
 <gresources>
   <gresource prefix="/com/lakoliu/Furtherance">
     <file>gtk/history_box.ui</file>
-    <file>gtk/preferences_window.ui</file>
+    <file>gtk/preferences_dialog.ui</file>
     <file>gtk/report.ui</file>
     <file>gtk/style.css</file>
     <file>gtk/task_details.ui</file>
