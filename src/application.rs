@@ -125,7 +125,8 @@ impl FurtheranceApplication {
 
         let report_action = gio::SimpleAction::new("report", None);
         report_action.connect_activate(clone!(@weak self as app => move |_, _| {
-            FurReport::new().show();
+            let window = FurtheranceWindow::default();
+            FurReport::new().present(&window);
         }));
         self.set_accels_for_action("app.report", &["<primary>R"]);
         self.add_action(&report_action);

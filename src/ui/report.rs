@@ -68,7 +68,7 @@ mod imp {
     #[glib::object_subclass]
     impl ObjectSubclass for FurReport {
         const NAME: &'static str = "FurReport";
-        type ParentType = adw::Window;
+        type ParentType = adw::Dialog;
         type Type = super::FurReport;
 
         fn class_init(klass: &mut Self::Class) {
@@ -90,14 +90,12 @@ mod imp {
 
     impl WidgetImpl for FurReport {}
 
-    impl WindowImpl for FurReport {}
-
-    impl AdwWindowImpl for FurReport {}
+    impl AdwDialogImpl for FurReport {}
 }
 
 glib::wrapper! {
     pub struct FurReport(ObjectSubclass<imp::FurReport>)
-        @extends gtk::Widget, gtk::Window, adw::Window;
+        @extends gtk::Widget, adw::Dialog;
 }
 
 impl FurReport {
@@ -105,8 +103,6 @@ impl FurReport {
         let dialog: Self = glib::Object::new::<FurReport>();
 
         let window = FurtheranceWindow::default();
-        dialog.set_transient_for(Some(&window));
-
         let app = FurtheranceApplication::default();
         app.add_window(&window);
 
