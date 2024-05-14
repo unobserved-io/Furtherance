@@ -911,20 +911,17 @@ impl FurtheranceWindow {
     pub fn open_csv_export_dialog(&self) {
         let builder = gtk::Builder::from_resource("/com/lakoliu/Furtherance/gtk/csv_export_dialog.ui");
         let dialog = builder.object::<adw::Dialog>("csv_export_dialog").unwrap();
+        let selected_file_label = builder
+            .object::<gtk::Label>("selected_file_label")
+            .unwrap();
+        let filechooser_button = builder
+            .object::<gtk::Button>("filechooser_button")
+            .unwrap();
         let tasksort_row = builder
             .object::<adw::ComboRow>("tasksort_row")
             .unwrap();
         let sortorder_row = builder
             .object::<adw::ComboRow>("sortorder_row")
-            .unwrap();
-        let filechooser_button = builder
-            .object::<gtk::Button>("filechooser_button")
-            .unwrap();
-        let selected_file_label = builder
-            .object::<gtk::Label>("selected_file_label")
-            .unwrap();
-        let cancel_button = builder
-            .object::<gtk::Button>("cancel_button")
             .unwrap();
         let export_button = builder
             .object::<gtk::Button>("export_button")
@@ -964,10 +961,6 @@ impl FurtheranceWindow {
                 }
             }),
         );
-
-        cancel_button.connect_clicked(clone!(@weak dialog => move |_| {
-            dialog.close();
-        }));
 
         export_button.connect_clicked(clone!(@weak self as window, @weak dialog, @weak filechooser, @weak tasksort_row, @weak sortorder_row => move |_| {
             let sort = TaskSort::try_from(tasksort_row.selected()).unwrap_or_default();
