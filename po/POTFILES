@@ -3,7 +3,7 @@ data/com.lakoliu.Furtherance.appdata.xml.in
 data/com.lakoliu.Furtherance.desktop.in
 
 # UI files
-src/gtk/dialogs.ui
+src/gtk/csv_export_dialog.ui
 src/gtk/history_box.ui
 src/gtk/preferences_dialog.ui
 src/gtk/report.ui

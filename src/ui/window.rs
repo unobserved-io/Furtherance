@@ -47,8 +47,6 @@ mod imp {
     pub struct FurtheranceWindow {
         // Template widgets
         #[template_child]
-        pub header_bar: TemplateChild<adw::HeaderBar>,
-        #[template_child]
         pub add_task: TemplateChild<gtk::Button>,
 
         #[template_child]
@@ -911,27 +909,32 @@ impl FurtheranceWindow {
     }
 
     pub fn open_csv_export_dialog(&self) {
-        let builder = gtk::Builder::from_resource("/com/lakoliu/Furtherance/gtk/dialogs.ui");
-        let dialog = builder.object::<gtk::Dialog>("dialog_csv_export").unwrap();
+        let builder = gtk::Builder::from_resource("/com/lakoliu/Furtherance/gtk/csv_export_dialog.ui");
+        let dialog = builder.object::<adw::Dialog>("csv_export_dialog").unwrap();
         let tasksort_row = builder
-            .object::<adw::ComboRow>("csv_export_tasksort_row")
+            .object::<adw::ComboRow>("tasksort_row")
             .unwrap();
         let sortorder_row = builder
-            .object::<adw::ComboRow>("csv_export_sortorder_row")
+            .object::<adw::ComboRow>("sortorder_row")
             .unwrap();
         let filechooser_button = builder
-            .object::<gtk::Button>("csv_export_filechooser_button")
+            .object::<gtk::Button>("filechooser_button")
             .unwrap();
-        let chosenfile_label = builder
-            .object::<gtk::Label>("csv_export_chosenfile_label")
+        let selected_file_label = builder
+            .object::<gtk::Label>("selected_file_label")
             .unwrap();
-
-        dialog.set_transient_for(Some(self));
+        let cancel_button = builder
+            .object::<gtk::Button>("cancel_button")
+            .unwrap();
+        let export_button = builder
+            .object::<gtk::Button>("export_button")
+            .unwrap();
 
         let filefilter = gtk::FileFilter::new();
         filefilter.add_mime_type("text/csv");
         filefilter.add_pattern("*.csv");
 
+        // TODO: Deprecated since 4.10. Use GtkFileDialog instead.
         let filechooser = gtk::FileChooserNative::builder()
             .title(&gettext("Create or choose a CSV file"))
             .modal(true)
@@ -946,52 +949,47 @@ impl FurtheranceWindow {
         filechooser.set_current_name("data.csv");
 
         filechooser_button.connect_clicked(
-            clone!(@weak self as window, @weak filechooser, @weak dialog => move |_| {
-                dialog.hide();
+            clone!(@weak self as window, @weak filechooser => move |_| {
                 filechooser.show();
             }),
         );
 
         filechooser.connect_response(
-            clone!(@weak dialog, @weak chosenfile_label => move |filechooser, response| {
+            clone!(@weak selected_file_label, @weak export_button => move |filechooser, response| {
                 if response == gtk::ResponseType::Accept {
                     if let Some(path) = filechooser.file().and_then(|file| file.path()) {
-                        chosenfile_label.set_label(&path.to_string_lossy());
-                    } else {
-                        chosenfile_label.set_label(&gettext(" - no file selected - "));
+                        selected_file_label.set_label(&path.to_string_lossy());
+                        export_button.set_sensitive(true);
                     }
                 }
-
-                dialog.show();
             }),
         );
 
-        dialog.connect_response(clone!(@weak self as window, @weak filechooser, @weak tasksort_row, @weak sortorder_row => move |dialog, response| {
-            match response {
-                gtk::ResponseType::Apply => {
-                    let sort = TaskSort::try_from(tasksort_row.selected()).unwrap_or_default();
-                    let order = SortOrder::try_from(sortorder_row.selected()).unwrap_or_default();
-
-                    if let Some(file) = filechooser.file() {
-                        glib::MainContext::default().spawn_local(clone!(@strong window, @strong file => async move {
-                            if let Err(e) = FurtheranceWindow::export_csv_to_file(sort, order, &file).await {
-                                log::error!("replace file {:?} failed, Err {}", file, e);
-                                window.display_toast(&gettext("Exporting as CSV failed."));
-                            } else {
-                                window.display_toast(&gettext("Exported as CSV successfully."));
-                            };
-                        }));
-                    }
-                }
-                _ => {}
-            }
-
+        cancel_button.connect_clicked(clone!(@weak dialog => move |_| {
             dialog.close();
+        }));
+
+        export_button.connect_clicked(clone!(@weak self as window, @weak dialog, @weak filechooser, @weak tasksort_row, @weak sortorder_row => move |_| {
+            let sort = TaskSort::try_from(tasksort_row.selected()).unwrap_or_default();
+            let order = SortOrder::try_from(sortorder_row.selected()).unwrap_or_default();
+
+            if let Some(file) = filechooser.file() {
+                glib::MainContext::default().spawn_local(clone!(@strong window, @strong file => async move {
+                    if let Err(e) = FurtheranceWindow::export_csv_to_file(sort, order, &file).await {
+                        log::error!("replace file {:?} failed, Err {}", file, e);
+                        window.display_toast(&gettext("Exporting as CSV failed."));
+                    } else {
+                        window.display_toast(&gettext("Exported as CSV successfully."));
+                    };
+                }));
+
+                dialog.close();
+            }
         }));
 
         *self.imp().filechooser.borrow_mut() = filechooser;
 
-        dialog.show()
+        dialog.present(self);
     }
 
     pub fn vertical_align(&self, align: gtk::Align) {

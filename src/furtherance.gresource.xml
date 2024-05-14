@@ -9,7 +9,7 @@
     <file>gtk/tasks_group.ui</file>
     <file>gtk/tasks_page.ui</file>
     <file>gtk/task_row.ui</file>
-    <file>gtk/dialogs.ui</file>
+    <file>gtk/csv_export_dialog.ui</file>
     <file>gtk/window.ui</file>
   </gresource>
 </gresources>

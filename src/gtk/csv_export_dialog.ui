@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object class="AdwDialog" id="csv_export_dialog">
+    <property name="title" translatable="yes">Export as CSV</property>
+    <property name="child">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="show-start-title-buttons">false</property>
+            <property name="show-end-title-buttons">false</property>
+            <child type="start">
+              <object class="GtkButton" id="cancel_button">
+                <property name="label" translatable="yes">_Cancel</property>
+                <property name="use_underline">true</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="export_button">
+                <property name="label" translatable="yes">_Export</property>
+                <property name="use_underline">true</property>
+                <property name="sensitive">false</property>
+                <style>
+                  <class name="suggested-action" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <property name="content">
+          <object class="AdwClamp">
+            <property name="maximum-size">800</property>
+            <property name="tightening-threshold">600</property>
+            <property name="hexpand">true</property>
+            <property name="vexpand">false</property>
+            <property name="valign">fill</property>
+            <property name="halign">fill</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">24</property>
+                <property name="margin-start">12</property>
+                <property name="margin-end">12</property>
+                <property name="margin-top">12</property>
+                <property name="margin-bottom">12</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">horizontal</property>
+                    <property name="spacing">12</property>
+                    <child>
+                      <object class="GtkLabel" id="selected_file_label">
+                        <property translatable="yes" name="label"> - No File Selected - </property>
+                        <property name="hexpand">true</property>
+                        <property name="halign">start</property>
+                        <property name="ellipsize">start</property>
+                        <style>
+                          <class name="dim-label" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="filechooser_button">
+                        <property name="icon-name">folder-open-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">Select File</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="title" translatable="yes">Export Preferences</property>
+                    <property name="halign">fill</property>
+                    <child>
+                      <object class="AdwComboRow" id="tasksort_row">
+                        <property name="title" translatable="yes">Sort _By</property>
+                        <property name="use_underline">true</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item translatable="yes">Start Time</item>
+                              <item translatable="yes">Stop Time</item>
+                              <item translatable="yes">Task Name</item>
+                            </items>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwComboRow" id="sortorder_row">
+                        <property name="title" translatable="yes">Sort _Order</property>
+                        <property name="use_underline">true</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item translatable="yes">Ascending</item>
+                              <item translatable="yes">Descending</item>
+                            </items>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </property>
+  </object>
+</interface>
