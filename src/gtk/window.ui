@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <template class="FurtheranceWindow" parent="AdwApplicationWindow">
     <property name="title">Furtherance</property>
     <property name="content">
       <object class="AdwToastOverlay" id="toast_overlay">
         <property name="child">
-          <object class="GtkBox" id="main_box">
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="AdwHeaderBar" id="header_bar">
-                <property name="title-widget">
-                  <object class="AdwWindowTitle" id="window_title">
-                    <property name="title">Furtherance</property>
-                  </object>
-                </property>
-                <child>
+          <object class="AdwToolbarView">
+            <child type="top">
+              <object class="AdwHeaderBar">
+                <child type="start">
                   <object class="GtkButton" id="add_task">
                     <property name="tooltip_text" translatable="yes">Add Task</property>
                     <property name="icon_name">list-add-symbolic</property>
@@ -28,12 +22,9 @@
                     <property name="menu_model">primary_menu</property>
                   </object>
                 </child>
-                <style>
-                  <class name="titlebar"/>
-                </style>
               </object>
             </child>
-            <child>
+            <property name="content">
               <object class="GtkBox" id="win_box">
                 <property name="orientation">vertical</property>
                 <property name="spacing">10</property>
@@ -48,11 +39,11 @@
                     <property name="margin_start">12</property>
                     <property name="margin_end">12</property>
                     <attributes>
-                      <attribute name="weight" value="bold"/>
-                      <attribute name="scale" value="5"/>
+                      <attribute name="weight" value="bold" />
+                      <attribute name="scale" value="5" />
                     </attributes>
                     <style>
-                      <class name="numeric"/>
+                      <class name="numeric" />
                     </style>
                   </object>
                 </child>
@@ -72,7 +63,7 @@
                       <object class="GtkButton" id="start_button">
                         <property name="icon-name">media-playback-start-symbolic</property>
                         <style>
-                          <class name="circular"/>
+                          <class name="circular" />
                         </style>
                       </object>
                     </child>
@@ -82,7 +73,7 @@
                   <object class="FurHistoryBox" id="history_box" />
                 </child>
               </object>
-            </child>
+            </property>
           </object>
         </property>
       </object>
