@@ -25,7 +25,8 @@ It allows you to track time spent on different activities without worrying about
 **Mac / iOS**
 
 <a href="https://apps.apple.com/app/furtherance/id1659277200"><img width='240' alt="Download Furtherance on the App Store" src="https://furtherance.app/images/app-store-black.svg"/></a>
-* Furtherance for Mac & iOS is available on the [App Store](https://apps.apple.com/app/furtherance/id1659277200). It uses a different codebase (Swift & SwiftUI) to provide a native experience, and it is not open-source.
+* Furtherance for Mac & iOS is available on the [App Store](https://apps.apple.com/app/furtherance/id1659277200).
+* It uses a different codebase (Swift & SwiftUI) to provide a native experience. You can view the source code [here](https://github.com/unobserved-io/furtherance-swiftui).
 
 **Windows**
 
