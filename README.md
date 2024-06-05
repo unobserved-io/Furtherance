@@ -31,7 +31,8 @@ It allows you to track time spent on different activities without worrying about
 **Windows**
 
 <a href="https://apps.microsoft.com/store/detail/furtherance/9NHG98S3VR3W"><img width='240' alt="Download from Microsoft Store" src="https://furtherance.app/images/microsoft-store-dark.svg"/></a>
-* Furtherance for Windows is available from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W). It uses a different codebase to provide a better experience on Windows, and it is not open-source.
+* Furtherance for Windows is available from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W).
+* It uses a different codebase (C# & WinUI 3) to provide a native experience. You can view the source code [here](https://github.com/unobserved-io/furtherance-winui).
 
 **Android**
 
@@ -65,8 +66,8 @@ If you speak another language, it would be greatly appreciated if you could help
 You can get started easily using [Weblate](https://hosted.weblate.org/projects/furtherance/translations/).
 
 ### Tips
-Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via: 
-* [Ko-fi](https://ko-fi.com/unobserved) 
+Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via:
+* [Ko-fi](https://ko-fi.com/unobserved)
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
 * **Bitcoin**: bc1q70czd5evhsxnjcd45cj2n4s3dr6qmhvrlljjlk
 
