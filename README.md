@@ -37,7 +37,8 @@ It allows you to track time spent on different activities without worrying about
 **Android**
 
 <a href='https://play.google.com/store/apps/details?id=com.livaliva.furtherance&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img  width='280' alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
-* Furtherance for Android is available on [Google Play](https://play.google.com/store/apps/details?id=com.livaliva.furtherance). It uses a different codebase to provide a better experience on mobile, and it is not open-source.
+* Furtherance for Android is available on [Google Play](https://play.google.com/store/apps/details?id=com.livaliva.furtherance).
+* It uses a different codebase (Dart & Flutter) to provide a native experience. You can view the source code [here](https://github.com/unobserved-io/furtherance-flutter).
 
 ### Build
 The easiest way to build Furtherance is with [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder).
