@@ -7,17 +7,20 @@ msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-05 11:24+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2024-06-18 09:09+0000\n"
+"Last-Translator: hugoalh <hugoalh@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
+"furtherance/translations/zh_Hant/>\n"
 "Language: zh_Hant\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.6-dev\n"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:6
 msgid "Track your time without being tracked"
-msgstr ""
+msgstr "追蹤你的時間而不被追蹤"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:13
 msgid ""
@@ -25,373 +28,376 @@ msgid ""
 "addition to tracking time spent on tasks, you can edit that time, delete "
 "entries, and change settings. It even has idle detection."
 msgstr ""
+"Furtherance 是一款使用 Rust 和 GTK4 為 GNOME 構建的時間追蹤應用程式。除了追蹤"
+"任務所花費的時間之外，你還可以編輯該時間、刪除條目和變更設定。它甚至具有閒置"
+"檢測功能。"
 
 #: src/gtk/dialogs.ui:7
 msgid "Export as CSV"
-msgstr ""
+msgstr "匯出為 CSV"
 
 #: src/gtk/dialogs.ui:10 src/application.rs:215 src/application.rs:351
 #: src/application.rs:389 src/ui/preferences_window.rs:261
 #: src/ui/task_details.rs:586 src/ui/task_details.rs:626 src/ui/window.rs:387
 #: src/ui/window.rs:941
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: src/gtk/dialogs.ui:15
 msgid "Export"
-msgstr ""
+msgstr "匯出"
 
 #: src/gtk/dialogs.ui:47 src/ui/window.rs:961
 msgid " - no file selected - "
-msgstr ""
+msgstr " - 未選擇檔案 - "
 
 #: src/gtk/dialogs.ui:65
 msgid "CSV export preferences"
-msgstr ""
+msgstr "CSV 匯出偏好設定"
 
 #: src/gtk/dialogs.ui:69
 msgid "Sort by"
-msgstr ""
+msgstr "排序方式"
 
 #: src/gtk/dialogs.ui:73
 msgid "Start time"
-msgstr ""
+msgstr "開始時間"
 
 #: src/gtk/dialogs.ui:74
 msgid "Stop time"
-msgstr ""
+msgstr "停止時間"
 
 #: src/gtk/dialogs.ui:75
 msgid "Task name"
-msgstr ""
+msgstr "任務名稱"
 
 #: src/gtk/dialogs.ui:83
 msgid "Sort order"
-msgstr ""
+msgstr "排序次序"
 
 #: src/gtk/dialogs.ui:87
 msgid "Ascending"
-msgstr ""
+msgstr "升序"
 
 #: src/gtk/dialogs.ui:88
 msgid "Descending"
-msgstr ""
+msgstr "降序"
 
 #: src/gtk/preferences_window.ui:7
 msgid "General"
-msgstr ""
+msgstr "一般"
 
 #: src/gtk/preferences_window.ui:10
 msgid "Appearance"
-msgstr ""
+msgstr "外觀"
 
 #: src/gtk/preferences_window.ui:14
 msgid "_Dark theme"
-msgstr ""
+msgstr "深色主題 (&D)"
 
 #: src/gtk/preferences_window.ui:28 src/ui/window.rs:658
 msgid "Idle"
-msgstr ""
+msgstr "閒置"
 
 #: src/gtk/preferences_window.ui:32
 msgid "Notify of idle"
-msgstr ""
+msgstr "閒置時通知"
 
 #: src/gtk/preferences_window.ui:33
 msgid "(GNOME only)"
-msgstr ""
+msgstr "（僅限 GNOME）"
 
 #: src/gtk/preferences_window.ui:38
 msgid "_Minutes to idle"
-msgstr ""
+msgstr "閒置前分鐘數 (&M)"
 
 #: src/gtk/preferences_window.ui:39
 msgid "Number of minutes before the user is considered idle"
-msgstr ""
+msgstr "使用者被視為閒置之前的分鐘數"
 
 #: src/gtk/preferences_window.ui:63
 msgid "Timer"
-msgstr ""
+msgstr "計時器"
 
 #: src/gtk/preferences_window.ui:67
 msgid "_Pomodoro"
-msgstr ""
+msgstr "番茄鐘 (&P)"
 
 #: src/gtk/preferences_window.ui:68
 msgid "Timer counts down instead of up"
-msgstr ""
+msgstr "計時器是倒計時而不是正計時"
 
 #: src/gtk/preferences_window.ui:73
 msgid "Interval"
-msgstr ""
+msgstr "間隔"
 
 #: src/gtk/preferences_window.ui:74
 msgid "Start time in minutes"
-msgstr ""
+msgstr "開始時間（分鐘）"
 
 #: src/gtk/preferences_window.ui:96
 msgid "_Autosave"
-msgstr ""
+msgstr "自動儲存 (&A)"
 
 #: src/gtk/preferences_window.ui:97
 msgid "Prevent losing tracked time due to improper shutdown"
-msgstr ""
+msgstr "防止因不當關機而失去已追蹤的時間"
 
 #: src/gtk/preferences_window.ui:102
 msgid "Autosave every X _minutes"
-msgstr ""
+msgstr "每 X 分鐘自動儲存一次 (&M)"
 
 #: src/gtk/preferences_window.ui:124
 msgid "Inclusive total time"
-msgstr ""
+msgstr "累計總時間"
 
 #: src/gtk/preferences_window.ui:127
 msgid "Today's total time includes the ongoing timer"
-msgstr ""
+msgstr "今天的總時間包括正在進行的計時器"
 
 #: src/gtk/preferences_window.ui:142
 msgctxt "A page title of the preferences dialog"
 msgid "Tasks"
-msgstr ""
+msgstr "任務"
 
 #: src/gtk/preferences_window.ui:145
 msgid "Task List"
-msgstr ""
+msgstr "任務列表"
 
 #: src/gtk/preferences_window.ui:149
 msgid "_Delete confirmation"
-msgstr ""
+msgstr "刪除確認 (&D)"
 
 #: src/gtk/preferences_window.ui:161
 msgid "Limit tasks shown"
-msgstr ""
+msgstr "限制顯示的任務"
 
 #: src/gtk/preferences_window.ui:162
 msgid "Only show X number of days in the saved tasks list"
-msgstr ""
+msgstr "僅在已儲存的任務列表中顯示 X 天"
 
 #: src/gtk/preferences_window.ui:167
 msgid "_Days ago"
-msgstr ""
+msgstr "幾天前 (&D)"
 
 #: src/gtk/preferences_window.ui:168
 msgid "Number of days to display in the list"
-msgstr ""
+msgstr "列表中顯示的天數"
 
 #: src/gtk/preferences_window.ui:190
 msgid "Show daily sums"
-msgstr ""
+msgstr "顯示每日總和"
 
 #: src/gtk/preferences_window.ui:202
 msgid "_Show seconds"
-msgstr ""
+msgstr "顯示秒數 (&S)"
 
 #: src/gtk/preferences_window.ui:205
 msgid "Tasks list only. Seconds always show on timer"
-msgstr ""
+msgstr "僅任務列表。計時器上總是顯示秒數"
 
 #: src/gtk/preferences_window.ui:215
 msgid "Show tags"
-msgstr ""
+msgstr "顯示標籤"
 
 #: src/gtk/preferences_window.ui:218
 msgid "Tags are saved, just not shown"
-msgstr ""
+msgstr "標籤已儲存，只是不顯示"
 
 #: src/gtk/preferences_window.ui:230
 msgid "Task Input"
-msgstr ""
+msgstr "任務輸入"
 
 #: src/gtk/preferences_window.ui:234
 msgid "_Autocomplete"
-msgstr ""
+msgstr "自動完成 (&A)"
 
 #: src/gtk/preferences_window.ui:251
 msgctxt "A page title of the preferences dialog"
 msgid "Data"
-msgstr ""
+msgstr "資料"
 
 #: src/gtk/preferences_window.ui:254
 msgid "Reports"
-msgstr ""
+msgstr "報告"
 
 #: src/gtk/preferences_window.ui:258
 msgid "Week starts on"
-msgstr ""
+msgstr "一週開始於"
 
 #: src/gtk/preferences_window.ui:263
 msgid "Monday"
-msgstr ""
+msgstr "星期一"
 
 #: src/gtk/preferences_window.ui:264
 msgid "Sunday"
-msgstr ""
+msgstr "星期日"
 
 #: src/gtk/preferences_window.ui:274
 msgid "Database"
-msgstr ""
+msgstr "資料庫"
 
 #: src/gtk/preferences_window.ui:278
 msgid "Database location"
-msgstr ""
+msgstr "資料庫位置"
 
 #: src/gtk/preferences_window.ui:283
 msgid "Browse"
-msgstr ""
+msgstr "瀏覽"
 
 #: src/gtk/report.ui:8
 msgid "Report"
-msgstr ""
+msgstr "報告"
 
 #: src/gtk/report.ui:33
 msgid "This Week"
-msgstr ""
+msgstr "本週"
 
 #: src/gtk/report.ui:34
 msgid "Last Week"
-msgstr ""
+msgstr "上週"
 
 #: src/gtk/report.ui:35
 msgid "Past 7 days"
-msgstr ""
+msgstr "過去 7 天"
 
 #: src/gtk/report.ui:36
 msgid "This month"
-msgstr ""
+msgstr "本月"
 
 #: src/gtk/report.ui:37
 msgid "Past 30 days"
-msgstr ""
+msgstr "過去 30 天"
 
 #: src/gtk/report.ui:38
 msgid "Past 180 days"
-msgstr ""
+msgstr "過去 180 天"
 
 #: src/gtk/report.ui:39
 msgid "Past year"
-msgstr ""
+msgstr "去年"
 
 #: src/gtk/report.ui:40
 msgid "Date range"
-msgstr ""
+msgstr "日期範圍"
 
 #: src/gtk/report.ui:54 src/gtk/task_details.ui:88 src/ui/task_details.rs:200
 #: src/ui/task_details.rs:642 src/ui/window.rs:401
 msgid "Start"
-msgstr ""
+msgstr "開始"
 
 #: src/gtk/report.ui:60 src/gtk/report.ui:76
 msgid "MM/DD/YYYY"
-msgstr ""
+msgstr "MM/DD/YYYY"
 
 #: src/gtk/report.ui:70
 msgid "End"
-msgstr ""
+msgstr "結束"
 
 #: src/gtk/report.ui:85
 msgid "Use the format MM/DD/YYYY"
-msgstr ""
+msgstr "使用格式 MM/DD/YYYY"
 
 #: src/gtk/report.ui:94
 msgid "Start date must be before end date"
-msgstr ""
+msgstr "開始日期必須早於結束日期"
 
 #: src/gtk/report.ui:107
 msgid "Sort by:"
-msgstr ""
+msgstr "排序方式："
 
 #: src/gtk/report.ui:112 src/gtk/task_row.ui:23 src/ui/report.rs:160
 msgid "Task"
-msgstr ""
+msgstr "任務"
 
 #: src/gtk/report.ui:119
 msgid "Tag"
-msgstr ""
+msgstr "標籤"
 
 #: src/gtk/report.ui:126
 msgid "Filter by task or tags"
-msgstr ""
+msgstr "按任務或標籤過濾"
 
 #: src/gtk/report.ui:138
 msgid "Tasks"
-msgstr ""
+msgstr "任務"
 
 #: src/gtk/report.ui:139 src/ui/task_details.rs:191
 msgid "Tags"
-msgstr ""
+msgstr "標籤"
 
 #: src/gtk/report.ui:145 src/ui/report.rs:147
 msgid "Task, Task 2"
-msgstr ""
+msgstr "任務，任務 2"
 
 #: src/gtk/report.ui:152
 msgid "Refresh"
-msgstr ""
+msgstr "重新整理"
 
 #: src/gtk/task_details.ui:8
 msgid "Task Details"
-msgstr ""
+msgstr "任務詳細資訊"
 
 #: src/gtk/task_details.ui:96 src/application.rs:336 src/ui/task_details.rs:202
 #: src/ui/task_details.rs:644 src/ui/window.rs:403 src/ui/window.rs:701
 msgid "Stop"
-msgstr ""
+msgstr "停止"
 
 #: src/gtk/task_details.ui:104
 msgid "Total"
-msgstr ""
+msgstr "總計"
 
 #: src/gtk/task_details.ui:135
 msgid "Add Similar Task"
-msgstr ""
+msgstr "新增類似任務"
 
 #: src/gtk/task_details.ui:144
 msgid "Delete all"
-msgstr ""
+msgstr "刪除全部"
 
 #: src/gtk/task_row.ui:48
 msgid "Time"
-msgstr ""
+msgstr "時間"
 
 #: src/gtk/window.ui:20
 msgid "Add Task"
-msgstr ""
+msgstr "新增任務"
 
 #: src/gtk/window.ui:26
 msgid "Main Menu"
-msgstr ""
+msgstr "主選單"
 
 #: src/gtk/window.ui:66
 msgid "Task Name #tags"
-msgstr ""
+msgstr "任務名稱 #標籤"
 
 #: src/gtk/window.ui:94
 msgid "_Generate Report"
-msgstr ""
+msgstr "產生報告 (&G)"
 
 #: src/gtk/window.ui:100
 msgid "Back up"
-msgstr ""
+msgstr "備份"
 
 #: src/gtk/window.ui:104
 msgid "_Export as CSV"
-msgstr ""
+msgstr "匯出為 CSV (&E)"
 
 #: src/gtk/window.ui:108
 msgid "Import"
-msgstr ""
+msgstr "匯入"
 
 #: src/gtk/window.ui:112
 msgid "_Delete history"
-msgstr ""
+msgstr "刪除歷史記錄 (&D)"
 
 #: src/gtk/window.ui:118
 msgid "_Preferences"
-msgstr ""
+msgstr "偏好設定 (&P)"
 
 #: src/gtk/window.ui:122
 msgid "_About Furtherance"
-msgstr ""
+msgstr "關於 Furtherance (&A)"
 
 #: src/application.rs:195
 msgid "translator-credits"
@@ -399,184 +405,186 @@ msgstr ""
 
 #: src/application.rs:211
 msgid "Delete history?"
-msgstr ""
+msgstr "刪除歷史記錄？"
 
 #: src/application.rs:216 src/ui/task_details.rs:587
 msgid "Delete"
-msgstr ""
+msgstr "刪除"
 
 #: src/application.rs:226
 msgid "This will delete ALL of your task history."
-msgstr ""
+msgstr "這將刪除你的所有任務歷史記錄。"
 
 #: src/application.rs:228
 msgid "Type DELETE in the box below then click Delete to proceed."
-msgstr ""
+msgstr "在下面的方塊中輸入「DELETE」，然後按下「刪除」以繼續。"
 
 #: src/application.rs:238
 msgid "DELETE"
-msgstr ""
+msgstr "DELETE"
 
 #: src/application.rs:313 src/ui/window.rs:662
 msgid "Discard"
-msgstr ""
+msgstr "丟棄"
 
 #: src/application.rs:314 src/application.rs:335 src/ui/window.rs:663
 #: src/ui/window.rs:700
 msgid "Continue"
-msgstr ""
+msgstr "繼續"
 
 #: src/application.rs:325 src/ui/window.rs:696
 msgid "Time's up!"
-msgstr ""
+msgstr "時間到！"
 
 #: src/application.rs:326
 msgid "Your Furtherance timer ended."
-msgstr ""
+msgstr "你的 Furtherance 計時器已結束。"
 
 #: src/application.rs:347 src/application.rs:385
 #: src/ui/preferences_window.rs:257
 msgid "Backup Database"
-msgstr ""
+msgstr "備份資料庫"
 
 #: src/application.rs:352 src/ui/preferences_window.rs:262
 msgid "Save"
-msgstr ""
+msgstr "儲存"
 
 #: src/application.rs:390
 msgid "Open"
-msgstr ""
+msgstr "開啟"
 
 #: src/database.rs:459
 msgid "Not a valid database"
-msgstr ""
+msgstr "不是一個有效的資料庫"
 
 #: src/ui/report.rs:149
 msgid "tag, tag 2"
-msgstr ""
+msgstr "標籤，標籤 2"
 
 #: src/ui/report.rs:165
 msgid "Duration"
-msgstr ""
+msgstr "持續時間"
 
 #: src/ui/report.rs:312
 msgid "No Results"
-msgstr ""
+msgstr "沒有結果"
 
 #: src/ui/report.rs:319
 msgid "All Results"
-msgstr ""
+msgstr "所有結果"
 
 #: src/ui/report.rs:462
 msgid "no tags"
-msgstr ""
+msgstr "沒有標籤"
 
 #: src/ui/task_details.rs:182 src/ui/task_details.rs:513
 msgid "Edit Task"
-msgstr ""
+msgstr "編輯任務"
 
 #: src/ui/task_details.rs:221 src/ui/task_details.rs:669 src/ui/window.rs:428
 msgid "*Use the format YYYY-MM-DD HH:MM:SS"
-msgstr ""
+msgstr "*使用格式 YYYY-MM-DD HH:MM:SS"
 
 #: src/ui/task_details.rs:223 src/ui/task_details.rs:671 src/ui/window.rs:430
 msgid "*Use the format YYYY-MM-DD HH:MM"
-msgstr ""
+msgstr "*使用格式 YYYY-MM-DD HH:MM"
 
 #: src/ui/task_details.rs:229 src/ui/task_details.rs:677 src/ui/window.rs:436
 msgid "*Start time cannot be later than stop time."
-msgstr ""
+msgstr "*開始時間不能晚於停止時間。"
 
 #: src/ui/task_details.rs:234 src/ui/task_details.rs:682 src/ui/window.rs:441
 msgid "*Time cannot be in the future."
-msgstr ""
+msgstr "*時間不能是未來的。"
 
 #: src/ui/task_details.rs:240
 msgid "Delete task"
-msgstr ""
+msgstr "刪除任務"
 
 #: src/ui/task_details.rs:267
 msgid "Delete task?"
-msgstr ""
+msgstr "刪除任務？"
 
 #: src/ui/task_details.rs:519
 msgid "New Name #tags"
-msgstr ""
+msgstr "新名稱 #標籤"
 
 #: src/ui/task_details.rs:522
 msgid "Task name cannot be empty."
-msgstr ""
+msgstr "任務名稱不能為空白。"
 
 #: src/ui/task_details.rs:582
 msgid "Delete All?"
-msgstr ""
+msgstr "刪除全部？"
 
 #: src/ui/task_details.rs:584
 msgid "This will delete all occurrences of this task on this day."
-msgstr ""
+msgstr "這將刪除這一天發生的所有該任務。"
 
 #: src/ui/task_details.rs:622 src/ui/window.rs:383
 msgid "New Task"
-msgstr ""
+msgstr "新任務"
 
 #: src/ui/task_details.rs:627 src/ui/window.rs:388
 msgid "Add"
-msgstr ""
+msgstr "新增"
 
 #: src/ui/task_details.rs:687 src/ui/window.rs:446
 msgid "*Task name cannot be blank."
-msgstr ""
+msgstr "*任務名稱不能為空白。"
 
 #: src/ui/tasks_page.rs:188
 msgid "Today"
-msgstr ""
+msgstr "今天"
 
 #: src/ui/tasks_page.rs:190
 msgid "Yesterday"
-msgstr ""
+msgstr "昨天"
 
 #: src/ui/window.rs:394
 msgid "Task Name"
-msgstr ""
+msgstr "任務名稱"
 
 #: src/ui/window.rs:396
 msgid "tags"
-msgstr ""
+msgstr "標籤"
 
 #: src/ui/window.rs:643
 msgid "You have been idle for "
-msgstr ""
+msgstr "你已經閒置了 "
 
 #: src/ui/window.rs:648
 msgid ""
 "\n"
 "Would you like to discard that time, or continue the clock?"
 msgstr ""
+"\n"
+"你想要丟棄那個時間，還是繼續時鐘？"
 
 #: src/ui/window.rs:795
 msgid "Autosave Restored"
-msgstr ""
+msgstr "自動儲存已恢復"
 
 #: src/ui/window.rs:798
 msgid "Furtherance shut down improperly. An autosave was restored."
-msgstr ""
+msgstr "Furtherance 不當關閉。自動儲存已恢復。"
 
 #: src/ui/window.rs:865
 msgid "Stop the timer to duplicate a task."
-msgstr ""
+msgstr "停止計時器以重複任務。"
 
 #: src/ui/window.rs:936
 msgid "Create or choose a CSV file"
-msgstr ""
+msgstr "建立或選擇一個 CSV 檔案"
 
 #: src/ui/window.rs:940
 msgid "Accept"
-msgstr ""
+msgstr "接受"
 
 #: src/ui/window.rs:979
 msgid "Exporting as CSV failed."
-msgstr ""
+msgstr "匯出為 CSV 失敗。"
 
 #: src/ui/window.rs:981
 msgid "Exported as CSV successfully."
-msgstr ""
+msgstr "已成功匯出為 CSV。"
