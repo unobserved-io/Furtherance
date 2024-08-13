@@ -1,5 +1,5 @@
 // Furtherance - Track your time without being tracked
-// Copyright (C) 2024  Ricky Kresslein <rk@lakoliu.com>
+// Copyright (C) 2024  Ricky Kresslein <rk@unobserved.io>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
