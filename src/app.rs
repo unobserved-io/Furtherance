@@ -16,7 +16,7 @@
 
 use crate::database::*;
 use crate::fur_task::FurTask;
-use crate::style::*;
+use crate::style;
 use iced::{
     alignment, font, keyboard,
     multi_window::Application,
@@ -106,29 +106,32 @@ impl Application for Furtherance {
 
     fn view(&self, _window_id: window::Id) -> Element<Message> {
         // MARK: SIDEBAR
-        let sidebar = column![
-            button("Shortcuts")
-                .on_press(Message::NavigateTo(FurView::Shortcuts))
-                .style(theme::Button::Text),
-            button("Timer")
-                .on_press(Message::NavigateTo(FurView::Timer))
-                .style(theme::Button::Text),
-            button("History")
-                .on_press(Message::NavigateTo(FurView::History))
-                .style(theme::Button::Text),
-            button("Report")
-                .on_press(Message::NavigateTo(FurView::Report))
-                .style(theme::Button::Text),
-            vertical_space().height(Length::Fill),
-            // TODO: if timer is running and nav is not timer, show timer
-            button("Settings")
-                .on_press(Message::NavigateTo(FurView::Settings))
-                .style(theme::Button::Text),
-        ]
-        .spacing(12)
-        .padding(20)
-        .width(175)
-        .align_items(Alignment::Start);
+        let sidebar = Container::new(
+            column![
+                button("Shortcuts")
+                    .on_press(Message::NavigateTo(FurView::Shortcuts))
+                    .style(theme::Button::Text),
+                button("Timer")
+                    .on_press(Message::NavigateTo(FurView::Timer))
+                    .style(theme::Button::Text),
+                button("History")
+                    .on_press(Message::NavigateTo(FurView::History))
+                    .style(theme::Button::Text),
+                button("Report")
+                    .on_press(Message::NavigateTo(FurView::Report))
+                    .style(theme::Button::Text),
+                vertical_space().height(Length::Fill),
+                // TODO: if timer is running and nav is not timer, show timer
+                button("Settings")
+                    .on_press(Message::NavigateTo(FurView::Settings))
+                    .style(theme::Button::Text),
+            ]
+            .spacing(12)
+            .padding(20)
+            .width(175)
+            .align_items(Alignment::Start),
+        )
+        .style(style::gray_background);
 
         // MARK: Shortcuts
         let shortcuts_view = column![];
