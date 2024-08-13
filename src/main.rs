@@ -14,8 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+mod app;
 mod constants;
 mod database;
 mod fur_task;
 
-fn main() {}
+use app::Furtherance;
+use iced::{multi_window::Application, window, Settings, Size};
+
+fn main() -> iced::Result {
+    Furtherance::run(Settings {
+        window: window::Settings {
+            size: Size {
+                height: 480.0,
+                width: 400.0,
+            },
+            min_size: Some(Size {
+                height: 480.0,
+                width: 400.0,
+            }),
+            max_size: Some(Size {
+                height: 480.0,
+                width: 400.0,
+            }),
+            ..window::Settings::default()
+        },
+        ..Settings::default()
+    })
+}
