@@ -13,7 +13,7 @@ use iced::{
     window, Alignment, Command, Element, Font, Length, Renderer, Settings, Size, Theme,
 };
 use iced_aw::{
-    core::icons::bootstrap,
+    core::icons::{bootstrap, BOOTSTRAP_FONT_BYTES},
     date_picker::{self, Date},
     modal, Card, Modal,
 };
@@ -41,6 +41,7 @@ pub struct Furtherance {
 pub enum Message {
     FontLoaded(Result<(), font::Error>),
     ModalClose,
+    NavigateTo(FurView),
 }
 
 impl Application for Furtherance {
@@ -63,7 +64,7 @@ impl Application for Furtherance {
 
         (
             furtherance,
-            font::load(iced_aw::core::icons::BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
+            font::load(BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
         )
     }
 
@@ -82,12 +83,41 @@ impl Application for Furtherance {
         match message {
             Message::FontLoaded(_) => Command::none(),
             Message::ModalClose => Command::none(),
+            Message::NavigateTo(destination) => {
+                self.current_view = destination;
+                Command::none()
+            }
         }
     }
 
-    fn view(&self, window_id: window::Id) -> Element<Message> {
-        // MARK: TIMER
-        let timer_view = column![];
+    fn view(&self, _window_id: window::Id) -> Element<Message> {
+        // MARK: SIDEBAR
+        let sidebar = column![
+            button("Shortcuts")
+                .on_press(Message::NavigateTo(FurView::Shortcuts))
+                .style(theme::Button::Text),
+            button("Timer")
+                .on_press(Message::NavigateTo(FurView::Timer))
+                .style(theme::Button::Text),
+            button("History")
+                .on_press(Message::NavigateTo(FurView::History))
+                .style(theme::Button::Text),
+            button("Report")
+                .on_press(Message::NavigateTo(FurView::Report))
+                .style(theme::Button::Text),
+            vertical_space().height(Length::Fill),
+            // TODO: if timer is running and nav is not timer, show timer
+            button("Settings")
+                .on_press(Message::NavigateTo(FurView::Shortcuts))
+                .style(theme::Button::Text),
+        ]
+        .spacing(12)
+        .padding(20)
+        .width(175)
+        .align_items(Alignment::Start);
+
+        // MARK: Shortcuts
+        let shortcuts_view = column![];
 
         // MARK: TIMER
         let timer_view = column![];
@@ -101,13 +131,16 @@ impl Application for Furtherance {
         // MARK: SETTINGS
         let settings_view = column![];
 
-        let content = match self.current_view {
-            FurView::Shortcuts => timer_view,
-            FurView::Timer => timer_view,
-            FurView::History => history_view,
-            FurView::Report => report_view,
-            FurView::Settings => settings_view,
-        };
+        let content = row![
+            sidebar,
+            match self.current_view {
+                FurView::Shortcuts => shortcuts_view,
+                FurView::Timer => timer_view,
+                FurView::History => history_view,
+                FurView::Report => report_view,
+                FurView::Settings => settings_view,
+            },
+        ];
 
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.show_modal {
             Some(
