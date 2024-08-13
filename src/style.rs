@@ -14,24 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-mod app;
-mod constants;
-mod database;
-mod fur_task;
-mod style;
+use iced::widget::container;
+use iced::Theme;
 
-use app::Furtherance;
-use iced::{multi_window::Application, window, Settings, Size};
+pub fn gray_background(theme: &Theme) -> container::Appearance {
+    let palette = theme.extended_palette();
 
-fn main() -> iced::Result {
-    Furtherance::run(Settings {
-        window: window::Settings {
-            size: Size {
-                height: 600.0,
-                width: 1024.0,
-            },
-            ..window::Settings::default()
-        },
-        ..Settings::default()
-    })
+    container::Appearance {
+        background: Some(palette.background.weak.color.into()),
+        ..Default::default()
+    }
 }
