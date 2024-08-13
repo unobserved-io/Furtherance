@@ -57,10 +57,10 @@ impl Application for Furtherance {
         };
 
         // Load or create database
-        match db_init() {
-            Ok(_) => {}
-            Err(e) => eprintln!("Error loading database: {}", e),
-        }
+        // match db_init() {
+        //     Ok(_) => {}
+        //     Err(e) => eprintln!("Error loading database: {}", e),
+        // }
 
         (
             furtherance,

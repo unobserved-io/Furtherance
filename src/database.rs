@@ -68,22 +68,22 @@ impl SortBy {
 }
 
 pub fn get_directory() -> PathBuf {
-    let dir_from_settings = PathBuf::new();
+    // let dir_from_settings = PathBuf::new();
 
-    if dir_from_settings != "default" && PathBuf::from(dir_from_settings.clone()).exists() {
-        return PathBuf::from(dir_from_settings);
-    } else {
-        if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu", "Furtherance") {
-            let mut path = PathBuf::from(proj_dirs.data_dir());
-            create_dir_all(path.clone()).expect("Unable to create database directory");
-            path.extend(&["furtherance.db"]);
+    // if dir_from_settings != "default" && PathBuf::from(dir_from_settings.clone()).exists() {
+    //     return PathBuf::from(dir_from_settings);
+    // } else {
+    //     if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu", "Furtherance") {
+    //         let mut path = PathBuf::from(proj_dirs.data_dir());
+    //         create_dir_all(path.clone()).expect("Unable to create database directory");
+    //         path.extend(&["furtherance.db"]);
 
-            let path_str = path.to_string_lossy().to_string();
-            if path_str != dir_from_settings {}
+    //         let path_str = path.to_string_lossy().to_string();
+    //         if path_str != dir_from_settings {}
 
-            return path;
-        }
-    }
+    //         return path;
+    //     }
+    // }
 
     PathBuf::new()
 }
