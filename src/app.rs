@@ -122,7 +122,7 @@ impl Application for Furtherance {
             vertical_space().height(Length::Fill),
             // TODO: if timer is running and nav is not timer, show timer
             button("Settings")
-                .on_press(Message::NavigateTo(FurView::Shortcuts))
+                .on_press(Message::NavigateTo(FurView::Settings))
                 .style(theme::Button::Text),
         ]
         .spacing(12)
