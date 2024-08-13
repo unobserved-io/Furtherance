@@ -16,5 +16,6 @@
 
 mod constants;
 mod database;
+mod fur_task;
 
 fn main() {}

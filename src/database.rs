@@ -16,67 +16,22 @@
 
 use chrono::{DateTime, Local};
 use directories::ProjectDirs;
-use gettextrs::*;
-use glib::clone;
-use gtk::prelude::*;
-use gtk::glib;
-use rusqlite::{Connection, Result, backup};
-use std::convert::TryFrom;
+use rusqlite::{backup, params, Connection, Result};
 use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::ui::FurtheranceWindow;
-use crate::settings_manager;
+use crate::fur_task::{self, FurTask};
 
-#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-pub struct Task {
-    pub id: i32,
-    pub task_name: String,
-    pub start_time: String,
-    pub stop_time: String,
-    pub tags: String,
-}
-
-impl ToString for Task {
-    fn to_string(&self) -> String {
-        if !self.tags.is_empty() {
-            format!("{} #{}", self.task_name, self.tags)
-        } else {
-            self.task_name.to_string()
-        }
-    }
-}
-
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    num_derive::FromPrimitive,
-    num_derive::ToPrimitive,
-)]
+#[derive(Debug)]
 pub enum SortOrder {
-    Ascending = 0,
+    Ascending,
     Descending,
 }
 
 impl Default for SortOrder {
     fn default() -> Self {
-        // matches the default in sqlite
         Self::Ascending
-    }
-}
-
-impl TryFrom<u32> for SortOrder {
-    type Error = anyhow::Error;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        num_traits::FromPrimitive::from_u32(value)
-            .ok_or_else(|| anyhow::anyhow!("SortOrder from_u32() failed for value {}", value))
     }
 }
 
@@ -89,39 +44,20 @@ impl SortOrder {
     }
 }
 
-#[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    num_derive::ToPrimitive,
-    num_derive::FromPrimitive,
-)]
-pub enum TaskSort {
-    StartTime = 0,
+#[derive(Debug)]
+pub enum SortBy {
+    StartTime,
     StopTime,
     TaskName,
 }
 
-impl Default for TaskSort {
+impl Default for SortBy {
     fn default() -> Self {
         Self::StartTime
     }
 }
 
-impl TryFrom<u32> for TaskSort {
-    type Error = anyhow::Error;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        num_traits::FromPrimitive::from_u32(value)
-            .ok_or_else(|| anyhow::anyhow!("TaskSort from_u32() failed for value {}", value))
-    }
-}
-
-impl TaskSort {
+impl SortBy {
     fn to_sqlite(&self) -> &str {
         match self {
             Self::StartTime => "start_time",
@@ -132,7 +68,7 @@ impl TaskSort {
 }
 
 pub fn get_directory() -> PathBuf {
-    let dir_from_settings = settings_manager::get_string("database-loc");
+    let dir_from_settings = PathBuf::new();
 
     if dir_from_settings != "default" && PathBuf::from(dir_from_settings.clone()).exists() {
         return PathBuf::from(dir_from_settings);
@@ -143,10 +79,7 @@ pub fn get_directory() -> PathBuf {
             path.extend(&["furtherance.db"]);
 
             let path_str = path.to_string_lossy().to_string();
-            if path_str != dir_from_settings {
-                let settings = settings_manager::get_settings();
-                let _ = settings.set_string("database-loc", &path_str);
-            }
+            if path_str != dir_from_settings {}
 
             return path;
         }
@@ -159,11 +92,13 @@ pub fn db_init() -> Result<()> {
     let conn = Connection::open(get_directory())?;
     conn.execute(
         "CREATE TABLE tasks (
-                    id integer primary key,
-                    task_name text,
-                    start_time timestamp,
-                    stop_time timestamp,
-                    tags text)",
+                    id INTEGER PRIMARY KEY,
+                    task_name TEXT,
+                    start_time TIMESTAMP,
+                    stop_time TIMESTAMP,
+                    tags TEXT,
+                    project TEXT,
+                    rate REAL)",
         [],
     )?;
 
@@ -171,58 +106,50 @@ pub fn db_init() -> Result<()> {
 }
 
 pub fn upgrade_old_db() -> Result<()> {
-    // Update from old DB w/o tags
+    // Update from old DB w/o tags, project, or rates
     let conn = Connection::open(get_directory())?;
 
-    conn.execute("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ' '", [])?;
+    conn.execute("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ''", [])?;
+
+    // Add project (text) column
+    conn.execute("ALTER TABLE tasks ADD COLUMN project TEXT DEFAULT ''", [])?;
+
+    // Add rate (real) column
+    conn.execute("ALTER TABLE tasks ADD COLUMN rate REAL DEFAULT 0.0", [])?;
 
     Ok(())
 }
 
-pub fn db_write(
-    task_name: &str,
-    start_time: DateTime<Local>,
-    stop_time: DateTime<Local>,
-    tags: String,
-) -> Result<()> {
-    // Write data into database
+pub fn db_write(fur_task: &FurTask) -> Result<()> {
     let conn = Connection::open(get_directory())?;
 
     conn.execute(
-        "INSERT INTO tasks (task_name, start_time, stop_time, tags) values (?1, ?2, ?3, ?4)",
-        &[
-            &task_name.to_string(),
-            &start_time.to_rfc3339(),
-            &stop_time.to_rfc3339(),
-            &tags,
+        "INSERT INTO tasks (
+            task_name,
+            start_time,
+            stop_time,
+            tags,
+            project,
+            rate
+        ) values (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![
+            fur_task.name,
+            fur_task.start_time.to_rfc3339(),
+            fur_task.stop_time.to_rfc3339(),
+            fur_task.tags,
+            fur_task.project,
+            fur_task.rate,
         ],
     )?;
 
     Ok(())
 }
 
-pub fn write_autosave(
-    task_name: &str,
-    start_time: &str,
-    stop_time: &str,
-    tags: &str,
-) -> Result<()> {
-    // Write data into database
-    let conn = Connection::open(get_directory())?;
-
-    conn.execute(
-        "INSERT INTO tasks (task_name, start_time, stop_time, tags) values (?1, ?2, ?3, ?4)",
-        &[&task_name, &start_time, &stop_time, &tags],
-    )?;
-
-    Ok(())
-}
-
-pub fn retrieve(sort: TaskSort, order: SortOrder) -> Result<Vec<Task>, rusqlite::Error> {
+pub fn retrieve(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, rusqlite::Error> {
     // Retrieve all tasks from the database
     let conn = Connection::open(get_directory())?;
 
-    let mut query = conn.prepare(
+    let mut stmt = conn.prepare(
         format!(
             "SELECT * FROM tasks ORDER BY {0} {1}",
             sort.to_sqlite(),
@@ -230,59 +157,24 @@ pub fn retrieve(sort: TaskSort, order: SortOrder) -> Result<Vec<Task>, rusqlite:
         )
         .as_str(),
     )?;
-    let task_iter = query.query_map([], |row| {
-        Ok(Task {
+    let mut rows = stmt.query(params![])?;
+
+    let mut tasks_vec: Vec<FurTask> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTask {
             id: row.get(0)?,
-            task_name: row.get(1)?,
+            name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
             tags: row.get(4)?,
-        })
-    })?;
-
-    let mut tasks_vec: Vec<Task> = Vec::new();
-    for task_item in task_iter {
-        tasks_vec.push(task_item.unwrap());
+            project: row.get(5)?,
+            rate: row.get(6)?,
+        };
+        tasks_vec.push(fur_task);
     }
 
     Ok(tasks_vec)
-}
-
-/// Exports the database as CSV.
-/// The delimiter parameter is interpreted as a ASCII character.
-pub fn export_as_csv(sort: TaskSort, order: SortOrder, delimiter: u8) -> anyhow::Result<String> {
-    #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
-    struct CSVTask {
-        pub id: i32,
-        pub task_name: String,
-        pub start_time: String,
-        pub stop_time: String,
-        pub tags: String,
-        pub seconds: i64,
-    }
-
-    let mut csv_writer = csv::WriterBuilder::new()
-        .delimiter(delimiter)
-        .from_writer(vec![]);
-    let tasks = retrieve(sort, order)?;
-
-    for task in tasks {
-        let start_time = DateTime::parse_from_rfc3339(&task.start_time).unwrap();
-        let stop_time = DateTime::parse_from_rfc3339(&task.stop_time).unwrap();
-        let duration = stop_time - start_time;
-        csv_writer.serialize(CSVTask{
-            id: task.id,
-            task_name: task.task_name,
-            start_time: task.start_time,
-            stop_time: task.stop_time,
-            tags: task.tags,
-            seconds: duration.num_seconds(),
-        })?;
-    }
-
-    csv_writer.flush()?;
-
-    Ok(String::from_utf8(csv_writer.into_inner()?)?)
 }
 
 pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
@@ -290,7 +182,7 @@ pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET start_time = (?1) WHERE id = (?2)",
-        &[&start_time, &id.to_string()],
+        params![start_time, id],
     )?;
 
     Ok(())
@@ -301,7 +193,7 @@ pub fn update_stop_time(id: i32, stop_time: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET stop_time = (?1) WHERE id = (?2)",
-        &[&stop_time, &id.to_string()],
+        params![stop_time, id],
     )?;
 
     Ok(())
@@ -312,7 +204,7 @@ pub fn update_task_name(id: i32, task_name: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET task_name = (?1) WHERE id = (?2)",
-        &[&task_name, &id.to_string()],
+        params![task_name, id],
     )?;
 
     Ok(())
@@ -323,44 +215,73 @@ pub fn update_tags(id: i32, tags: String) -> Result<()> {
 
     conn.execute(
         "UPDATE tasks SET tags = (?1) WHERE id = (?2)",
-        &[&tags, &id.to_string()],
+        params![tags, id],
     )?;
 
     Ok(())
 }
 
-pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<Task>, rusqlite::Error> {
+pub fn update_project(id: i32, project: String) -> Result<()> {
     let conn = Connection::open(get_directory())?;
-    let mut tasks_vec: Vec<Task> = Vec::new();
+
+    conn.execute(
+        "UPDATE tasks SET project = (?1) WHERE id = (?2)",
+        params![project, id],
+    )?;
+
+    Ok(())
+}
+
+pub fn update_rate(id: i32, rate: f32) -> Result<()> {
+    let conn = Connection::open(get_directory())?;
+
+    conn.execute(
+        "UPDATE tasks SET rate = (?1) WHERE id = (?2)",
+        params![rate, id],
+    )?;
+
+    Ok(())
+}
+
+pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<FurTask>, rusqlite::Error> {
+    let conn = Connection::open(get_directory())?;
+    let mut stmt = conn.prepare("SELECT * FROM tasks WHERE id = ?")?;
+    let mut tasks_vec = Vec::new();
 
     for id in id_list {
-        let mut query = conn.prepare("SELECT * FROM tasks WHERE id = :id;")?;
-        let task_iter = query.query_map(&[(":id", &id.to_string())], |row| {
-            Ok(Task {
+        let task_iter = stmt.query_map(&[&id], |row| {
+            Ok(FurTask {
                 id: row.get(0)?,
-                task_name: row.get(1)?,
+                name: row.get(1)?,
                 start_time: row.get(2)?,
                 stop_time: row.get(3)?,
                 tags: row.get(4)?,
+                project: row.get(5)?,
+                rate: row.get(6)?,
             })
         })?;
 
         for task_item in task_iter {
-            tasks_vec.push(task_item.unwrap());
+            tasks_vec.push(task_item?);
         }
     }
 
     Ok(tasks_vec)
 }
 
-pub fn get_list_by_name_and_tags(task_name: String, tag_list: Vec<String>) -> Result<Vec<Task>, rusqlite::Error> {
+pub fn get_list_by_name_and_tags(
+    task_name: String,
+    tag_list: Vec<String>,
+) -> Result<Vec<FurTask>, rusqlite::Error> {
     let conn = Connection::open(get_directory())?;
 
     let name_param = format!("%{}%", task_name);
     let tag_list_params: Vec<String> = tag_list.iter().map(|tag| format!("%{}%", tag)).collect();
 
     let mut sql_query = String::from("SELECT * FROM tasks WHERE lower(task_name) LIKE lower(?)");
-    tag_list_params.iter().for_each(|_| sql_query.push_str(" AND lower(tags) LIKE lower(?)"));
+    tag_list_params
+        .iter()
+        .for_each(|_| sql_query.push_str(" AND lower(tags) LIKE lower(?)"));
     sql_query.push_str(" ORDER BY task_name");
 
     let mut query = conn.prepare(sql_query.as_str())?;
@@ -369,15 +290,21 @@ pub fn get_list_by_name_and_tags(task_name: String, tag_list: Vec<String>) -> Re
         query.raw_bind_parameter(i + 2, tag)?;
     }
 
-    let tasks_vec = query.raw_query().mapped(|row| {
-        Ok(Task {
-            id: row.get(0)?,
-            task_name: row.get(1)?,
-            start_time: row.get(2)?,
-            stop_time: row.get(3)?,
-            tags: row.get(4)?,
+    let tasks_vec = query
+        .raw_query()
+        .mapped(|row| {
+            Ok(FurTask {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                start_time: row.get(2)?,
+                stop_time: row.get(3)?,
+                tags: row.get(4)?,
+                project: row.get(5)?,
+                rate: row.get(6)?,
+            })
         })
-    }).map(|task_item| task_item.unwrap()).collect();
+        .map(|task_item| task_item.unwrap())
+        .collect();
 
     Ok(tasks_vec)
 }
@@ -440,7 +367,7 @@ pub fn import_db(new_db: String) -> Result<()> {
     let new_conn = Connection::open(new_db.clone())?;
     let valid = match check_db_validity(new_db) {
         Ok(_) => true,
-        Err(_) => false
+        Err(_) => false,
     };
 
     if valid {
@@ -448,24 +375,7 @@ pub fn import_db(new_db: String) -> Result<()> {
         let backup = backup::Backup::new(&new_conn, &mut conn)?;
         backup.run_to_completion(5, Duration::from_millis(250), None)
     } else {
-        let window = FurtheranceWindow::default();
-        let dialog = gtk::MessageDialog::with_markup(
-            Some(&window),
-            gtk::DialogFlags::MODAL,
-            gtk::MessageType::Error,
-            gtk::ButtonsType::Ok,
-            Some(&format!(
-                "<span size='large' weight='bold'>{}</span>",
-                &gettext("Not a valid database")
-            )),
-        );
-
-        dialog.connect_response(clone!(@weak dialog = > move |_, _| {
-            dialog.close();
-        }));
-
-        dialog.show();
-
+        // TODO: Show error
         Ok(())
     }
 }
