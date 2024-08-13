@@ -14,9 +14,5 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub static VERSION: &str = @VERSION@;
-pub static GETTEXT_PACKAGE: &str = @GETTEXT_PACKAGE@;
-pub static LOCALEDIR: &str = @LOCALEDIR@;
-pub static PKGDATADIR: &str = @PKGDATADIR@;
-pub static APP_ID: &str = @APP_ID@;
-pub static PROFILE: &str = @PROFILE@;
+pub const VERSION: &str = "3.0.0";
+pub const APP_ID: &str = "io.unobserved.Furtherance";

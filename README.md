@@ -22,43 +22,11 @@ It allows you to track time spent on different activities without worrying about
 * The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
 * Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
 
-**Mac / iOS**
-
-<a href="https://apps.apple.com/app/furtherance/id1659277200"><img width='240' alt="Download Furtherance on the App Store" src="https://furtherance.app/images/app-store-black.svg"/></a>
-* Furtherance for Mac & iOS is available on the [App Store](https://apps.apple.com/app/furtherance/id1659277200).
-* It uses a different codebase (Swift & SwiftUI) to provide a native experience. You can view the source code [here](https://github.com/unobserved-io/furtherance-swiftui).
-
-**Windows**
-
-<a href="https://apps.microsoft.com/store/detail/furtherance/9NHG98S3VR3W"><img width='240' alt="Download from Microsoft Store" src="https://furtherance.app/images/microsoft-store-dark.svg"/></a>
-* Furtherance for Windows is available from the [Microsoft Store](https://www.microsoft.com/store/apps/9NHG98S3VR3W).
-* It uses a different codebase (C# & WinUI 3) to provide a native experience. You can view the source code [here](https://github.com/unobserved-io/furtherance-winui).
-
-**Android**
-
-<a href='https://play.google.com/store/apps/details?id=com.livaliva.furtherance&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img  width='280' alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
-* Furtherance for Android is available on [Google Play](https://play.google.com/store/apps/details?id=com.livaliva.furtherance).
-* It uses a different codebase (Dart & Flutter) to provide a native experience. You can view the source code [here](https://github.com/unobserved-io/furtherance-flutter).
-
 ### Build
-The easiest way to build Furtherance is with [GNOME Builder](https://flathub.org/apps/details/org.gnome.Builder).
 
-To build Furtherance on your own, make sure you have all the dependencies: *rust, cargo, meson, ninja-build, sqlite3, dbus-1, glib-2.0, gtk4, libadwaita-1*
-
-Then do:
-```
-git clone https://github.com/lakoliu/Furtherance.git
-cd Furtherance
-mkdir build
-cd build
-meson ..
-ninja
-sudo ninja install
-```
-To uninstall, run `sudo ninja uninstall` in the same directory.
 
 ### Use
-Type in the name of the task you are working on, add some #tags, and press start. That's really all there is to it.
+Type in the `name` of the task you are working on, add a `@Project`, some `#tags`, and a `$rate`, and press start. That's really all there is to it.
 
 ## Contribute
 
@@ -67,7 +35,7 @@ If you speak another language, it would be greatly appreciated if you could help
 You can get started easily using [Weblate](https://hosted.weblate.org/projects/furtherance/translations/).
 
 ### Tips
-Besides helping to pay the bills, tips make me feel all warm and fuzzy inside. If you've gotten value from Furtherance, you can tip me via:
+Besides helping to pay the bills, tips show me people want me to continue spending time on Furtherance. If you've gotten value from Furtherance, you can tip me via:
 * [Ko-fi](https://ko-fi.com/unobserved)
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
 * **Bitcoin**: bc1q70czd5evhsxnjcd45cj2n4s3dr6qmhvrlljjlk
@@ -77,13 +45,10 @@ Thank you so much!
 ## Project Details
 
 ### Built With
-* Linux: Written in Rust using the Gtk-rs bindings for GTK 4.
-* Windows: Written in C# using WinUI 3
-* Mac: Written in Swift using SwifUI
-* Android: Written in Dart using Flutter
+Rust & Iced
 
 ### License
-This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details. (This only applies to the Linux version, the source code you see in this repository)
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
 
 ### Author
 This project is created and maintained by [Ricky Kresslein](https://kressle.in) under [Unobserved](https://unobserved.io). More information at [Furtherance.app](https://furtherance.app).
