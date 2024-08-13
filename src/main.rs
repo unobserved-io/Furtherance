@@ -26,17 +26,9 @@ fn main() -> iced::Result {
     Furtherance::run(Settings {
         window: window::Settings {
             size: Size {
-                height: 480.0,
-                width: 400.0,
+                height: 600.0,
+                width: 1024.0,
             },
-            min_size: Some(Size {
-                height: 480.0,
-                width: 400.0,
-            }),
-            max_size: Some(Size {
-                height: 480.0,
-                width: 400.0,
-            }),
             ..window::Settings::default()
         },
         ..Settings::default()
