@@ -8,17 +8,18 @@ edition = "2021"
 chrono = { version = "0.4", features = ["alloc", "serde"] }
 dark-light = "1.0"
 directories = "5.0"
-iced = { version = "0.12.1", features = [
+iced = { version = "0.12", features = [
     "advanced",
     "canvas",
     "multi-window",
     "tokio",
 ] }
-iced_aw = { version = "0.9.3", default-features = false, features = [
+iced_aw = { version = "0.9", default-features = false, features = [
     "card",
     "date_picker",
     "icons",
     "modal",
+    "time_picker",
 ] }
 plotters = "0.3"
 plotters-iced = "0.10"

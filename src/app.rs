@@ -17,6 +17,7 @@
 use crate::database::*;
 use crate::fur_task::FurTask;
 use crate::style;
+use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use iced::{
     alignment, font, keyboard,
     multi_window::Application,
@@ -29,7 +30,9 @@ use iced::{
 use iced_aw::{
     core::icons::{bootstrap, BOOTSTRAP_FONT_BYTES},
     date_picker::{self, Date},
-    modal, Card, Modal,
+    modal,
+    time_picker::{self, Period},
+    Card, Modal, TimePicker,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -47,8 +50,10 @@ impl Default for FurView {
 }
 
 pub struct Furtherance {
+    current_task_start_time: time_picker::Time,
     current_view: FurView,
     show_modal: bool,
+    show_timer_start_picker: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -56,6 +61,9 @@ pub enum Message {
     FontLoaded(Result<(), font::Error>),
     ModalClose,
     NavigateTo(FurView),
+    CancelCurrentTaskStartTime,
+    ChooseCurrentTaskStartTime,
+    SubmitCurrentTaskStartTime(time_picker::Time),
 }
 
 impl Application for Furtherance {
@@ -66,8 +74,10 @@ impl Application for Furtherance {
 
     fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
         let mut furtherance = Furtherance {
+            current_task_start_time: time_picker::Time::now_hm(true),
             current_view: FurView::Timer,
             show_modal: false,
+            show_timer_start_picker: false,
         };
 
         // Load or create database
@@ -95,10 +105,32 @@ impl Application for Furtherance {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::CancelCurrentTaskStartTime => {
+                self.show_timer_start_picker = false;
+                Command::none()
+            }
+            Message::ChooseCurrentTaskStartTime => {
+                self.show_timer_start_picker = true;
+                Command::none()
+            }
             Message::FontLoaded(_) => Command::none(),
             Message::ModalClose => Command::none(),
             Message::NavigateTo(destination) => {
                 self.current_view = destination;
+                Command::none()
+            }
+            Message::SubmitCurrentTaskStartTime(new_time) => {
+                match convert_iced_time_to_chrono_local(new_time) {
+                    LocalResult::Single(local_time) => {
+                        // TODO: Update start time for stopwatch to local_time
+                        self.current_task_start_time = new_time;
+                        self.show_timer_start_picker = false;
+                    }
+                    _ => {
+                        self.show_timer_start_picker = false;
+                        eprintln!("Error converting chosen time to local time.");
+                    }
+                }
                 Command::none()
             }
         }
@@ -127,7 +159,40 @@ impl Application for Furtherance {
         let shortcuts_view = column![];
 
         // MARK: TIMER
-        let timer_view = column![];
+        let timer_view = column![
+            vertical_space().height(Length::Fill),
+            text("0:00:00").size(80),
+            column![
+                row![
+                    text_input("", "").size(20),
+                    button(row![
+                        horizontal_space().width(Length::Fixed(5.0)),
+                        bootstrap::icon_to_text(bootstrap::Bootstrap::PlayFill).size(20),
+                        horizontal_space().width(Length::Fixed(5.0)),
+                    ])
+                ]
+                .spacing(10),
+                row![TimePicker::new(
+                    self.show_timer_start_picker,
+                    self.current_task_start_time,
+                    Button::new(text(format!(
+                        "Started at {}",
+                        self.current_task_start_time.to_string()
+                    )))
+                    .on_press(Message::ChooseCurrentTaskStartTime),
+                    Message::CancelCurrentTaskStartTime,
+                    Message::SubmitCurrentTaskStartTime,
+                )
+                .use_24h(),]
+                .align_items(Alignment::Center)
+                .spacing(10),
+            ]
+            .align_items(Alignment::Center)
+            .spacing(15),
+            vertical_space().height(Length::Fill),
+        ]
+        .align_items(Alignment::Center)
+        .padding(15);
 
         // MARK: HISTORY
         let history_view = column![];
@@ -170,4 +235,21 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
     button(text)
         .on_press(Message::NavigateTo(destination))
         .style(theme::Button::Text)
+}
+
+fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResult<DateTime<Local>> {
+    let (hour, minute, _) = match iced_time {
+        time_picker::Time::Hm {
+            hour,
+            minute,
+            period,
+        } => (hour, minute, period),
+        _ => (1, 1, Period::H24),
+    };
+
+    if let Some(time) = NaiveTime::from_hms_opt(hour, minute, 0) {
+        Local::now().with_time(time)
+    } else {
+        LocalResult::None
+    }
 }
