@@ -22,7 +22,7 @@ use iced::{
     multi_window::Application,
     widget::{
         button, column, horizontal_space, pick_list, row, text, text_input, theme, vertical_space,
-        Column, Container, Scrollable,
+        Button, Column, Container, Scrollable,
     },
     window, Alignment, Command, Element, Font, Length, Renderer, Settings, Size, Theme,
 };
@@ -108,23 +108,13 @@ impl Application for Furtherance {
         // MARK: SIDEBAR
         let sidebar = Container::new(
             column![
-                button("Shortcuts")
-                    .on_press(Message::NavigateTo(FurView::Shortcuts))
-                    .style(theme::Button::Text),
-                button("Timer")
-                    .on_press(Message::NavigateTo(FurView::Timer))
-                    .style(theme::Button::Text),
-                button("History")
-                    .on_press(Message::NavigateTo(FurView::History))
-                    .style(theme::Button::Text),
-                button("Report")
-                    .on_press(Message::NavigateTo(FurView::Report))
-                    .style(theme::Button::Text),
+                nav_button("Shortcuts", FurView::Shortcuts),
+                nav_button("Timer", FurView::Timer),
+                nav_button("History", FurView::History),
+                nav_button("Report", FurView::Report),
                 vertical_space().height(Length::Fill),
                 // TODO: if timer is running and nav is not timer, show timer
-                button("Settings")
-                    .on_press(Message::NavigateTo(FurView::Settings))
-                    .style(theme::Button::Text),
+                nav_button("Settings", FurView::Settings)
             ]
             .spacing(12)
             .padding(20)
@@ -174,4 +164,10 @@ impl Application for Furtherance {
             .on_esc(Message::ModalClose)
             .into()
     }
+}
+
+fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
+    button(text)
+        .on_press(Message::NavigateTo(destination))
+        .style(theme::Button::Text)
 }
