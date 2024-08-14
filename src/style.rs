@@ -25,9 +25,3 @@ pub fn gray_background(theme: &Theme) -> container::Appearance {
         ..Default::default()
     }
 }
-
-// To bold text:
-// .font(font::Font{
-//     weight: iced::font::Weight::Bold,
-//     ..font::Font::DEFAULT
-// })

@@ -160,6 +160,12 @@ impl Application for Furtherance {
 
         // MARK: TIMER
         let timer_view = column![
+            row![
+                button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+                    .style(theme::Button::Text),
+                horizontal_space().width(Length::Fill),
+                text(format!("Recorded today: {}", "0:00"))
+            ],
             vertical_space().height(Length::Fill),
             text("0:00:00").size(80),
             column![
