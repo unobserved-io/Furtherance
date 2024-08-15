@@ -5,6 +5,7 @@ authors = ["Ricky Kresslein <ricky@unobserved.io>"]
 edition = "2021"
 
 [dependencies]
+config = "0.14"
 chrono = { version = "0.4", features = ["alloc", "serde"] }
 dark-light = "1.0"
 directories = "5.0"

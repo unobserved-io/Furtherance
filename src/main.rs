@@ -18,6 +18,8 @@ mod app;
 mod constants;
 mod database;
 mod fur_task;
+mod fur_task_group;
+mod settings;
 mod style;
 
 use app::Furtherance;

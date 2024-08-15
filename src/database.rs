@@ -21,7 +21,7 @@ use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::fur_task::{self, FurTask};
+use crate::{fur_task::FurTask, settings::FurSettings};
 
 #[derive(Debug)]
 pub enum SortOrder {
@@ -67,29 +67,21 @@ impl SortBy {
     }
 }
 
-pub fn get_directory() -> PathBuf {
-    // let dir_from_settings = PathBuf::new();
+pub fn db_get_directory() -> PathBuf {
+    // Get DB location from settings
+    let settings_db_dir = match FurSettings::new() {
+        Ok(loaded_settings) => loaded_settings.database_url,
+        Err(e) => {
+            eprintln!("Error loading settings: {}", e);
+            FurSettings::default().database_url
+        }
+    };
 
-    // if dir_from_settings != "default" && PathBuf::from(dir_from_settings.clone()).exists() {
-    //     return PathBuf::from(dir_from_settings);
-    // } else {
-    //     if let Some(proj_dirs) = ProjectDirs::from("com", "lakoliu", "Furtherance") {
-    //         let mut path = PathBuf::from(proj_dirs.data_dir());
-    //         create_dir_all(path.clone()).expect("Unable to create database directory");
-    //         path.extend(&["furtherance.db"]);
-
-    //         let path_str = path.to_string_lossy().to_string();
-    //         if path_str != dir_from_settings {}
-
-    //         return path;
-    //     }
-    // }
-
-    PathBuf::new()
+    PathBuf::from(&settings_db_dir)
 }
 
 pub fn db_init() -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
     conn.execute(
         "CREATE TABLE tasks (
                     id INTEGER PRIMARY KEY,
@@ -105,9 +97,9 @@ pub fn db_init() -> Result<()> {
     Ok(())
 }
 
-pub fn upgrade_old_db() -> Result<()> {
+pub fn db_upgrade_old() -> Result<()> {
     // Update from old DB w/o tags, project, or rates
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ''", [])?;
 
@@ -121,7 +113,7 @@ pub fn upgrade_old_db() -> Result<()> {
 }
 
 pub fn db_write(fur_task: &FurTask) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "INSERT INTO tasks (
@@ -145,9 +137,9 @@ pub fn db_write(fur_task: &FurTask) -> Result<()> {
     Ok(())
 }
 
-pub fn retrieve(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, rusqlite::Error> {
+pub fn db_retrieve_all(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, rusqlite::Error> {
     // Retrieve all tasks from the database
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     let mut stmt = conn.prepare(
         format!(
@@ -178,7 +170,7 @@ pub fn retrieve(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, rusqlite
 }
 
 pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "UPDATE tasks SET start_time = (?1) WHERE id = (?2)",
@@ -189,7 +181,7 @@ pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
 }
 
 pub fn update_stop_time(id: i32, stop_time: String) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "UPDATE tasks SET stop_time = (?1) WHERE id = (?2)",
@@ -200,7 +192,7 @@ pub fn update_stop_time(id: i32, stop_time: String) -> Result<()> {
 }
 
 pub fn update_task_name(id: i32, task_name: String) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "UPDATE tasks SET task_name = (?1) WHERE id = (?2)",
@@ -211,7 +203,7 @@ pub fn update_task_name(id: i32, task_name: String) -> Result<()> {
 }
 
 pub fn update_tags(id: i32, tags: String) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "UPDATE tasks SET tags = (?1) WHERE id = (?2)",
@@ -222,7 +214,7 @@ pub fn update_tags(id: i32, tags: String) -> Result<()> {
 }
 
 pub fn update_project(id: i32, project: String) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "UPDATE tasks SET project = (?1) WHERE id = (?2)",
@@ -233,7 +225,7 @@ pub fn update_project(id: i32, project: String) -> Result<()> {
 }
 
 pub fn update_rate(id: i32, rate: f32) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
         "UPDATE tasks SET rate = (?1) WHERE id = (?2)",
@@ -244,7 +236,7 @@ pub fn update_rate(id: i32, rate: f32) -> Result<()> {
 }
 
 pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<FurTask>, rusqlite::Error> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
     let mut stmt = conn.prepare("SELECT * FROM tasks WHERE id = ?")?;
     let mut tasks_vec = Vec::new();
 
@@ -273,7 +265,7 @@ pub fn get_list_by_name_and_tags(
     task_name: String,
     tag_list: Vec<String>,
 ) -> Result<Vec<FurTask>, rusqlite::Error> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     let name_param = format!("%{}%", task_name);
     let tag_list_params: Vec<String> = tag_list.iter().map(|tag| format!("%{}%", tag)).collect();
@@ -310,7 +302,7 @@ pub fn get_list_by_name_and_tags(
 }
 
 pub fn check_for_tasks() -> Result<String> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.query_row(
         "SELECT task_name FROM tasks ORDER BY ROWID ASC LIMIT 1",
@@ -330,7 +322,7 @@ pub fn check_db_validity(db_path: String) -> Result<String> {
 }
 
 pub fn delete_by_ids(id_list: Vec<i32>) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {
         conn.execute("delete FROM tasks WHERE id = (?1)", &[&id.to_string()])?;
@@ -340,7 +332,7 @@ pub fn delete_by_ids(id_list: Vec<i32>) -> Result<()> {
 }
 
 pub fn delete_by_id(id: i32) -> Result<()> {
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute("delete FROM tasks WHERE id = (?1)", &[&id.to_string()])?;
 
@@ -349,7 +341,7 @@ pub fn delete_by_id(id: i32) -> Result<()> {
 
 pub fn delete_all() -> Result<()> {
     // Delete everything from the database
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
 
     conn.execute("delete from tasks", [])?;
 
@@ -358,7 +350,7 @@ pub fn delete_all() -> Result<()> {
 
 pub fn backup_db(backup_file: String) -> Result<()> {
     let mut bkup_conn = Connection::open(backup_file)?;
-    let conn = Connection::open(get_directory())?;
+    let conn = Connection::open(db_get_directory())?;
     let backup = backup::Backup::new(&conn, &mut bkup_conn)?;
     backup.run_to_completion(5, Duration::from_millis(250), None)
 }
@@ -371,7 +363,7 @@ pub fn import_db(new_db: String) -> Result<()> {
     };
 
     if valid {
-        let mut conn = Connection::open(get_directory())?;
+        let mut conn = Connection::open(db_get_directory())?;
         let backup = backup::Backup::new(&new_conn, &mut conn)?;
         backup.run_to_completion(5, Duration::from_millis(250), None)
     } else {
