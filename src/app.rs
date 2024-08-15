@@ -33,11 +33,11 @@ use iced::{
     window, Alignment, Command, Element, Font, Length, Renderer, Settings, Size, Theme,
 };
 use iced_aw::{
-    core::icons::{bootstrap, BOOTSTRAP_FONT_BYTES, SF_UI_ROUNDED_BYTES},
+    core::icons::{bootstrap, BOOTSTRAP_FONT_BYTES},
     date_picker::{self, Date},
     modal,
     time_picker::{self, Period},
-    Card, Modal, TimePicker, SF_UI_ROUNDED,
+    Card, Modal, TimePicker,
 };
 
 #[derive(Debug, Clone, PartialEq)]
