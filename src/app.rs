@@ -260,6 +260,15 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 }
 
 fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
+    let h = task_group.total_time / 3600;
+    let m = task_group.total_time % 3600 / 60;
+    let s = task_group.total_time % 60;
+    let total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+    // TODO: Change formatting if not showing seconds
+    // if !show_seconds {
+    //     total_time_str = format!("{:02}:{:02}", h, m);
+    // }
+
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name),];
     if !task_group.project.is_empty() {
@@ -273,7 +282,7 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
         row![
             task_details_column,
             horizontal_space().width(Length::Fill),
-            text("00:00:00"),
+            text(total_time_str),
         ]
         .align_items(Alignment::Center),
     )
