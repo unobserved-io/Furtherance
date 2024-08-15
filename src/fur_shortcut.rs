@@ -14,27 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-mod app;
-mod constants;
-mod database;
-mod fur_shortcut;
-mod fur_task;
-mod fur_task_group;
-mod settings;
-mod style;
+use serde::{Deserialize, Serialize};
 
-use app::Furtherance;
-use iced::{multi_window::Application, window, Settings, Size};
-
-fn main() -> iced::Result {
-    Furtherance::run(Settings {
-        window: window::Settings {
-            size: Size {
-                height: 600.0,
-                width: 1024.0,
-            },
-            ..window::Settings::default()
-        },
-        ..Settings::default()
-    })
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct FurShortcut {
+    pub id: u32,
+    pub name: String,
+    pub tags: String,
+    pub project: String,
+    pub rate: f32,
+    pub color_hex: String,
 }
