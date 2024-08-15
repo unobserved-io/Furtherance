@@ -101,14 +101,25 @@ pub fn db_upgrade_old() -> Result<()> {
     // Update from old DB w/o tags, project, or rates
     let conn = Connection::open(db_get_directory())?;
 
+    let _ = db_add_tags_column(&conn);
+    let _ = db_add_project_column(&conn);
+    let _ = db_add_rate_column(&conn);
+
+    Ok(())
+}
+
+pub fn db_add_tags_column(conn: &Connection) -> Result<()> {
     conn.execute("ALTER TABLE tasks ADD COLUMN tags TEXT DEFAULT ''", [])?;
+    Ok(())
+}
 
-    // Add project (text) column
+pub fn db_add_project_column(conn: &Connection) -> Result<()> {
     conn.execute("ALTER TABLE tasks ADD COLUMN project TEXT DEFAULT ''", [])?;
+    Ok(())
+}
 
-    // Add rate (real) column
+pub fn db_add_rate_column(conn: &Connection) -> Result<()> {
     conn.execute("ALTER TABLE tasks ADD COLUMN rate REAL DEFAULT 0.0", [])?;
-
     Ok(())
 }
 
