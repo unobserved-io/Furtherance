@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::fur_task::FurTask;
 use crate::style;
@@ -57,7 +57,7 @@ pub struct Furtherance {
     current_view: FurView,
     show_modal: bool,
     show_timer_start_picker: bool,
-    task_history: HashMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
+    task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
 }
 
 #[derive(Debug, Clone)]
@@ -84,7 +84,7 @@ impl Application for Furtherance {
 
         let furtherance = Furtherance {
             current_task_start_time: time_picker::Time::now_hm(true),
-            current_view: FurView::Timer,
+            current_view: FurView::History,
             show_modal: false,
             show_timer_start_picker: false,
             task_history: get_task_history(),
@@ -207,7 +207,7 @@ impl Application for Furtherance {
         // MARK: HISTORY
         let mut all_history_rows: Column<'_, Message, Theme, Renderer> =
             Column::new().spacing(8).padding(20);
-        for (date, task_groups) in &self.task_history {
+        for (date, task_groups) in self.task_history.iter().rev() {
             let total_time = task_groups
                 .iter()
                 .map(|group| group.total_time)
@@ -260,7 +260,26 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 }
 
 fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
-    Container::new(row![])
+    let mut task_details_column: Column<'_, Message, Theme, Renderer> =
+        column![text(&task_group.name),];
+    if !task_group.project.is_empty() {
+        task_details_column = task_details_column.push(text(format!("@{}", task_group.project)));
+    }
+    if !task_group.tags.is_empty() {
+        task_details_column = task_details_column.push(text(format!("#{}", task_group.tags)));
+    }
+
+    Container::new(
+        row![
+            task_details_column,
+            horizontal_space().width(Length::Fill),
+            text("00:00:00"),
+        ]
+        .align_items(Alignment::Center),
+    )
+    .padding([10, 15, 10, 15])
+    .width(Length::Fill)
+    .style(style::task_row)
 }
 
 fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> {
@@ -279,8 +298,8 @@ fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> 
     ]
 }
 
-fn get_task_history() -> HashMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
-    let mut grouped_tasks_by_date: HashMap<chrono::NaiveDate, Vec<FurTaskGroup>> = HashMap::new();
+fn get_task_history() -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
+    let mut grouped_tasks_by_date: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> = BTreeMap::new();
 
     //INFO : Change limit based on user limit or max limit. Also should limit by days not items.
     if let Ok(all_tasks) = db_retrieve_all(SortBy::StartTime, SortOrder::Descending) {
@@ -301,8 +320,8 @@ fn get_task_history() -> HashMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
     grouped_tasks_by_date
 }
 
-fn group_tasks_by_date(tasks: Vec<FurTask>) -> HashMap<chrono::NaiveDate, Vec<FurTask>> {
-    let mut grouped_tasks: HashMap<chrono::NaiveDate, Vec<FurTask>> = HashMap::new();
+fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<FurTask>> {
+    let mut grouped_tasks: BTreeMap<chrono::NaiveDate, Vec<FurTask>> = BTreeMap::new();
 
     for task in tasks {
         let date = task.start_time.date_naive(); // Extract the date part
