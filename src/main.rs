@@ -17,10 +17,12 @@
 mod app;
 mod constants;
 mod database;
-mod fur_shortcut;
-mod fur_task;
-mod fur_task_group;
-mod settings;
+mod models {
+    pub mod fur_settings;
+    pub mod fur_shortcut;
+    pub mod fur_task;
+    pub mod fur_task_group;
+}
 mod style;
 
 use app::Furtherance;

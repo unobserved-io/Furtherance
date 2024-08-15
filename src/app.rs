@@ -16,9 +16,11 @@
 
 use std::collections::BTreeMap;
 
-use crate::fur_task::FurTask;
 use crate::style;
-use crate::{database::*, fur_task_group::FurTaskGroup};
+use crate::{
+    database::*,
+    models::{fur_settings::FurSettings, fur_task::FurTask, fur_task_group::FurTaskGroup},
+};
 use chrono::Duration;
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use iced::widget::Row;
