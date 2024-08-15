@@ -15,4 +15,3 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub const VERSION: &str = "3.0.0";
-pub const APP_ID: &str = "io.unobserved.Furtherance";
