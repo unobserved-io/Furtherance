@@ -22,6 +22,7 @@ use crate::{database::*, fur_task_group::FurTaskGroup};
 use chrono::Duration;
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use iced::widget::Row;
+use iced::Color;
 use iced::{
     alignment, font, keyboard,
     multi_window::Application,
@@ -384,4 +385,12 @@ fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResul
     } else {
         LocalResult::None
     }
+}
+
+fn hex_to_color(hex: &str) -> Color {
+    let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
+    let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
+    let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+
+    Color::from_rgb8(r, g, b)
 }
