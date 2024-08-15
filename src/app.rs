@@ -78,19 +78,19 @@ impl Application for Furtherance {
 
     fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
         // Load or create database
-        // match db_init() {
-        //     Ok(_) => {}
-        //     Err(e) => eprintln!("Error loading database: {}", e),
-        // }
+        match db_init() {
+            Ok(_) => {}
+            Err(e) => eprintln!("Error loading database: {}", e),
+        }
         // Update old furtherance databases with new properties
-        // let _ = db_upgrade_old();
+        let _ = db_upgrade_old();
 
         let furtherance = Furtherance {
             current_task_start_time: time_picker::Time::now_hm(true),
             current_view: FurView::Timer,
             show_modal: false,
             show_timer_start_picker: false,
-            task_history: HashMap::new(), //get_task_history(),
+            task_history: get_task_history(),
         };
 
         (
