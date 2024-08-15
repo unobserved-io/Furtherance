@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::fur_task::FurTask;
+use crate::models::fur_task::FurTask;
 
 #[derive(Debug)]
 pub struct FurTaskGroup {
