@@ -15,13 +15,27 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use iced::widget::container;
-use iced::Theme;
+use iced::{Border, Color, Theme};
 
 pub fn gray_background(theme: &Theme) -> container::Appearance {
     let palette = theme.extended_palette();
 
     container::Appearance {
         background: Some(palette.background.weak.color.into()),
+        ..Default::default()
+    }
+}
+
+pub fn task_row(theme: &Theme) -> container::Appearance {
+    let palette = theme.extended_palette();
+
+    container::Appearance {
+        background: Some(palette.background.weak.color.into()),
+        border: Border {
+            color: Color::TRANSPARENT,
+            width: 0.0,
+            radius: 12.0.into(),
+        },
         ..Default::default()
     }
 }
