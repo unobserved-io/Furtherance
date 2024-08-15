@@ -19,6 +19,7 @@ use std::collections::BTreeMap;
 use crate::fur_task::FurTask;
 use crate::style;
 use crate::{database::*, fur_task_group::FurTaskGroup};
+use chrono::Duration;
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use iced::widget::Row;
 use iced::{
@@ -301,10 +302,33 @@ fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> 
     //     total_time_str = format!("{:02}:{:02}", h, m);
     // }
     row![
-        text(date.to_string()),
+        text(format_history_date(date)).font(font::Font {
+            weight: iced::font::Weight::Bold,
+            // ..font::Font::DEFAULT
+            ..Default::default()
+        }),
         horizontal_space().width(Length::Fill),
-        text(total_time_str), // TODO: Change to formatted hms
+        text(total_time_str).font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..font::Font::DEFAULT
+        }),
     ]
+}
+
+fn format_history_date(date: &NaiveDate) -> String {
+    let today = Local::now().date_naive();
+    let yesterday = today - Duration::days(1);
+    let current_year = today.year();
+
+    if date == &today {
+        "Today".to_string()
+    } else if date == &yesterday {
+        "Yesterday".to_string()
+    } else if date.year() == current_year {
+        date.format("%b %d").to_string()
+    } else {
+        date.format("%b %d, %Y").to_string()
+    }
 }
 
 fn get_task_history() -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
