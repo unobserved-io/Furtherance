@@ -78,10 +78,7 @@ impl Application for Furtherance {
 
     fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
         // Load or create database
-        match db_init() {
-            Ok(_) => {}
-            Err(e) => eprintln!("Error loading database: {}", e),
-        }
+        let _ = db_init();
         // Update old furtherance databases with new properties
         let _ = db_upgrade_old();
 
@@ -205,11 +202,11 @@ impl Application for Furtherance {
             vertical_space().height(Length::Fill),
         ]
         .align_items(Alignment::Center)
-        .padding(15);
+        .padding(20);
 
         // MARK: HISTORY
         let mut all_history_rows: Column<'_, Message, Theme, Renderer> =
-            Column::new().spacing(8).padding([0, 0, 0, 10]);
+            Column::new().spacing(8).padding(20);
         for (date, task_groups) in &self.task_history {
             let total_time = task_groups
                 .iter()
