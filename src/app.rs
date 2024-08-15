@@ -284,6 +284,8 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
             task_details_column,
             horizontal_space().width(Length::Fill),
             text(total_time_str),
+            button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+                .style(theme::Button::Text),
         ]
         .align_items(Alignment::Center),
     )
