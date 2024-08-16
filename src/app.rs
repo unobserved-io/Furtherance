@@ -41,6 +41,7 @@ use iced_aw::{
     time_picker::{self, Period},
     Card, Modal, TimePicker,
 };
+use tokio::time;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum FurView {
@@ -59,6 +60,10 @@ impl Default for FurView {
 pub struct Furtherance {
     current_task_start_time: time_picker::Time,
     current_view: FurView,
+    timer_is_running: bool,
+    timer_start_time: DateTime<Local>,
+    timer_stop_time: Option<DateTime<Local>>,
+    timer_text: String,
     show_modal: bool,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
@@ -71,6 +76,8 @@ pub enum Message {
     NavigateTo(FurView),
     CancelCurrentTaskStartTime,
     ChooseCurrentTaskStartTime,
+    StartStopPressed,
+    StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
 }
 
@@ -88,7 +95,11 @@ impl Application for Furtherance {
 
         let furtherance = Furtherance {
             current_task_start_time: time_picker::Time::now_hm(true),
-            current_view: FurView::History,
+            current_view: FurView::Timer,
+            timer_is_running: false,
+            timer_start_time: Local::now(),
+            timer_stop_time: None,
+            timer_text: "0:00:00".to_string(),
             show_modal: false,
             show_timer_start_picker: false,
             task_history: get_task_history(),
@@ -126,6 +137,31 @@ impl Application for Furtherance {
             Message::NavigateTo(destination) => {
                 self.current_view = destination;
                 Command::none()
+            }
+            Message::StartStopPressed => {
+                if self.timer_is_running {
+                    // Stop & reset timer
+                    self.timer_text = "0:00:00".to_string();
+                    Command::none()
+                } else {
+                    // Start timer
+                    self.timer_start_time = Local::now();
+                    self.timer_is_running = true;
+                    Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                }
+            }
+            Message::StopwatchTick => {
+                if self.timer_is_running {
+                    let duration = Local::now().signed_duration_since(self.timer_start_time);
+                    let hours = duration.num_hours();
+                    let minutes = duration.num_minutes() % 60;
+                    let seconds = duration.num_seconds() % 60;
+                    self.timer_text = format!("{}:{:02}:{:02}", hours, minutes, seconds);
+
+                    Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                } else {
+                    Command::none()
+                }
             }
             Message::SubmitCurrentTaskStartTime(new_time) => {
                 match convert_iced_time_to_chrono_local(new_time) {
@@ -175,7 +211,7 @@ impl Application for Furtherance {
                 text(format!("Recorded today: {}", "0:00"))
             ],
             vertical_space().height(Length::Fill),
-            text("0:00:00").size(80),
+            text(&self.timer_text).size(80),
             column![
                 row![
                     text_input("", "").size(20),
@@ -184,6 +220,7 @@ impl Application for Furtherance {
                         bootstrap::icon_to_text(bootstrap::Bootstrap::PlayFill).size(20),
                         horizontal_space().width(Length::Fixed(5.0)),
                     ])
+                    .on_press(Message::StartStopPressed)
                 ]
                 .spacing(10),
                 row![TimePicker::new(
@@ -395,4 +432,8 @@ fn hex_to_color(hex: &str) -> Color {
     let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
 
     Color::from_rgb8(r, g, b)
+}
+
+async fn get_timer_duration() {
+    time::sleep(time::Duration::from_secs(1)).await;
 }

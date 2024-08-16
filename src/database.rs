@@ -21,7 +21,7 @@ use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::{fur_task::FurTask, settings::FurSettings};
+use crate::models::{fur_settings::FurSettings, fur_task::FurTask};
 
 #[derive(Debug)]
 pub enum SortOrder {
