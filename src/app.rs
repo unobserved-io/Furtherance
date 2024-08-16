@@ -147,7 +147,10 @@ impl Application for Furtherance {
                     // Stop & reset timer
                     self.timer_stop_time = Local::now();
                     self.timer_is_running = false;
-                    if let Some((name, project, tags, rate)) = split_task_input(&self.task_input) {
+                    let (name, project, tags, rate) = split_task_input(&self.task_input);
+                    if name.is_empty() {
+                        // TODO show name is empty error
+                    } else {
                         db_write(FurTask {
                             id: 1, // Not used
                             name,
@@ -158,16 +161,19 @@ impl Application for Furtherance {
                             rate,
                         })
                         .expect("Couldn't write task to database.");
-                    } else {
-                        // TODO: Show error about task_input
                     }
                     self.timer_text = "0:00:00".to_string();
                     Command::none()
                 } else {
-                    // Start timer
-                    self.timer_start_time = Local::now();
-                    self.timer_is_running = true;
-                    Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                    let (name, project, tags, rate) = split_task_input(&self.task_input);
+                    if name.is_empty() {
+                        // TODO show name is empty error
+                        Command::none()
+                    } else {
+                        self.timer_start_time = Local::now();
+                        self.timer_is_running = true;
+                        Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                    }
                 }
             }
             Message::StopwatchTick => {
@@ -198,7 +204,11 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::TaskInputChanged(value) => {
-                self.task_input = value;
+                if value.chars().filter(|&c| c == '@').count() < 2
+                    && value.chars().filter(|&c| c == '$').count() < 2
+                {
+                    self.task_input = value;
+                }
                 Command::none()
             }
         }
@@ -464,37 +474,33 @@ async fn get_timer_duration() {
     time::sleep(time::Duration::from_secs(1)).await;
 }
 
-pub fn split_task_input(input: &str) -> Option<(String, String, String, f32)> {
-    if !input.trim().is_empty() {
-        let re_name = Regex::new(r"^[^@#$]+").unwrap();
-        let re_project = Regex::new(r"@([^#\$]+)").unwrap();
-        let re_tags = Regex::new(r"#([^@#$]+)").unwrap();
-        let re_rate = Regex::new(r"\$([^\s]+)").unwrap();
+pub fn split_task_input(input: &str) -> (String, String, String, f32) {
+    let re_name = Regex::new(r"^[^@#$]+").unwrap();
+    let re_project = Regex::new(r"@([^#\$]+)").unwrap();
+    let re_tags = Regex::new(r"#([^@#$]+)").unwrap();
+    let re_rate = Regex::new(r"\$([^\s]+)").unwrap();
 
-        let name = re_name
-            .find(input)
-            .map_or("", |m| m.as_str().trim())
-            .to_string();
+    let name = re_name
+        .find(input)
+        .map_or("", |m| m.as_str().trim())
+        .to_string();
 
-        let project = re_project
-            .captures(input)
-            .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
-            .unwrap_or(String::new());
+    let project = re_project
+        .captures(input)
+        .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
+        .unwrap_or(String::new());
 
-        let separated_tags: Vec<String> = re_tags
-            .captures_iter(input)
-            .map(|cap| cap.get(1).unwrap().as_str().trim().to_string())
-            .collect();
-        let tags = separated_tags.join(" #");
+    let separated_tags: Vec<String> = re_tags
+        .captures_iter(input)
+        .map(|cap| cap.get(1).unwrap().as_str().trim().to_string())
+        .collect();
+    let tags = separated_tags.join(" #");
 
-        let rate_string = re_rate
-            .captures(input)
-            .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
-            .unwrap_or("0.0".to_string());
-        let rate: f32 = rate_string.parse().unwrap_or(0.0);
+    let rate_string = re_rate
+        .captures(input)
+        .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
+        .unwrap_or("0.0".to_string());
+    let rate: f32 = rate_string.parse().unwrap_or(0.0);
 
-        Some((name, project, tags, rate))
-    } else {
-        None
-    }
+    (name, project, tags, rate)
 }
