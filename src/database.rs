@@ -123,7 +123,7 @@ pub fn db_add_rate_column(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-pub fn db_write(fur_task: &FurTask) -> Result<()> {
+pub fn db_write(fur_task: FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(

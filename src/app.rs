@@ -41,6 +41,7 @@ use iced_aw::{
     time_picker::{self, Period},
     Card, Modal, TimePicker,
 };
+use regex::Regex;
 use tokio::time;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -58,15 +59,16 @@ impl Default for FurView {
 }
 
 pub struct Furtherance {
-    current_task_start_time: time_picker::Time,
     current_view: FurView,
+    displayed_task_start_time: time_picker::Time,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
-    timer_stop_time: Option<DateTime<Local>>,
+    timer_stop_time: DateTime<Local>,
     timer_text: String,
     show_modal: bool,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
+    task_input: String,
 }
 
 #[derive(Debug, Clone)]
@@ -79,6 +81,7 @@ pub enum Message {
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
+    TaskInputChanged(String),
 }
 
 impl Application for Furtherance {
@@ -94,15 +97,16 @@ impl Application for Furtherance {
         let _ = db_upgrade_old();
 
         let furtherance = Furtherance {
-            current_task_start_time: time_picker::Time::now_hm(true),
+            displayed_task_start_time: time_picker::Time::now_hm(true),
             current_view: FurView::Timer,
             timer_is_running: false,
             timer_start_time: Local::now(),
-            timer_stop_time: None,
+            timer_stop_time: Local::now(),
             timer_text: "0:00:00".to_string(),
             show_modal: false,
             show_timer_start_picker: false,
             task_history: get_task_history(),
+            task_input: "".to_string(),
         };
 
         (
@@ -141,6 +145,22 @@ impl Application for Furtherance {
             Message::StartStopPressed => {
                 if self.timer_is_running {
                     // Stop & reset timer
+                    self.timer_stop_time = Local::now();
+                    self.timer_is_running = false;
+                    if let Some((name, project, tags, rate)) = split_task_input(&self.task_input) {
+                        db_write(FurTask {
+                            id: 1, // Not used
+                            name,
+                            start_time: self.timer_start_time,
+                            stop_time: self.timer_stop_time,
+                            tags,
+                            project,
+                            rate,
+                        })
+                        .expect("Couldn't write task to database.");
+                    } else {
+                        // TODO: Show error about task_input
+                    }
                     self.timer_text = "0:00:00".to_string();
                     Command::none()
                 } else {
@@ -167,7 +187,7 @@ impl Application for Furtherance {
                 match convert_iced_time_to_chrono_local(new_time) {
                     LocalResult::Single(local_time) => {
                         // TODO: Update start time for stopwatch to local_time
-                        self.current_task_start_time = new_time;
+                        self.displayed_task_start_time = new_time;
                         self.show_timer_start_picker = false;
                     }
                     _ => {
@@ -175,6 +195,10 @@ impl Application for Furtherance {
                         eprintln!("Error converting chosen time to local time.");
                     }
                 }
+                Command::none()
+            }
+            Message::TaskInputChanged(value) => {
+                self.task_input = value;
                 Command::none()
             }
         }
@@ -214,7 +238,9 @@ impl Application for Furtherance {
             text(&self.timer_text).size(80),
             column![
                 row![
-                    text_input("", "").size(20),
+                    text_input("Task name @Project #tags $rate", &self.task_input)
+                        .on_input(Message::TaskInputChanged)
+                        .size(20),
                     button(row![
                         horizontal_space().width(Length::Fixed(5.0)),
                         bootstrap::icon_to_text(bootstrap::Bootstrap::PlayFill).size(20),
@@ -225,10 +251,10 @@ impl Application for Furtherance {
                 .spacing(10),
                 row![TimePicker::new(
                     self.show_timer_start_picker,
-                    self.current_task_start_time,
+                    self.displayed_task_start_time,
                     Button::new(text(format!(
                         "Started at {}",
-                        self.current_task_start_time.to_string()
+                        self.displayed_task_start_time.to_string()
                     )))
                     .on_press(Message::ChooseCurrentTaskStartTime),
                     Message::CancelCurrentTaskStartTime,
@@ -436,4 +462,39 @@ fn hex_to_color(hex: &str) -> Color {
 
 async fn get_timer_duration() {
     time::sleep(time::Duration::from_secs(1)).await;
+}
+
+pub fn split_task_input(input: &str) -> Option<(String, String, String, f32)> {
+    if !input.trim().is_empty() {
+        let re_name = Regex::new(r"^[^@#$]+").unwrap();
+        let re_project = Regex::new(r"@([^#\$]+)").unwrap();
+        let re_tags = Regex::new(r"#([^@#$]+)").unwrap();
+        let re_rate = Regex::new(r"\$([^\s]+)").unwrap();
+
+        let name = re_name
+            .find(input)
+            .map_or("", |m| m.as_str().trim())
+            .to_string();
+
+        let project = re_project
+            .captures(input)
+            .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
+            .unwrap_or(String::new());
+
+        let separated_tags: Vec<String> = re_tags
+            .captures_iter(input)
+            .map(|cap| cap.get(1).unwrap().as_str().trim().to_string())
+            .collect();
+        let tags = separated_tags.join(" #");
+
+        let rate_string = re_rate
+            .captures(input)
+            .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
+            .unwrap_or("0.0".to_string());
+        let rate: f32 = rate_string.parse().unwrap_or(0.0);
+
+        Some((name, project, tags, rate))
+    } else {
+        None
+    }
 }
