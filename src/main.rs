@@ -24,6 +24,9 @@ mod models {
     pub mod fur_task_group;
 }
 mod style;
+mod tests {
+    mod timer_tests;
+}
 
 use app::Furtherance;
 use iced::{multi_window::Application, window, Settings, Size};
