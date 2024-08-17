@@ -176,6 +176,7 @@ impl Application for Furtherance {
                     self.timer_text = "0:00:00".to_string();
                     Command::none()
                 } else {
+                    // TODO: This should not be necessary - logic is in task_input text input
                     let (name, _, _, _) = split_task_input(&self.task_input);
                     if name.is_empty() {
                         self.displayed_alert = Some(FurAlert::TaskNameEmpty);
