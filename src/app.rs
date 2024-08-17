@@ -156,23 +156,21 @@ impl Application for Furtherance {
                     // Stop & reset timer
                     self.timer_stop_time = Local::now();
                     self.timer_is_running = false;
+
                     let (name, project, tags, rate) = split_task_input(&self.task_input);
-                    if name.is_empty() {
-                        // TODO show name is empty error
-                    } else {
-                        db_write(FurTask {
-                            id: 1, // Not used
-                            name,
-                            start_time: self.timer_start_time,
-                            stop_time: self.timer_stop_time,
-                            tags,
-                            project,
-                            rate,
-                        })
-                        .expect("Couldn't write task to database.");
-                        self.task_input = "".to_string();
-                        self.task_history = get_task_history();
-                    }
+                    db_write(FurTask {
+                        id: 1, // Not used
+                        name,
+                        start_time: self.timer_start_time,
+                        stop_time: self.timer_stop_time,
+                        tags,
+                        project,
+                        rate,
+                    })
+                    .expect("Couldn't write task to database.");
+
+                    self.task_input = "".to_string();
+                    self.task_history = get_task_history();
                     self.timer_text = "0:00:00".to_string();
                     Command::none()
                 } else {
