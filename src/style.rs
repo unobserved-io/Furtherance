@@ -53,5 +53,3 @@ pub fn group_count_circle(theme: &Theme) -> container::Appearance {
         ..Default::default()
     }
 }
-
-// pub fn primary_btn(theme: &Theme) -> button::Appearance {}
