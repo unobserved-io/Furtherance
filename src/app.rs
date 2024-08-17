@@ -371,10 +371,7 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 }
 
 fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
-    let h = task_group.total_time / 3600;
-    let m = task_group.total_time % 3600 / 60;
-    let s = task_group.total_time % 60;
-    let total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+    let total_time_str = seconds_to_hms(task_group.total_time);
     // TODO: Change formatting if not showing seconds
     // if !show_seconds {
     //     total_time_str = format!("{:02}:{:02}", h, m);
@@ -405,10 +402,7 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
 }
 
 fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> {
-    let h = total_time / 3600;
-    let m = total_time % 3600 / 60;
-    let s = total_time % 60;
-    let total_time_str = format!("{:02}:{:02}:{:02}", h, m, s);
+    let total_time_str = seconds_to_hms(total_time);
     // TODO: Change formatting if not showing seconds
     // if !show_seconds {
     //     total_time_str = format!("{:02}:{:02}", h, m);
@@ -537,4 +531,17 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
     let rate: f32 = rate_string.parse().unwrap_or(0.0);
 
     (name, project, tags, rate)
+}
+
+fn seconds_to_hms(total_seconds: i64) -> String {
+    let h = total_seconds / 3600;
+    let m = total_seconds % 3600 / 60;
+    let s = total_seconds % 60;
+    format!("{:02}:{:02}:{:02}", h, m, s)
+}
+
+fn seconds_to_hm(total_seconds: i64) -> String {
+    let h = total_seconds / 3600;
+    let m = total_seconds % 3600 / 60;
+    format!("{:02}:{:02}", h, m)
 }
