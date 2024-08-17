@@ -39,3 +39,17 @@ pub fn task_row(theme: &Theme) -> container::Appearance {
         ..Default::default()
     }
 }
+
+pub fn group_count_circle(theme: &Theme) -> container::Appearance {
+    let palette = theme.extended_palette();
+
+    container::Appearance {
+        background: Some(palette.background.strong.color.into()),
+        border: Border {
+            color: Color::TRANSPARENT,
+            width: 0.0,
+            radius: 50.0.into(),
+        },
+        ..Default::default()
+    }
+}

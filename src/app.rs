@@ -394,19 +394,28 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
         task_details_column = task_details_column.push(text(format!("#{}", task_group.tags)));
     }
 
-    Container::new(
-        row![
-            task_details_column,
-            horizontal_space().width(Length::Fill),
-            text(total_time_str),
-            button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
-                .style(theme::Button::Text),
-        ]
-        .align_items(Alignment::Center),
-    )
-    .padding([10, 15, 10, 15])
-    .width(Length::Fill)
-    .style(style::task_row)
+    let mut task_row: Row<'_, Message, Theme, Renderer> =
+        row![].align_items(Alignment::Center).spacing(5);
+    if task_group.tasks.len() > 1 {
+        task_row = task_row.push(
+            Container::new(text(task_group.tasks.len()))
+                .align_x(alignment::Horizontal::Center)
+                .width(30)
+                .style(style::group_count_circle),
+        );
+    }
+    task_row = task_row.push(task_details_column);
+    task_row = task_row.push(horizontal_space().width(Length::Fill));
+    task_row = task_row.push(text(total_time_str));
+    task_row = task_row.push(
+        button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+            .style(theme::Button::Text),
+    );
+
+    Container::new(task_row)
+        .padding([10, 15, 10, 15])
+        .width(Length::Fill)
+        .style(style::task_row)
 }
 
 fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> {
