@@ -78,6 +78,7 @@ pub enum Message {
     NavigateTo(FurView),
     CancelCurrentTaskStartTime,
     ChooseCurrentTaskStartTime,
+    RepeatLastTaskPressed(String),
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
@@ -145,6 +146,10 @@ impl Application for Furtherance {
                 self.current_view = destination;
                 Command::none()
             }
+            Message::RepeatLastTaskPressed(last_task_input) => {
+                self.task_input = last_task_input;
+                Command::perform(async { Message::StartStopPressed }, |msg| msg)
+            }
             Message::StartStopPressed => {
                 if self.timer_is_running {
                     // Stop & reset timer
@@ -207,14 +212,14 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
-            Message::TaskInputChanged(value) => {
-                if value.chars().next() != Some('@')
-                    && value.chars().next() != Some('#')
-                    && value.chars().next() != Some('$')
-                    && value.chars().filter(|&c| c == '@').count() < 2
-                    && value.chars().filter(|&c| c == '$').count() < 2
+            Message::TaskInputChanged(new_value) => {
+                if new_value.chars().next() != Some('@')
+                    && new_value.chars().next() != Some('#')
+                    && new_value.chars().next() != Some('$')
+                    && new_value.chars().filter(|&c| c == '@').count() < 2
+                    && new_value.chars().filter(|&c| c == '$').count() < 2
                 {
-                    self.task_input = value;
+                    self.task_input = new_value;
                 }
                 Command::none()
             }
@@ -247,6 +252,7 @@ impl Application for Furtherance {
         let timer_view = column![
             row![
                 button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+                    .on_press_maybe(get_last_task_input(&self))
                     .style(theme::Button::Text),
                 horizontal_space().width(Length::Fill),
                 text(format!("Recorded today: {}", get_todays_total_time(&self)))
@@ -532,6 +538,33 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
     let rate: f32 = rate_string.parse().unwrap_or(0.0);
 
     (name, project, tags, rate)
+}
+
+fn get_last_task_input(state: &Furtherance) -> Option<Message> {
+    let today = Local::now().date_naive();
+    if let Some(groups) = state.task_history.get(&today) {
+        if let Some(last_task) = groups.first() {
+            let mut task_input_builder = last_task.name.to_string();
+
+            if !last_task.project.is_empty() {
+                task_input_builder += &format!(" @{}", last_task.project);
+            }
+
+            if !last_task.tags.is_empty() {
+                task_input_builder += &format!(" #{}", last_task.tags);
+            }
+
+            if last_task.rate != 0.0 {
+                task_input_builder += &format!(" ${}", last_task.rate);
+            }
+
+            Some(Message::RepeatLastTaskPressed(task_input_builder))
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }
 
 fn get_todays_total_time(state: &Furtherance) -> String {
