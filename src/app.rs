@@ -467,8 +467,8 @@ fn format_history_date(date: &NaiveDate) -> String {
 fn get_task_history() -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
     let mut grouped_tasks_by_date: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> = BTreeMap::new();
 
-    //INFO : Change limit based on user limit or max limit. Also should limit by days not items.
-    if let Ok(all_tasks) = db_retrieve_all(SortBy::StartTime, SortOrder::Descending) {
+    //TODO : Change limit based on user limit or max limit. Also should limit by days not items.
+    if let Ok(all_tasks) = db_retrieve_all(SortBy::StopTime, SortOrder::Descending) {
         let tasks_by_date = group_tasks_by_date(all_tasks);
 
         for (date, tasks) in tasks_by_date {
