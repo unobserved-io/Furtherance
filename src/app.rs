@@ -203,9 +203,11 @@ impl Application for Furtherance {
             Message::SubmitCurrentTaskStartTime(new_time) => {
                 match convert_iced_time_to_chrono_local(new_time) {
                     LocalResult::Single(local_time) => {
-                        // TODO: Update start time for stopwatch to local_time
-                        self.displayed_task_start_time = new_time;
-                        self.show_timer_start_picker = false;
+                        if local_time <= Local::now() {
+                            self.displayed_task_start_time = new_time;
+                            self.timer_start_time = local_time;
+                            self.show_timer_start_picker = false;
+                        }
                     }
                     _ => {
                         self.show_timer_start_picker = false;
