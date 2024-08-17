@@ -148,6 +148,7 @@ impl Application for Furtherance {
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
                 self.task_input = last_task_input;
+                self.current_view = FurView::Timer;
                 Command::perform(async { Message::StartStopPressed }, |msg| msg)
             }
             Message::StartStopPressed => {
@@ -409,6 +410,9 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
     task_row = task_row.push(text(total_time_str));
     task_row = task_row.push(
         button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+            .on_press(Message::RepeatLastTaskPressed(task_input_builder(
+                task_group,
+            )))
             .style(theme::Button::Text),
     );
 
@@ -554,20 +558,7 @@ fn get_last_task_input(state: &Furtherance) -> Option<Message> {
     let today = Local::now().date_naive();
     if let Some(groups) = state.task_history.get(&today) {
         if let Some(last_task) = groups.first() {
-            let mut task_input_builder = last_task.name.to_string();
-
-            if !last_task.project.is_empty() {
-                task_input_builder += &format!(" @{}", last_task.project);
-            }
-
-            if !last_task.tags.is_empty() {
-                task_input_builder += &format!(" #{}", last_task.tags);
-            }
-
-            if last_task.rate != 0.0 {
-                task_input_builder += &format!(" ${}", last_task.rate);
-            }
-
+            let task_input_builder = task_input_builder(last_task);
             Some(Message::RepeatLastTaskPressed(task_input_builder))
         } else {
             None
@@ -575,6 +566,24 @@ fn get_last_task_input(state: &Furtherance) -> Option<Message> {
     } else {
         None
     }
+}
+
+fn task_input_builder(task_group: &FurTaskGroup) -> String {
+    let mut task_input_builder = task_group.name.to_string();
+
+    if !task_group.project.is_empty() {
+        task_input_builder += &format!(" @{}", task_group.project);
+    }
+
+    if !task_group.tags.is_empty() {
+        task_input_builder += &format!(" #{}", task_group.tags);
+    }
+
+    if task_group.rate != 0.0 {
+        task_input_builder += &format!(" ${}", task_group.rate);
+    }
+
+    task_input_builder
 }
 
 fn get_todays_total_time(state: &Furtherance) -> String {
