@@ -52,29 +52,30 @@ pub enum FurView {
     Report,
     Settings,
 }
-impl Default for FurView {
-    fn default() -> Self {
-        FurView::Timer
-    }
+
+#[derive(Debug)]
+pub enum FurAlert {
+    TaskNameEmpty,
 }
 
 pub struct Furtherance {
     current_view: FurView,
+    displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
-    timer_is_running: bool,
-    timer_start_time: DateTime<Local>,
-    timer_stop_time: DateTime<Local>,
-    timer_text: String,
     show_modal: bool,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
+    timer_is_running: bool,
+    timer_start_time: DateTime<Local>,
+    timer_stop_time: DateTime<Local>,
+    timer_text: String,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     FontLoaded(Result<(), font::Error>),
-    ModalClose,
+    AlertClose,
     NavigateTo(FurView),
     CancelCurrentTaskStartTime,
     ChooseCurrentTaskStartTime,
@@ -97,16 +98,17 @@ impl Application for Furtherance {
         let _ = db_upgrade_old();
 
         let furtherance = Furtherance {
-            displayed_task_start_time: time_picker::Time::now_hm(true),
             current_view: FurView::Timer,
-            timer_is_running: false,
-            timer_start_time: Local::now(),
-            timer_stop_time: Local::now(),
-            timer_text: "0:00:00".to_string(),
+            displayed_alert: None,
+            displayed_task_start_time: time_picker::Time::now_hm(true),
             show_modal: false,
             show_timer_start_picker: false,
             task_history: get_task_history(),
             task_input: "".to_string(),
+            timer_is_running: false,
+            timer_start_time: Local::now(),
+            timer_stop_time: Local::now(),
+            timer_text: "0:00:00".to_string(),
         };
 
         (
@@ -137,7 +139,7 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::FontLoaded(_) => Command::none(),
-            Message::ModalClose => Command::none(),
+            Message::AlertClose => Command::none(),
             Message::NavigateTo(destination) => {
                 self.current_view = destination;
                 Command::none()
@@ -316,19 +318,43 @@ impl Application for Furtherance {
             },
         ];
 
-        let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.show_modal {
+        let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
+        {
+            let alert_text: &str;
+            let alert_description: &str;
+            let close_button_text: &str;
+
+            match self.displayed_alert.as_ref().unwrap() {
+                FurAlert::TaskNameEmpty => {
+                    alert_text = "Empty Task Name";
+                    alert_description = "Every task must have a name";
+                    close_button_text = "OK";
+                }
+            }
+
+            let buttons: Row<'_, Message, Theme, Renderer> = row![button(
+                text(close_button_text)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .width(Length::Fill)
+            )
+            .on_press(Message::AlertClose)]
+            .spacing(10)
+            .padding(5)
+            .width(Length::Fill);
+
             Some(
-                Card::new(text("Title:"), text("Description")),
-                // .foot(
-                // )
+                Card::new(text(alert_text), text(alert_description))
+                    .foot(buttons)
+                    .max_width(300.0)
+                    .on_close(Message::AlertClose),
             )
         } else {
             None
         };
 
         modal(content, overlay)
-            .backdrop(Message::ModalClose)
-            .on_esc(Message::ModalClose)
+            .backdrop(Message::AlertClose)
+            .on_esc(Message::AlertClose)
             .into()
     }
 }
