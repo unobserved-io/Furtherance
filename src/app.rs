@@ -248,7 +248,7 @@ impl Application for Furtherance {
                 button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
                     .style(theme::Button::Text),
                 horizontal_space().width(Length::Fill),
-                text(format!("Recorded today: {}", "0:00"))
+                text(format!("Recorded today: {}", get_todays_total_time(&self)))
             ],
             vertical_space().height(Length::Fill),
             text(&self.timer_text).size(80),
@@ -371,7 +371,7 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 }
 
 fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
-    let total_time_str = seconds_to_hms(task_group.total_time);
+    let total_time_str = seconds_to_formatted_duration(task_group.total_time);
     // TODO: Change formatting if not showing seconds
     // if !show_seconds {
     //     total_time_str = format!("{:02}:{:02}", h, m);
@@ -402,7 +402,7 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
 }
 
 fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> {
-    let total_time_str = seconds_to_hms(total_time);
+    let total_time_str = seconds_to_formatted_duration(total_time);
     // TODO: Change formatting if not showing seconds
     // if !show_seconds {
     //     total_time_str = format!("{:02}:{:02}", h, m);
@@ -533,15 +533,31 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
     (name, project, tags, rate)
 }
 
+fn get_todays_total_time(state: &Furtherance) -> String {
+    let today = Local::now().date_naive();
+    let total_seconds: i64 = if let Some(groups) = state.task_history.get(&today) {
+        groups.iter().map(|group| group.total_time).sum()
+    } else {
+        0
+    };
+    seconds_to_formatted_duration(total_seconds)
+}
+
+fn seconds_to_formatted_duration(total_seconds: i64) -> String {
+    seconds_to_hms(total_seconds)
+    // TODO: If don't show seconds:
+    // seconds_to_hm(total_seconds)
+}
+
 fn seconds_to_hms(total_seconds: i64) -> String {
     let h = total_seconds / 3600;
     let m = total_seconds % 3600 / 60;
     let s = total_seconds % 60;
-    format!("{:02}:{:02}:{:02}", h, m, s)
+    format!("{}:{:02}:{:02}", h, m, s)
 }
 
 fn seconds_to_hm(total_seconds: i64) -> String {
     let h = total_seconds / 3600;
     let m = total_seconds % 3600 / 60;
-    format!("{:02}:{:02}", h, m)
+    format!("{}:{:02}", h, m)
 }
