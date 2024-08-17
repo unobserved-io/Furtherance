@@ -481,7 +481,7 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
     let re_name = Regex::new(r"^[^@#$]+").unwrap();
     let re_project = Regex::new(r"@([^#\$]+)").unwrap();
     let re_tags = Regex::new(r"#([^@#$]+)").unwrap();
-    let re_rate = Regex::new(r"\$([^\s]+)").unwrap();
+    let re_rate = Regex::new(r"\$([^@#$]+)").unwrap();
 
     let name = re_name
         .find(input)

@@ -89,4 +89,16 @@ mod timer_tests {
         );
         assert_eq!(split_task_input(input), expected);
     }
+
+    #[test]
+    fn test_split_task_input_extra_space() {
+        let input = "      Extra      Space     @   Proj   #    tag     1       #        tag2     $      6.00    ";
+        let expected = (
+            "Extra      Space".to_string(),
+            "Proj".to_string(),
+            "tag     1 #tag2".to_string(),
+            6.0,
+        );
+        assert_eq!(split_task_input(input), expected);
+    }
 }
