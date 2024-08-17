@@ -288,6 +288,7 @@ impl Application for Furtherance {
                             "Started at {}",
                             self.displayed_task_start_time.to_string()
                         )))
+                        .style(theme::Button::Text)
                         .on_press(Message::ChooseCurrentTaskStartTime),
                         Message::CancelCurrentTaskStartTime,
                         Message::SubmitCurrentTaskStartTime,
