@@ -62,7 +62,6 @@ pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
-    show_modal: bool,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
@@ -101,7 +100,6 @@ impl Application for Furtherance {
             current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
-            show_modal: false,
             show_timer_start_picker: false,
             task_history: get_task_history(),
             task_input: "".to_string(),
@@ -130,6 +128,10 @@ impl Application for Furtherance {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::AlertClose => {
+                self.displayed_alert = None;
+                Command::none()
+            }
             Message::CancelCurrentTaskStartTime => {
                 self.show_timer_start_picker = false;
                 Command::none()
@@ -139,7 +141,6 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::FontLoaded(_) => Command::none(),
-            Message::AlertClose => Command::none(),
             Message::NavigateTo(destination) => {
                 self.current_view = destination;
                 Command::none()
@@ -169,7 +170,7 @@ impl Application for Furtherance {
                 } else {
                     let (name, project, tags, rate) = split_task_input(&self.task_input);
                     if name.is_empty() {
-                        // TODO show name is empty error
+                        self.displayed_alert = Some(FurAlert::TaskNameEmpty);
                         Command::none()
                     } else {
                         self.timer_start_time = Local::now();
@@ -327,7 +328,7 @@ impl Application for Furtherance {
             match self.displayed_alert.as_ref().unwrap() {
                 FurAlert::TaskNameEmpty => {
                     alert_text = "Empty Task Name";
-                    alert_description = "Every task must have a name";
+                    alert_description = "The task must have a name.";
                     close_button_text = "OK";
                 }
             }
