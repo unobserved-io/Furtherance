@@ -278,20 +278,24 @@ impl Application for Furtherance {
                     .on_press(Message::StartStopPressed)
                 ]
                 .spacing(10),
-                row![TimePicker::new(
-                    self.show_timer_start_picker,
-                    self.displayed_task_start_time,
-                    Button::new(text(format!(
-                        "Started at {}",
-                        self.displayed_task_start_time.to_string()
-                    )))
-                    .on_press(Message::ChooseCurrentTaskStartTime),
-                    Message::CancelCurrentTaskStartTime,
-                    Message::SubmitCurrentTaskStartTime,
-                )
-                .use_24h(),]
-                .align_items(Alignment::Center)
-                .spacing(10),
+                if self.timer_is_running {
+                    row![TimePicker::new(
+                        self.show_timer_start_picker,
+                        self.displayed_task_start_time,
+                        Button::new(text(format!(
+                            "Started at {}",
+                            self.displayed_task_start_time.to_string()
+                        )))
+                        .on_press(Message::ChooseCurrentTaskStartTime),
+                        Message::CancelCurrentTaskStartTime,
+                        Message::SubmitCurrentTaskStartTime,
+                    )
+                    .use_24h(),]
+                    .align_items(Alignment::Center)
+                    .spacing(10)
+                } else {
+                    row![button("").style(theme::Button::Text)] // Button to match height
+                },
             ]
             .align_items(Alignment::Center)
             .spacing(15),
