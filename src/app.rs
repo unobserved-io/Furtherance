@@ -169,6 +169,7 @@ impl Application for Furtherance {
                             rate,
                         })
                         .expect("Couldn't write task to database.");
+                        self.task_input = "".to_string();
                         self.task_history = get_task_history();
                     }
                     self.timer_text = "0:00:00".to_string();
