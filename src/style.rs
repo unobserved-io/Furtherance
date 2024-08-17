@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use iced::widget::container;
+use iced::widget::{button, container};
 use iced::{Border, Color, Theme};
 
 pub fn gray_background(theme: &Theme) -> container::Appearance {
@@ -53,3 +53,5 @@ pub fn group_count_circle(theme: &Theme) -> container::Appearance {
         ..Default::default()
     }
 }
+
+// pub fn primary_btn(theme: &Theme) -> button::Appearance {}
