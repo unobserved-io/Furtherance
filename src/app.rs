@@ -217,13 +217,49 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::TaskInputChanged(new_value) => {
-                if new_value.chars().next() != Some('@')
-                    && new_value.chars().next() != Some('#')
-                    && new_value.chars().next() != Some('$')
-                    && new_value.chars().filter(|&c| c == '@').count() < 2
-                    && new_value.chars().filter(|&c| c == '$').count() < 2
+                // Handle all possible task input checks here rather than on start/stop press
+                let new_value_trimmed = new_value.trim_start();
+                // Doesn't start with @
+                if new_value_trimmed.chars().next() != Some('@')
+                    // Doesn't start with #
+                    && new_value_trimmed.chars().next() != Some('#')
+                    // Doesn't start with $
+                    && new_value_trimmed.chars().next() != Some('$')
+                    // No more than 1 @
+                    && new_value_trimmed.chars().filter(|&c| c == '@').count() < 2
+                    // No more than 1 $
+                    && new_value_trimmed.chars().filter(|&c| c == '$').count() < 2
                 {
-                    self.task_input = new_value;
+                    // Check if there is a $ and the subsequent part is a parseable f32
+                    if let Some(dollar_index) = new_value_trimmed.find('$') {
+                        let after_dollar = &new_value_trimmed[dollar_index + 1..];
+                        if after_dollar.is_empty() {
+                            // Allow typing the $ in the first place
+                            self.task_input = new_value_trimmed.to_string();
+                        } else {
+                            // Find the parseable number right after the $
+                            let end_index = after_dollar.find(' ').unwrap_or(after_dollar.len());
+                            let number_str = &after_dollar[..end_index];
+
+                            if number_str.parse::<f32>().is_ok() {
+                                let remaining_str = &after_dollar[end_index..].trim_start();
+                                if remaining_str.is_empty() {
+                                    // Allow a number to be typed after the $
+                                    self.task_input = new_value_trimmed.to_string();
+                                } else {
+                                    // Only allow a space, @, or # to be typed after the $ amount
+                                    if remaining_str.starts_with('@')
+                                        || remaining_str.starts_with('#')
+                                    {
+                                        self.task_input = new_value_trimmed.to_string();
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // If there is no $, no other checks are necessary
+                        self.task_input = new_value_trimmed.to_string();
+                    }
                 }
                 Command::none()
             }
