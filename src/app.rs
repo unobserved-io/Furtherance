@@ -204,7 +204,10 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::TaskInputChanged(value) => {
-                if value.chars().filter(|&c| c == '@').count() < 2
+                if value.chars().next() != Some('@')
+                    && value.chars().next() != Some('#')
+                    && value.chars().next() != Some('$')
+                    && value.chars().filter(|&c| c == '@').count() < 2
                     && value.chars().filter(|&c| c == '$').count() < 2
                 {
                     self.task_input = value;
