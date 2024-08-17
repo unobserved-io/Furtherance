@@ -259,7 +259,11 @@ impl Application for Furtherance {
                         .size(20),
                     button(row![
                         horizontal_space().width(Length::Fixed(5.0)),
-                        bootstrap::icon_to_text(bootstrap::Bootstrap::PlayFill).size(20),
+                        if self.timer_is_running {
+                            bootstrap::icon_to_text(bootstrap::Bootstrap::StopFill).size(20)
+                        } else {
+                            bootstrap::icon_to_text(bootstrap::Bootstrap::PlayFill).size(20)
+                        },
                         horizontal_space().width(Length::Fixed(5.0)),
                     ])
                     .on_press(Message::StartStopPressed)
