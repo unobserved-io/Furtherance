@@ -16,7 +16,7 @@
 
 use crate::models::fur_task::FurTask;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FurTaskGroup {
     pub id: u32,
     pub name: String,

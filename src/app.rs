@@ -64,11 +64,19 @@ pub enum FurInspectorView {
     EditGroup,
 }
 
+#[derive(Debug, Clone)]
+pub enum EditTextProperty {
+    Name,
+    Tags,
+    Project,
+    Rate,
+}
+
 pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
-    group_id_to_edit: u32,
+    group_to_edit: Option<(FurTaskGroup, FurTaskGroup)>,
     inspector_view: Option<FurInspectorView>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
@@ -82,7 +90,8 @@ pub struct Furtherance {
 #[derive(Debug, Clone)]
 pub enum Message {
     AlertClose,
-    EditGroup(u32),
+    EditGroup(FurTaskGroup),
+    EditTaskTextChanged(String, EditTextProperty),
     FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
     ChooseCurrentTaskStartTime,
@@ -110,7 +119,7 @@ impl Application for Furtherance {
             current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
-            group_id_to_edit: 0,
+            group_to_edit: None,
             inspector_view: None,
             show_timer_start_picker: false,
             task_history: get_task_history(),
@@ -144,10 +153,28 @@ impl Application for Furtherance {
                 self.displayed_alert = None;
                 Command::none()
             }
-            Message::EditGroup(group_id) => {
-                println!("EditGroup {}", group_id);
-                self.group_id_to_edit = group_id;
+            Message::EditGroup(task_group) => {
+                self.group_to_edit = Some((task_group.clone(), task_group));
                 self.inspector_view = Some(FurInspectorView::EditGroup);
+                Command::none()
+            }
+            Message::EditTaskTextChanged(new_value, property) => {
+                // if new_val does not include @ or $ since none of them can
+                if let Some(group_to_edit) = self.group_to_edit.as_mut() {
+                    match property {
+                        EditTextProperty::Name => group_to_edit.1.name = new_value, // Cannot include #, @, $
+                        EditTextProperty::Project => group_to_edit.1.project = new_value, // Cannot include #, @, $
+                        EditTextProperty::Tags => group_to_edit.1.tags = new_value, // Make sure first char is #. Cannot include @/$
+                        EditTextProperty::Rate => {
+                            // TODO: Change to use a String so a decimal can be typed at the end of a number
+                            if new_value.is_empty() {
+                                group_to_edit.1.rate = 0.0;
+                            } else if let Ok(amount) = new_value.parse::<f32>() {
+                                group_to_edit.1.rate = amount
+                            }
+                        }
+                    }
+                }
                 Command::none()
             }
             Message::CancelCurrentTaskStartTime => {
@@ -388,28 +415,52 @@ impl Application for Furtherance {
         let inspector: Container<'_, Message, Theme, Renderer> =
             Container::new(match &self.inspector_view {
                 Some(FurInspectorView::EditGroup) => {
-                    if let Some(group_to_edit) = get_task_group_with_id(&self) {
-                        if group_to_edit.tasks.len() == 1 {
-                            // Edit a single task
-                            column![text(&group_to_edit.name)]
+                    match &self.group_to_edit {
+                        Some(group_to_edit) => {
+                            if group_to_edit.0.tasks.len() == 1 {
+                                // Edit a single task
+                                column![
+                                    text_input(&group_to_edit.0.name, &group_to_edit.1.name)
+                                        .on_input(|s| Message::EditTaskTextChanged(
+                                            s,
+                                            EditTextProperty::Name
+                                        )),
+                                    text_input(&group_to_edit.0.project, &group_to_edit.1.project)
+                                        .on_input(|s| Message::EditTaskTextChanged(
+                                            s,
+                                            EditTextProperty::Project
+                                        )),
+                                    text_input(&group_to_edit.0.tags, &group_to_edit.1.tags)
+                                        .on_input(|s| Message::EditTaskTextChanged(
+                                            s,
+                                            EditTextProperty::Tags
+                                        )),
+                                    text_input(
+                                        &group_to_edit.0.rate.to_string(),
+                                        &group_to_edit.1.rate.to_string()
+                                    )
+                                    .on_input(|s| {
+                                        Message::EditTaskTextChanged(s, EditTextProperty::Rate)
+                                    }),
+                                ]
                                 .spacing(12)
                                 .padding(20)
-                                .width(175)
+                                .width(250)
                                 .align_items(Alignment::Start)
-                        } else {
-                            // Edit a task group
-                            column![text(&group_to_edit.name)]
-                                .spacing(12)
-                                .padding(20)
-                                .width(175)
-                                .align_items(Alignment::Start)
+                            } else {
+                                // Edit a task group
+                                column![text(&group_to_edit.0.name)]
+                                    .spacing(12)
+                                    .padding(20)
+                                    .width(175)
+                                    .align_items(Alignment::Start)
+                            }
                         }
-                    } else {
-                        column![text("Nothing selected.")]
+                        None => column![text("Nothing selected.")]
                             .spacing(12)
                             .padding(20)
                             .width(175)
-                            .align_items(Alignment::Start)
+                            .align_items(Alignment::Start),
                     }
                 }
                 None => column![],
@@ -518,18 +569,18 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
             .width(Length::Fill)
             .style(style::task_row),
     )
-    .on_press(Message::EditGroup(task_group.id))
+    .on_press(Message::EditGroup(task_group.clone()))
     .style(theme::Button::Text)
 }
 
-fn get_task_group_with_id(state: &Furtherance) -> Option<&FurTaskGroup> {
-    for value in state.task_history.values() {
-        if let Some(group_to_edit) = value.iter().find(|v| v.id == state.group_id_to_edit) {
-            return Some(group_to_edit);
-        }
-    }
-    None
-}
+// fn get_task_group_with_id(state: &Furtherance) -> Option<&FurTaskGroup> {
+//     for value in state.task_history.values() {
+//         if let Some(group_to_edit) = value.iter().find(|v| v.id == state.group_id_to_edit) {
+//             return Some(group_to_edit);
+//         }
+//     }
+//     None
+// }
 
 // fn get_mutable_task_group_with_id(state: &mut Furtherance) -> Option<&mut FurTaskGroup> {
 //     for value in map.values_mut() {
