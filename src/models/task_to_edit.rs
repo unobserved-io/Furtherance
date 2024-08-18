@@ -17,6 +17,8 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 
+use super::fur_task::FurTask;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TaskToEdit {
     pub id: u32,
@@ -32,4 +34,24 @@ pub struct TaskToEdit {
     pub new_project: String,
     pub rate: f32,
     pub new_rate: String,
+}
+
+impl TaskToEdit {
+    pub fn new_from(task: FurTask) -> Self {
+        TaskToEdit {
+            id: task.id,
+            name: task.name.clone(),
+            new_name: task.name.clone(),
+            start_time: task.start_time,
+            new_start_time: task.start_time,
+            stop_time: task.stop_time,
+            new_stop_time: task.stop_time,
+            tags: task.tags.clone(),
+            new_tags: task.tags.clone(),
+            project: task.project.clone(),
+            new_project: task.project.clone(),
+            rate: task.rate,
+            new_rate: task.rate.to_string(),
+        }
+    }
 }

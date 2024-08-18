@@ -41,7 +41,7 @@ impl GroupToEdit {
             project: group.project.clone(),
             new_project: group.project.clone(),
             rate: group.rate,
-            new_rate: group.rate,
+            new_rate: group.rate.to_string(),
             task_ids: group.tasks.iter().map(|x| x.id).collect(),
         }
     }
