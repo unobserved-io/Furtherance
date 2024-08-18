@@ -158,7 +158,7 @@ impl Application for Furtherance {
                     self.timer_is_running = false;
 
                     let (name, project, tags, rate) = split_task_input(&self.task_input);
-                    db_write(FurTask {
+                    db_write_task(FurTask {
                         id: 1, // Not used
                         name,
                         start_time: self.timer_start_time,
