@@ -385,13 +385,10 @@ impl Application for Furtherance {
         let settings_view = column![Scrollable::new(column![])];
 
         // MARK: INSPECTOR
-
         let inspector: Container<'_, Message, Theme, Renderer> =
             Container::new(match &self.inspector_view {
                 Some(FurInspectorView::EditGroup) => {
-                    println!("Editing");
                     if let Some(group_to_edit) = get_task_group_with_id(&self) {
-                        println!("Found group");
                         if group_to_edit.tasks.len() == 1 {
                             // Edit a single task
                             column![text(&group_to_edit.name)]
