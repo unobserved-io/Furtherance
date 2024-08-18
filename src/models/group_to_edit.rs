@@ -31,7 +31,7 @@ pub struct GroupToEdit {
 }
 
 impl GroupToEdit {
-    pub fn new_from(group: FurTaskGroup) -> Self {
+    pub fn new_from(group: &FurTaskGroup) -> Self {
         GroupToEdit {
             id: group.id,
             name: group.name.clone(),

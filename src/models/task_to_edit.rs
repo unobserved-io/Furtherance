@@ -37,7 +37,7 @@ pub struct TaskToEdit {
 }
 
 impl TaskToEdit {
-    pub fn new_from(task: FurTask) -> Self {
+    pub fn new_from(task: &FurTask) -> Self {
         TaskToEdit {
             id: task.id,
             name: task.name.clone(),

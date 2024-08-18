@@ -158,8 +158,15 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::EditGroup(task_group) => {
-                self.group_to_edit = Some(GroupToEdit::new_from(task_group));
-                self.inspector_view = Some(FurInspectorView::EditGroup);
+                if task_group.tasks.len() == 1 {
+                    if let Some(task_to_edit) = task_group.tasks.first() {
+                        self.task_to_edit = Some(TaskToEdit::new_from(task_to_edit));
+                    }
+                    self.inspector_view = Some(FurInspectorView::EditTask);
+                } else {
+                    self.group_to_edit = Some(GroupToEdit::new_from(&task_group));
+                    self.inspector_view = Some(FurInspectorView::EditGroup);
+                }
                 Command::none()
             }
             Message::EditTaskTextChanged(new_value, property) => {
