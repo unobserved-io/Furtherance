@@ -68,6 +68,7 @@ pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
+    group_id_to_edit: u32,
     inspector_view: Option<FurInspectorView>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
@@ -80,11 +81,12 @@ pub struct Furtherance {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    FontLoaded(Result<(), font::Error>),
     AlertClose,
-    NavigateTo(FurView),
+    EditGroup(u32),
+    FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
     ChooseCurrentTaskStartTime,
+    NavigateTo(FurView),
     RepeatLastTaskPressed(String),
     StartStopPressed,
     StopwatchTick,
@@ -108,6 +110,7 @@ impl Application for Furtherance {
             current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
+            group_id_to_edit: 0,
             inspector_view: None,
             show_timer_start_picker: false,
             task_history: get_task_history(),
@@ -139,6 +142,12 @@ impl Application for Furtherance {
         match message {
             Message::AlertClose => {
                 self.displayed_alert = None;
+                Command::none()
+            }
+            Message::EditGroup(group_id) => {
+                println!("EditGroup {}", group_id);
+                self.group_id_to_edit = group_id;
+                self.inspector_view = Some(FurInspectorView::EditGroup);
                 Command::none()
             }
             Message::CancelCurrentTaskStartTime => {
@@ -365,7 +374,9 @@ impl Application for Furtherance {
                 all_history_rows = all_history_rows.push(history_group_row(task_group))
             }
         }
-        let history_view = column![Scrollable::new(all_history_rows)];
+        let history_view = column![Scrollable::new(all_history_rows)
+            .width(Length::FillPortion(3)) // TODO: Adjust?
+            .height(Length::Fill)];
 
         // MARK: REPORT
         let report_view = column![Scrollable::new(column![])];
@@ -375,50 +386,55 @@ impl Application for Furtherance {
 
         // MARK: INSPECTOR
 
-        let content: Row<'_, Message, Theme, Renderer>;
-        if self.inspector_view.is_some() {
-            let inspector: Container<'_, Message, Theme, Renderer> = Container::new(
-                column![text("")]
+        let inspector: Container<'_, Message, Theme, Renderer> =
+            Container::new(match &self.inspector_view {
+                Some(FurInspectorView::EditGroup) => {
+                    println!("Editing");
+                    if let Some(group_to_edit) = get_task_group_with_id(&self) {
+                        println!("Found group");
+                        if group_to_edit.tasks.len() == 1 {
+                            // Edit a single task
+                            column![text(&group_to_edit.name)]
+                                .spacing(12)
+                                .padding(20)
+                                .width(175)
+                                .align_items(Alignment::Start)
+                        } else {
+                            // Edit a task group
+                            column![text(&group_to_edit.name)]
+                                .spacing(12)
+                                .padding(20)
+                                .width(175)
+                                .align_items(Alignment::Start)
+                        }
+                    } else {
+                        column![text("Nothing selected.")]
+                            .spacing(12)
+                            .padding(20)
+                            .width(175)
+                            .align_items(Alignment::Start)
+                    }
+                }
+                None => column![],
+                _ => column![text("Empty.")]
                     .spacing(12)
                     .padding(20)
                     .width(175)
                     .align_items(Alignment::Start),
-            )
-            .style(style::gray_background);
-            content = row![
-                sidebar,
-                match self.current_view {
-                    FurView::Shortcuts => shortcuts_view,
-                    FurView::Timer => timer_view,
-                    FurView::History => history_view,
-                    FurView::Report => report_view,
-                    FurView::Settings => settings_view,
-                },
-                inspector
-            ];
-        } else {
-            content = row![
-                sidebar,
-                match self.current_view {
-                    FurView::Shortcuts => shortcuts_view,
-                    FurView::Timer => timer_view,
-                    FurView::History => history_view,
-                    FurView::Report => report_view,
-                    FurView::Settings => settings_view,
-                },
-            ];
-        };
+            });
 
-        // let content = row![
-        //     sidebar,
-        //     match self.current_view {
-        //         FurView::Shortcuts => shortcuts_view,
-        //         FurView::Timer => timer_view,
-        //         FurView::History => history_view,
-        //         FurView::Report => report_view,
-        //         FurView::Settings => settings_view,
-        //     },
-        // ];
+        let content = row![
+            sidebar,
+            // Main view
+            match self.current_view {
+                FurView::Shortcuts => shortcuts_view,
+                FurView::Timer => timer_view,
+                FurView::History => history_view,
+                FurView::Report => report_view,
+                FurView::Settings => settings_view,
+            },
+            inspector,
+        ];
 
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
         {
@@ -467,13 +483,8 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
         .style(theme::Button::Text)
 }
 
-fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
+fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
     let total_time_str = seconds_to_formatted_duration(task_group.total_time);
-    // TODO: Change formatting if not showing seconds
-    // if !show_seconds {
-    //     total_time_str = format!("{:02}:{:02}", h, m);
-    // }
-
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name),];
     if !task_group.project.is_empty() {
@@ -504,28 +515,45 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Container<'a, Message> {
             .style(theme::Button::Text),
     );
 
-    Container::new(task_row)
-        .padding([10, 15, 10, 15])
-        .width(Length::Fill)
-        .style(style::task_row)
+    button(
+        Container::new(task_row)
+            .padding([10, 15, 10, 15])
+            .width(Length::Fill)
+            .style(style::task_row),
+    )
+    .on_press(Message::EditGroup(task_group.id))
+    .style(theme::Button::Text)
 }
+
+fn get_task_group_with_id(state: &Furtherance) -> Option<&FurTaskGroup> {
+    for value in state.task_history.values() {
+        if let Some(group_to_edit) = value.iter().find(|v| v.id == state.group_id_to_edit) {
+            return Some(group_to_edit);
+        }
+    }
+    None
+}
+
+// fn get_mutable_task_group_with_id(state: &mut Furtherance) -> Option<&mut FurTaskGroup> {
+//     for value in map.values_mut() {
+//         if value.id == target_id {
+//             return Some(value);
+//         }
+//     }
+//     None
+// }
 
 fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> {
     let total_time_str = seconds_to_formatted_duration(total_time);
-    // TODO: Change formatting if not showing seconds
-    // if !show_seconds {
-    //     total_time_str = format!("{:02}:{:02}", h, m);
-    // }
     row![
         text(format_history_date(date)).font(font::Font {
             weight: iced::font::Weight::Bold,
-            // ..font::Font::DEFAULT
             ..Default::default()
         }),
         horizontal_space().width(Length::Fill),
         text(total_time_str).font(font::Font {
             weight: iced::font::Weight::Bold,
-            ..font::Font::DEFAULT
+            ..Default::default()
         }),
     ]
 }

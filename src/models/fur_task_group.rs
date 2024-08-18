@@ -18,6 +18,7 @@ use crate::models::fur_task::FurTask;
 
 #[derive(Debug)]
 pub struct FurTaskGroup {
+    pub id: u32,
     pub name: String,
     pub tags: String,
     pub project: String,
@@ -29,6 +30,7 @@ pub struct FurTaskGroup {
 impl FurTaskGroup {
     pub fn new_from(task: FurTask) -> Self {
         FurTaskGroup {
+            id: task.id,
             name: task.name.clone(),
             tags: task.tags.clone(),
             project: task.project.clone(),
