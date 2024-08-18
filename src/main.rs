@@ -22,6 +22,8 @@ mod models {
     pub mod fur_shortcut;
     pub mod fur_task;
     pub mod fur_task_group;
+    pub mod group_to_edit;
+    pub mod task_to_edit;
 }
 mod style;
 mod tests {

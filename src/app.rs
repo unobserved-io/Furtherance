@@ -16,6 +16,7 @@
 
 use std::collections::BTreeMap;
 
+use crate::models::task_to_edit::TaskToEdit;
 use crate::style;
 use crate::{
     database::*,
@@ -85,6 +86,7 @@ pub struct Furtherance {
     timer_start_time: DateTime<Local>,
     timer_stop_time: DateTime<Local>,
     timer_text: String,
+    task_to_edit: Option<TaskToEdit>,
 }
 
 #[derive(Debug, Clone)]
@@ -128,6 +130,7 @@ impl Application for Furtherance {
             timer_start_time: Local::now(),
             timer_stop_time: Local::now(),
             timer_text: "0:00:00".to_string(),
+            task_to_edit: None,
         };
 
         (
@@ -159,21 +162,42 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::EditTaskTextChanged(new_value, property) => {
-                // if new_val does not include @ or $ since none of them can
-                if let Some(group_to_edit) = self.group_to_edit.as_mut() {
-                    match property {
-                        EditTextProperty::Name => group_to_edit.1.name = new_value, // Cannot include #, @, $
-                        EditTextProperty::Project => group_to_edit.1.project = new_value, // Cannot include #, @, $
-                        EditTextProperty::Tags => group_to_edit.1.tags = new_value, // Make sure first char is #. Cannot include @/$
-                        EditTextProperty::Rate => {
-                            // TODO: Change to use a String so a decimal can be typed at the end of a number
-                            if new_value.is_empty() {
-                                group_to_edit.1.rate = 0.0;
-                            } else if let Ok(amount) = new_value.parse::<f32>() {
-                                group_to_edit.1.rate = amount
+                // TODO: if new_val does not include @ or $ since none of them can
+                match self.inspector_view {
+                    Some(FurInspectorView::EditTask) => {
+                        if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                            match property {
+                                EditTextProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
+                                EditTextProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
+                                EditTextProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
+                                EditTextProperty::Rate => {
+                                    if new_value.is_empty() {
+                                        task_to_edit.new_rate = String::new();
+                                    } else if new_value.parse::<f32>().is_ok() {
+                                        task_to_edit.new_rate = new_value;
+                                    }
+                                }
                             }
                         }
                     }
+                    Some(FurInspectorView::EditGroup) => {
+                        // TODO: CHange to group
+                        if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                            match property {
+                                EditTextProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
+                                EditTextProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
+                                EditTextProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
+                                EditTextProperty::Rate => {
+                                    if new_value.is_empty() {
+                                        task_to_edit.new_rate = String::new();
+                                    } else if new_value.parse::<f32>().is_ok() {
+                                        task_to_edit.new_rate = new_value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
                 }
                 Command::none()
             }
@@ -414,6 +438,26 @@ impl Application for Furtherance {
         // MARK: INSPECTOR
         let inspector: Container<'_, Message, Theme, Renderer> =
             Container::new(match &self.inspector_view {
+                Some(FurInspectorView::EditTask) => match &self.task_to_edit {
+                    Some(task_to_edit) => column![
+                        text_input(&task_to_edit.name, &task_to_edit.new_name)
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Name)),
+                        text_input(&task_to_edit.project, &task_to_edit.new_project).on_input(
+                            |s| Message::EditTaskTextChanged(s, EditTextProperty::Project)
+                        ),
+                        text_input(&task_to_edit.tags, &task_to_edit.new_tags)
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Tags)),
+                        text_input(&task_to_edit.rate.to_string(), &task_to_edit.new_rate)
+                            .on_input(|s| {
+                                Message::EditTaskTextChanged(s, EditTextProperty::Rate)
+                            }),
+                    ]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_items(Alignment::Start),
+                    None => column![],
+                },
                 Some(FurInspectorView::EditGroup) => {
                     match &self.group_to_edit {
                         Some(group_to_edit) => {
@@ -732,6 +776,7 @@ fn get_last_task_input(state: &Furtherance) -> Option<Message> {
     }
 }
 
+// TODO: Use task.to_string instead
 fn task_input_builder(task_group: &FurTaskGroup) -> String {
     let mut task_input_builder = task_group.name.to_string();
 

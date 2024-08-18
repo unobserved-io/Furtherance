@@ -57,6 +57,3 @@ impl FurTaskGroup {
         }
     }
 }
-// func sortTasks() {
-// 	tasks.sort(by: { $0.startTime ?? Date.now > $1.startTime ?? Date.now })
-// }
