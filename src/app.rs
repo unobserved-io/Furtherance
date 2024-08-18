@@ -58,10 +58,17 @@ pub enum FurAlert {
     TaskNameEmpty,
 }
 
+#[derive(Debug)]
+pub enum FurInspectorView {
+    EditTask,
+    EditGroup,
+}
+
 pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
+    inspector_view: Option<FurInspectorView>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
@@ -101,6 +108,7 @@ impl Application for Furtherance {
             current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
+            inspector_view: None,
             show_timer_start_picker: false,
             task_history: get_task_history(),
             task_input: "".to_string(),
@@ -143,7 +151,10 @@ impl Application for Furtherance {
             }
             Message::FontLoaded(_) => Command::none(),
             Message::NavigateTo(destination) => {
-                self.current_view = destination;
+                if self.current_view != destination {
+                    self.inspector_view = None;
+                    self.current_view = destination;
+                }
                 Command::none()
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
@@ -362,16 +373,52 @@ impl Application for Furtherance {
         // MARK: SETTINGS
         let settings_view = column![Scrollable::new(column![])];
 
-        let content = row![
-            sidebar,
-            match self.current_view {
-                FurView::Shortcuts => shortcuts_view,
-                FurView::Timer => timer_view,
-                FurView::History => history_view,
-                FurView::Report => report_view,
-                FurView::Settings => settings_view,
-            },
-        ];
+        // MARK: INSPECTOR
+
+        let content: Row<'_, Message, Theme, Renderer>;
+        if self.inspector_view.is_some() {
+            let inspector: Container<'_, Message, Theme, Renderer> = Container::new(
+                column![text("")]
+                    .spacing(12)
+                    .padding(20)
+                    .width(175)
+                    .align_items(Alignment::Start),
+            )
+            .style(style::gray_background);
+            content = row![
+                sidebar,
+                match self.current_view {
+                    FurView::Shortcuts => shortcuts_view,
+                    FurView::Timer => timer_view,
+                    FurView::History => history_view,
+                    FurView::Report => report_view,
+                    FurView::Settings => settings_view,
+                },
+                inspector
+            ];
+        } else {
+            content = row![
+                sidebar,
+                match self.current_view {
+                    FurView::Shortcuts => shortcuts_view,
+                    FurView::Timer => timer_view,
+                    FurView::History => history_view,
+                    FurView::Report => report_view,
+                    FurView::Settings => settings_view,
+                },
+            ];
+        };
+
+        // let content = row![
+        //     sidebar,
+        //     match self.current_view {
+        //         FurView::Shortcuts => shortcuts_view,
+        //         FurView::Timer => timer_view,
+        //         FurView::History => history_view,
+        //         FurView::Report => report_view,
+        //         FurView::Settings => settings_view,
+        //     },
+        // ];
 
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
         {
