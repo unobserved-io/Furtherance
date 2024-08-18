@@ -82,15 +82,27 @@ pub fn db_get_directory() -> PathBuf {
 
 pub fn db_init() -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+
     conn.execute(
-        "CREATE TABLE tasks (
-                    id INTEGER PRIMARY KEY,
-                    task_name TEXT,
-                    start_time TIMESTAMP,
-                    stop_time TIMESTAMP,
-                    tags TEXT,
-                    project TEXT,
-                    rate REAL)",
+        "CREATE TABLE IF NOT EXISTS tasks (
+                        id INTEGER PRIMARY KEY,
+                        task_name TEXT,
+                        start_time TIMESTAMP,
+                        stop_time TIMESTAMP,
+                        tags TEXT,
+                        project TEXT,
+                        rate REAL);",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS shortcuts (
+                        id INTEGER PRIMARY KEY,
+                        name TEXT,
+                        tags TEXT,
+                        project TEXT,
+                        rate REAL,
+                        color_hex TEXT);",
         [],
     )?;
 
