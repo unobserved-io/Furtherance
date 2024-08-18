@@ -16,6 +16,7 @@
 
 use std::collections::BTreeMap;
 
+use crate::models::group_to_edit::GroupToEdit;
 use crate::models::task_to_edit::TaskToEdit;
 use crate::style;
 use crate::{
@@ -77,7 +78,7 @@ pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
-    group_to_edit: Option<(FurTaskGroup, FurTaskGroup)>,
+    group_to_edit: Option<GroupToEdit>,
     inspector_view: Option<FurInspectorView>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
@@ -157,7 +158,7 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::EditGroup(task_group) => {
-                self.group_to_edit = Some((task_group.clone(), task_group));
+                self.group_to_edit = Some(GroupToEdit::new_from(task_group));
                 self.inspector_view = Some(FurInspectorView::EditGroup);
                 Command::none()
             }
@@ -458,55 +459,30 @@ impl Application for Furtherance {
                     .align_items(Alignment::Start),
                     None => column![],
                 },
-                Some(FurInspectorView::EditGroup) => {
-                    match &self.group_to_edit {
-                        Some(group_to_edit) => {
-                            if group_to_edit.0.tasks.len() == 1 {
-                                // Edit a single task
-                                column![
-                                    text_input(&group_to_edit.0.name, &group_to_edit.1.name)
-                                        .on_input(|s| Message::EditTaskTextChanged(
-                                            s,
-                                            EditTextProperty::Name
-                                        )),
-                                    text_input(&group_to_edit.0.project, &group_to_edit.1.project)
-                                        .on_input(|s| Message::EditTaskTextChanged(
-                                            s,
-                                            EditTextProperty::Project
-                                        )),
-                                    text_input(&group_to_edit.0.tags, &group_to_edit.1.tags)
-                                        .on_input(|s| Message::EditTaskTextChanged(
-                                            s,
-                                            EditTextProperty::Tags
-                                        )),
-                                    text_input(
-                                        &group_to_edit.0.rate.to_string(),
-                                        &group_to_edit.1.rate.to_string()
-                                    )
-                                    .on_input(|s| {
-                                        Message::EditTaskTextChanged(s, EditTextProperty::Rate)
-                                    }),
-                                ]
-                                .spacing(12)
-                                .padding(20)
-                                .width(250)
-                                .align_items(Alignment::Start)
-                            } else {
-                                // Edit a task group
-                                column![text(&group_to_edit.0.name)]
-                                    .spacing(12)
-                                    .padding(20)
-                                    .width(175)
-                                    .align_items(Alignment::Start)
-                            }
-                        }
-                        None => column![text("Nothing selected.")]
-                            .spacing(12)
-                            .padding(20)
-                            .width(175)
-                            .align_items(Alignment::Start),
-                    }
-                }
+                Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
+                    Some(group_to_edit) => column![
+                        text_input(&group_to_edit.name, &group_to_edit.new_name)
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Name)),
+                        text_input(&group_to_edit.project, &group_to_edit.new_project).on_input(
+                            |s| Message::EditTaskTextChanged(s, EditTextProperty::Project)
+                        ),
+                        text_input(&group_to_edit.tags, &group_to_edit.new_tags)
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Tags)),
+                        text_input(&group_to_edit.rate.to_string(), &group_to_edit.new_rate)
+                            .on_input(|s| {
+                                Message::EditTaskTextChanged(s, EditTextProperty::Rate)
+                            }),
+                    ]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_items(Alignment::Start),
+                    None => column![text("Nothing selected.")]
+                        .spacing(12)
+                        .padding(20)
+                        .width(175)
+                        .align_items(Alignment::Start),
+                },
                 None => column![],
                 _ => column![text("Empty.")]
                     .spacing(12)
