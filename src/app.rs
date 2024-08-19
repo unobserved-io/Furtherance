@@ -23,8 +23,8 @@ use crate::{
     database::*,
     models::{fur_settings::FurSettings, fur_task::FurTask, fur_task_group::FurTaskGroup},
 };
-use chrono::Duration;
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
+use chrono::{Duration, TimeZone, Timelike};
 use iced::widget::Row;
 use iced::Color;
 use iced::{
@@ -38,10 +38,7 @@ use iced::{
 };
 use iced_aw::{
     core::icons::{bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker::{self, Date},
-    modal,
-    time_picker::{self, Period},
-    Card, Modal, TimePicker,
+    date_picker, modal, time_picker, Card, Modal, TimePicker,
 };
 use regex::Regex;
 use tokio::time;
@@ -74,6 +71,8 @@ pub enum EditTaskProperty {
     Rate,
     StartTime,
     StopTime,
+    StartDate,
+    StopDate,
 }
 
 pub struct Furtherance {
@@ -99,14 +98,15 @@ pub enum Message {
     EditTaskTextChanged(String, EditTaskProperty),
     FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
-    CancelTaskEditTime(EditTaskProperty),
+    CancelTaskEditDateTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
-    ChooseTaskEditTime(EditTaskProperty),
+    ChooseTaskEditDateTime(EditTaskProperty),
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
+    SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     TaskInputChanged(String),
 }
@@ -166,7 +166,7 @@ impl Application for Furtherance {
                 self.show_timer_start_picker = false;
                 Command::none()
             }
-            Message::CancelTaskEditTime(property) => {
+            Message::CancelTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {
                         EditTaskProperty::StartTime => {
@@ -174,6 +174,12 @@ impl Application for Furtherance {
                         }
                         EditTaskProperty::StopTime => {
                             task_to_edit.show_displayed_stop_time_picker = false;
+                        }
+                        EditTaskProperty::StartDate => {
+                            task_to_edit.show_displayed_start_date_picker = false;
+                        }
+                        EditTaskProperty::StopDate => {
+                            task_to_edit.show_displayed_stop_date_picker = false;
                         }
                         _ => {}
                     }
@@ -184,7 +190,7 @@ impl Application for Furtherance {
                 self.show_timer_start_picker = true;
                 Command::none()
             }
-            Message::ChooseTaskEditTime(property) => {
+            Message::ChooseTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {
                         EditTaskProperty::StartTime => {
@@ -192,6 +198,12 @@ impl Application for Furtherance {
                         }
                         EditTaskProperty::StopTime => {
                             task_to_edit.show_displayed_stop_time_picker = true
+                        }
+                        EditTaskProperty::StartDate => {
+                            task_to_edit.show_displayed_start_date_picker = true;
+                        }
+                        EditTaskProperty::StopDate => {
+                            task_to_edit.show_displayed_stop_date_picker = true;
                         }
                         _ => {}
                     }
@@ -329,33 +341,50 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
-            Message::SubmitTaskEditTime(new_time, property) => {
+            Message::SubmitTaskEditDate(new_date, property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
-                    match convert_iced_time_to_chrono_local(new_time) {
-                        LocalResult::Single(local_time) => {
-                            // Check if start date is today
-                            // If so time must be less than now, otherwise it can be any time
-                            if task_to_edit.new_stop_time.date_naive() != Local::now().date_naive()
-                                || (task_to_edit.new_stop_time.date_naive()
-                                    == Local::now().date_naive()
-                                    && local_time <= Local::now())
-                            {
-                                match property {
-                                    EditTaskProperty::StartTime => {
-                                        task_to_edit.displayed_start_time = new_time;
-                                        task_to_edit.new_start_time = local_time;
-                                        task_to_edit.show_displayed_start_time_picker = false;
-                                    }
-                                    EditTaskProperty::StopTime => {
-                                        task_to_edit.displayed_stop_time = new_time;
-                                        task_to_edit.new_stop_time = local_time;
-                                        task_to_edit.show_displayed_stop_time_picker = false;
-                                    }
-                                    _ => {}
+                    if let LocalResult::Single(new_local_date_time) =
+                        combine_chosen_date_with_time(task_to_edit.new_start_time, new_date)
+                    {
+                        if new_local_date_time <= Local::now() {
+                            match property {
+                                EditTaskProperty::StartDate => {
+                                    task_to_edit.displayed_start_date = new_date;
+                                    task_to_edit.new_start_time = new_local_date_time;
+                                    task_to_edit.show_displayed_start_date_picker = false;
                                 }
+                                EditTaskProperty::StopDate => {
+                                    task_to_edit.displayed_stop_date = new_date;
+                                    task_to_edit.new_stop_time = new_local_date_time;
+                                    task_to_edit.show_displayed_stop_date_picker = false;
+                                }
+                                _ => {}
                             }
                         }
-                        _ => {}
+                    }
+                }
+                Command::none()
+            }
+            Message::SubmitTaskEditTime(new_time, property) => {
+                if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                    if let LocalResult::Single(new_local_date_time) =
+                        combine_chosen_time_with_date(task_to_edit.new_start_time, new_time)
+                    {
+                        if new_local_date_time <= Local::now() {
+                            match property {
+                                EditTaskProperty::StartTime => {
+                                    task_to_edit.displayed_start_time = new_time;
+                                    task_to_edit.new_start_time = new_local_date_time;
+                                    task_to_edit.show_displayed_start_time_picker = false;
+                                }
+                                EditTaskProperty::StopTime => {
+                                    task_to_edit.displayed_stop_time = new_time;
+                                    task_to_edit.new_stop_time = new_local_date_time;
+                                    task_to_edit.show_displayed_stop_time_picker = false;
+                                }
+                                _ => {}
+                            }
+                        }
                     }
                 }
                 Command::none()
@@ -536,14 +565,27 @@ impl Application for Furtherance {
                         .spacing(5),
                         row![
                             text("Start:"),
-                            TimePicker::new(
+                            date_picker(
+                                task_to_edit.show_displayed_start_date_picker,
+                                task_to_edit.displayed_start_date,
+                                button(text(task_to_edit.displayed_start_date.to_string()))
+                                    .on_press(Message::ChooseTaskEditDateTime(
+                                        EditTaskProperty::StartDate
+                                    )),
+                                Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
+                                |date| Message::SubmitTaskEditDate(
+                                    date,
+                                    EditTaskProperty::StartDate
+                                ),
+                            ),
+                            time_picker(
                                 task_to_edit.show_displayed_start_time_picker,
                                 task_to_edit.displayed_start_time,
                                 Button::new(text(task_to_edit.displayed_start_time.to_string()))
-                                    .on_press(Message::ChooseTaskEditTime(
+                                    .on_press(Message::ChooseTaskEditDateTime(
                                         EditTaskProperty::StartTime
                                     )),
-                                Message::CancelTaskEditTime(EditTaskProperty::StartTime),
+                                Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                                 |time| Message::SubmitTaskEditTime(
                                     time,
                                     EditTaskProperty::StartTime
@@ -555,14 +597,27 @@ impl Application for Furtherance {
                         .spacing(5),
                         row![
                             text("Stop:"),
-                            TimePicker::new(
+                            date_picker(
+                                task_to_edit.show_displayed_stop_date_picker,
+                                task_to_edit.displayed_stop_date,
+                                button(text(task_to_edit.displayed_stop_date.to_string()))
+                                    .on_press(Message::ChooseTaskEditDateTime(
+                                        EditTaskProperty::StopDate
+                                    )),
+                                Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
+                                |date| Message::SubmitTaskEditDate(
+                                    date,
+                                    EditTaskProperty::StopDate
+                                ),
+                            ),
+                            time_picker(
                                 task_to_edit.show_displayed_stop_time_picker,
                                 task_to_edit.displayed_stop_time,
                                 Button::new(text(task_to_edit.displayed_stop_time.to_string()))
-                                    .on_press(Message::ChooseTaskEditTime(
+                                    .on_press(Message::ChooseTaskEditDateTime(
                                         EditTaskProperty::StopTime
                                     )),
-                                Message::CancelTaskEditTime(EditTaskProperty::StopTime),
+                                Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                                 |time| Message::SubmitTaskEditTime(
                                     time,
                                     EditTaskProperty::StopTime
@@ -809,7 +864,7 @@ fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResul
             minute,
             period,
         } => (hour, minute, period),
-        _ => (1, 1, Period::H24),
+        _ => (1, 1, time_picker::Period::H24),
     };
 
     if let Some(time) = NaiveTime::from_hms_opt(hour, minute, 0) {
@@ -922,4 +977,40 @@ fn seconds_to_hm(total_seconds: i64) -> String {
     let h = total_seconds / 3600;
     let m = total_seconds % 3600 / 60;
     format!("{}:{:02}", h, m)
+}
+
+fn combine_chosen_date_with_time(
+    old_date_time: DateTime<Local>,
+    new_date: date_picker::Date,
+) -> LocalResult<DateTime<Local>> {
+    Local.with_ymd_and_hms(
+        new_date.year,
+        new_date.month,
+        new_date.day,
+        old_date_time.hour(),
+        old_date_time.minute(),
+        old_date_time.second(),
+    )
+}
+
+fn combine_chosen_time_with_date(
+    old_date_time: DateTime<Local>,
+    new_time: time_picker::Time,
+) -> LocalResult<DateTime<Local>> {
+    let (hour, minute, _) = match new_time {
+        time_picker::Time::Hm {
+            hour,
+            minute,
+            period,
+        } => (hour, minute, period),
+        _ => (1, 1, time_picker::Period::H24),
+    };
+    Local.with_ymd_and_hms(
+        old_date_time.year(),
+        old_date_time.month(),
+        old_date_time.day(),
+        hour,
+        minute,
+        0,
+    )
 }
