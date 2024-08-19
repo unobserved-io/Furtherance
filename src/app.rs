@@ -612,12 +612,7 @@ impl Application for Furtherance {
                         .width(175)
                         .align_items(Alignment::Start),
                 },
-                None => column![],
-                _ => column![text("Empty.")]
-                    .spacing(12)
-                    .padding(20)
-                    .width(175)
-                    .align_items(Alignment::Start),
+                _ => column![],
             });
 
         let content = row![
