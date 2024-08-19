@@ -446,6 +446,7 @@ impl Application for Furtherance {
         // MARK: INSPECTOR
         let inspector: Container<'_, Message, Theme, Renderer> =
             Container::new(match &self.inspector_view {
+                // MARK: Edit Single Task
                 Some(FurInspectorView::EditTask) => match &self.task_to_edit {
                     Some(task_to_edit) => column![
                         text_input(&task_to_edit.name, &task_to_edit.new_name)
@@ -455,10 +456,18 @@ impl Application for Furtherance {
                         ),
                         text_input(&task_to_edit.tags, &task_to_edit.new_tags)
                             .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Tags)),
-                        text_input(&task_to_edit.rate.to_string(), &task_to_edit.new_rate)
+                        row![
+                            text("$"),
+                            text_input(
+                                &format!("{:.2}", &task_to_edit.rate),
+                                &task_to_edit.new_rate
+                            )
                             .on_input(|s| {
                                 Message::EditTaskTextChanged(s, EditTextProperty::Rate)
                             }),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(5),
                     ]
                     .spacing(12)
                     .padding(20)
@@ -466,6 +475,7 @@ impl Application for Furtherance {
                     .align_items(Alignment::Start),
                     None => column![],
                 },
+                // MARK:: Edit Group
                 Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
                     Some(group_to_edit) => column![
                         text_input(&group_to_edit.name, &group_to_edit.new_name)
@@ -475,10 +485,18 @@ impl Application for Furtherance {
                         ),
                         text_input(&group_to_edit.tags, &group_to_edit.new_tags)
                             .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Tags)),
-                        text_input(&group_to_edit.rate.to_string(), &group_to_edit.new_rate)
+                        row![
+                            text("$"),
+                            text_input(
+                                &format!("{:.2}", &group_to_edit.rate),
+                                &group_to_edit.new_rate
+                            )
                             .on_input(|s| {
                                 Message::EditTaskTextChanged(s, EditTextProperty::Rate)
                             }),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(5),
                     ]
                     .spacing(12)
                     .padding(20)
