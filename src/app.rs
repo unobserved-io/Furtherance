@@ -67,11 +67,13 @@ pub enum FurInspectorView {
 }
 
 #[derive(Debug, Clone)]
-pub enum EditTextProperty {
+pub enum EditTaskProperty {
     Name,
     Tags,
     Project,
     Rate,
+    StartTime,
+    StopTime,
 }
 
 pub struct Furtherance {
@@ -94,15 +96,18 @@ pub struct Furtherance {
 pub enum Message {
     AlertClose,
     EditGroup(FurTaskGroup),
-    EditTaskTextChanged(String, EditTextProperty),
+    EditTaskTextChanged(String, EditTaskProperty),
     FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
+    CancelTaskEditTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
+    ChooseTaskEditTime(EditTaskProperty),
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
+    SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     TaskInputChanged(String),
 }
 
@@ -157,6 +162,42 @@ impl Application for Furtherance {
                 self.displayed_alert = None;
                 Command::none()
             }
+            Message::CancelCurrentTaskStartTime => {
+                self.show_timer_start_picker = false;
+                Command::none()
+            }
+            Message::CancelTaskEditTime(property) => {
+                if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                    match property {
+                        EditTaskProperty::StartTime => {
+                            task_to_edit.show_displayed_start_time_picker = false;
+                        }
+                        EditTaskProperty::StopTime => {
+                            task_to_edit.show_displayed_stop_time_picker = false;
+                        }
+                        _ => {}
+                    }
+                }
+                Command::none()
+            }
+            Message::ChooseCurrentTaskStartTime => {
+                self.show_timer_start_picker = true;
+                Command::none()
+            }
+            Message::ChooseTaskEditTime(property) => {
+                if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                    match property {
+                        EditTaskProperty::StartTime => {
+                            task_to_edit.show_displayed_start_time_picker = true
+                        }
+                        EditTaskProperty::StopTime => {
+                            task_to_edit.show_displayed_stop_time_picker = true
+                        }
+                        _ => {}
+                    }
+                }
+                Command::none()
+            }
             Message::EditGroup(task_group) => {
                 if task_group.tasks.len() == 1 {
                     if let Some(task_to_edit) = task_group.tasks.first() {
@@ -175,16 +216,17 @@ impl Application for Furtherance {
                     Some(FurInspectorView::EditTask) => {
                         if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                             match property {
-                                EditTextProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
-                                EditTextProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
-                                EditTextProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
-                                EditTextProperty::Rate => {
+                                EditTaskProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
+                                EditTaskProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
+                                EditTaskProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
+                                EditTaskProperty::Rate => {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
                                     } else if new_value.parse::<f32>().is_ok() {
                                         task_to_edit.new_rate = new_value;
                                     }
                                 }
+                                _ => {}
                             }
                         }
                     }
@@ -192,29 +234,22 @@ impl Application for Furtherance {
                         // TODO: CHange to group
                         if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                             match property {
-                                EditTextProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
-                                EditTextProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
-                                EditTextProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
-                                EditTextProperty::Rate => {
+                                EditTaskProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
+                                EditTaskProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
+                                EditTaskProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
+                                EditTaskProperty::Rate => {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
                                     } else if new_value.parse::<f32>().is_ok() {
                                         task_to_edit.new_rate = new_value;
                                     }
                                 }
+                                _ => {}
                             }
                         }
                     }
                     _ => {}
                 }
-                Command::none()
-            }
-            Message::CancelCurrentTaskStartTime => {
-                self.show_timer_start_picker = false;
-                Command::none()
-            }
-            Message::ChooseCurrentTaskStartTime => {
-                self.show_timer_start_picker = true;
                 Command::none()
             }
             Message::FontLoaded(_) => Command::none(),
@@ -290,6 +325,37 @@ impl Application for Furtherance {
                     _ => {
                         self.show_timer_start_picker = false;
                         eprintln!("Error converting chosen time to local time.");
+                    }
+                }
+                Command::none()
+            }
+            Message::SubmitTaskEditTime(new_time, property) => {
+                if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                    match convert_iced_time_to_chrono_local(new_time) {
+                        LocalResult::Single(local_time) => {
+                            // Check if start date is today
+                            // If so time must be less than now, otherwise it can be any time
+                            if task_to_edit.new_stop_time.date_naive() != Local::now().date_naive()
+                                || (task_to_edit.new_stop_time.date_naive()
+                                    == Local::now().date_naive()
+                                    && local_time <= Local::now())
+                            {
+                                match property {
+                                    EditTaskProperty::StartTime => {
+                                        task_to_edit.displayed_start_time = new_time;
+                                        task_to_edit.new_start_time = local_time;
+                                        task_to_edit.show_displayed_start_time_picker = false;
+                                    }
+                                    EditTaskProperty::StopTime => {
+                                        task_to_edit.displayed_stop_time = new_time;
+                                        task_to_edit.new_stop_time = local_time;
+                                        task_to_edit.show_displayed_stop_time_picker = false;
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                        _ => {}
                     }
                 }
                 Command::none()
@@ -450,12 +516,12 @@ impl Application for Furtherance {
                 Some(FurInspectorView::EditTask) => match &self.task_to_edit {
                     Some(task_to_edit) => column![
                         text_input(&task_to_edit.name, &task_to_edit.new_name)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Name)),
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
                         text_input(&task_to_edit.project, &task_to_edit.new_project).on_input(
-                            |s| Message::EditTaskTextChanged(s, EditTextProperty::Project)
+                            |s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)
                         ),
                         text_input(&task_to_edit.tags, &task_to_edit.new_tags)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Tags)),
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
                         row![
                             text("$"),
                             text_input(
@@ -463,8 +529,46 @@ impl Application for Furtherance {
                                 &task_to_edit.new_rate
                             )
                             .on_input(|s| {
-                                Message::EditTaskTextChanged(s, EditTextProperty::Rate)
+                                Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
                             }),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(5),
+                        row![
+                            text("Start:"),
+                            TimePicker::new(
+                                task_to_edit.show_displayed_start_time_picker,
+                                task_to_edit.displayed_start_time,
+                                Button::new(text(task_to_edit.displayed_start_time.to_string()))
+                                    .on_press(Message::ChooseTaskEditTime(
+                                        EditTaskProperty::StartTime
+                                    )),
+                                Message::CancelTaskEditTime(EditTaskProperty::StartTime),
+                                |time| Message::SubmitTaskEditTime(
+                                    time,
+                                    EditTaskProperty::StartTime
+                                ),
+                            )
+                            .use_24h(),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(5),
+                        row![
+                            text("Stop:"),
+                            TimePicker::new(
+                                task_to_edit.show_displayed_stop_time_picker,
+                                task_to_edit.displayed_stop_time,
+                                Button::new(text(task_to_edit.displayed_stop_time.to_string()))
+                                    .on_press(Message::ChooseTaskEditTime(
+                                        EditTaskProperty::StopTime
+                                    )),
+                                Message::CancelTaskEditTime(EditTaskProperty::StopTime),
+                                |time| Message::SubmitTaskEditTime(
+                                    time,
+                                    EditTaskProperty::StopTime
+                                ),
+                            )
+                            .use_24h(),
                         ]
                         .align_items(Alignment::Center)
                         .spacing(5),
@@ -479,12 +583,12 @@ impl Application for Furtherance {
                 Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
                     Some(group_to_edit) => column![
                         text_input(&group_to_edit.name, &group_to_edit.new_name)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Name)),
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
                         text_input(&group_to_edit.project, &group_to_edit.new_project).on_input(
-                            |s| Message::EditTaskTextChanged(s, EditTextProperty::Project)
+                            |s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)
                         ),
                         text_input(&group_to_edit.tags, &group_to_edit.new_tags)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTextProperty::Tags)),
+                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
                         row![
                             text("$"),
                             text_input(
@@ -492,7 +596,7 @@ impl Application for Furtherance {
                                 &group_to_edit.new_rate
                             )
                             .on_input(|s| {
-                                Message::EditTaskTextChanged(s, EditTextProperty::Rate)
+                                Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
                             }),
                         ]
                         .align_items(Alignment::Center)

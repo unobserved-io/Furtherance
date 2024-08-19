@@ -15,19 +15,27 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::{DateTime, Local};
-use serde::{Deserialize, Serialize};
+use iced_aw::{date_picker::Date, time_picker::Time};
 
 use super::fur_task::FurTask;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct TaskToEdit {
     pub id: u32,
     pub name: String,
     pub new_name: String,
     pub start_time: DateTime<Local>,
     pub new_start_time: DateTime<Local>,
+    pub displayed_start_time: Time,
+    pub displayed_start_date: Date,
+    pub show_displayed_start_time_picker: bool,
+    pub show_displayed_start_date_picker: bool,
     pub stop_time: DateTime<Local>,
     pub new_stop_time: DateTime<Local>,
+    pub displayed_stop_time: Time,
+    pub displayed_stop_date: Date,
+    pub show_displayed_stop_time_picker: bool,
+    pub show_displayed_stop_date_picker: bool,
     pub tags: String,
     pub new_tags: String,
     pub project: String,
@@ -44,8 +52,16 @@ impl TaskToEdit {
             new_name: task.name.clone(),
             start_time: task.start_time,
             new_start_time: task.start_time,
+            displayed_start_time: Time::from(task.start_time.naive_local().time()),
+            displayed_start_date: Date::from(task.start_time.date_naive()),
+            show_displayed_start_time_picker: false,
+            show_displayed_start_date_picker: false,
             stop_time: task.stop_time,
             new_stop_time: task.stop_time,
+            displayed_stop_time: Time::from(task.stop_time.naive_local().time()),
+            displayed_stop_date: Date::from(task.stop_time.date_naive()),
+            show_displayed_stop_time_picker: false,
+            show_displayed_stop_date_picker: false,
             tags: task.tags.clone(),
             new_tags: task.tags.clone(),
             project: task.project.clone(),
