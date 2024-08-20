@@ -192,6 +192,32 @@ pub fn db_retrieve_all(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, r
     Ok(tasks_vec)
 }
 
+pub fn db_update_task_by_id(fur_task: FurTask) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "UPDATE tasks SET
+            task_name = ?1,
+            start_time = ?2,
+            stop_time = ?3,
+            tags = ?4,
+            project = ?5,
+            rate = ?6
+        WHERE id = ?7",
+        params![
+            fur_task.name,
+            fur_task.start_time.to_rfc3339(),
+            fur_task.stop_time.to_rfc3339(),
+            fur_task.tags,
+            fur_task.project,
+            fur_task.rate,
+            fur_task.id,
+        ],
+    )?;
+
+    Ok(())
+}
+
 pub fn update_start_time(id: i32, start_time: String) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 

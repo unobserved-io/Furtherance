@@ -98,11 +98,13 @@ pub enum Message {
     EditTaskTextChanged(String, EditTaskProperty),
     FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
+    CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
     ChooseTaskEditDateTime(EditTaskProperty),
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
+    SaveTaskEdit,
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
@@ -164,6 +166,11 @@ impl Application for Furtherance {
             }
             Message::CancelCurrentTaskStartTime => {
                 self.show_timer_start_picker = false;
+                Command::none()
+            }
+            Message::CancelTaskEdit => {
+                self.inspector_view = None;
+                self.task_to_edit = None;
                 Command::none()
             }
             Message::CancelTaskEditDateTime(property) => {
@@ -246,9 +253,9 @@ impl Application for Furtherance {
                         // TODO: CHange to group
                         if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                             match property {
-                                EditTaskProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
-                                EditTaskProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
-                                EditTaskProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
+                                EditTaskProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $ and cannot be empty
+                                EditTaskProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @/$
+                                EditTaskProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$/,
                                 EditTaskProperty::Rate => {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
@@ -276,6 +283,32 @@ impl Application for Furtherance {
                 self.task_input = last_task_input;
                 self.current_view = FurView::Timer;
                 Command::perform(async { Message::StartStopPressed }, |msg| msg)
+            }
+            Message::SaveTaskEdit => {
+                if let Some(task_to_edit) = &self.task_to_edit {
+                    if task_to_edit.new_name.is_empty() {
+                        // Show empty error
+                    } else {
+                        let tags_without_first_pound = task_to_edit
+                            .new_tags
+                            .strip_prefix('#')
+                            .unwrap_or(&task_to_edit.new_tags)
+                            .to_string();
+                        let _ = db_update_task_by_id(FurTask {
+                            id: task_to_edit.id,
+                            name: task_to_edit.new_name.clone(),
+                            start_time: task_to_edit.new_start_time,
+                            stop_time: task_to_edit.new_stop_time,
+                            tags: tags_without_first_pound,
+                            project: task_to_edit.new_project.clone(),
+                            rate: task_to_edit.new_rate.parse::<f32>().unwrap_or(0.0),
+                        });
+                        self.inspector_view = None;
+                        self.task_to_edit = None;
+                        self.task_history = get_task_history();
+                    }
+                }
+                Command::none()
             }
             Message::StartStopPressed => {
                 if self.timer_is_running {
@@ -627,6 +660,31 @@ impl Application for Furtherance {
                         ]
                         .align_items(Alignment::Center)
                         .spacing(5),
+                        row![
+                            button(
+                                text("Cancel").horizontal_alignment(alignment::Horizontal::Center)
+                            )
+                            .style(theme::Button::Secondary)
+                            .on_press(Message::CancelTaskEdit)
+                            .width(Length::Fill),
+                            button(
+                                text("Save").horizontal_alignment(alignment::Horizontal::Center)
+                            )
+                            .style(theme::Button::Primary)
+                            .on_press_maybe(match &self.task_to_edit {
+                                Some(task_to_edit) => {
+                                    if task_to_edit.is_changed() {
+                                        Some(Message::SaveTaskEdit)
+                                    } else {
+                                        None
+                                    }
+                                }
+                                None => None,
+                            })
+                            .width(Length::Fill),
+                        ]
+                        .padding([20, 0, 0, 0])
+                        .spacing(10),
                     ]
                     .spacing(12)
                     .padding(20)
