@@ -102,6 +102,7 @@ pub enum Message {
     CancelTaskEditDateTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
     ChooseTaskEditDateTime(EditTaskProperty),
+    DeleteTasks(Vec<u32>),
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
     SaveTaskEdit,
@@ -215,6 +216,13 @@ impl Application for Furtherance {
                         _ => {}
                     }
                 }
+                Command::none()
+            }
+            Message::DeleteTasks(ids) => {
+                self.inspector_view = None;
+                let _ = db_delete_by_ids(ids);
+                self.task_to_edit = None;
+                self.task_history = get_task_history();
                 Command::none()
             }
             Message::EditGroup(task_group) => {
@@ -619,6 +627,12 @@ impl Application for Furtherance {
                 // MARK: Edit Single Task
                 Some(FurInspectorView::EditTask) => match &self.task_to_edit {
                     Some(task_to_edit) => column![
+                        row![
+                            horizontal_space(),
+                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                                .on_press(Message::DeleteTasks(vec![task_to_edit.id]))
+                                .style(theme::Button::Text),
+                        ],
                         text_input(&task_to_edit.name, &task_to_edit.new_name)
                             .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
                         text_input(&task_to_edit.project, &task_to_edit.new_project).on_input(

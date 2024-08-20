@@ -370,20 +370,12 @@ pub fn check_db_validity(db_path: String) -> Result<String> {
     )
 }
 
-pub fn delete_by_ids(id_list: Vec<i32>) -> Result<()> {
+pub fn db_delete_by_ids(id_list: Vec<u32>) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {
         conn.execute("delete FROM tasks WHERE id = (?1)", &[&id.to_string()])?;
     }
-
-    Ok(())
-}
-
-pub fn delete_by_id(id: i32) -> Result<()> {
-    let conn = Connection::open(db_get_directory())?;
-
-    conn.execute("delete FROM tasks WHERE id = (?1)", &[&id.to_string()])?;
 
     Ok(())
 }
