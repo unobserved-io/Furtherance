@@ -26,7 +26,7 @@ so updates will be far more frequent and everyone will have the same features, r
 * Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
 
 ### Build
-
+To run from sourcce, download the source code or clone this repo and run `cargo run`. To create an application bundle for your OS, use `cargo bundle`.
 
 ### Use
 Type in the `name` of the task you are working on, add a `@Project`, some `#tags`, and a `$rate`, and press start. That's really all there is to it.
