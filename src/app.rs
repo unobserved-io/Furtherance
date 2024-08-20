@@ -52,9 +52,10 @@ pub enum FurView {
     Settings,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FurAlert {
     TaskNameEmpty,
+    DeleteTaskConfirmation,
 }
 
 #[derive(Debug)]
@@ -102,10 +103,11 @@ pub enum Message {
     CancelTaskEditDateTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
     ChooseTaskEditDateTime(EditTaskProperty),
-    DeleteTasks(Vec<u32>),
+    DeleteTasks,
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
     SaveTaskEdit,
+    ShowAlert(FurAlert),
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
@@ -218,11 +220,20 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
-            Message::DeleteTasks(ids) => {
-                self.inspector_view = None;
-                let _ = db_delete_by_ids(ids);
-                self.task_to_edit = None;
-                self.task_history = get_task_history();
+            Message::DeleteTasks => {
+                if let Some(task_to_edit) = &self.task_to_edit {
+                    self.inspector_view = None;
+                    let _ = db_delete_by_ids(vec![task_to_edit.id]);
+                    self.task_to_edit = None;
+                    self.displayed_alert = None;
+                    self.task_history = get_task_history();
+                } else if let Some(group_to_edit) = &self.group_to_edit {
+                    self.inspector_view = None;
+                    let _ = db_delete_by_ids(group_to_edit.task_ids.clone());
+                    self.task_to_edit = None;
+                    self.displayed_alert = None;
+                    self.task_history = get_task_history();
+                }
                 Command::none()
             }
             Message::EditGroup(task_group) => {
@@ -358,6 +369,10 @@ impl Application for Furtherance {
                         self.task_history = get_task_history();
                     }
                 }
+                Command::none()
+            }
+            Message::ShowAlert(alert_to_show) => {
+                self.displayed_alert = Some(alert_to_show);
                 Command::none()
             }
             Message::StartStopPressed => {
@@ -630,7 +645,7 @@ impl Application for Furtherance {
                         row![
                             horizontal_space(),
                             button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                                .on_press(Message::DeleteTasks(vec![task_to_edit.id]))
+                                .on_press(Message::ShowAlert(FurAlert::DeleteTaskConfirmation)) // TODO: if ! delete confirmation run delete only
                                 .style(theme::Button::Text),
                         ],
                         text_input(&task_to_edit.name, &task_to_edit.new_name)
@@ -804,8 +819,25 @@ impl Application for Furtherance {
             let alert_text: &str;
             let alert_description: &str;
             let close_button_text: &str;
+            let mut close_button_style: theme::Button = theme::Button::Primary;
+            let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
+                FurAlert::DeleteTaskConfirmation => {
+                    alert_text = "Delete task?";
+                    alert_description = "Are you sure you want to permanently delete this task?";
+                    close_button_text = "Cancel";
+                    close_button_style = theme::Button::Secondary;
+                    confirmation_button = Some(
+                        button(
+                            text("Delete")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::DeleteTasks)
+                        .style(theme::Button::Destructive),
+                    );
+                }
                 FurAlert::TaskNameEmpty => {
                     alert_text = "Empty Task Name";
                     alert_description = "The task must have a name.";
@@ -813,15 +845,20 @@ impl Application for Furtherance {
                 }
             }
 
-            let buttons: Row<'_, Message, Theme, Renderer> = row![button(
+            let mut buttons: Row<'_, Message, Theme, Renderer> = row![button(
                 text(close_button_text)
                     .horizontal_alignment(alignment::Horizontal::Center)
                     .width(Length::Fill)
             )
-            .on_press(Message::AlertClose)]
+            .on_press(Message::AlertClose)
+            .style(close_button_style)]
             .spacing(10)
             .padding(5)
             .width(Length::Fill);
+
+            if let Some(confirmation) = confirmation_button {
+                buttons = buttons.push(confirmation);
+            }
 
             Some(
                 Card::new(text(alert_text), text(alert_description))
