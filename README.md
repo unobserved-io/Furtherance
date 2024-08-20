@@ -2,8 +2,11 @@
 Furtherance is a time tracking app, with a native interface on Gnome, Windows, and Mac.
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 
+**UPDATE: Furtherance is underging a complete rewrite using [Iced](https://github.com/iced-rs/iced). It will be better in many ways and contain more features, but most importantly there will be a single, cross-platform version,
+so updates will be far more frequent and everyone will have the same features, regardless of OS. You can read more about the change [here](https://unobserved.io/blog/twau-1).**
+
 <p align="center">
-    <img width="500px" src="https://github.com/lakoliu/Furtherance/raw/main/data/screenshots/furtherance-2023-06-06.png" alt="Furtherance screenshot"/>
+    <img width="750px" src="https://unobserved.io/assets/blog/twau/1/furtherance-2024-08-18.png" alt="Furtherance with Iced screenshot"/>
 </p>
 
 ## Features
