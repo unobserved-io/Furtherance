@@ -230,19 +230,59 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::EditTaskTextChanged(new_value, property) => {
-                // TODO: if new_val does not include @ or $ since none of them can
                 match self.inspector_view {
                     Some(FurInspectorView::EditTask) => {
                         if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                             match property {
-                                EditTaskProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $
-                                EditTaskProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @, $
-                                EditTaskProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$
+                                EditTaskProperty::Name => {
+                                    if new_value.contains('#')
+                                        || new_value.contains('@')
+                                        || new_value.contains('$')
+                                    {
+                                        task_to_edit.invalid_input_error_message =
+                                            "Task name cannot contain #, @, or $.".to_string();
+                                    } else {
+                                        task_to_edit.new_name = new_value;
+                                        task_to_edit.invalid_input_error_message = String::new();
+                                    }
+                                }
+                                EditTaskProperty::Project => {
+                                    if new_value.contains('#')
+                                        || new_value.contains('@')
+                                        || new_value.contains('$')
+                                    {
+                                        task_to_edit.invalid_input_error_message =
+                                            "Project name cannot contain #, @, or $.".to_string();
+                                    } else {
+                                        task_to_edit.new_project = new_value;
+                                    }
+                                }
+                                EditTaskProperty::Tags => {
+                                    if new_value.contains('@') || new_value.contains('$') {
+                                        task_to_edit.invalid_input_error_message =
+                                            "Tags cannot contain @ or $.".to_string();
+                                    } else if !new_value.is_empty()
+                                        && new_value.chars().next() != Some('#')
+                                    {
+                                        task_to_edit.invalid_input_error_message =
+                                            "Tags must start with a #.".to_string();
+                                    } else {
+                                        task_to_edit.new_tags = new_value;
+                                        task_to_edit.invalid_input_error_message = String::new();
+                                    }
+                                } // TODO: Make sure first char is #. Cannot include @/$
                                 EditTaskProperty::Rate => {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
+                                    } else if new_value.contains('$') {
+                                        task_to_edit.invalid_input_error_message =
+                                            "Do not include a $ in the rate.".to_string();
                                     } else if new_value.parse::<f32>().is_ok() {
                                         task_to_edit.new_rate = new_value;
+                                        task_to_edit.invalid_input_error_message = String::new();
+                                    } else {
+                                        task_to_edit.invalid_input_error_message =
+                                            "Rate must be a valid dollar amount.".to_string();
                                     }
                                 }
                                 _ => {}
@@ -685,6 +725,8 @@ impl Application for Furtherance {
                         ]
                         .padding([20, 0, 0, 0])
                         .spacing(10),
+                        text(&task_to_edit.invalid_input_error_message)
+                            .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
                     ]
                     .spacing(12)
                     .padding(20)

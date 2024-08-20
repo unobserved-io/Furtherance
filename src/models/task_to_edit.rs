@@ -42,6 +42,7 @@ pub struct TaskToEdit {
     pub new_project: String,
     pub rate: f32,
     pub new_rate: String,
+    pub invalid_input_error_message: String,
 }
 
 impl TaskToEdit {
@@ -63,11 +64,12 @@ impl TaskToEdit {
             show_displayed_stop_time_picker: false,
             show_displayed_stop_date_picker: false,
             tags: task.tags.clone(),
-            new_tags: task.tags.clone(),
+            new_tags: format!("#{}", task.tags),
             project: task.project.clone(),
             new_project: task.project.clone(),
             rate: task.rate,
-            new_rate: task.rate.to_string(),
+            new_rate: format!("{:.2}", task.rate),
+            invalid_input_error_message: String::new(),
         }
     }
 
@@ -75,7 +77,7 @@ impl TaskToEdit {
         if self.name != self.new_name
             || self.start_time != self.new_start_time
             || self.stop_time != self.new_stop_time
-            || self.tags != self.new_tags
+            || self.tags != self.new_tags.strip_prefix('#').unwrap_or(&self.tags)
             || self.project != self.new_project
             || self.rate != self.new_rate.parse::<f32>().unwrap_or(0.0)
         {
