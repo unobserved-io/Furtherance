@@ -270,7 +270,7 @@ impl Application for Furtherance {
                                         task_to_edit.new_tags = new_value;
                                         task_to_edit.invalid_input_error_message = String::new();
                                     }
-                                } // TODO: Make sure first char is #. Cannot include @/$
+                                }
                                 EditTaskProperty::Rate => {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
