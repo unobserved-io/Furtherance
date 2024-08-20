@@ -74,12 +74,18 @@ impl TaskToEdit {
     }
 
     pub fn is_changed(&self) -> bool {
-        if self.name != self.new_name
+        if self.name != self.new_name.trim()
             || self.start_time != self.new_start_time
             || self.stop_time != self.new_stop_time
-            || self.tags != self.new_tags.strip_prefix('#').unwrap_or(&self.tags)
-            || self.project != self.new_project
-            || self.rate != self.new_rate.parse::<f32>().unwrap_or(0.0)
+            || self.tags
+                != self
+                    .new_tags
+                    .trim()
+                    .strip_prefix('#')
+                    .unwrap_or(&self.tags)
+                    .trim()
+            || self.project != self.new_project.trim()
+            || self.rate != self.new_rate.trim().parse::<f32>().unwrap_or(0.0)
         {
             true
         } else {
