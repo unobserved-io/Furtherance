@@ -334,6 +334,7 @@ impl Application for Furtherance {
                             .trim()
                             .strip_prefix('#')
                             .unwrap_or(&task_to_edit.new_tags)
+                            .trim()
                             .to_string();
                         let _ = db_update_task_by_id(FurTask {
                             id: task_to_edit.id,
