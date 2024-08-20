@@ -331,17 +331,18 @@ impl Application for Furtherance {
                     } else {
                         let tags_without_first_pound = task_to_edit
                             .new_tags
+                            .trim()
                             .strip_prefix('#')
                             .unwrap_or(&task_to_edit.new_tags)
                             .to_string();
                         let _ = db_update_task_by_id(FurTask {
                             id: task_to_edit.id,
-                            name: task_to_edit.new_name.clone(),
+                            name: task_to_edit.new_name.trim().to_string(),
                             start_time: task_to_edit.new_start_time,
                             stop_time: task_to_edit.new_stop_time,
                             tags: tags_without_first_pound,
-                            project: task_to_edit.new_project.clone(),
-                            rate: task_to_edit.new_rate.parse::<f32>().unwrap_or(0.0),
+                            project: task_to_edit.new_project.trim().to_string(),
+                            rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         });
                         self.inspector_view = None;
                         self.task_to_edit = None;
