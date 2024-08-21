@@ -55,6 +55,7 @@ pub enum FurView {
 
 #[derive(Debug, Clone)]
 pub enum FurAlert {
+    DeleteGroupConfirmation,
     DeleteTaskConfirmation,
 }
 
@@ -242,7 +243,7 @@ impl Application for Furtherance {
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
                     let _ = db_delete_by_ids(group_to_edit.task_ids.clone());
-                    self.task_to_edit = None;
+                    self.group_to_edit = None;
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
                 }
@@ -863,7 +864,7 @@ impl Application for Furtherance {
                             })
                             .style(theme::Button::Text),
                             button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                                .on_press(Message::ShowAlert(FurAlert::DeleteTaskConfirmation)) // TODO: if ! delete confirmation run delete only
+                                .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
                                 .style(theme::Button::Text),
                         ]
                         .spacing(5),
@@ -970,6 +971,22 @@ impl Application for Furtherance {
             let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
+                FurAlert::DeleteGroupConfirmation => {
+                    alert_text = "Delete all?";
+                    alert_description =
+                        "Are you sure you want to permanently delete all tasks in this group?";
+                    close_button_text = "Cancel";
+                    close_button_style = theme::Button::Secondary;
+                    confirmation_button = Some(
+                        button(
+                            text("Delete All")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::DeleteTasks)
+                        .style(theme::Button::Destructive),
+                    );
+                }
                 FurAlert::DeleteTaskConfirmation => {
                     alert_text = "Delete task?";
                     alert_description = "Are you sure you want to permanently delete this task?";
