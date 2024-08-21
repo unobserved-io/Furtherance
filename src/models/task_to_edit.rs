@@ -64,7 +64,11 @@ impl TaskToEdit {
             show_displayed_stop_time_picker: false,
             show_displayed_stop_date_picker: false,
             tags: task.tags.clone(),
-            new_tags: format!("#{}", task.tags),
+            new_tags: if task.tags.is_empty() {
+                task.tags.clone()
+            } else {
+                format!("#{}", task.tags)
+            },
             project: task.project.clone(),
             new_project: task.project.clone(),
             rate: task.rate,

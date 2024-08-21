@@ -39,7 +39,11 @@ impl GroupToEdit {
             name: group.name.clone(),
             new_name: group.name.clone(),
             tags: group.tags.clone(),
-            new_tags: format!("#{}", group.tags),
+            new_tags: if group.tags.is_empty() {
+                group.tags.clone()
+            } else {
+                format!("#{}", group.tags)
+            },
             project: group.project.clone(),
             new_project: group.project.clone(),
             rate: group.rate,

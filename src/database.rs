@@ -239,7 +239,7 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
                     .new_tags
                     .trim()
                     .strip_prefix('#')
-                    .unwrap_or(&group.new_tags)
+                    .unwrap_or(&group.tags)
                     .trim()
                     .to_string(),
                 group.new_project.trim(),
