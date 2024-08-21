@@ -45,3 +45,9 @@ impl ToString for FurTask {
         task_string
     }
 }
+
+impl FurTask {
+    pub fn total_time_in_seconds(&self) -> i64 {
+        (self.stop_time - self.start_time).num_seconds()
+    }
+}

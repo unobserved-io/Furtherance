@@ -40,6 +40,19 @@ pub fn task_row(theme: &Theme) -> container::Appearance {
     }
 }
 
+pub fn group_edit_task_row(theme: &Theme) -> container::Appearance {
+    let palette = theme.extended_palette();
+
+    container::Appearance {
+        border: Border {
+            color: palette.background.weak.color.into(),
+            width: 1.5,
+            radius: 12.0.into(),
+        },
+        ..Default::default()
+    }
+}
+
 pub fn group_count_circle(theme: &Theme) -> container::Appearance {
     let palette = theme.extended_palette();
 

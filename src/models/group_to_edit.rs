@@ -27,7 +27,7 @@ pub struct GroupToEdit {
     pub new_project: String,
     pub rate: f32,
     pub new_rate: String,
-    pub task_ids: Vec<u32>,
+    pub tasks: Vec<FurTask>,
     pub is_in_edit_mode: bool,
     pub invalid_input_error_message: String,
 }
@@ -44,7 +44,7 @@ impl GroupToEdit {
             new_project: group.project.clone(),
             rate: group.rate,
             new_rate: format!("{:.2}", group.rate),
-            task_ids: group.tasks.iter().map(|x| x.id).collect(),
+            tasks: group.tasks.clone(),
             is_in_edit_mode: false,
             invalid_input_error_message: String::new(),
         }
@@ -70,5 +70,9 @@ impl GroupToEdit {
 
     pub fn input_error(&mut self, message: &str) {
         self.invalid_input_error_message = message.to_string();
+    }
+
+    pub fn task_ids(&self) -> Vec<u32> {
+        self.tasks.iter().map(|x| x.id).collect()
     }
 }

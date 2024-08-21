@@ -97,6 +97,7 @@ pub struct Furtherance {
 pub enum Message {
     AlertClose,
     EditGroup(FurTaskGroup),
+    EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
     FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
@@ -242,7 +243,7 @@ impl Application for Furtherance {
                     self.task_history = get_task_history();
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
-                    let _ = db_delete_by_ids(group_to_edit.task_ids.clone());
+                    let _ = db_delete_by_ids(group_to_edit.task_ids());
                     self.group_to_edit = None;
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
@@ -259,6 +260,11 @@ impl Application for Furtherance {
                     self.group_to_edit = Some(GroupToEdit::new_from(&task_group));
                     self.inspector_view = Some(FurInspectorView::EditGroup);
                 }
+                Command::none()
+            }
+            Message::EditTask(task) => {
+                self.task_to_edit = Some(TaskToEdit::new_from(&task));
+                self.inspector_view = Some(FurInspectorView::EditTask);
                 Command::none()
             }
             Message::EditTaskTextChanged(new_value, property) => {
@@ -409,13 +415,6 @@ impl Application for Furtherance {
             }
             Message::SaveGroupEdit => {
                 if let Some(group_to_edit) = &self.group_to_edit {
-                    let tags_without_first_pound = group_to_edit
-                        .new_tags
-                        .trim()
-                        .strip_prefix('#')
-                        .unwrap_or(&group_to_edit.new_tags)
-                        .trim()
-                        .to_string();
                     let _ = db_update_group_of_tasks(group_to_edit);
                     self.inspector_view = None;
                     self.group_to_edit = None;
@@ -443,6 +442,7 @@ impl Application for Furtherance {
                     });
                     self.inspector_view = None;
                     self.task_to_edit = None;
+                    self.group_to_edit = None;
                     self.task_history = get_task_history();
                 }
                 Command::none()
@@ -846,100 +846,152 @@ impl Application for Furtherance {
                 },
                 // MARK:: Edit Group
                 Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
-                    Some(group_to_edit) => column![
-                        row![
-                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
-                                .on_press(Message::CancelGroupEdit)
-                                .style(theme::Button::Text),
-                            horizontal_space(),
-                            button(if group_to_edit.is_in_edit_mode {
-                                bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
-                            } else {
-                                bootstrap::icon_to_text(bootstrap::Bootstrap::PencilFill)
-                            })
-                            .on_press_maybe(if group_to_edit.is_in_edit_mode {
-                                None
-                            } else {
-                                Some(Message::ToggleGroupEditor)
-                            })
-                            .style(theme::Button::Text),
-                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                                .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
-                                .style(theme::Button::Text),
-                        ]
-                        .spacing(5),
-                        match group_to_edit.is_in_edit_mode {
-                            true => column![
-                                text_input(&group_to_edit.name, &group_to_edit.new_name).on_input(
-                                    |s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)
-                                ),
-                                text_input(&group_to_edit.project, &group_to_edit.new_project)
-                                    .on_input(|s| Message::EditTaskTextChanged(
-                                        s,
-                                        EditTaskProperty::Project
-                                    )),
-                                text_input(&group_to_edit.tags, &group_to_edit.new_tags).on_input(
-                                    |s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)
-                                ),
-                                row![
-                                    text("$"),
-                                    text_input(
-                                        &format!("{:.2}", &group_to_edit.rate),
-                                        &group_to_edit.new_rate
-                                    )
-                                    .on_input(|s| {
-                                        Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
-                                    }),
-                                ]
-                                .align_items(Alignment::Center)
-                                .spacing(5),
-                                row![
-                                    button(
-                                        text("Cancel")
-                                            .horizontal_alignment(alignment::Horizontal::Center)
-                                    )
-                                    .style(theme::Button::Secondary)
-                                    .on_press(Message::ToggleGroupEditor)
-                                    .width(Length::Fill),
-                                    button(
-                                        text("Save")
-                                            .horizontal_alignment(alignment::Horizontal::Center)
-                                    )
-                                    .style(theme::Button::Primary)
-                                    .on_press_maybe(
-                                        if group_to_edit.is_changed()
-                                            && !group_to_edit.new_name.trim().is_empty()
-                                        {
-                                            Some(Message::SaveGroupEdit)
-                                        } else {
-                                            None
-                                        }
-                                    )
-                                    .width(Length::Fill),
-                                ]
-                                .padding([20, 0, 0, 0])
-                                .spacing(10),
-                            ]
-                            .spacing(5),
-                            false => column![
-                                text(&group_to_edit.name).font(font::Font {
-                                    weight: iced::font::Weight::Bold,
-                                    ..Default::default()
-                                }),
-                                text(&group_to_edit.project),
-                                text(format!("#{}", group_to_edit.tags)),
-                                text(format!("${}", &group_to_edit.rate)),
-                            ]
+                    Some(group_to_edit) => {
+                        let mut group_info_column: Column<'_, Message, Theme, Renderer> =
+                            column![text(&group_to_edit.name).font(font::Font {
+                                weight: iced::font::Weight::Bold,
+                                ..Default::default()
+                            }),]
                             .width(Length::Fill)
                             .align_items(Alignment::Center)
+                            .spacing(5)
+                            .padding(20);
+                        if !group_to_edit.project.is_empty() {
+                            group_info_column =
+                                group_info_column.push(text(&group_to_edit.project));
+                        }
+                        if !group_to_edit.tags.is_empty() {
+                            group_info_column =
+                                group_info_column.push(text(format!("#{}", group_to_edit.tags)));
+                        }
+                        if group_to_edit.rate != 0.0 {
+                            group_info_column =
+                                group_info_column.push(text(format!("${}", &group_to_edit.rate)));
+                        }
+                        let tasks_column: Scrollable<'_, Message, Theme, Renderer> =
+                            Scrollable::new(group_to_edit.tasks.iter().fold(
+                                Column::new().spacing(5),
+                                |column, task| {
+                                    column
+                                        .push(
+                                            button(
+                                                Container::new(column![
+                                                    text(format!(
+                                                        "{} to {}",
+                                                        task.start_time.format("%H:%M").to_string(),
+                                                        task.stop_time.format("%H:%M").to_string()
+                                                    ))
+                                                    .font(font::Font {
+                                                        weight: iced::font::Weight::Bold,
+                                                        ..Default::default()
+                                                    }),
+                                                    text(format!(
+                                                        "Total: {}",
+                                                        seconds_to_formatted_duration(
+                                                            task.total_time_in_seconds()
+                                                        )
+                                                    ))
+                                                ])
+                                                .width(Length::Fill)
+                                                .padding([5, 8])
+                                                .style(style::group_edit_task_row),
+                                            )
+                                            .on_press(Message::EditTask(task.clone()))
+                                            .style(theme::Button::Text),
+                                        )
+                                        .padding([0, 10, 10, 10])
+                                },
+                            ));
+                        column![
+                            row![
+                                button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
+                                    .on_press(Message::CancelGroupEdit)
+                                    .style(theme::Button::Text),
+                                horizontal_space(),
+                                button(if group_to_edit.is_in_edit_mode {
+                                    bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
+                                } else {
+                                    bootstrap::icon_to_text(bootstrap::Bootstrap::PencilFill)
+                                })
+                                .on_press_maybe(if group_to_edit.is_in_edit_mode {
+                                    None
+                                } else {
+                                    Some(Message::ToggleGroupEditor)
+                                })
+                                .style(theme::Button::Text),
+                                button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                                    .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
+                                    .style(theme::Button::Text),
+                            ]
                             .spacing(5),
-                        },
-                        //TODO: List all tasks in group here
-                    ]
-                    .spacing(5)
-                    .padding(20)
-                    .width(250)
-                    .align_items(Alignment::Start),
+                            match group_to_edit.is_in_edit_mode {
+                                true => column![
+                                    text_input(&group_to_edit.name, &group_to_edit.new_name)
+                                        .on_input(|s| Message::EditTaskTextChanged(
+                                            s,
+                                            EditTaskProperty::Name
+                                        )),
+                                    text_input(&group_to_edit.project, &group_to_edit.new_project)
+                                        .on_input(|s| Message::EditTaskTextChanged(
+                                            s,
+                                            EditTaskProperty::Project
+                                        )),
+                                    text_input(&group_to_edit.tags, &group_to_edit.new_tags)
+                                        .on_input(|s| Message::EditTaskTextChanged(
+                                            s,
+                                            EditTaskProperty::Tags
+                                        )),
+                                    row![
+                                        text("$"),
+                                        text_input(
+                                            &format!("{:.2}", &group_to_edit.rate),
+                                            &group_to_edit.new_rate
+                                        )
+                                        .on_input(|s| {
+                                            Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
+                                        }),
+                                    ]
+                                    .align_items(Alignment::Center)
+                                    .spacing(5),
+                                    row![
+                                        button(
+                                            text("Cancel").horizontal_alignment(
+                                                alignment::Horizontal::Center
+                                            )
+                                        )
+                                        .style(theme::Button::Secondary)
+                                        .on_press(Message::ToggleGroupEditor)
+                                        .width(Length::Fill),
+                                        button(
+                                            text("Save").horizontal_alignment(
+                                                alignment::Horizontal::Center
+                                            )
+                                        )
+                                        .style(theme::Button::Primary)
+                                        .on_press_maybe(
+                                            if group_to_edit.is_changed()
+                                                && !group_to_edit.new_name.trim().is_empty()
+                                            {
+                                                Some(Message::SaveGroupEdit)
+                                            } else {
+                                                None
+                                            }
+                                        )
+                                        .width(Length::Fill),
+                                    ]
+                                    .padding([20, 0, 0, 0])
+                                    .spacing(10),
+                                ]
+                                .padding(20)
+                                .spacing(5),
+                                false => group_info_column,
+                            },
+                            tasks_column,
+                        ]
+                        .spacing(5)
+                        .width(250)
+                        .align_items(Alignment::Start)
+                    }
                     None => column![text("Nothing selected.")]
                         .spacing(12)
                         .padding(20)

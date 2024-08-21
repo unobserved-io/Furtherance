@@ -232,7 +232,7 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
         WHERE id = ?5",
         )?;
 
-        for id in group.task_ids.iter() {
+        for id in group.task_ids().iter() {
             stmt.execute(params![
                 group.new_name.trim(),
                 group
