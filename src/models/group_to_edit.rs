@@ -28,6 +28,7 @@ pub struct GroupToEdit {
     pub rate: f32,
     pub new_rate: String,
     pub task_ids: Vec<u32>,
+    pub is_in_edit_mode: bool,
 }
 
 impl GroupToEdit {
@@ -43,6 +44,7 @@ impl GroupToEdit {
             rate: group.rate,
             new_rate: group.rate.to_string(),
             task_ids: group.tasks.iter().map(|x| x.id).collect(),
+            is_in_edit_mode: false,
         }
     }
 }

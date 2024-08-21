@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use core::f32;
 use std::collections::BTreeMap;
 
 use crate::models::group_to_edit::GroupToEdit;
@@ -129,7 +130,7 @@ impl Application for Furtherance {
         let _ = db_upgrade_old();
 
         let furtherance = Furtherance {
-            current_view: FurView::Timer,
+            current_view: FurView::History,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             group_to_edit: None,
@@ -291,12 +292,18 @@ impl Application for Furtherance {
                                     }
                                 }
                                 EditTaskProperty::Rate => {
+                                    let new_value_parsed = new_value.parse::<f32>();
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
                                     } else if new_value.contains('$') {
                                         task_to_edit.invalid_input_error_message =
                                             "Do not include a $ in the rate.".to_string();
-                                    } else if new_value.parse::<f32>().is_ok() {
+                                    } else if new_value_parsed.is_ok()
+                                        && has_max_two_decimals(
+                                            new_value_parsed.clone().unwrap_or(0.0),
+                                        )
+                                        && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
+                                    {
                                         task_to_edit.new_rate = new_value;
                                         task_to_edit.invalid_input_error_message = String::new();
                                     } else {
@@ -511,8 +518,12 @@ impl Application for Furtherance {
                             // Find the parseable number right after the $
                             let end_index = after_dollar.find(' ').unwrap_or(after_dollar.len());
                             let number_str = &after_dollar[..end_index];
+                            let parsed_num = number_str.parse::<f32>();
 
-                            if number_str.parse::<f32>().is_ok() {
+                            if parsed_num.is_ok()
+                                && has_max_two_decimals(parsed_num.clone().unwrap_or(0.0))
+                                && parsed_num.unwrap_or(f32::MAX) < f32::MAX
+                            {
                                 let remaining_str = &after_dollar[end_index..].trim_start();
                                 if remaining_str.is_empty() {
                                     // Allow a number to be typed after the $
@@ -768,25 +779,47 @@ impl Application for Furtherance {
                 // MARK:: Edit Group
                 Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
                     Some(group_to_edit) => column![
-                        text_input(&group_to_edit.name, &group_to_edit.new_name)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
-                        text_input(&group_to_edit.project, &group_to_edit.new_project).on_input(
-                            |s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)
-                        ),
-                        text_input(&group_to_edit.tags, &group_to_edit.new_tags)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
-                        row![
-                            text("$"),
-                            text_input(
-                                &format!("{:.2}", &group_to_edit.rate),
-                                &group_to_edit.new_rate
-                            )
-                            .on_input(|s| {
-                                Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
-                            }),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(5),
+                        match group_to_edit.is_in_edit_mode {
+                            true => column![
+                                text_input(&group_to_edit.name, &group_to_edit.new_name).on_input(
+                                    |s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)
+                                ),
+                                text_input(&group_to_edit.project, &group_to_edit.new_project)
+                                    .on_input(|s| Message::EditTaskTextChanged(
+                                        s,
+                                        EditTaskProperty::Project
+                                    )),
+                                text_input(&group_to_edit.tags, &group_to_edit.new_tags).on_input(
+                                    |s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)
+                                ),
+                                row![
+                                    text("$"),
+                                    text_input(
+                                        &format!("{:.2}", &group_to_edit.rate),
+                                        &group_to_edit.new_rate
+                                    )
+                                    .on_input(|s| {
+                                        Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
+                                    }),
+                                ]
+                                .align_items(Alignment::Center)
+                                .spacing(5),
+                                // TODO: Add save & cancel buttons here
+                            ],
+                            false => column![
+                                text(&group_to_edit.name).font(font::Font {
+                                    weight: iced::font::Weight::Bold,
+                                    ..Default::default()
+                                }),
+                                text(&group_to_edit.project),
+                                text(format!("#{}", group_to_edit.tags)),
+                                text(format!("${}", &group_to_edit.rate)),
+                            ]
+                            .width(Length::Fill)
+                            .align_items(Alignment::Center)
+                            .spacing(5),
+                        },
+                        //TODO: List all tasks in group here
                     ]
                     .spacing(12)
                     .padding(20)
@@ -886,7 +919,11 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
     let total_time_str = seconds_to_formatted_duration(task_group.total_time);
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
-        column![text(&task_group.name),];
+        column![text(&task_group.name).font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        }),]
+        .width(Length::FillPortion(6));
     if !task_group.project.is_empty() {
         task_details_column = task_details_column.push(text(format!("@{}", task_group.project)));
     }
@@ -1166,4 +1203,10 @@ fn combine_chosen_time_with_date(
         minute,
         0,
     )
+}
+
+fn has_max_two_decimals(num: f32) -> bool {
+    let shifted = num * 100.0;
+    let rounded = shifted.round();
+    (shifted - rounded).abs() < f32::EPSILON
 }
