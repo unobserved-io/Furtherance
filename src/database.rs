@@ -21,7 +21,7 @@ use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::models::{fur_settings::FurSettings, fur_task::FurTask};
+use crate::models::{fur_settings::FurSettings, fur_task::FurTask, group_to_edit::GroupToEdit};
 
 #[derive(Debug)]
 pub enum SortOrder {
@@ -192,7 +192,7 @@ pub fn db_retrieve_all(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, r
     Ok(tasks_vec)
 }
 
-pub fn db_update_task_by_id(fur_task: FurTask) -> Result<()> {
+pub fn db_update_task(fur_task: FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
@@ -214,6 +214,43 @@ pub fn db_update_task_by_id(fur_task: FurTask) -> Result<()> {
             fur_task.id,
         ],
     )?;
+
+    Ok(())
+}
+
+pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
+    let mut conn = Connection::open(db_get_directory())?;
+    // Transaction ensures all updates succeed or none do.
+    let tx = conn.transaction()?;
+    {
+        let mut stmt = tx.prepare(
+            "UPDATE tasks SET
+            task_name = ?1,
+            tags = ?2,
+            project = ?3,
+            rate = ?4
+        WHERE id = ?5",
+        )?;
+
+        for id in group.task_ids.iter() {
+            stmt.execute(params![
+                group.new_name.trim(),
+                group
+                    .new_tags
+                    .trim()
+                    .strip_prefix('#')
+                    .unwrap_or(&group.new_tags)
+                    .trim()
+                    .to_string(),
+                group.new_project.trim(),
+                group.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                id,
+            ])?;
+        }
+    }
+
+    // Commit the transaction
+    tx.commit()?;
 
     Ok(())
 }

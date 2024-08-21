@@ -29,6 +29,7 @@ pub struct GroupToEdit {
     pub new_rate: String,
     pub task_ids: Vec<u32>,
     pub is_in_edit_mode: bool,
+    pub invalid_input_error_message: String,
 }
 
 impl GroupToEdit {
@@ -38,13 +39,36 @@ impl GroupToEdit {
             name: group.name.clone(),
             new_name: group.name.clone(),
             tags: group.tags.clone(),
-            new_tags: group.tags.clone(),
+            new_tags: format!("#{}", group.tags),
             project: group.project.clone(),
             new_project: group.project.clone(),
             rate: group.rate,
-            new_rate: group.rate.to_string(),
+            new_rate: format!("{:.2}", group.rate),
             task_ids: group.tasks.iter().map(|x| x.id).collect(),
             is_in_edit_mode: false,
+            invalid_input_error_message: String::new(),
         }
+    }
+
+    pub fn is_changed(&self) -> bool {
+        if self.name != self.new_name.trim()
+            || self.tags
+                != self
+                    .new_tags
+                    .trim()
+                    .strip_prefix('#')
+                    .unwrap_or(&self.tags)
+                    .trim()
+            || self.project != self.new_project.trim()
+            || self.rate != self.new_rate.trim().parse::<f32>().unwrap_or(0.0)
+        {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn input_error(&mut self, message: &str) {
+        self.invalid_input_error_message = message.to_string();
     }
 }

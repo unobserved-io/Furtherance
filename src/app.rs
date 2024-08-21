@@ -26,7 +26,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::Row;
+use iced::widget::{tooltip, Row};
 use iced::Color;
 use iced::{
     alignment, font, keyboard,
@@ -55,7 +55,6 @@ pub enum FurView {
 
 #[derive(Debug, Clone)]
 pub enum FurAlert {
-    TaskNameEmpty,
     DeleteTaskConfirmation,
 }
 
@@ -100,6 +99,7 @@ pub enum Message {
     EditTaskTextChanged(String, EditTaskProperty),
     FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
+    CancelGroupEdit,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
@@ -107,8 +107,10 @@ pub enum Message {
     DeleteTasks,
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
+    SaveGroupEdit,
     SaveTaskEdit,
     ShowAlert(FurAlert),
+    ToggleGroupEditor,
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
@@ -172,9 +174,18 @@ impl Application for Furtherance {
                 self.show_timer_start_picker = false;
                 Command::none()
             }
-            Message::CancelTaskEdit => {
+            Message::CancelGroupEdit => {
+                self.group_to_edit = None;
                 self.inspector_view = None;
+                Command::none()
+            }
+            Message::CancelTaskEdit => {
                 self.task_to_edit = None;
+                if self.group_to_edit.is_some() {
+                    self.inspector_view = Some(FurInspectorView::EditGroup);
+                } else {
+                    self.inspector_view = None;
+                }
                 Command::none()
             }
             Message::CancelTaskEditDateTime(property) => {
@@ -271,8 +282,9 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
+                                        // TODO: Change to .input_error system
                                         task_to_edit.invalid_input_error_message =
-                                            "Project name cannot contain #, @, or $.".to_string();
+                                            "Project cannot contain #, @, or $.".to_string();
                                     } else {
                                         task_to_edit.new_project = new_value;
                                     }
@@ -316,17 +328,61 @@ impl Application for Furtherance {
                         }
                     }
                     Some(FurInspectorView::EditGroup) => {
-                        // TODO: CHange to group
-                        if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                        if let Some(group_to_edit) = self.group_to_edit.as_mut() {
                             match property {
-                                EditTaskProperty::Name => task_to_edit.new_name = new_value, // TODO: Cannot include #, @, $ and cannot be empty
-                                EditTaskProperty::Project => task_to_edit.new_project = new_value, // TODO: Cannot include #, @/$
-                                EditTaskProperty::Tags => task_to_edit.new_tags = new_value, // TODO: Make sure first char is #. Cannot include @/$/,
+                                EditTaskProperty::Name => {
+                                    if new_value.contains('#')
+                                        || new_value.contains('@')
+                                        || new_value.contains('$')
+                                    {
+                                        group_to_edit
+                                            .input_error("Task name cannot contain #, @, or $.");
+                                    } else {
+                                        group_to_edit.new_name = new_value;
+                                        group_to_edit.input_error("");
+                                    }
+                                }
+                                EditTaskProperty::Project => {
+                                    if new_value.contains('#')
+                                        || new_value.contains('@')
+                                        || new_value.contains('$')
+                                    {
+                                        group_to_edit
+                                            .input_error("Project cannot contain #, @, or $.");
+                                    } else {
+                                        group_to_edit.new_project = new_value;
+                                    }
+                                }
+                                EditTaskProperty::Tags => {
+                                    if new_value.contains('@') || new_value.contains('$') {
+                                        group_to_edit.input_error("Tags cannot contain @ or $.");
+                                    } else if !new_value.is_empty()
+                                        && new_value.chars().next() != Some('#')
+                                    {
+                                        group_to_edit.input_error("Tags must start with a #.");
+                                    } else {
+                                        group_to_edit.new_tags = new_value;
+                                        group_to_edit.input_error("");
+                                    }
+                                }
                                 EditTaskProperty::Rate => {
+                                    let new_value_parsed = new_value.parse::<f32>();
                                     if new_value.is_empty() {
-                                        task_to_edit.new_rate = String::new();
-                                    } else if new_value.parse::<f32>().is_ok() {
-                                        task_to_edit.new_rate = new_value;
+                                        group_to_edit.new_rate = String::new();
+                                    } else if new_value.contains('$') {
+                                        group_to_edit
+                                            .input_error("Do not include a $ in the rate.");
+                                    } else if new_value_parsed.is_ok()
+                                        && has_max_two_decimals(
+                                            new_value_parsed.clone().unwrap_or(0.0),
+                                        )
+                                        && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
+                                    {
+                                        group_to_edit.new_rate = new_value;
+                                        group_to_edit.input_error("");
+                                    } else {
+                                        group_to_edit
+                                            .input_error("Rate must be a valid dollar amount.");
                                     }
                                 }
                                 _ => {}
@@ -350,31 +406,43 @@ impl Application for Furtherance {
                 self.current_view = FurView::Timer;
                 Command::perform(async { Message::StartStopPressed }, |msg| msg)
             }
+            Message::SaveGroupEdit => {
+                if let Some(group_to_edit) = &self.group_to_edit {
+                    let tags_without_first_pound = group_to_edit
+                        .new_tags
+                        .trim()
+                        .strip_prefix('#')
+                        .unwrap_or(&group_to_edit.new_tags)
+                        .trim()
+                        .to_string();
+                    let _ = db_update_group_of_tasks(group_to_edit);
+                    self.inspector_view = None;
+                    self.group_to_edit = None;
+                    self.task_history = get_task_history();
+                }
+                Command::none()
+            }
             Message::SaveTaskEdit => {
                 if let Some(task_to_edit) = &self.task_to_edit {
-                    if task_to_edit.new_name.is_empty() {
-                        // Show empty error
-                    } else {
-                        let tags_without_first_pound = task_to_edit
-                            .new_tags
-                            .trim()
-                            .strip_prefix('#')
-                            .unwrap_or(&task_to_edit.new_tags)
-                            .trim()
-                            .to_string();
-                        let _ = db_update_task_by_id(FurTask {
-                            id: task_to_edit.id,
-                            name: task_to_edit.new_name.trim().to_string(),
-                            start_time: task_to_edit.new_start_time,
-                            stop_time: task_to_edit.new_stop_time,
-                            tags: tags_without_first_pound,
-                            project: task_to_edit.new_project.trim().to_string(),
-                            rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
-                        });
-                        self.inspector_view = None;
-                        self.task_to_edit = None;
-                        self.task_history = get_task_history();
-                    }
+                    let tags_without_first_pound = task_to_edit
+                        .new_tags
+                        .trim()
+                        .strip_prefix('#')
+                        .unwrap_or(&task_to_edit.new_tags)
+                        .trim()
+                        .to_string();
+                    let _ = db_update_task(FurTask {
+                        id: task_to_edit.id,
+                        name: task_to_edit.new_name.trim().to_string(),
+                        start_time: task_to_edit.new_start_time,
+                        stop_time: task_to_edit.new_stop_time,
+                        tags: tags_without_first_pound,
+                        project: task_to_edit.new_project.trim().to_string(),
+                        rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                    });
+                    self.inspector_view = None;
+                    self.task_to_edit = None;
+                    self.task_history = get_task_history();
                 }
                 Command::none()
             }
@@ -405,16 +473,10 @@ impl Application for Furtherance {
                     self.timer_text = "0:00:00".to_string();
                     Command::none()
                 } else {
-                    // TODO: This should not be necessary - logic is in task_input text input
-                    let (name, _, _, _) = split_task_input(&self.task_input);
-                    if name.is_empty() {
-                        self.displayed_alert = Some(FurAlert::TaskNameEmpty);
-                        Command::none()
-                    } else {
-                        self.timer_start_time = Local::now();
-                        self.timer_is_running = true;
-                        Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
-                    }
+                    // Start timer
+                    self.timer_start_time = Local::now();
+                    self.timer_is_running = true;
+                    Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
                 }
             }
             Message::StopwatchTick => {
@@ -543,6 +605,12 @@ impl Application for Furtherance {
                         self.task_input = new_value_trimmed.to_string();
                     }
                 }
+                Command::none()
+            }
+            Message::ToggleGroupEditor => {
+                self.group_to_edit
+                    .as_mut()
+                    .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
                 Command::none()
             }
         }
@@ -753,16 +821,15 @@ impl Application for Furtherance {
                                 text("Save").horizontal_alignment(alignment::Horizontal::Center)
                             )
                             .style(theme::Button::Primary)
-                            .on_press_maybe(match &self.task_to_edit {
-                                Some(task_to_edit) => {
-                                    if task_to_edit.is_changed() {
-                                        Some(Message::SaveTaskEdit)
-                                    } else {
-                                        None
-                                    }
+                            .on_press_maybe(
+                                if task_to_edit.is_changed()
+                                    && !task_to_edit.new_name.trim().is_empty()
+                                {
+                                    Some(Message::SaveTaskEdit)
+                                } else {
+                                    None
                                 }
-                                None => None,
-                            })
+                            )
                             .width(Length::Fill),
                         ]
                         .padding([20, 0, 0, 0])
@@ -779,6 +846,27 @@ impl Application for Furtherance {
                 // MARK:: Edit Group
                 Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
                     Some(group_to_edit) => column![
+                        row![
+                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
+                                .on_press(Message::CancelGroupEdit)
+                                .style(theme::Button::Text),
+                            horizontal_space(),
+                            button(if group_to_edit.is_in_edit_mode {
+                                bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
+                            } else {
+                                bootstrap::icon_to_text(bootstrap::Bootstrap::PencilFill)
+                            })
+                            .on_press_maybe(if group_to_edit.is_in_edit_mode {
+                                None
+                            } else {
+                                Some(Message::ToggleGroupEditor)
+                            })
+                            .style(theme::Button::Text),
+                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                                .on_press(Message::ShowAlert(FurAlert::DeleteTaskConfirmation)) // TODO: if ! delete confirmation run delete only
+                                .style(theme::Button::Text),
+                        ]
+                        .spacing(5),
                         match group_to_edit.is_in_edit_mode {
                             true => column![
                                 text_input(&group_to_edit.name, &group_to_edit.new_name).on_input(
@@ -804,8 +892,34 @@ impl Application for Furtherance {
                                 ]
                                 .align_items(Alignment::Center)
                                 .spacing(5),
-                                // TODO: Add save & cancel buttons here
-                            ],
+                                row![
+                                    button(
+                                        text("Cancel")
+                                            .horizontal_alignment(alignment::Horizontal::Center)
+                                    )
+                                    .style(theme::Button::Secondary)
+                                    .on_press(Message::ToggleGroupEditor)
+                                    .width(Length::Fill),
+                                    button(
+                                        text("Save")
+                                            .horizontal_alignment(alignment::Horizontal::Center)
+                                    )
+                                    .style(theme::Button::Primary)
+                                    .on_press_maybe(
+                                        if group_to_edit.is_changed()
+                                            && !group_to_edit.new_name.trim().is_empty()
+                                        {
+                                            Some(Message::SaveGroupEdit)
+                                        } else {
+                                            None
+                                        }
+                                    )
+                                    .width(Length::Fill),
+                                ]
+                                .padding([20, 0, 0, 0])
+                                .spacing(10),
+                            ]
+                            .spacing(5),
                             false => column![
                                 text(&group_to_edit.name).font(font::Font {
                                     weight: iced::font::Weight::Bold,
@@ -821,7 +935,7 @@ impl Application for Furtherance {
                         },
                         //TODO: List all tasks in group here
                     ]
-                    .spacing(12)
+                    .spacing(5)
                     .padding(20)
                     .width(250)
                     .align_items(Alignment::Start),
@@ -870,11 +984,6 @@ impl Application for Furtherance {
                         .on_press(Message::DeleteTasks)
                         .style(theme::Button::Destructive),
                     );
-                }
-                FurAlert::TaskNameEmpty => {
-                    alert_text = "Empty Task Name";
-                    alert_description = "The task must have a name.";
-                    close_button_text = "OK";
                 }
             }
 
