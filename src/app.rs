@@ -62,6 +62,7 @@ pub enum FurAlert {
 
 #[derive(Debug)]
 pub enum FurInspectorView {
+    AddNewTask,
     AddTaskToGroup,
     EditTask,
     EditGroup,
@@ -98,6 +99,7 @@ pub struct Furtherance {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    AddNewTaskPressed,
     AddTaskToGroup(GroupToEdit),
     AlertClose,
     EditGroup(FurTaskGroup),
@@ -173,6 +175,11 @@ impl Application for Furtherance {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::AddNewTaskPressed => {
+                self.task_to_add = Some(TaskToAdd::new());
+                self.inspector_view = Some(FurInspectorView::AddNewTask);
+                Command::none()
+            }
             Message::AddTaskToGroup(group_to_edit) => {
                 self.task_to_add = Some(TaskToAdd::new_from(&group_to_edit));
                 self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
@@ -312,6 +319,71 @@ impl Application for Furtherance {
             }
             Message::EditTaskTextChanged(new_value, property) => {
                 match self.inspector_view {
+                    Some(FurInspectorView::AddNewTask) => {
+                        if let Some(task_to_add) = self.task_to_add.as_mut() {
+                            match property {
+                                EditTaskProperty::Name => {
+                                    if new_value.contains('#')
+                                        || new_value.contains('@')
+                                        || new_value.contains('$')
+                                    {
+                                        task_to_add.invalid_input_error_message =
+                                            "Task name cannot contain #, @, or $.".to_string();
+                                    } else {
+                                        task_to_add.name = new_value;
+                                        task_to_add.invalid_input_error_message = String::new();
+                                    }
+                                }
+                                EditTaskProperty::Project => {
+                                    if new_value.contains('#')
+                                        || new_value.contains('@')
+                                        || new_value.contains('$')
+                                    {
+                                        // TODO: Change to .input_error system
+                                        task_to_add.invalid_input_error_message =
+                                            "Project cannot contain #, @, or $.".to_string();
+                                    } else {
+                                        task_to_add.project = new_value;
+                                    }
+                                }
+                                EditTaskProperty::Tags => {
+                                    if new_value.contains('@') || new_value.contains('$') {
+                                        task_to_add.invalid_input_error_message =
+                                            "Tags cannot contain @ or $.".to_string();
+                                    } else if !new_value.is_empty()
+                                        && new_value.chars().next() != Some('#')
+                                    {
+                                        task_to_add.invalid_input_error_message =
+                                            "Tags must start with a #.".to_string();
+                                    } else {
+                                        task_to_add.tags = new_value;
+                                        task_to_add.invalid_input_error_message = String::new();
+                                    }
+                                }
+                                EditTaskProperty::Rate => {
+                                    let new_value_parsed = new_value.parse::<f32>();
+                                    if new_value.is_empty() {
+                                        task_to_add.new_rate = String::new();
+                                    } else if new_value.contains('$') {
+                                        task_to_add.invalid_input_error_message =
+                                            "Do not include a $ in the rate.".to_string();
+                                    } else if new_value_parsed.is_ok()
+                                        && has_max_two_decimals(
+                                            new_value_parsed.clone().unwrap_or(0.0),
+                                        )
+                                        && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
+                                    {
+                                        task_to_add.new_rate = new_value;
+                                        task_to_add.invalid_input_error_message = String::new();
+                                    } else {
+                                        task_to_add.invalid_input_error_message =
+                                            "Rate must be a valid dollar amount.".to_string();
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
                     Some(FurInspectorView::EditTask) => {
                         if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                             match property {
@@ -594,6 +666,36 @@ impl Application for Furtherance {
                             }
                         }
                     }
+                } else if let Some(task_to_add) = self.task_to_add.as_mut() {
+                    match property {
+                        EditTaskProperty::StartDate => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_date_with_time(task_to_add.start_time, new_date)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time < task_to_add.stop_time
+                                {
+                                    task_to_add.displayed_start_date = new_date;
+                                    task_to_add.start_time = new_local_date_time;
+                                    task_to_add.show_start_date_picker = false;
+                                }
+                            }
+                        }
+                        EditTaskProperty::StopDate => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_date_with_time(task_to_add.stop_time, new_date)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time > task_to_add.start_time
+                                {
+                                    task_to_add.displayed_stop_date = new_date;
+                                    task_to_add.stop_time = new_local_date_time;
+                                    task_to_add.show_stop_date_picker = false;
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
                 }
                 Command::none()
             }
@@ -789,6 +891,14 @@ impl Application for Furtherance {
         // MARK: HISTORY
         let mut all_history_rows: Column<'_, Message, Theme, Renderer> =
             Column::new().spacing(8).padding(20);
+        if self.inspector_view.is_none() {
+            all_history_rows = all_history_rows.push(row![
+                horizontal_space(),
+                button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
+                    .on_press(Message::AddNewTaskPressed)
+                    .style(theme::Button::Text),
+            ]);
+        }
         for (date, task_groups) in self.task_history.iter().rev() {
             let total_time = task_groups
                 .iter()
@@ -810,192 +920,247 @@ impl Application for Furtherance {
         let settings_view = column![Scrollable::new(column![])];
 
         // MARK: INSPECTOR
-        let inspector: Container<'_, Message, Theme, Renderer> =
-            Container::new(match &self.inspector_view {
-                // MARK: Add Task To Group
-                Some(FurInspectorView::AddTaskToGroup) => match &self.task_to_add {
-                    Some(task_to_add) => column![
-                        text_input(&task_to_add.name, ""),
-                        text_input(&task_to_add.project, ""),
-                        text_input(&task_to_add.tags, ""),
-                        text_input(&format!("{:.2}", task_to_add.rate), ""),
-                        row![
-                            text("Start:"),
-                            button(
-                                text(&task_to_add.displayed_start_date.to_string())
-                                    .horizontal_alignment(alignment::Horizontal::Center)
-                            )
-                            .on_press_maybe(None),
-                            time_picker(
-                                task_to_add.show_start_time_picker,
-                                task_to_add.displayed_start_time,
-                                Button::new(text(task_to_add.displayed_start_time.to_string()))
-                                    .on_press(Message::ChooseTaskEditDateTime(
-                                        EditTaskProperty::StartTime
-                                    )),
-                                Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
-                                |time| Message::SubmitTaskEditTime(
-                                    time,
+        let inspector: Column<'_, Message, Theme, Renderer> = match &self.inspector_view {
+            // MARK: Add Task To Group
+            Some(FurInspectorView::AddNewTask) => match &self.task_to_add {
+                Some(task_to_add) => column![
+                    text_input("Task name", &task_to_add.name)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
+                    text_input("Project", &task_to_add.project)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
+                    text_input("#tags", &task_to_add.tags)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
+                    text_input("0.00", &task_to_add.new_rate)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Rate)),
+                    row![
+                        text("Start:"),
+                        date_picker(
+                            task_to_add.show_start_date_picker,
+                            task_to_add.displayed_start_date,
+                            button(text(task_to_add.displayed_start_date.to_string())).on_press(
+                                Message::ChooseTaskEditDateTime(EditTaskProperty::StartDate)
+                            ),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
+                            |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StartDate),
+                        ),
+                        time_picker(
+                            task_to_add.show_start_time_picker,
+                            task_to_add.displayed_start_time,
+                            Button::new(text(task_to_add.displayed_start_time.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
-                                ),
-                            )
-                            .use_24h(),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(5),
-                        row![
-                            text("Stop:"),
-                            button(
-                                text(&task_to_add.displayed_stop_date.to_string())
-                                    .horizontal_alignment(alignment::Horizontal::Center)
-                            )
-                            .on_press_maybe(None),
-                            time_picker(
-                                task_to_add.show_stop_time_picker,
-                                task_to_add.displayed_stop_time,
-                                Button::new(text(task_to_add.displayed_stop_time.to_string()))
-                                    .on_press(Message::ChooseTaskEditDateTime(
-                                        EditTaskProperty::StopTime
-                                    )),
-                                Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
-                                |time| Message::SubmitTaskEditTime(
-                                    time,
+                                )),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
+                            |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
+                        )
+                        .use_24h(),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        text("Stop:"),
+                        date_picker(
+                            task_to_add.show_stop_date_picker,
+                            task_to_add.displayed_stop_date,
+                            button(text(task_to_add.displayed_stop_date.to_string())).on_press(
+                                Message::ChooseTaskEditDateTime(EditTaskProperty::StopDate)
+                            ),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
+                            |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StopDate),
+                        ),
+                        time_picker(
+                            task_to_add.show_stop_time_picker,
+                            task_to_add.displayed_stop_time,
+                            Button::new(text(task_to_add.displayed_stop_time.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
-                                ),
-                            )
-                            .use_24h(),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(5),
-                        row![
-                            button(
-                                text("Cancel").horizontal_alignment(alignment::Horizontal::Center)
-                            )
+                                )),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
+                            |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
+                        )
+                        .use_24h(),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelTaskEdit)
                             .width(Length::Fill),
-                            button(
-                                text("Save").horizontal_alignment(alignment::Horizontal::Center)
-                            )
+                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
-                            .on_press(Message::SaveTaskEdit)
+                            .on_press_maybe(if task_to_add.name.trim().is_empty() {
+                                None
+                            } else {
+                                Some(Message::SaveTaskEdit)
+                            })
                             .width(Length::Fill),
-                        ]
-                        .padding([20, 0, 0, 0])
-                        .spacing(10),
                     ]
+                    .padding([20, 0, 0, 0])
+                    .spacing(10),
+                ]
+                .spacing(12)
+                .padding(20)
+                .width(250)
+                .align_items(Alignment::Start),
+                None => column![]
                     .spacing(12)
                     .padding(20)
                     .width(250)
                     .align_items(Alignment::Start),
-                    None => column![]
-                        .spacing(12)
-                        .padding(20)
-                        .width(250)
-                        .align_items(Alignment::Start),
-                },
-                // MARK: Edit Single Task
-                Some(FurInspectorView::EditTask) => match &self.task_to_edit {
-                    Some(task_to_edit) => column![
-                        row![
-                            horizontal_space(),
-                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                                .on_press(Message::ShowAlert(FurAlert::DeleteTaskConfirmation)) // TODO: if ! delete confirmation run delete only
-                                .style(theme::Button::Text),
-                        ],
-                        text_input(&task_to_edit.name, &task_to_edit.new_name)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
-                        text_input(&task_to_edit.project, &task_to_edit.new_project).on_input(
-                            |s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)
-                        ),
-                        text_input(&task_to_edit.tags, &task_to_edit.new_tags)
-                            .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
-                        row![
-                            text("$"),
-                            text_input(
-                                &format!("{:.2}", &task_to_edit.rate),
-                                &task_to_edit.new_rate
-                            )
-                            .on_input(|s| {
-                                Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
-                            }),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(5),
-                        row![
-                            text("Start:"),
-                            date_picker(
-                                task_to_edit.show_displayed_start_date_picker,
-                                task_to_edit.displayed_start_date,
-                                button(text(task_to_edit.displayed_start_date.to_string()))
-                                    .on_press(Message::ChooseTaskEditDateTime(
-                                        EditTaskProperty::StartDate
-                                    )),
-                                Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
-                                |date| Message::SubmitTaskEditDate(
-                                    date,
-                                    EditTaskProperty::StartDate
-                                ),
-                            ),
-                            time_picker(
-                                task_to_edit.show_displayed_start_time_picker,
-                                task_to_edit.displayed_start_time,
-                                Button::new(text(task_to_edit.displayed_start_time.to_string()))
-                                    .on_press(Message::ChooseTaskEditDateTime(
-                                        EditTaskProperty::StartTime
-                                    )),
-                                Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
-                                |time| Message::SubmitTaskEditTime(
-                                    time,
+            },
+            Some(FurInspectorView::AddTaskToGroup) => match &self.task_to_add {
+                Some(task_to_add) => column![
+                    text_input(&task_to_add.name, ""),
+                    text_input(&task_to_add.project, ""),
+                    text_input(&task_to_add.tags, ""),
+                    text_input(&format!("{:.2}", task_to_add.rate), ""),
+                    row![
+                        text("Start:"),
+                        button(
+                            text(&task_to_add.displayed_start_date.to_string())
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .on_press_maybe(None),
+                        time_picker(
+                            task_to_add.show_start_time_picker,
+                            task_to_add.displayed_start_time,
+                            Button::new(text(task_to_add.displayed_start_time.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
-                                ),
-                            )
-                            .use_24h(),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(5),
-                        row![
-                            text("Stop:"),
-                            date_picker(
-                                task_to_edit.show_displayed_stop_date_picker,
-                                task_to_edit.displayed_stop_date,
-                                button(text(task_to_edit.displayed_stop_date.to_string()))
-                                    .on_press(Message::ChooseTaskEditDateTime(
-                                        EditTaskProperty::StopDate
-                                    )),
-                                Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
-                                |date| Message::SubmitTaskEditDate(
-                                    date,
-                                    EditTaskProperty::StopDate
-                                ),
-                            ),
-                            time_picker(
-                                task_to_edit.show_displayed_stop_time_picker,
-                                task_to_edit.displayed_stop_time,
-                                Button::new(text(task_to_edit.displayed_stop_time.to_string()))
-                                    .on_press(Message::ChooseTaskEditDateTime(
-                                        EditTaskProperty::StopTime
-                                    )),
-                                Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
-                                |time| Message::SubmitTaskEditTime(
-                                    time,
+                                )),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
+                            |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
+                        )
+                        .use_24h(),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        text("Stop:"),
+                        button(
+                            text(&task_to_add.displayed_stop_date.to_string())
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .on_press_maybe(None),
+                        time_picker(
+                            task_to_add.show_stop_time_picker,
+                            task_to_add.displayed_stop_time,
+                            Button::new(text(task_to_add.displayed_stop_time.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
-                                ),
-                            )
-                            .use_24h(),
-                        ]
-                        .align_items(Alignment::Center)
-                        .spacing(5),
-                        row![
-                            button(
-                                text("Cancel").horizontal_alignment(alignment::Horizontal::Center)
-                            )
+                                )),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
+                            |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
+                        )
+                        .use_24h(),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelTaskEdit)
                             .width(Length::Fill),
-                            button(
-                                text("Save").horizontal_alignment(alignment::Horizontal::Center)
-                            )
+                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                            .style(theme::Button::Primary)
+                            .on_press(Message::SaveTaskEdit)
+                            .width(Length::Fill),
+                    ]
+                    .padding([20, 0, 0, 0])
+                    .spacing(10),
+                ]
+                .spacing(12)
+                .padding(20)
+                .width(250)
+                .align_items(Alignment::Start),
+                None => column![]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_items(Alignment::Start),
+            },
+            // MARK: Edit Single Task
+            Some(FurInspectorView::EditTask) => match &self.task_to_edit {
+                Some(task_to_edit) => column![
+                    row![
+                        horizontal_space(),
+                        button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                            .on_press(Message::ShowAlert(FurAlert::DeleteTaskConfirmation)) // TODO: if ! delete confirmation run delete only
+                            .style(theme::Button::Text),
+                    ],
+                    text_input(&task_to_edit.name, &task_to_edit.new_name)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
+                    text_input(&task_to_edit.project, &task_to_edit.new_project)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
+                    text_input(&task_to_edit.tags, &task_to_edit.new_tags)
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
+                    row![
+                        text("$"),
+                        text_input(
+                            &format!("{:.2}", &task_to_edit.rate),
+                            &task_to_edit.new_rate
+                        )
+                        .on_input(|s| { Message::EditTaskTextChanged(s, EditTaskProperty::Rate) }),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        text("Start:"),
+                        date_picker(
+                            task_to_edit.show_displayed_start_date_picker,
+                            task_to_edit.displayed_start_date,
+                            button(text(task_to_edit.displayed_start_date.to_string())).on_press(
+                                Message::ChooseTaskEditDateTime(EditTaskProperty::StartDate)
+                            ),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
+                            |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StartDate),
+                        ),
+                        time_picker(
+                            task_to_edit.show_displayed_start_time_picker,
+                            task_to_edit.displayed_start_time,
+                            Button::new(text(task_to_edit.displayed_start_time.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
+                                    EditTaskProperty::StartTime
+                                )),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
+                            |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
+                        )
+                        .use_24h(),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        text("Stop:"),
+                        date_picker(
+                            task_to_edit.show_displayed_stop_date_picker,
+                            task_to_edit.displayed_stop_date,
+                            button(text(task_to_edit.displayed_stop_date.to_string())).on_press(
+                                Message::ChooseTaskEditDateTime(EditTaskProperty::StopDate)
+                            ),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
+                            |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StopDate),
+                        ),
+                        time_picker(
+                            task_to_edit.show_displayed_stop_time_picker,
+                            task_to_edit.displayed_stop_time,
+                            Button::new(text(task_to_edit.displayed_stop_time.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
+                                    EditTaskProperty::StopTime
+                                )),
+                            Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
+                            |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
+                        )
+                        .use_24h(),
+                    ]
+                    .align_items(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                            .style(theme::Button::Secondary)
+                            .on_press(Message::CancelTaskEdit)
+                            .width(Length::Fill),
+                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
                             .on_press_maybe(
                                 if task_to_edit.is_changed()
@@ -1007,181 +1172,172 @@ impl Application for Furtherance {
                                 }
                             )
                             .width(Length::Fill),
-                        ]
-                        .padding([20, 0, 0, 0])
-                        .spacing(10),
-                        text(&task_to_edit.invalid_input_error_message)
-                            .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
                     ]
-                    .spacing(12)
-                    .padding(20)
-                    .width(250)
-                    .align_items(Alignment::Start),
-                    None => column![],
-                },
-                // MARK:: Edit Group
-                Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
-                    Some(group_to_edit) => {
-                        let mut group_info_column: Column<'_, Message, Theme, Renderer> =
-                            column![text(&group_to_edit.name).font(font::Font {
-                                weight: iced::font::Weight::Bold,
-                                ..Default::default()
-                            }),]
-                            .width(Length::Fill)
-                            .align_items(Alignment::Center)
-                            .spacing(5)
-                            .padding(20);
-                        if !group_to_edit.project.is_empty() {
-                            group_info_column =
-                                group_info_column.push(text(&group_to_edit.project));
-                        }
-                        if !group_to_edit.tags.is_empty() {
-                            group_info_column =
-                                group_info_column.push(text(format!("#{}", group_to_edit.tags)));
-                        }
-                        if group_to_edit.rate != 0.0 {
-                            group_info_column =
-                                group_info_column.push(text(format!("${}", &group_to_edit.rate)));
-                        }
-                        let tasks_column: Scrollable<'_, Message, Theme, Renderer> =
-                            Scrollable::new(group_to_edit.tasks.iter().fold(
-                                Column::new().spacing(5),
-                                |column, task| {
-                                    column
-                                        .push(
-                                            button(
-                                                Container::new(column![
-                                                    text(format!(
-                                                        "{} to {}",
-                                                        task.start_time.format("%H:%M").to_string(),
-                                                        task.stop_time.format("%H:%M").to_string()
-                                                    ))
-                                                    .font(font::Font {
-                                                        weight: iced::font::Weight::Bold,
-                                                        ..Default::default()
-                                                    }),
-                                                    text(format!(
-                                                        "Total: {}",
-                                                        seconds_to_formatted_duration(
-                                                            task.total_time_in_seconds()
-                                                        )
-                                                    ))
-                                                ])
-                                                .width(Length::Fill)
-                                                .padding([5, 8])
-                                                .style(style::group_edit_task_row),
-                                            )
-                                            .on_press(Message::EditTask(task.clone()))
-                                            .style(theme::Button::Text),
+                    .padding([20, 0, 0, 0])
+                    .spacing(10),
+                    text(&task_to_edit.invalid_input_error_message)
+                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
+                ]
+                .spacing(12)
+                .padding(20)
+                .width(250)
+                .align_items(Alignment::Start),
+                None => column![],
+            },
+            // MARK:: Edit Group
+            Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
+                Some(group_to_edit) => {
+                    let mut group_info_column: Column<'_, Message, Theme, Renderer> =
+                        column![text(&group_to_edit.name).font(font::Font {
+                            weight: iced::font::Weight::Bold,
+                            ..Default::default()
+                        }),]
+                        .width(Length::Fill)
+                        .align_items(Alignment::Center)
+                        .spacing(5)
+                        .padding(20);
+                    if !group_to_edit.project.is_empty() {
+                        group_info_column = group_info_column.push(text(&group_to_edit.project));
+                    }
+                    if !group_to_edit.tags.is_empty() {
+                        group_info_column =
+                            group_info_column.push(text(format!("#{}", group_to_edit.tags)));
+                    }
+                    if group_to_edit.rate != 0.0 {
+                        group_info_column =
+                            group_info_column.push(text(format!("${}", &group_to_edit.rate)));
+                    }
+                    let tasks_column: Scrollable<'_, Message, Theme, Renderer> =
+                        Scrollable::new(group_to_edit.tasks.iter().fold(
+                            Column::new().spacing(5),
+                            |column, task| {
+                                column
+                                    .push(
+                                        button(
+                                            Container::new(column![
+                                                text(format!(
+                                                    "{} to {}",
+                                                    task.start_time.format("%H:%M").to_string(),
+                                                    task.stop_time.format("%H:%M").to_string()
+                                                ))
+                                                .font(font::Font {
+                                                    weight: iced::font::Weight::Bold,
+                                                    ..Default::default()
+                                                }),
+                                                text(format!(
+                                                    "Total: {}",
+                                                    seconds_to_formatted_duration(
+                                                        task.total_time_in_seconds()
+                                                    )
+                                                ))
+                                            ])
+                                            .width(Length::Fill)
+                                            .padding([5, 8])
+                                            .style(style::group_edit_task_row),
                                         )
-                                        .padding([0, 10, 10, 10])
-                                },
-                            ));
-                        column![
-                            row![
-                                button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
-                                    .on_press(Message::CancelGroupEdit)
-                                    .style(theme::Button::Text),
-                                horizontal_space(),
-                                button(if group_to_edit.is_in_edit_mode {
-                                    bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
-                                } else {
-                                    bootstrap::icon_to_text(bootstrap::Bootstrap::PencilFill)
-                                })
+                                        .on_press(Message::EditTask(task.clone()))
+                                        .style(theme::Button::Text),
+                                    )
+                                    .padding([0, 10, 10, 10])
+                            },
+                        ));
+                    column![
+                        row![
+                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
+                                .on_press(Message::CancelGroupEdit)
+                                .style(theme::Button::Text),
+                            horizontal_space(),
+                            button(if group_to_edit.is_in_edit_mode {
+                                bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
+                            } else {
+                                bootstrap::icon_to_text(bootstrap::Bootstrap::PencilFill)
+                            })
+                            .on_press_maybe(if group_to_edit.is_in_edit_mode {
+                                None
+                            } else {
+                                Some(Message::ToggleGroupEditor)
+                            })
+                            .style(theme::Button::Text),
+                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
                                 .on_press_maybe(if group_to_edit.is_in_edit_mode {
                                     None
                                 } else {
-                                    Some(Message::ToggleGroupEditor)
+                                    Some(Message::AddTaskToGroup(group_to_edit.clone()))
                                 })
                                 .style(theme::Button::Text),
-                                button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
-                                    .on_press_maybe(if group_to_edit.is_in_edit_mode {
-                                        None
-                                    } else {
-                                        Some(Message::AddTaskToGroup(group_to_edit.clone()))
-                                    })
-                                    .style(theme::Button::Text),
-                                button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                                    .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
-                                    .style(theme::Button::Text),
-                            ]
-                            .spacing(5),
-                            match group_to_edit.is_in_edit_mode {
-                                true => column![
-                                    text_input(&group_to_edit.name, &group_to_edit.new_name)
-                                        .on_input(|s| Message::EditTaskTextChanged(
-                                            s,
-                                            EditTaskProperty::Name
-                                        )),
-                                    text_input(&group_to_edit.project, &group_to_edit.new_project)
-                                        .on_input(|s| Message::EditTaskTextChanged(
-                                            s,
-                                            EditTaskProperty::Project
-                                        )),
-                                    text_input(&group_to_edit.tags, &group_to_edit.new_tags)
-                                        .on_input(|s| Message::EditTaskTextChanged(
-                                            s,
-                                            EditTaskProperty::Tags
-                                        )),
-                                    row![
-                                        text("$"),
-                                        text_input(
-                                            &format!("{:.2}", &group_to_edit.rate),
-                                            &group_to_edit.new_rate
-                                        )
-                                        .on_input(|s| {
-                                            Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
-                                        }),
-                                    ]
-                                    .align_items(Alignment::Center)
-                                    .spacing(5),
-                                    row![
-                                        button(
-                                            text("Cancel").horizontal_alignment(
-                                                alignment::Horizontal::Center
-                                            )
-                                        )
-                                        .style(theme::Button::Secondary)
-                                        .on_press(Message::ToggleGroupEditor)
-                                        .width(Length::Fill),
-                                        button(
-                                            text("Save").horizontal_alignment(
-                                                alignment::Horizontal::Center
-                                            )
-                                        )
-                                        .style(theme::Button::Primary)
-                                        .on_press_maybe(
-                                            if group_to_edit.is_changed()
-                                                && !group_to_edit.new_name.trim().is_empty()
-                                            {
-                                                Some(Message::SaveGroupEdit)
-                                            } else {
-                                                None
-                                            }
-                                        )
-                                        .width(Length::Fill),
-                                    ]
-                                    .padding([20, 0, 0, 0])
-                                    .spacing(10),
-                                ]
-                                .padding(20)
-                                .spacing(5),
-                                false => group_info_column,
-                            },
-                            tasks_column,
+                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                                .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
+                                .style(theme::Button::Text),
                         ]
-                        .spacing(5)
-                        .width(250)
-                        .align_items(Alignment::Start)
-                    }
-                    None => column![text("Nothing selected.")]
-                        .spacing(12)
-                        .padding(20)
-                        .width(175)
-                        .align_items(Alignment::Start),
-                },
-                _ => column![],
-            });
+                        .spacing(5),
+                        match group_to_edit.is_in_edit_mode {
+                            true => column![
+                                text_input(&group_to_edit.name, &group_to_edit.new_name).on_input(
+                                    |s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)
+                                ),
+                                text_input(&group_to_edit.project, &group_to_edit.new_project)
+                                    .on_input(|s| Message::EditTaskTextChanged(
+                                        s,
+                                        EditTaskProperty::Project
+                                    )),
+                                text_input(&group_to_edit.tags, &group_to_edit.new_tags).on_input(
+                                    |s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)
+                                ),
+                                row![
+                                    text("$"),
+                                    text_input(
+                                        &format!("{:.2}", &group_to_edit.rate),
+                                        &group_to_edit.new_rate
+                                    )
+                                    .on_input(|s| {
+                                        Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
+                                    }),
+                                ]
+                                .align_items(Alignment::Center)
+                                .spacing(5),
+                                row![
+                                    button(
+                                        text("Cancel")
+                                            .horizontal_alignment(alignment::Horizontal::Center)
+                                    )
+                                    .style(theme::Button::Secondary)
+                                    .on_press(Message::ToggleGroupEditor)
+                                    .width(Length::Fill),
+                                    button(
+                                        text("Save")
+                                            .horizontal_alignment(alignment::Horizontal::Center)
+                                    )
+                                    .style(theme::Button::Primary)
+                                    .on_press_maybe(
+                                        if group_to_edit.is_changed()
+                                            && !group_to_edit.new_name.trim().is_empty()
+                                        {
+                                            Some(Message::SaveGroupEdit)
+                                        } else {
+                                            None
+                                        }
+                                    )
+                                    .width(Length::Fill),
+                                ]
+                                .padding([20, 0, 0, 0])
+                                .spacing(10),
+                            ]
+                            .padding(20)
+                            .spacing(5),
+                            false => group_info_column,
+                        },
+                        tasks_column,
+                    ]
+                    .spacing(5)
+                    .align_items(Alignment::Start)
+                }
+                None => column![text("Nothing selected.")]
+                    .spacing(12)
+                    .padding(20)
+                    .align_items(Alignment::Start),
+            },
+            _ => column![],
+        };
 
         let content = row![
             sidebar,
@@ -1193,7 +1349,11 @@ impl Application for Furtherance {
                 FurView::Report => report_view,
                 FurView::Settings => settings_view,
             },
-            inspector,
+            inspector.width(if self.inspector_view.is_some() {
+                260
+            } else {
+                0
+            }),
         ];
 
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
