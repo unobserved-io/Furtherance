@@ -1273,8 +1273,13 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
     let separated_tags: Vec<String> = re_tags
         .captures_iter(input)
         .map(|cap| cap.get(1).unwrap().as_str().trim().to_string())
+        .filter(|s| !s.trim().is_empty())
         .collect();
-    let tags = separated_tags.join(" #");
+    let tags = if separated_tags.is_empty() {
+        String::new()
+    } else {
+        separated_tags.join(" #")
+    };
 
     let rate_string = re_rate
         .captures(input)
