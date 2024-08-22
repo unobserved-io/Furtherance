@@ -23,6 +23,7 @@ mod models {
     pub mod fur_task;
     pub mod fur_task_group;
     pub mod group_to_edit;
+    pub mod task_to_add;
     pub mod task_to_edit;
 }
 mod style;

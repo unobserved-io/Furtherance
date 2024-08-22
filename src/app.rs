@@ -18,6 +18,7 @@ use core::f32;
 use std::collections::BTreeMap;
 
 use crate::models::group_to_edit::GroupToEdit;
+use crate::models::task_to_add::TaskToAdd;
 use crate::models::task_to_edit::TaskToEdit;
 use crate::style;
 use crate::{
@@ -61,6 +62,7 @@ pub enum FurAlert {
 
 #[derive(Debug)]
 pub enum FurInspectorView {
+    AddTaskToGroup,
     EditTask,
     EditGroup,
 }
@@ -90,11 +92,13 @@ pub struct Furtherance {
     timer_start_time: DateTime<Local>,
     timer_stop_time: DateTime<Local>,
     timer_text: String,
+    task_to_add: Option<TaskToAdd>,
     task_to_edit: Option<TaskToEdit>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    AddTaskToGroup(GroupToEdit),
     AlertClose,
     EditGroup(FurTaskGroup),
     EditTask(FurTask),
@@ -146,6 +150,7 @@ impl Application for Furtherance {
             timer_start_time: Local::now(),
             timer_stop_time: Local::now(),
             timer_text: "0:00:00".to_string(),
+            task_to_add: None,
             task_to_edit: None,
         };
 
@@ -168,6 +173,11 @@ impl Application for Furtherance {
 
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
+            Message::AddTaskToGroup(group_to_edit) => {
+                self.task_to_add = Some(TaskToAdd::new_from(&group_to_edit));
+                self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
+                Command::none()
+            }
             Message::AlertClose => {
                 self.displayed_alert = None;
                 Command::none()
@@ -183,6 +193,7 @@ impl Application for Furtherance {
             }
             Message::CancelTaskEdit => {
                 self.task_to_edit = None;
+                self.task_to_add = None;
                 if self.group_to_edit.is_some() {
                     self.inspector_view = Some(FurInspectorView::EditGroup);
                 } else {
@@ -207,6 +218,22 @@ impl Application for Furtherance {
                         }
                         _ => {}
                     }
+                } else if let Some(task_to_add) = self.task_to_add.as_mut() {
+                    match property {
+                        EditTaskProperty::StartTime => {
+                            task_to_add.show_start_time_picker = false;
+                        }
+                        EditTaskProperty::StopTime => {
+                            task_to_add.show_stop_time_picker = false;
+                        }
+                        EditTaskProperty::StartDate => {
+                            task_to_add.show_start_date_picker = false;
+                        }
+                        EditTaskProperty::StopDate => {
+                            task_to_add.show_stop_date_picker = false;
+                        }
+                        _ => {}
+                    }
                 }
                 Command::none()
             }
@@ -228,6 +255,22 @@ impl Application for Furtherance {
                         }
                         EditTaskProperty::StopDate => {
                             task_to_edit.show_displayed_stop_date_picker = true;
+                        }
+                        _ => {}
+                    }
+                } else if let Some(task_to_add) = self.task_to_add.as_mut() {
+                    match property {
+                        EditTaskProperty::StartTime => {
+                            task_to_add.show_start_time_picker = true;
+                        }
+                        EditTaskProperty::StopTime => {
+                            task_to_add.show_stop_time_picker = true;
+                        }
+                        EditTaskProperty::StartDate => {
+                            task_to_add.show_start_date_picker = true;
+                        }
+                        EditTaskProperty::StopDate => {
+                            task_to_add.show_stop_date_picker = true;
                         }
                         _ => {}
                     }
@@ -444,6 +487,27 @@ impl Application for Furtherance {
                     self.task_to_edit = None;
                     self.group_to_edit = None;
                     self.task_history = get_task_history();
+                } else if let Some(task_to_add) = &self.task_to_add {
+                    let tags_without_first_pound = task_to_add
+                        .tags
+                        .trim()
+                        .strip_prefix('#')
+                        .unwrap_or(&task_to_add.tags)
+                        .trim()
+                        .to_string();
+                    let _ = db_write_task(FurTask {
+                        id: 0,
+                        name: task_to_add.name.trim().to_string(),
+                        start_time: task_to_add.start_time,
+                        stop_time: task_to_add.stop_time,
+                        tags: tags_without_first_pound,
+                        project: task_to_add.project.trim().to_string(),
+                        rate: task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                    });
+                    self.inspector_view = None;
+                    self.task_to_add = None;
+                    self.group_to_edit = None;
+                    self.task_history = get_task_history();
                 }
                 Command::none()
             }
@@ -534,6 +598,7 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::SubmitTaskEditTime(new_time, property) => {
+                // TODO: Edit to fix issues in greater than stop, etc. like below
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     if let LocalResult::Single(new_local_date_time) =
                         combine_chosen_time_with_date(task_to_edit.new_start_time, new_time)
@@ -553,6 +618,34 @@ impl Application for Furtherance {
                                 _ => {}
                             }
                         }
+                    }
+                } else if let Some(task_to_add) = self.task_to_add.as_mut() {
+                    match property {
+                        EditTaskProperty::StartTime => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_time_with_date(task_to_add.start_time, new_time)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time < task_to_add.stop_time
+                                {
+                                    task_to_add.displayed_start_time = new_time;
+                                    task_to_add.start_time = new_local_date_time;
+                                    task_to_add.show_start_time_picker = false;
+                                }
+                            }
+                        }
+                        EditTaskProperty::StopTime => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_time_with_date(task_to_add.stop_time, new_time)
+                            {
+                                if new_local_date_time > task_to_add.start_time {
+                                    task_to_add.displayed_stop_time = new_time;
+                                    task_to_add.stop_time = new_local_date_time;
+                                    task_to_add.show_stop_time_picker = false;
+                                }
+                            }
+                        }
+                        _ => {}
                     }
                 }
                 Command::none()
@@ -719,6 +812,88 @@ impl Application for Furtherance {
         // MARK: INSPECTOR
         let inspector: Container<'_, Message, Theme, Renderer> =
             Container::new(match &self.inspector_view {
+                // MARK: Add Task To Group
+                Some(FurInspectorView::AddTaskToGroup) => match &self.task_to_add {
+                    Some(task_to_add) => column![
+                        text_input(&task_to_add.name, ""),
+                        text_input(&task_to_add.project, ""),
+                        text_input(&task_to_add.tags, ""),
+                        text_input(&format!("{:.2}", task_to_add.rate), ""),
+                        row![
+                            text("Start:"),
+                            button(
+                                text(&task_to_add.displayed_start_date.to_string())
+                                    .horizontal_alignment(alignment::Horizontal::Center)
+                            )
+                            .on_press_maybe(None),
+                            time_picker(
+                                task_to_add.show_start_time_picker,
+                                task_to_add.displayed_start_time,
+                                Button::new(text(task_to_add.displayed_start_time.to_string()))
+                                    .on_press(Message::ChooseTaskEditDateTime(
+                                        EditTaskProperty::StartTime
+                                    )),
+                                Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
+                                |time| Message::SubmitTaskEditTime(
+                                    time,
+                                    EditTaskProperty::StartTime
+                                ),
+                            )
+                            .use_24h(),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(5),
+                        row![
+                            text("Stop:"),
+                            button(
+                                text(&task_to_add.displayed_stop_date.to_string())
+                                    .horizontal_alignment(alignment::Horizontal::Center)
+                            )
+                            .on_press_maybe(None),
+                            time_picker(
+                                task_to_add.show_stop_time_picker,
+                                task_to_add.displayed_stop_time,
+                                Button::new(text(task_to_add.displayed_stop_time.to_string()))
+                                    .on_press(Message::ChooseTaskEditDateTime(
+                                        EditTaskProperty::StopTime
+                                    )),
+                                Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
+                                |time| Message::SubmitTaskEditTime(
+                                    time,
+                                    EditTaskProperty::StopTime
+                                ),
+                            )
+                            .use_24h(),
+                        ]
+                        .align_items(Alignment::Center)
+                        .spacing(5),
+                        row![
+                            button(
+                                text("Cancel").horizontal_alignment(alignment::Horizontal::Center)
+                            )
+                            .style(theme::Button::Secondary)
+                            .on_press(Message::CancelTaskEdit)
+                            .width(Length::Fill),
+                            button(
+                                text("Save").horizontal_alignment(alignment::Horizontal::Center)
+                            )
+                            .style(theme::Button::Primary)
+                            .on_press(Message::SaveTaskEdit)
+                            .width(Length::Fill),
+                        ]
+                        .padding([20, 0, 0, 0])
+                        .spacing(10),
+                    ]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_items(Alignment::Start),
+                    None => column![]
+                        .spacing(12)
+                        .padding(20)
+                        .width(250)
+                        .align_items(Alignment::Start),
+                },
                 // MARK: Edit Single Task
                 Some(FurInspectorView::EditTask) => match &self.task_to_edit {
                     Some(task_to_edit) => column![
@@ -919,6 +1094,13 @@ impl Application for Furtherance {
                                     Some(Message::ToggleGroupEditor)
                                 })
                                 .style(theme::Button::Text),
+                                button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
+                                    .on_press_maybe(if group_to_edit.is_in_edit_mode {
+                                        None
+                                    } else {
+                                        Some(Message::AddTaskToGroup(group_to_edit.clone()))
+                                    })
+                                    .style(theme::Button::Text),
                                 button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
                                     .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
                                     .style(theme::Button::Text),
