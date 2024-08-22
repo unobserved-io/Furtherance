@@ -647,24 +647,34 @@ impl Application for Furtherance {
             }
             Message::SubmitTaskEditDate(new_date, property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
-                    if let LocalResult::Single(new_local_date_time) =
-                        combine_chosen_date_with_time(task_to_edit.new_start_time, new_date)
-                    {
-                        if new_local_date_time <= Local::now() {
-                            match property {
-                                EditTaskProperty::StartDate => {
+                    match property {
+                        EditTaskProperty::StartDate => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_date_with_time(task_to_edit.new_start_time, new_date)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time < task_to_edit.new_stop_time
+                                {
                                     task_to_edit.displayed_start_date = new_date;
                                     task_to_edit.new_start_time = new_local_date_time;
                                     task_to_edit.show_displayed_start_date_picker = false;
                                 }
-                                EditTaskProperty::StopDate => {
+                            }
+                        }
+                        EditTaskProperty::StopDate => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_date_with_time(task_to_edit.new_stop_time, new_date)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time > task_to_edit.new_start_time
+                                {
                                     task_to_edit.displayed_stop_date = new_date;
                                     task_to_edit.new_stop_time = new_local_date_time;
                                     task_to_edit.show_displayed_stop_date_picker = false;
                                 }
-                                _ => {}
                             }
                         }
+                        _ => {}
                     }
                 } else if let Some(task_to_add) = self.task_to_add.as_mut() {
                     match property {
@@ -702,24 +712,34 @@ impl Application for Furtherance {
             Message::SubmitTaskEditTime(new_time, property) => {
                 // TODO: Edit to fix issues in greater than stop, etc. like below
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
-                    if let LocalResult::Single(new_local_date_time) =
-                        combine_chosen_time_with_date(task_to_edit.new_start_time, new_time)
-                    {
-                        if new_local_date_time <= Local::now() {
-                            match property {
-                                EditTaskProperty::StartTime => {
+                    match property {
+                        EditTaskProperty::StartTime => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_time_with_date(task_to_edit.new_start_time, new_time)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time < task_to_edit.new_stop_time
+                                {
                                     task_to_edit.displayed_start_time = new_time;
                                     task_to_edit.new_start_time = new_local_date_time;
                                     task_to_edit.show_displayed_start_time_picker = false;
                                 }
-                                EditTaskProperty::StopTime => {
+                            }
+                        }
+                        EditTaskProperty::StopTime => {
+                            if let LocalResult::Single(new_local_date_time) =
+                                combine_chosen_time_with_date(task_to_edit.new_stop_time, new_time)
+                            {
+                                if new_local_date_time <= Local::now()
+                                    && new_local_date_time > task_to_edit.new_start_time
+                                {
                                     task_to_edit.displayed_stop_time = new_time;
                                     task_to_edit.new_stop_time = new_local_date_time;
                                     task_to_edit.show_displayed_stop_time_picker = false;
                                 }
-                                _ => {}
                             }
                         }
+                        _ => {}
                     }
                 } else if let Some(task_to_add) = self.task_to_add.as_mut() {
                     match property {
