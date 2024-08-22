@@ -23,5 +23,6 @@ pub struct FurShortcut {
     pub tags: String,
     pub project: String,
     pub rate: f32,
+    pub currency: String,
     pub color_hex: String,
 }

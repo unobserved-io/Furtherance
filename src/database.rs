@@ -91,7 +91,8 @@ pub fn db_init() -> Result<()> {
                         stop_time TIMESTAMP,
                         tags TEXT,
                         project TEXT,
-                        rate REAL);",
+                        rate REAL,
+                        currency TEXT,);",
         [],
     )?;
 
@@ -102,6 +103,7 @@ pub fn db_init() -> Result<()> {
                         tags TEXT,
                         project TEXT,
                         rate REAL,
+                        currency TEXT,
                         color_hex TEXT);",
         [],
     )?;
@@ -116,6 +118,7 @@ pub fn db_upgrade_old() -> Result<()> {
     let _ = db_add_tags_column(&conn);
     let _ = db_add_project_column(&conn);
     let _ = db_add_rate_column(&conn);
+    let _ = db_add_currency_column(&conn);
 
     Ok(())
 }
@@ -132,6 +135,11 @@ pub fn db_add_project_column(conn: &Connection) -> Result<()> {
 
 pub fn db_add_rate_column(conn: &Connection) -> Result<()> {
     conn.execute("ALTER TABLE tasks ADD COLUMN rate REAL DEFAULT 0.0", [])?;
+    Ok(())
+}
+
+pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
+    conn.execute("ALTER TABLE tasks ADD COLUMN currency Text DEFAULT ''", [])?;
     Ok(())
 }
 
@@ -185,6 +193,7 @@ pub fn db_retrieve_all(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, r
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
+            currency: String::new(),
         };
         tasks_vec.push(fur_task);
     }
@@ -336,6 +345,7 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<FurTask>, rusqlite::Error
                 tags: row.get(4)?,
                 project: row.get(5)?,
                 rate: row.get(6)?,
+                currency: String::new(),
             })
         })?;
 
@@ -379,6 +389,7 @@ pub fn get_list_by_name_and_tags(
                 tags: row.get(4)?,
                 project: row.get(5)?,
                 rate: row.get(6)?,
+                currency: String::new(),
             })
         })
         .map(|task_item| task_item.unwrap())

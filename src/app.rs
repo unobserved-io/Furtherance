@@ -554,6 +554,7 @@ impl Application for Furtherance {
                         tags: tags_without_first_pound,
                         project: task_to_edit.new_project.trim().to_string(),
                         rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                        currency: String::new(),
                     });
                     self.inspector_view = None;
                     self.task_to_edit = None;
@@ -575,6 +576,7 @@ impl Application for Furtherance {
                         tags: tags_without_first_pound,
                         project: task_to_add.project.trim().to_string(),
                         rate: task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                        currency: String::new(),
                     });
                     self.inspector_view = None;
                     self.task_to_add = None;
@@ -602,6 +604,7 @@ impl Application for Furtherance {
                         tags,
                         project,
                         rate,
+                        currency: String::new(),
                     })
                     .expect("Couldn't write task to database.");
 
