@@ -32,4 +32,9 @@ toml = "0.8"
 tokio = "1.39"
 user-idle = "0.6.0"
 users = "0.11.0"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+wayrs-client = "1.1"
+wayrs-protocols = { version = "0.14", features = ["ext-idle-notify-v1"] }
+wayrs-utils = { version = "0.16", features = ["seats"] }
 x11rb = "0.13.1"
