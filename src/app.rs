@@ -15,15 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use core::f32;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, env};
 
-use crate::models::group_to_edit::GroupToEdit;
-use crate::models::task_to_add::TaskToAdd;
-use crate::models::task_to_edit::TaskToEdit;
-use crate::style;
 use crate::{
     database::*,
-    models::{fur_settings::FurSettings, fur_task::FurTask, fur_task_group::FurTaskGroup},
+    helpers::idle::is_idle,
+    models::{
+        fur_settings::FurSettings, fur_task::FurTask, fur_task_group::FurTaskGroup,
+        group_to_edit::GroupToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
+    },
+    style,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
@@ -140,7 +141,7 @@ impl Application for Furtherance {
         let _ = db_upgrade_old();
 
         let furtherance = Furtherance {
-            current_view: FurView::History,
+            current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             group_to_edit: None,
@@ -626,6 +627,9 @@ impl Application for Furtherance {
                     let minutes = duration.num_minutes() % 60;
                     let seconds = duration.num_seconds() % 60;
                     self.timer_text = format!("{}:{:02}:{:02}", hours, minutes, seconds);
+
+                    //TODO: Only if setting check_idle is set
+                    let user_is_idle = is_idle();
 
                     Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
                 } else {
