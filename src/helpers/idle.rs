@@ -15,19 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::{env, path::Path};
+
 use user_idle::UserIdle;
 use users::get_current_uid;
 
 #[cfg(target_os = "linux")]
-use wayrs_client::{connection::Connection, global::GlobalsExt, protocol::WlSeat, IoMode};
+use std::sync::Arc;
 #[cfg(target_os = "linux")]
-use wayrs_protocols::ext_idle_notify_v1::{
-    ext_idle_notification_v1, ExtIdleNotificationV1, ExtIdleNotifierV1,
-};
+use tokio::runtime::Runtime;
 #[cfg(target_os = "linux")]
-use wayrs_utils::seats::{SeatHandler, Seats};
-#[cfg(target_os = "linux")]
-use x11rb;
+use zbus::{proxy, Connection};
 
 fn is_wayland() -> bool {
     if let Ok(_) = env::var("XDG_SESSION_TYPE").map(|v| v == "wayland") {
@@ -44,7 +41,88 @@ fn is_x11() -> bool {
 }
 
 #[cfg(target_os = "linux")]
-fn get_wayland_idle_seconds() -> u64 {}
+#[proxy(
+    interface = "org.gnome.Mutter.IdleMonitor",
+    default_service = "org.gnome.Mutter.IdleMonitor",
+    default_path = "/org/gnome/Mutter/IdleMonitor/Core"
+)]
+trait GnomeIdleMonitor {
+    async fn get_idletime(&self) -> zbus::Result<u64>;
+}
+
+#[cfg(target_os = "linux")]
+#[proxy(
+    interface = "org.kde.KIdleTime",
+    default_service = "org.kde.KIdleTime",
+    default_path = "/org/kde/KIdleTime"
+)]
+trait KdeIdleTime {
+    #[zbus(name = "idleTime")]
+    async fn idle_time(&self) -> zbus::Result<u64>;
+}
+
+#[cfg(target_os = "linux")]
+#[proxy(
+    interface = "org.freedesktop.ScreenSaver",
+    default_service = "org.freedesktop.ScreenSaver",
+    default_path = "/org/freedesktop/ScreenSaver"
+)]
+trait FreeDesktopIdleMonitor {
+    async fn get_session_idle_time(&self) -> zbus::Result<u32>;
+}
+
+#[cfg(target_os = "linux")]
+fn get_wayland_idle_sync() -> Result<u64, Box<dyn std::error::Error>> {
+    let rt = Arc::new(Runtime::new()?);
+    rt.block_on(get_wayland_idle_seconds())
+        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
+}
+
+#[cfg(target_os = "linux")]
+async fn get_wayland_idle_seconds() -> zbus::Result<u64> {
+    let connection = Connection::session().await?;
+
+    // Try GNOME Mutter IdleMonitor
+    if let Ok(proxy) = GnomeIdleMonitorProxy::new(&connection).await {
+        if let Ok(idle_time) = proxy.get_idletime().await {
+            println!("{}", idle_time / 1000);
+            return Ok(idle_time / 1000);
+        }
+    }
+
+    // Try KDE IdleTime
+    if let Ok(proxy) = KdeIdleTimeProxy::new(&connection).await {
+        if let Ok(idle_time) = proxy.idle_time().await {
+            println!("{}", idle_time / 1000);
+            return Ok(idle_time / 1000);
+        }
+    }
+
+    // Try other desktops
+    if let Ok(proxy) = FreeDesktopIdleMonitorProxy::new(&connection).await {
+        if let Ok(idle_time) = proxy.get_session_idle_time().await {
+            println!("{}", idle_time);
+            return Ok(idle_time as u64);
+        }
+    }
+
+    // If all methods fail, return an error
+    Err(zbus::Error::InvalidField)
+    // let connection = Connection::session().await?;
+
+    // let proxy = zbus::Proxy::new(
+    //     &connection,
+    //     "org.gnome.Mutter.IdleMonitor",
+    //     "/org/gnome/Mutter/IdleMonitor/Core",
+    //     "org.gnome.Mutter.IdleMonitor",
+    // ).await?;
+
+    // let idle_time: u32 = proxy.call("GetSessionIdleTime", &()).await?;
+
+    // println!("System has been idle for {} seconds", idle_time);
+
+    // Ok(idle_time as u64)
+}
 
 fn get_mac_windows_x11_idle_seconds() -> u64 {
     if let Ok(idle) = UserIdle::get_time() {
@@ -57,7 +135,13 @@ fn get_mac_windows_x11_idle_seconds() -> u64 {
 #[cfg(target_os = "linux")]
 fn get_linux_idle_seconds() -> u64 {
     if is_wayland() {
-        get_wayland_idle_seconds()
+        match get_wayland_idle_sync() {
+            Ok(seconds) => seconds,
+            Err(e) => {
+                println!("Error: {}", e);
+                0
+            }
+        }
     } else if is_x11() {
         get_mac_windows_x11_idle_seconds()
     } else {

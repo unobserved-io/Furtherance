@@ -1332,10 +1332,8 @@ dependencies = [
  "toml",
  "user-idle",
  "users",
- "wayrs-client",
- "wayrs-protocols",
- "wayrs-utils",
  "x11rb",
+ "zbus",
 ]
 
 [[package]]
@@ -2994,15 +2992,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "quick-xml"
-version = "0.36.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "96a05e2e8efddfa51a84ca47cec303fac86c8541b686d37cac5efc0e094417bc"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "quote"
 version = "1.0.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4158,7 +4147,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7b56f89937f1cf2ee1f1259cf2936a17a1f45d8f0aa1019fae6d470d304cfa6"
 dependencies = [
  "proc-macro2",
- "quick-xml 0.34.0",
+ "quick-xml",
  "quote",
 ]
 
@@ -4172,70 +4161,6 @@ dependencies = [
  "log",
  "once_cell",
  "pkg-config",
-]
-
-[[package]]
-name = "wayrs-client"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9237642d34d213c59d1badc23bbf3363f03f48397d2bf827f21c86561c206441"
-dependencies = [
- "thiserror",
- "wayrs-core",
- "wayrs-scanner",
-]
-
-[[package]]
-name = "wayrs-core"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "494c59c7e42b5adf742da3ff12b807ada8a3f0410f002425ce6bdcd91b9c0883"
-dependencies = [
- "libc",
- "thiserror",
-]
-
-[[package]]
-name = "wayrs-proto-parser"
-version = "2.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "076ab8342497b77753c4f882f6d1654e1f8f4bd648ce72d045f237b8a727f4c9"
-dependencies = [
- "quick-xml 0.36.1",
- "thiserror",
-]
-
-[[package]]
-name = "wayrs-protocols"
-version = "0.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bad7991a242ca57cec502559f5a806b43f53c58eedf12ce71b6565d1fa64022c"
-dependencies = [
- "wayrs-client",
-]
-
-[[package]]
-name = "wayrs-scanner"
-version = "0.14.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b105fca34ef7569b0ed8e93e8f7b64453834a31c73df47917e402f2c2f2d7d"
-dependencies = [
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn 2.0.75",
- "wayrs-proto-parser",
-]
-
-[[package]]
-name = "wayrs-utils"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6efdba09c11398262aaa261e04975d995bbca636dba169c500407641d0316f0"
-dependencies = [
- "libc",
- "thiserror",
- "wayrs-client",
 ]
 
 [[package]]
