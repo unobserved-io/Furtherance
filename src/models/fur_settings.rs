@@ -23,6 +23,8 @@ use std::path::PathBuf;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FurSettings {
     pub database_url: String,
+    pub notify_idle: bool,
+    pub idle_time: u64,
 }
 
 impl Default for FurSettings {
@@ -31,6 +33,8 @@ impl Default for FurSettings {
 
         FurSettings {
             database_url: db_url.to_string_lossy().into_owned(),
+            notify_idle: true,
+            idle_time: 360,
         }
     }
 }

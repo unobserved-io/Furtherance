@@ -95,7 +95,7 @@ fn get_linux_idle_seconds() -> u64 {
     }
 }
 
-fn get_idle_time() -> u64 {
+pub fn get_idle_time() -> u64 {
     match env::consts::OS {
         "windows" => get_mac_windows_x11_idle_seconds(),
         "macos" => get_mac_windows_x11_idle_seconds(),
@@ -103,10 +103,4 @@ fn get_idle_time() -> u64 {
         "linux" => get_linux_idle_seconds(),
         _ => 0,
     }
-}
-
-pub fn is_idle() -> bool {
-    let time_idle = get_idle_time();
-    // TODO: Check if time_idle is greater than idle in settings
-    false
 }

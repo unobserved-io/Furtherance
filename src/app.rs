@@ -19,7 +19,7 @@ use std::{collections::BTreeMap, env};
 
 use crate::{
     database::*,
-    helpers::idle::is_idle,
+    helpers::idle::{get_idle_time, is_idle},
     models::{
         fur_settings::FurSettings, fur_task::FurTask, fur_task_group::FurTaskGroup,
         group_to_edit::GroupToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
@@ -88,6 +88,7 @@ pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
+    fur_settings: FurSettings,
     group_to_edit: Option<GroupToEdit>,
     inspector_view: Option<FurInspectorView>,
     show_timer_start_picker: bool,
@@ -147,6 +148,13 @@ impl Application for Furtherance {
             current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
+            fur_settings: match FurSettings::new() {
+                Ok(loaded_settings) => loaded_settings,
+                Err(e) => {
+                    eprintln!("Error loading settings: {}", e);
+                    FurSettings::default()
+                }
+            },
             group_to_edit: None,
             inspector_view: None,
             show_timer_start_picker: false,
@@ -632,8 +640,12 @@ impl Application for Furtherance {
                     let seconds = duration.num_seconds() % 60;
                     self.timer_text = format!("{}:{:02}:{:02}", hours, minutes, seconds);
 
-                    //TODO: Only if setting check_idle is set
-                    let user_is_idle = is_idle();
+                    if self.fur_settings.notify_idle {
+                        let idle_time = get_idle_time();
+                        if idle_time >= self.fur_settings.idle_time {
+                            todo!()
+                        }
+                    }
 
                     Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
                 } else {
