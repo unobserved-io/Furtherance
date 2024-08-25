@@ -26,6 +26,7 @@ use tokio::runtime::Runtime;
 #[cfg(target_os = "linux")]
 use zbus::{proxy, Connection};
 
+#[cfg(target_os = "linux")]
 fn is_wayland() -> bool {
     if let Ok(_) = env::var("XDG_SESSION_TYPE").map(|v| v == "wayland") {
         return true;
@@ -51,27 +52,6 @@ trait GnomeIdleMonitor {
 }
 
 #[cfg(target_os = "linux")]
-#[proxy(
-    interface = "org.kde.KIdleTime",
-    default_service = "org.kde.KIdleTime",
-    default_path = "/org/kde/KIdleTime"
-)]
-trait KdeIdleTime {
-    #[zbus(name = "idleTime")]
-    async fn idle_time(&self) -> zbus::Result<u64>;
-}
-
-#[cfg(target_os = "linux")]
-#[proxy(
-    interface = "org.freedesktop.ScreenSaver",
-    default_service = "org.freedesktop.ScreenSaver",
-    default_path = "/org/freedesktop/ScreenSaver"
-)]
-trait FreeDesktopIdleMonitor {
-    async fn get_session_idle_time(&self) -> zbus::Result<u32>;
-}
-
-#[cfg(target_os = "linux")]
 fn get_wayland_idle_sync() -> Result<u64, Box<dyn std::error::Error>> {
     let rt = Arc::new(Runtime::new()?);
     rt.block_on(get_wayland_idle_seconds())
@@ -90,38 +70,7 @@ async fn get_wayland_idle_seconds() -> zbus::Result<u64> {
         }
     }
 
-    // Try KDE IdleTime
-    if let Ok(proxy) = KdeIdleTimeProxy::new(&connection).await {
-        if let Ok(idle_time) = proxy.idle_time().await {
-            println!("{}", idle_time / 1000);
-            return Ok(idle_time / 1000);
-        }
-    }
-
-    // Try other desktops
-    if let Ok(proxy) = FreeDesktopIdleMonitorProxy::new(&connection).await {
-        if let Ok(idle_time) = proxy.get_session_idle_time().await {
-            println!("{}", idle_time);
-            return Ok(idle_time as u64);
-        }
-    }
-
-    // If all methods fail, return an error
     Err(zbus::Error::InvalidField)
-    // let connection = Connection::session().await?;
-
-    // let proxy = zbus::Proxy::new(
-    //     &connection,
-    //     "org.gnome.Mutter.IdleMonitor",
-    //     "/org/gnome/Mutter/IdleMonitor/Core",
-    //     "org.gnome.Mutter.IdleMonitor",
-    // ).await?;
-
-    // let idle_time: u32 = proxy.call("GetSessionIdleTime", &()).await?;
-
-    // println!("System has been idle for {} seconds", idle_time);
-
-    // Ok(idle_time as u64)
 }
 
 fn get_mac_windows_x11_idle_seconds() -> u64 {
@@ -137,10 +86,7 @@ fn get_linux_idle_seconds() -> u64 {
     if is_wayland() {
         match get_wayland_idle_sync() {
             Ok(seconds) => seconds,
-            Err(e) => {
-                println!("Error: {}", e);
-                0
-            }
+            Err(_) => 0,
         }
     } else if is_x11() {
         get_mac_windows_x11_idle_seconds()
@@ -149,16 +95,11 @@ fn get_linux_idle_seconds() -> u64 {
     }
 }
 
-#[cfg(not(target_os = "linux"))]
-fn get_linux_idle_seconds() -> u64 {
-    // Fallback for non-Linux platforms
-    0
-}
-
 fn get_idle_time() -> u64 {
     match env::consts::OS {
         "windows" => get_mac_windows_x11_idle_seconds(),
         "macos" => get_mac_windows_x11_idle_seconds(),
+        #[cfg(target_os = "linux")]
         "linux" => get_linux_idle_seconds(),
         _ => 0,
     }

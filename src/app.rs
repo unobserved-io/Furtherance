@@ -46,6 +46,9 @@ use iced_aw::{
 use regex::Regex;
 use tokio::time;
 
+#[cfg(target_os = "linux")]
+use crate::idle_wayland::run_on_idle;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum FurView {
     Shortcuts,
@@ -617,6 +620,7 @@ impl Application for Furtherance {
                     // Start timer
                     self.timer_start_time = Local::now();
                     self.timer_is_running = true;
+
                     Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
                 }
             }
