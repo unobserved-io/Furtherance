@@ -19,7 +19,7 @@ use std::{collections::BTreeMap, env};
 
 use crate::{
     database::*,
-    helpers::idle::{get_idle_time, is_idle},
+    helpers::idle::get_idle_time,
     models::{
         fur_idle::FurIdle, fur_settings::FurSettings, fur_task::FurTask,
         fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, task_to_add::TaskToAdd,
