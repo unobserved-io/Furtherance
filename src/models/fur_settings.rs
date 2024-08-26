@@ -24,7 +24,7 @@ use std::path::PathBuf;
 pub struct FurSettings {
     pub database_url: String,
     pub notify_idle: bool,
-    pub idle_time: u64,
+    pub selected_idle: u64,
 }
 
 impl Default for FurSettings {
@@ -34,7 +34,7 @@ impl Default for FurSettings {
         FurSettings {
             database_url: db_url.to_string_lossy().into_owned(),
             notify_idle: true,
-            idle_time: 360,
+            selected_idle: 360,
         }
     }
 }

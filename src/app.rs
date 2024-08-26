@@ -21,8 +21,9 @@ use crate::{
     database::*,
     helpers::idle::{get_idle_time, is_idle},
     models::{
-        fur_settings::FurSettings, fur_task::FurTask, fur_task_group::FurTaskGroup,
-        group_to_edit::GroupToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
+        fur_idle::FurIdle, fur_settings::FurSettings, fur_task::FurTask,
+        fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, task_to_add::TaskToAdd,
+        task_to_edit::TaskToEdit,
     },
     style,
 };
@@ -62,6 +63,7 @@ pub enum FurView {
 pub enum FurAlert {
     DeleteGroupConfirmation,
     DeleteTaskConfirmation,
+    Idle,
 }
 
 #[derive(Debug)]
@@ -90,6 +92,7 @@ pub struct Furtherance {
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
     group_to_edit: Option<GroupToEdit>,
+    idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
@@ -107,10 +110,6 @@ pub enum Message {
     AddNewTaskPressed,
     AddTaskToGroup(GroupToEdit),
     AlertClose,
-    EditGroup(FurTaskGroup),
-    EditTask(FurTask),
-    EditTaskTextChanged(String, EditTaskProperty),
-    FontLoaded(Result<(), font::Error>),
     CancelCurrentTaskStartTime,
     CancelGroupEdit,
     CancelTaskEdit,
@@ -118,18 +117,24 @@ pub enum Message {
     ChooseCurrentTaskStartTime,
     ChooseTaskEditDateTime(EditTaskProperty),
     DeleteTasks,
+    EditGroup(FurTaskGroup),
+    EditTask(FurTask),
+    EditTaskTextChanged(String, EditTaskProperty),
+    FontLoaded(Result<(), font::Error>),
+    IdleDiscard,
+    IdleReset,
     NavigateTo(FurView),
     RepeatLastTaskPressed(String),
     SaveGroupEdit,
     SaveTaskEdit,
     ShowAlert(FurAlert),
-    ToggleGroupEditor,
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     TaskInputChanged(String),
+    ToggleGroupEditor,
 }
 
 impl Application for Furtherance {
@@ -156,6 +161,7 @@ impl Application for Furtherance {
                 }
             },
             group_to_edit: None,
+            idle: FurIdle::new(),
             inspector_view: None,
             show_timer_start_picker: false,
             task_history: get_task_history(),
@@ -528,6 +534,16 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::FontLoaded(_) => Command::none(),
+            Message::IdleDiscard => {
+                todo!(); // Stop timer at the idle time
+                Command::none()
+            }
+            Message::IdleReset => {
+                self.idle = FurIdle::new();
+                self.displayed_alert = None;
+                // TODO: Remove pending notifications?
+                Command::none()
+            }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
                     self.inspector_view = None;
@@ -642,8 +658,19 @@ impl Application for Furtherance {
 
                     if self.fur_settings.notify_idle {
                         let idle_time = get_idle_time();
-                        if idle_time >= self.fur_settings.idle_time {
-                            todo!()
+                        if idle_time >= self.fur_settings.selected_idle && !self.idle.reached {
+                            // User is idle
+                            self.idle.reached = true;
+                            self.idle.start_time = Local::now();
+                            -Duration::seconds(self.fur_settings.selected_idle as i64 * 60);
+                        } else if idle_time < self.fur_settings.selected_idle
+                            && self.idle.reached
+                            && !self.idle.notified
+                        {
+                            // User is back - show idle message
+                            self.idle.notified = true;
+                            // TODO: Set up notification to display
+                            self.displayed_alert = Some(FurAlert::Idle);
                         }
                     }
 
@@ -1401,19 +1428,25 @@ impl Application for Furtherance {
 
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
         {
-            let alert_text: &str;
+            let alert_text: String;
             let alert_description: &str;
-            let close_button_text: &str;
-            let mut close_button_style: theme::Button = theme::Button::Primary;
+            let mut close_button: Option<Button<'_, Message, Theme, Renderer>> = None;
             let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
                 FurAlert::DeleteGroupConfirmation => {
-                    alert_text = "Delete all?";
+                    alert_text = "Delete all?".to_string();
                     alert_description =
                         "Are you sure you want to permanently delete all tasks in this group?";
-                    close_button_text = "Cancel";
-                    close_button_style = theme::Button::Secondary;
+                    close_button = Some(
+                        button(
+                            text("Cancel")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(theme::Button::Secondary),
+                    );
                     confirmation_button = Some(
                         button(
                             text("Delete All")
@@ -1425,10 +1458,17 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::DeleteTaskConfirmation => {
-                    alert_text = "Delete task?";
+                    alert_text = "Delete task?".to_string();
                     alert_description = "Are you sure you want to permanently delete this task?";
-                    close_button_text = "Cancel";
-                    close_button_style = theme::Button::Secondary;
+                    close_button = Some(
+                        button(
+                            text("Cancel")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(theme::Button::Secondary),
+                    );
                     confirmation_button = Some(
                         button(
                             text("Delete")
@@ -1439,18 +1479,37 @@ impl Application for Furtherance {
                         .style(theme::Button::Destructive),
                     );
                 }
+                FurAlert::Idle => {
+                    alert_text = format!("You have been idle for {}", self.idle.duration());
+                    alert_description =
+                        "Would you like to discard that time, or continue the clock?";
+                    close_button = Some(
+                        button(
+                            text("Continue")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::IdleReset)
+                        .style(theme::Button::Secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text("Discard")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::IdleDiscard)
+                        .style(theme::Button::Destructive),
+                    );
+                }
             }
 
-            let mut buttons: Row<'_, Message, Theme, Renderer> = row![button(
-                text(close_button_text)
-                    .horizontal_alignment(alignment::Horizontal::Center)
-                    .width(Length::Fill)
-            )
-            .on_press(Message::AlertClose)
-            .style(close_button_style)]
-            .spacing(10)
-            .padding(5)
-            .width(Length::Fill);
+            let mut buttons: Row<'_, Message, Theme, Renderer> =
+                row![].spacing(10).padding(5).width(Length::Fill);
+
+            if let Some(close) = close_button {
+                buttons = buttons.push(close);
+            }
 
             if let Some(confirmation) = confirmation_button {
                 buttons = buttons.push(confirmation);

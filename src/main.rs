@@ -21,6 +21,7 @@ mod helpers {
     pub mod idle;
 }
 mod models {
+    pub mod fur_idle;
     pub mod fur_settings;
     pub mod fur_shortcut;
     pub mod fur_task;
