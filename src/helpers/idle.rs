@@ -14,15 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::{env, path::Path};
+use std::env;
 
 use user_idle::UserIdle;
-use users::get_current_uid;
 
 #[cfg(target_os = "linux")]
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 #[cfg(target_os = "linux")]
 use tokio::runtime::Runtime;
+#[cfg(target_os = "linux")]
+use users::get_current_uid;
 #[cfg(target_os = "linux")]
 use zbus::{proxy, Connection};
 
