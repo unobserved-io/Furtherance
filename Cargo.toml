@@ -20,6 +20,7 @@ iced_aw = { version = "0.9", default-features = false, features = [
     "date_picker",
     "icons",
     "modal",
+    "tabs",
     "time_picker",
 ] }
 plotters = "0.3"

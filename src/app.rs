@@ -41,8 +41,8 @@ use iced::{
     window, Alignment, Command, Element, Font, Length, Renderer, Settings, Size, Theme,
 };
 use iced_aw::{
-    core::icons::{bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker, modal, time_picker, Card, Modal, TimePicker,
+    core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
+    date_picker, modal, time_picker, Card, Modal, TabBarPosition, TabLabel, Tabs, TimePicker,
 };
 use regex::Regex;
 use tokio::time;
@@ -86,6 +86,14 @@ pub enum EditTaskProperty {
     StopDate,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TabId {
+    General,
+    Advanced,
+    Pomodoro,
+    Report,
+}
+
 pub struct Furtherance {
     current_view: FurView,
     displayed_alert: Option<FurAlert>,
@@ -94,6 +102,7 @@ pub struct Furtherance {
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
+    settings_active_tab: TabId,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
@@ -127,6 +136,7 @@ pub enum Message {
     RepeatLastTaskPressed(String),
     SaveGroupEdit,
     SaveTaskEdit,
+    SettingsTabSelected(TabId),
     ShowAlert(FurAlert),
     StartStopPressed,
     StopwatchTick,
@@ -163,6 +173,7 @@ impl Application for Furtherance {
             group_to_edit: None,
             idle: FurIdle::new(),
             inspector_view: None,
+            settings_active_tab: TabId::General,
             show_timer_start_picker: false,
             task_history: get_task_history(),
             task_input: "".to_string(),
@@ -606,6 +617,10 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
+            Message::SettingsTabSelected(new_tab) => {
+                self.settings_active_tab = new_tab;
+                Command::none()
+            }
             Message::ShowAlert(alert_to_show) => {
                 self.displayed_alert = Some(alert_to_show);
                 Command::none()
@@ -959,7 +974,42 @@ impl Application for Furtherance {
         let report_view = column![Scrollable::new(column![])];
 
         // MARK: SETTINGS
-        let settings_view = column![Scrollable::new(column![])];
+        let settings_view = column![Tabs::new(Message::SettingsTabSelected)
+            .tab_icon_position(iced_aw::tabs::Position::Top)
+            .push(
+                TabId::General,
+                TabLabel::IconText(
+                    bootstrap::icon_to_char(Bootstrap::GearFill),
+                    "General".to_string()
+                ),
+                Scrollable::new(column![]),
+            )
+            .push(
+                TabId::Advanced,
+                TabLabel::IconText(
+                    bootstrap::icon_to_char(Bootstrap::GearWideConnected),
+                    "Advanced".to_string()
+                ),
+                Scrollable::new(column![]),
+            )
+            .push(
+                TabId::Pomodoro,
+                TabLabel::IconText(
+                    bootstrap::icon_to_char(Bootstrap::StopwatchFill),
+                    "Pomodoro".to_string()
+                ),
+                Scrollable::new(column![]),
+            )
+            .push(
+                TabId::Report,
+                TabLabel::IconText(
+                    bootstrap::icon_to_char(Bootstrap::GraphUp),
+                    "Report".to_string()
+                ),
+                Scrollable::new(column![]),
+            )
+            .set_active_tab(&self.settings_active_tab)
+            .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: INSPECTOR
         let inspector: Column<'_, Message, Theme, Renderer> = match &self.inspector_view {
