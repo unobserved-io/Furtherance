@@ -535,7 +535,7 @@ impl Application for Furtherance {
             }
             Message::FontLoaded(_) => Command::none(),
             Message::IdleDiscard => {
-                todo!(); // Stop timer at the idle time
+                stop_timer(self, self.idle.start_time);
                 Command::none()
             }
             Message::IdleReset => {
@@ -619,32 +619,11 @@ impl Application for Furtherance {
             }
             Message::StartStopPressed => {
                 if self.timer_is_running {
-                    // Stop & reset timer
-                    self.timer_stop_time = Local::now();
-                    self.timer_is_running = false;
-
-                    let (name, project, tags, rate) = split_task_input(&self.task_input);
-                    db_write_task(FurTask {
-                        id: 1, // Not used
-                        name,
-                        start_time: self.timer_start_time,
-                        stop_time: self.timer_stop_time,
-                        tags,
-                        project,
-                        rate,
-                        currency: String::new(),
-                    })
-                    .expect("Couldn't write task to database.");
-
-                    self.task_input = "".to_string();
-                    self.task_history = get_task_history();
-                    self.timer_text = "0:00:00".to_string();
+                    stop_timer(self, Local::now());
+                    reset_timer(self);
                     Command::none()
                 } else {
-                    // Start timer
-                    self.timer_start_time = Local::now();
-                    self.timer_is_running = true;
-
+                    start_timer(self);
                     Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
                 }
             }
@@ -1667,6 +1646,35 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
     }
 
     grouped_tasks
+}
+
+fn start_timer(state: &mut Furtherance) {
+    state.timer_start_time = Local::now();
+    state.timer_is_running = true;
+}
+
+fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
+    state.timer_stop_time = stop_time;
+    state.timer_is_running = false;
+
+    let (name, project, tags, rate) = split_task_input(&state.task_input);
+    db_write_task(FurTask {
+        id: 1, // Not used
+        name,
+        start_time: state.timer_start_time,
+        stop_time: state.timer_stop_time,
+        tags,
+        project,
+        rate,
+        currency: String::new(),
+    })
+    .expect("Couldn't write task to database.");
+}
+
+fn reset_timer(state: &mut Furtherance) {
+    state.task_input = "".to_string();
+    state.task_history = get_task_history();
+    state.timer_text = "0:00:00".to_string();
 }
 
 fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResult<DateTime<Local>> {
