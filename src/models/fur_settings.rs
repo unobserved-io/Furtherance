@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::view_enums::FurView;
+
 use config::{Config, ConfigError, File};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
@@ -23,6 +25,7 @@ use std::path::PathBuf;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FurSettings {
     pub database_url: String,
+    pub default_view: FurView,
     pub notify_idle: bool,
     pub selected_idle: u64,
 }
@@ -33,6 +36,7 @@ impl Default for FurSettings {
 
         FurSettings {
             database_url: db_url.to_string_lossy().into_owned(),
+            default_view: FurView::Timer,
             notify_idle: true,
             selected_idle: 360,
         }
@@ -70,6 +74,11 @@ impl FurSettings {
     // Change the database_url and save the settings
     pub fn change_db_url(&mut self, path: &str) -> Result<(), std::io::Error> {
         self.database_url = path.to_owned();
+        self.save()
+    }
+
+    pub fn change_default_view(&mut self, new_view: &FurView) -> Result<(), std::io::Error> {
+        self.default_view = new_view.to_owned();
         self.save()
     }
 }

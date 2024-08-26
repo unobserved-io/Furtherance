@@ -34,6 +34,7 @@ mod style;
 mod tests {
     mod timer_tests;
 }
+mod view_enums;
 
 use app::Furtherance;
 use iced::{multi_window::Application, window, Settings, Size};

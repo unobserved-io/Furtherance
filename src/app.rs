@@ -26,6 +26,7 @@ use crate::{
         task_to_edit::TaskToEdit,
     },
     style,
+    view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
@@ -49,50 +50,6 @@ use tokio::time;
 
 #[cfg(target_os = "linux")]
 use crate::idle_wayland::run_on_idle;
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum FurView {
-    Shortcuts,
-    Timer,
-    History,
-    Report,
-    Settings,
-}
-
-#[derive(Debug, Clone)]
-pub enum FurAlert {
-    DeleteGroupConfirmation,
-    DeleteTaskConfirmation,
-    Idle,
-}
-
-#[derive(Debug)]
-pub enum FurInspectorView {
-    AddNewTask,
-    AddTaskToGroup,
-    EditTask,
-    EditGroup,
-}
-
-#[derive(Debug, Clone)]
-pub enum EditTaskProperty {
-    Name,
-    Tags,
-    Project,
-    Rate,
-    StartTime,
-    StopTime,
-    StartDate,
-    StopDate,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TabId {
-    General,
-    Advanced,
-    Pomodoro,
-    Report,
-}
 
 pub struct Furtherance {
     current_view: FurView,
@@ -136,6 +93,7 @@ pub enum Message {
     RepeatLastTaskPressed(String),
     SaveGroupEdit,
     SaveTaskEdit,
+    SettingsDefaultViewSelected(FurView),
     SettingsTabSelected(TabId),
     ShowAlert(FurAlert),
     StartStopPressed,
@@ -159,7 +117,7 @@ impl Application for Furtherance {
         // Update old furtherance databases with new properties
         let _ = db_upgrade_old();
 
-        let furtherance = Furtherance {
+        let mut furtherance = Furtherance {
             current_view: FurView::Timer,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
@@ -185,6 +143,8 @@ impl Application for Furtherance {
             task_to_edit: None,
         };
 
+        furtherance.current_view = furtherance.fur_settings.default_view.clone();
+
         (
             furtherance,
             font::load(BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
@@ -203,6 +163,7 @@ impl Application for Furtherance {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
+        //TODO: Remove Command::none() returns and return it at end except where necessary
         match message {
             Message::AddNewTaskPressed => {
                 self.task_to_add = Some(TaskToAdd::new());
@@ -617,6 +578,12 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
+            Message::SettingsDefaultViewSelected(selected_view) => {
+                if let Err(e) = self.fur_settings.change_default_view(&selected_view) {
+                    eprintln!("Failed to change default_view in settings: {}", e);
+                }
+                Command::none()
+            }
             Message::SettingsTabSelected(new_tab) => {
                 self.settings_active_tab = new_tab;
                 Command::none()
@@ -982,7 +949,19 @@ impl Application for Furtherance {
                     bootstrap::icon_to_char(Bootstrap::GearFill),
                     "General".to_string()
                 ),
-                Scrollable::new(column![]),
+                Scrollable::new(
+                    column![row![
+                        text("Default view:"),
+                        pick_list(
+                            &FurView::ALL[..],
+                            Some(self.fur_settings.default_view),
+                            Message::SettingsDefaultViewSelected,
+                        ),
+                    ]
+                    .spacing(8)
+                    .align_items(Alignment::Center),]
+                    .padding(10)
+                ),
             )
             .push(
                 TabId::Advanced,
