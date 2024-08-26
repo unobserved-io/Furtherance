@@ -109,4 +109,8 @@ impl TaskToAdd {
             invalid_input_error_message: String::new(),
         }
     }
+
+    pub fn input_error(&mut self, message: &str) {
+        self.invalid_input_error_message = message.to_string();
+    }
 }

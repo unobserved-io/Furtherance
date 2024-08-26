@@ -358,24 +358,22 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         // TODO: Change to .input_error system
-                                        task_to_add.invalid_input_error_message =
-                                            "Project cannot contain #, @, or $.".to_string();
+                                        task_to_add
+                                            .input_error("Project cannot contain #, @, or $.");
                                     } else {
                                         task_to_add.project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_add.invalid_input_error_message =
-                                            "Tags cannot contain @ or $.".to_string();
+                                        task_to_add.input_error("Tags cannot contain @ or $.");
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        task_to_add.invalid_input_error_message =
-                                            "Tags must start with a #.".to_string();
+                                        task_to_add.input_error("Tags must start with a #.");
                                     } else {
                                         task_to_add.tags = new_value;
-                                        task_to_add.invalid_input_error_message = String::new();
+                                        task_to_add.input_error("");
                                     }
                                 }
                                 EditTaskProperty::Rate => {
@@ -383,8 +381,7 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         task_to_add.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        task_to_add.invalid_input_error_message =
-                                            "Do not include a $ in the rate.".to_string();
+                                        task_to_add.input_error("Do not include a $ in the rate.");
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(
                                             new_value_parsed.clone().unwrap_or(0.0),
@@ -392,10 +389,10 @@ impl Application for Furtherance {
                                         && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
                                     {
                                         task_to_add.new_rate = new_value;
-                                        task_to_add.invalid_input_error_message = String::new();
+                                        task_to_add.input_error("");
                                     } else {
-                                        task_to_add.invalid_input_error_message =
-                                            "Rate must be a valid dollar amount.".to_string();
+                                        task_to_add
+                                            .input_error("Rate must be a valid dollar amount.");
                                     }
                                 }
                                 _ => {}
@@ -410,11 +407,11 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        task_to_edit.invalid_input_error_message =
-                                            "Task name cannot contain #, @, or $.".to_string();
+                                        task_to_edit
+                                            .input_error("Task name cannot contain #, @, or $.");
                                     } else {
                                         task_to_edit.new_name = new_value;
-                                        task_to_edit.invalid_input_error_message = String::new();
+                                        task_to_edit.input_error("");
                                     }
                                 }
                                 EditTaskProperty::Project => {
@@ -422,25 +419,22 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        // TODO: Change to .input_error system
-                                        task_to_edit.invalid_input_error_message =
-                                            "Project cannot contain #, @, or $.".to_string();
+                                        task_to_edit
+                                            .input_error("Project cannot contain #, @, or $.");
                                     } else {
                                         task_to_edit.new_project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_edit.invalid_input_error_message =
-                                            "Tags cannot contain @ or $.".to_string();
+                                        task_to_edit.input_error("Tags cannot contain @ or $.");
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        task_to_edit.invalid_input_error_message =
-                                            "Tags must start with a #.".to_string();
+                                        task_to_edit.input_error("Tags must start with a #.");
                                     } else {
                                         task_to_edit.new_tags = new_value;
-                                        task_to_edit.invalid_input_error_message = String::new();
+                                        task_to_edit.input_error("");
                                     }
                                 }
                                 EditTaskProperty::Rate => {
@@ -448,8 +442,7 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        task_to_edit.invalid_input_error_message =
-                                            "Do not include a $ in the rate.".to_string();
+                                        task_to_edit.input_error("Do not include a $ in the rate.");
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(
                                             new_value_parsed.clone().unwrap_or(0.0),
@@ -457,10 +450,10 @@ impl Application for Furtherance {
                                         && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
                                     {
                                         task_to_edit.new_rate = new_value;
-                                        task_to_edit.invalid_input_error_message = String::new();
+                                        task_to_edit.input_error("");
                                     } else {
-                                        task_to_edit.invalid_input_error_message =
-                                            "Rate must be a valid dollar amount.".to_string();
+                                        task_to_edit
+                                            .input_error("Rate must be a valid dollar amount.");
                                     }
                                 }
                                 _ => {}
