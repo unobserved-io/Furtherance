@@ -30,7 +30,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::{tooltip, Row};
+use iced::widget::{toggler, tooltip, Row};
 use iced::Color;
 use iced::{
     alignment, font, keyboard,
@@ -43,7 +43,8 @@ use iced::{
 };
 use iced_aw::{
     core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker, modal, time_picker, Card, Modal, TabBarPosition, TabLabel, Tabs, TimePicker,
+    date_picker, modal, number_input, time_picker, Card, Modal, TabBarPosition, TabLabel, Tabs,
+    TimePicker,
 };
 use regex::Regex;
 use tokio::time;
@@ -94,6 +95,8 @@ pub enum Message {
     SaveGroupEdit,
     SaveTaskEdit,
     SettingsDefaultViewSelected(FurView),
+    SettingsIdleTimeChanged(u64),
+    SettingsIdleToggled(bool),
     SettingsTabSelected(TabId),
     ShowAlert(FurAlert),
     StartStopPressed,
@@ -584,6 +587,18 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
+            Message::SettingsIdleTimeChanged(new_minutes) => {
+                if let Err(e) = self.fur_settings.change_chosen_idle_time(&new_minutes) {
+                    eprintln!("Failed to change chosen_idle_time in settings: {}", e);
+                }
+                Command::none()
+            }
+            Message::SettingsIdleToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_notify_on_idle(&new_value) {
+                    eprintln!("Failed to change notify_on_idle in settings: {}", e);
+                }
+                Command::none()
+            }
             Message::SettingsTabSelected(new_tab) => {
                 self.settings_active_tab = new_tab;
                 Command::none()
@@ -610,14 +625,14 @@ impl Application for Furtherance {
                     let seconds = duration.num_seconds() % 60;
                     self.timer_text = format!("{}:{:02}:{:02}", hours, minutes, seconds);
 
-                    if self.fur_settings.notify_idle {
+                    if self.fur_settings.notify_on_idle {
                         let idle_time = get_idle_time();
-                        if idle_time >= self.fur_settings.selected_idle && !self.idle.reached {
+                        if idle_time >= self.fur_settings.chosen_idle_time && !self.idle.reached {
                             // User is idle
                             self.idle.reached = true;
                             self.idle.start_time = Local::now();
-                            -Duration::seconds(self.fur_settings.selected_idle as i64 * 60);
-                        } else if idle_time < self.fur_settings.selected_idle
+                            -Duration::seconds(self.fur_settings.chosen_idle_time as i64 * 60);
+                        } else if idle_time < self.fur_settings.chosen_idle_time
                             && self.idle.reached
                             && !self.idle.notified
                         {
@@ -951,14 +966,14 @@ impl Application for Furtherance {
                 ),
                 Scrollable::new(
                     column![row![
-                        text("Default view:"),
+                        text("Default view"),
                         pick_list(
                             &FurView::ALL[..],
                             Some(self.fur_settings.default_view),
                             Message::SettingsDefaultViewSelected,
                         ),
                     ]
-                    .spacing(8)
+                    .spacing(10)
                     .align_items(Alignment::Center),]
                     .padding(10)
                 ),
@@ -969,7 +984,33 @@ impl Application for Furtherance {
                     bootstrap::icon_to_char(Bootstrap::GearWideConnected),
                     "Advanced".to_string()
                 ),
-                Scrollable::new(column![]),
+                Scrollable::new(
+                    column![
+                        row![
+                            text("Idle detection"),
+                            toggler(
+                                "".to_string(),
+                                self.fur_settings.notify_on_idle,
+                                Message::SettingsIdleToggled
+                            )
+                            .width(Length::Shrink)
+                        ]
+                        .spacing(10)
+                        .align_items(Alignment::Center),
+                        row![
+                            text("Minutes until idle"),
+                            number_input(
+                                self.fur_settings.chosen_idle_time,
+                                999,
+                                Message::SettingsIdleTimeChanged
+                            )
+                            .width(Length::Shrink)
+                        ]
+                        .spacing(10)
+                        .align_items(Alignment::Center),
+                    ]
+                    .padding(10)
+                ),
             )
             .push(
                 TabId::Pomodoro,
@@ -977,7 +1018,7 @@ impl Application for Furtherance {
                     bootstrap::icon_to_char(Bootstrap::StopwatchFill),
                     "Pomodoro".to_string()
                 ),
-                Scrollable::new(column![]),
+                Scrollable::new(column![].padding(10),),
             )
             .push(
                 TabId::Report,
@@ -985,7 +1026,7 @@ impl Application for Furtherance {
                     bootstrap::icon_to_char(Bootstrap::GraphUp),
                     "Report".to_string()
                 ),
-                Scrollable::new(column![]),
+                Scrollable::new(column![].padding(10),),
             )
             .set_active_tab(&self.settings_active_tab)
             .tab_bar_position(TabBarPosition::Top)];

@@ -26,8 +26,8 @@ use std::path::PathBuf;
 pub struct FurSettings {
     pub database_url: String,
     pub default_view: FurView,
-    pub notify_idle: bool,
-    pub selected_idle: u64,
+    pub notify_on_idle: bool,
+    pub chosen_idle_time: u64,
 }
 
 impl Default for FurSettings {
@@ -37,8 +37,8 @@ impl Default for FurSettings {
         FurSettings {
             database_url: db_url.to_string_lossy().into_owned(),
             default_view: FurView::Timer,
-            notify_idle: true,
-            selected_idle: 360,
+            notify_on_idle: true,
+            chosen_idle_time: 6,
         }
     }
 }
@@ -72,13 +72,23 @@ impl FurSettings {
     }
 
     // Change the database_url and save the settings
-    pub fn change_db_url(&mut self, path: &str) -> Result<(), std::io::Error> {
-        self.database_url = path.to_owned();
+    pub fn change_db_url(&mut self, value: &str) -> Result<(), std::io::Error> {
+        self.database_url = value.to_owned();
         self.save()
     }
 
-    pub fn change_default_view(&mut self, new_view: &FurView) -> Result<(), std::io::Error> {
-        self.default_view = new_view.to_owned();
+    pub fn change_default_view(&mut self, value: &FurView) -> Result<(), std::io::Error> {
+        self.default_view = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_notify_on_idle(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.notify_on_idle = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_chosen_idle_time(&mut self, value: &u64) -> Result<(), std::io::Error> {
+        self.chosen_idle_time = value.to_owned();
         self.save()
     }
 }
