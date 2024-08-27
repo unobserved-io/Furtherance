@@ -588,8 +588,10 @@ impl Application for Furtherance {
                 Command::none()
             }
             Message::SettingsIdleTimeChanged(new_minutes) => {
-                if let Err(e) = self.fur_settings.change_chosen_idle_time(&new_minutes) {
-                    eprintln!("Failed to change chosen_idle_time in settings: {}", e);
+                if new_minutes >= 1 {
+                    if let Err(e) = self.fur_settings.change_chosen_idle_time(&new_minutes) {
+                        eprintln!("Failed to change chosen_idle_time in settings: {}", e);
+                    }
                 }
                 Command::none()
             }
@@ -630,8 +632,8 @@ impl Application for Furtherance {
                         if idle_time >= self.fur_settings.chosen_idle_time && !self.idle.reached {
                             // User is idle
                             self.idle.reached = true;
-                            self.idle.start_time = Local::now();
-                            -Duration::seconds(self.fur_settings.chosen_idle_time as i64 * 60);
+                            self.idle.start_time = Local::now()
+                                - Duration::seconds(self.fur_settings.chosen_idle_time as i64 * 60);
                         } else if idle_time < self.fur_settings.chosen_idle_time
                             && self.idle.reached
                             && !self.idle.notified
@@ -1001,7 +1003,7 @@ impl Application for Furtherance {
                             text("Minutes until idle"),
                             number_input(
                                 self.fur_settings.chosen_idle_time,
-                                999,
+                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
                                 Message::SettingsIdleTimeChanged
                             )
                             .width(Length::Shrink)
