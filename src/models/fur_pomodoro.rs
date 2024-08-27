@@ -14,41 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod app;
-mod constants;
-mod database;
-mod helpers {
-    pub mod idle;
+#[derive(Clone, Debug)]
+pub struct FurPomodoro {
+    pub on_break: bool,
+    pub extended: bool,
 }
-mod models {
-    pub mod fur_idle;
-    pub mod fur_pomodoro;
-    pub mod fur_settings;
-    pub mod fur_shortcut;
-    pub mod fur_task;
-    pub mod fur_task_group;
-    pub mod group_to_edit;
-    pub mod task_to_add;
-    pub mod task_to_edit;
-}
-mod style;
-mod tests {
-    mod timer_tests;
-}
-mod view_enums;
 
-use app::Furtherance;
-use iced::{multi_window::Application, window, Settings, Size};
-
-fn main() -> iced::Result {
-    Furtherance::run(Settings {
-        window: window::Settings {
-            size: Size {
-                height: 600.0,
-                width: 1024.0,
-            },
-            ..window::Settings::default()
-        },
-        ..Settings::default()
-    })
+impl FurPomodoro {
+    pub fn new() -> Self {
+        FurPomodoro {
+            on_break: false,
+            extended: false,
+        }
+    }
 }

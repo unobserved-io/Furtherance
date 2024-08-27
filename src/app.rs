@@ -21,7 +21,7 @@ use crate::{
     database::*,
     helpers::idle::get_idle_time,
     models::{
-        fur_idle::FurIdle, fur_settings::FurSettings, fur_task::FurTask,
+        fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_settings::FurSettings, fur_task::FurTask,
         fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, task_to_add::TaskToAdd,
         task_to_edit::TaskToEdit,
     },
@@ -60,6 +60,7 @@ pub struct Furtherance {
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
+    pomodoro: FurPomodoro,
     settings_active_tab: TabId,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
@@ -91,14 +92,19 @@ pub enum Message {
     IdleDiscard,
     IdleReset,
     NavigateTo(FurView),
+    PomodoroContinueAfterBreak,
+    PomodoroStartIntermission,
+    PomodoroStop,
+    PomodoroStopAfterBreak,
     RepeatLastTaskPressed(String),
     SaveGroupEdit,
     SaveTaskEdit,
     SettingsDefaultViewSelected(FurView),
-    SettingsIdleTimeChanged(u64),
+    SettingsIdleTimeChanged(i64),
     SettingsIdleToggled(bool),
+    SettingsPomodoroBreakLengthChanged(i64),
+    SettingsPomodoroLengthChanged(i64),
     SettingsPomodoroToggled(bool),
-    SettingsPomodoroLengthChanged(u64),
     SettingsTabSelected(TabId),
     ShowAlert(FurAlert),
     StartStopPressed,
@@ -135,6 +141,7 @@ impl Application for Furtherance {
             },
             group_to_edit: None,
             idle: FurIdle::new(),
+            pomodoro: FurPomodoro::new(),
             inspector_view: None,
             settings_active_tab: TabId::General,
             show_timer_start_picker: false,
@@ -149,6 +156,7 @@ impl Application for Furtherance {
         };
 
         furtherance.current_view = furtherance.fur_settings.default_view.clone();
+        furtherance.timer_text = get_timer_text(&furtherance, 0);
 
         (
             furtherance,
@@ -506,7 +514,6 @@ impl Application for Furtherance {
             Message::FontLoaded(_) => Command::none(),
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
-                reset_timer(self);
                 self.displayed_alert = None;
                 Command::none()
             }
@@ -521,6 +528,40 @@ impl Application for Furtherance {
                     self.inspector_view = None;
                     self.current_view = destination;
                 }
+                Command::none()
+            }
+            Message::PomodoroContinueAfterBreak => {
+                self.timer_is_running = false;
+                let original_task_input = self.task_input.clone();
+                reset_timer(self);
+                self.task_input = original_task_input;
+                self.pomodoro.on_break = false;
+                self.displayed_alert = None;
+                start_timer(self);
+                Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+            }
+            Message::PomodoroStartIntermission => {
+                let original_task_input = self.task_input.clone();
+                let pomodoro_stop_time = self.timer_start_time
+                    + Duration::minutes(self.fur_settings.pomodoro_break_length);
+                stop_timer(self, pomodoro_stop_time);
+                self.task_input = original_task_input;
+                self.pomodoro.extended = false;
+                self.pomodoro.on_break = true;
+                self.displayed_alert = None;
+                start_timer(self);
+                Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+            }
+            Message::PomodoroStop => {
+                stop_timer(self, Local::now());
+                self.displayed_alert = None;
+                Command::none()
+            }
+            Message::PomodoroStopAfterBreak => {
+                self.timer_is_running = false;
+                reset_timer(self);
+                self.pomodoro.on_break = false;
+                self.displayed_alert = None;
                 Command::none()
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
@@ -605,9 +646,11 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
-            Message::SettingsPomodoroToggled(new_value) => {
-                if let Err(e) = self.fur_settings.change_pomodoro(&new_value) {
-                    eprintln!("Failed to change pomodoro in settings: {}", e);
+            Message::SettingsPomodoroBreakLengthChanged(new_minutes) => {
+                if new_minutes >= 1 {
+                    if let Err(e) = self.fur_settings.change_pomodoro_break_length(&new_minutes) {
+                        eprintln!("Failed to change pomodoro in settings: {}", e);
+                    }
                 }
                 Command::none()
             }
@@ -616,7 +659,25 @@ impl Application for Furtherance {
                     if let Err(e) = self.fur_settings.change_pomodoro_length(&new_minutes) {
                         eprintln!("Failed to change pomodoro in settings: {}", e);
                     }
+                    self.timer_text = get_timer_text(
+                        &self,
+                        Local::now()
+                            .signed_duration_since(self.timer_start_time)
+                            .num_seconds(),
+                    );
                 }
+                Command::none()
+            }
+            Message::SettingsPomodoroToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_pomodoro(&new_value) {
+                    eprintln!("Failed to change pomodoro in settings: {}", e);
+                }
+                self.timer_text = get_timer_text(
+                    &self,
+                    Local::now()
+                        .signed_duration_since(self.timer_start_time)
+                        .num_seconds(),
+                );
                 Command::none()
             }
             Message::SettingsTabSelected(new_tab) => {
@@ -629,8 +690,13 @@ impl Application for Furtherance {
             }
             Message::StartStopPressed => {
                 if self.timer_is_running {
-                    stop_timer(self, Local::now());
-                    reset_timer(self);
+                    if self.pomodoro.on_break {
+                        self.timer_is_running = false;
+                        reset_timer(self);
+                        self.pomodoro.on_break = false;
+                    } else {
+                        stop_timer(self, Local::now());
+                    }
                     Command::none()
                 } else {
                     start_timer(self);
@@ -640,20 +706,34 @@ impl Application for Furtherance {
             Message::StopwatchTick => {
                 if self.timer_is_running {
                     let duration = Local::now().signed_duration_since(self.timer_start_time);
-                    let hours = duration.num_hours();
-                    let minutes = duration.num_minutes() % 60;
-                    let seconds = duration.num_seconds() % 60;
-                    self.timer_text = format!("{}:{:02}:{:02}", hours, minutes, seconds);
+                    let seconds_elapsed = duration.num_seconds();
+                    self.timer_text = get_timer_text(self, seconds_elapsed);
+                    if self.fur_settings.pomodoro
+                        && self.timer_text == "0:00:00".to_string()
+                        && seconds_elapsed > 2
+                    {
+                        // Check if idle or other alert is being displayed so as not to replace it
+                        if self.displayed_alert.is_none() {
+                            if self.pomodoro.on_break {
+                                self.displayed_alert = Some(FurAlert::PomodoroBreakOver);
+                            } else {
+                                self.displayed_alert = Some(FurAlert::PomodoroOver);
+                            }
+                        }
+                        return Command::none();
+                    }
 
-                    if self.fur_settings.notify_on_idle {
-                        let idle_time = get_idle_time();
+                    if self.fur_settings.notify_on_idle
+                        && self.displayed_alert != Some(FurAlert::PomodoroOver)
+                    {
+                        let idle_time = get_idle_time() as i64;
                         if idle_time >= self.fur_settings.chosen_idle_time * 60
                             && !self.idle.reached
                         {
                             // User is idle
                             self.idle.reached = true;
                             self.idle.start_time = Local::now()
-                                - Duration::seconds(self.fur_settings.chosen_idle_time as i64 * 60);
+                                - Duration::seconds(self.fur_settings.chosen_idle_time * 60);
                         } else if idle_time < self.fur_settings.chosen_idle_time * 60
                             && self.idle.reached
                             && !self.idle.notified
@@ -905,7 +985,13 @@ impl Application for Furtherance {
                 text(format!("Recorded today: {}", get_todays_total_time(&self)))
             ],
             vertical_space().height(Length::Fill),
-            text(&self.timer_text).size(80),
+            text(&self.timer_text)
+                .size(80)
+                .style(if self.pomodoro.on_break {
+                    theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
+                } else {
+                    theme::Text::Default
+                }),
             column![
                 row![
                     text_input("Task name @Project #tags $rate", &self.task_input)
@@ -1059,6 +1145,17 @@ impl Application for Furtherance {
                                 self.fur_settings.pomodoro_length,
                                 999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
                                 Message::SettingsPomodoroLengthChanged
+                            )
+                            .width(Length::Shrink)
+                        ]
+                        .spacing(10)
+                        .align_items(Alignment::Center),
+                        row![
+                            text("Break length"),
+                            number_input(
+                                self.fur_settings.pomodoro_break_length,
+                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                Message::SettingsPomodoroBreakLengthChanged
                             )
                             .width(Length::Shrink)
                         ]
@@ -1522,6 +1619,7 @@ impl Application for Furtherance {
             let alert_description: &str;
             let mut close_button: Option<Button<'_, Message, Theme, Renderer>> = None;
             let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
+            let mut more_minutes_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
                 FurAlert::DeleteGroupConfirmation => {
@@ -1592,10 +1690,58 @@ impl Application for Furtherance {
                         .style(theme::Button::Destructive),
                     );
                 }
+                FurAlert::PomodoroBreakOver => {
+                    alert_text = "Break's over!".to_string();
+                    alert_description = "Time to get back to work.";
+                    close_button = Some(
+                        button(
+                            text("Stop")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::PomodoroStopAfterBreak)
+                        .style(theme::Button::Secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text("Continue")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::PomodoroContinueAfterBreak)
+                        .style(theme::Button::Primary),
+                    );
+                }
+                FurAlert::PomodoroOver => {
+                    alert_text = "Time's up!".to_string();
+                    alert_description = "Are you ready to take a break?";
+                    close_button = Some(
+                        button(
+                            text("Stop")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::PomodoroStop)
+                        .style(theme::Button::Secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text("Break")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::PomodoroStartIntermission)
+                        .style(theme::Button::Primary),
+                    );
+                }
             }
 
             let mut buttons: Row<'_, Message, Theme, Renderer> =
                 row![].spacing(10).padding(5).width(Length::Fill);
+
+            if let Some(more) = more_minutes_button {
+                buttons = buttons.push(more);
+            }
 
             if let Some(close) = close_button {
                 buttons = buttons.push(close);
@@ -1781,14 +1927,50 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
     })
     .expect("Couldn't write task to database.");
 
-    state.task_history = get_task_history();
+    reset_timer(state);
 }
 
 fn reset_timer(state: &mut Furtherance) {
     state.task_input = "".to_string();
     state.task_history = get_task_history();
-    state.timer_text = "0:00:00".to_string();
+    state.timer_text = get_timer_text(state, 0);
     state.idle = FurIdle::new();
+}
+
+fn get_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
+    if state.timer_is_running {
+        get_running_timer_text(state, seconds_elapsed)
+    } else {
+        get_stopped_timer_text(state)
+    }
+}
+
+fn get_stopped_timer_text(state: &Furtherance) -> String {
+    if state.fur_settings.pomodoro {
+        seconds_to_formatted_duration((state.fur_settings.pomodoro_length * 60))
+    } else {
+        "0:00:00".to_string()
+    }
+}
+
+fn get_running_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
+    if state.fur_settings.pomodoro {
+        let stop_time = if state.pomodoro.on_break {
+            state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_break_length)
+        } else {
+            state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_length)
+        };
+
+        let seconds_until_end =
+            (stop_time - state.timer_start_time).num_seconds() - seconds_elapsed;
+        if seconds_until_end > 0 {
+            seconds_to_formatted_duration(seconds_until_end)
+        } else {
+            "0:00:00".to_string()
+        }
+    } else {
+        seconds_to_formatted_duration(seconds_elapsed)
+    }
 }
 
 fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResult<DateTime<Local>> {
