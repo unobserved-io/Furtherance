@@ -504,6 +504,8 @@ impl Application for Furtherance {
             Message::FontLoaded(_) => Command::none(),
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
+                reset_timer(self);
+                self.displayed_alert = None;
                 Command::none()
             }
             Message::IdleReset => {
@@ -629,12 +631,14 @@ impl Application for Furtherance {
 
                     if self.fur_settings.notify_on_idle {
                         let idle_time = get_idle_time();
-                        if idle_time >= self.fur_settings.chosen_idle_time && !self.idle.reached {
+                        if idle_time >= self.fur_settings.chosen_idle_time * 60
+                            && !self.idle.reached
+                        {
                             // User is idle
                             self.idle.reached = true;
                             self.idle.start_time = Local::now()
                                 - Duration::seconds(self.fur_settings.chosen_idle_time as i64 * 60);
-                        } else if idle_time < self.fur_settings.chosen_idle_time
+                        } else if idle_time < self.fur_settings.chosen_idle_time * 60
                             && self.idle.reached
                             && !self.idle.notified
                         {
@@ -1734,12 +1738,15 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
         currency: String::new(),
     })
     .expect("Couldn't write task to database.");
+
+    state.task_history = get_task_history();
 }
 
 fn reset_timer(state: &mut Furtherance) {
     state.task_input = "".to_string();
     state.task_history = get_task_history();
     state.timer_text = "0:00:00".to_string();
+    state.idle = FurIdle::new();
 }
 
 fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResult<DateTime<Local>> {
