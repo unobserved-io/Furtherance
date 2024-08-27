@@ -97,6 +97,8 @@ pub enum Message {
     SettingsDefaultViewSelected(FurView),
     SettingsIdleTimeChanged(u64),
     SettingsIdleToggled(bool),
+    SettingsPomodoroToggled(bool),
+    SettingsPomodoroLengthChanged(u64),
     SettingsTabSelected(TabId),
     ShowAlert(FurAlert),
     StartStopPressed,
@@ -603,6 +605,20 @@ impl Application for Furtherance {
                 }
                 Command::none()
             }
+            Message::SettingsPomodoroToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_pomodoro(&new_value) {
+                    eprintln!("Failed to change pomodoro in settings: {}", e);
+                }
+                Command::none()
+            }
+            Message::SettingsPomodoroLengthChanged(new_minutes) => {
+                if new_minutes >= 1 {
+                    if let Err(e) = self.fur_settings.change_pomodoro_length(&new_minutes) {
+                        eprintln!("Failed to change pomodoro in settings: {}", e);
+                    }
+                }
+                Command::none()
+            }
             Message::SettingsTabSelected(new_tab) => {
                 self.settings_active_tab = new_tab;
                 Command::none()
@@ -995,7 +1011,7 @@ impl Application for Furtherance {
                         row![
                             text("Idle detection"),
                             toggler(
-                                "".to_string(),
+                                String::new(),
                                 self.fur_settings.notify_on_idle,
                                 Message::SettingsIdleToggled
                             )
@@ -1024,7 +1040,33 @@ impl Application for Furtherance {
                     bootstrap::icon_to_char(Bootstrap::StopwatchFill),
                     "Pomodoro".to_string()
                 ),
-                Scrollable::new(column![].padding(10),),
+                Scrollable::new(
+                    column![
+                        row![
+                            text("Countdown timer"),
+                            toggler(
+                                String::new(),
+                                self.fur_settings.pomodoro,
+                                Message::SettingsPomodoroToggled
+                            )
+                            .width(Length::Shrink)
+                        ]
+                        .spacing(10)
+                        .align_items(Alignment::Center),
+                        row![
+                            text("Timer length"),
+                            number_input(
+                                self.fur_settings.pomodoro_length,
+                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                Message::SettingsPomodoroLengthChanged
+                            )
+                            .width(Length::Shrink)
+                        ]
+                        .spacing(10)
+                        .align_items(Alignment::Center),
+                    ]
+                    .padding(10),
+                ),
             )
             .push(
                 TabId::Report,

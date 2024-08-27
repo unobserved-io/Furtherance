@@ -28,6 +28,8 @@ pub struct FurSettings {
     pub default_view: FurView,
     pub notify_on_idle: bool,
     pub chosen_idle_time: u64,
+    pub pomodoro: bool,
+    pub pomodoro_length: u64,
 }
 
 impl Default for FurSettings {
@@ -39,6 +41,8 @@ impl Default for FurSettings {
             default_view: FurView::Timer,
             notify_on_idle: true,
             chosen_idle_time: 6,
+            pomodoro: false,
+            pomodoro_length: 25,
         }
     }
 }
@@ -89,6 +93,16 @@ impl FurSettings {
 
     pub fn change_chosen_idle_time(&mut self, value: &u64) -> Result<(), std::io::Error> {
         self.chosen_idle_time = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.pomodoro = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_length(&mut self, value: &u64) -> Result<(), std::io::Error> {
+        self.pomodoro_length = value.to_owned();
         self.save()
     }
 }
