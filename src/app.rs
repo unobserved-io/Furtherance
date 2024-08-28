@@ -181,25 +181,20 @@ impl Application for Furtherance {
             Message::AddNewTaskPressed => {
                 self.task_to_add = Some(TaskToAdd::new());
                 self.inspector_view = Some(FurInspectorView::AddNewTask);
-                Command::none()
             }
             Message::AddTaskToGroup(group_to_edit) => {
                 self.task_to_add = Some(TaskToAdd::new_from(&group_to_edit));
                 self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
-                Command::none()
             }
             Message::AlertClose => {
                 self.displayed_alert = None;
-                Command::none()
             }
             Message::CancelCurrentTaskStartTime => {
                 self.show_timer_start_picker = false;
-                Command::none()
             }
             Message::CancelGroupEdit => {
                 self.group_to_edit = None;
                 self.inspector_view = None;
-                Command::none()
             }
             Message::CancelTaskEdit => {
                 self.task_to_edit = None;
@@ -209,7 +204,6 @@ impl Application for Furtherance {
                 } else {
                     self.inspector_view = None;
                 }
-                Command::none()
             }
             Message::CancelTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
@@ -245,11 +239,9 @@ impl Application for Furtherance {
                         _ => {}
                     }
                 }
-                Command::none()
             }
             Message::ChooseCurrentTaskStartTime => {
                 self.show_timer_start_picker = true;
-                Command::none()
             }
             Message::ChooseTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
@@ -285,7 +277,6 @@ impl Application for Furtherance {
                         _ => {}
                     }
                 }
-                Command::none()
             }
             Message::DeleteTasks => {
                 if let Some(task_to_edit) = &self.task_to_edit {
@@ -301,7 +292,6 @@ impl Application for Furtherance {
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
                 }
-                Command::none()
             }
             Message::EditGroup(task_group) => {
                 if task_group.tasks.len() == 1 {
@@ -313,12 +303,10 @@ impl Application for Furtherance {
                     self.group_to_edit = Some(GroupToEdit::new_from(&task_group));
                     self.inspector_view = Some(FurInspectorView::EditGroup);
                 }
-                Command::none()
             }
             Message::EditTask(task) => {
                 self.task_to_edit = Some(TaskToEdit::new_from(&task));
                 self.inspector_view = Some(FurInspectorView::EditTask);
-                Command::none()
             }
             Message::EditTaskTextChanged(new_value, property) => {
                 match self.inspector_view {
@@ -509,26 +497,22 @@ impl Application for Furtherance {
                     }
                     _ => {}
                 }
-                Command::none()
             }
-            Message::FontLoaded(_) => Command::none(),
+            Message::FontLoaded(_) => {}
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
                 self.displayed_alert = None;
-                Command::none()
             }
             Message::IdleReset => {
                 self.idle = FurIdle::new();
                 self.displayed_alert = None;
                 // TODO: Remove pending notifications?
-                Command::none()
             }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
                     self.inspector_view = None;
                     self.current_view = destination;
                 }
-                Command::none()
             }
             Message::PomodoroContinueAfterBreak => {
                 self.timer_is_running = false;
@@ -538,7 +522,7 @@ impl Application for Furtherance {
                 self.pomodoro.on_break = false;
                 self.displayed_alert = None;
                 start_timer(self);
-                Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
             }
             Message::PomodoroStartIntermission => {
                 let original_task_input = self.task_input.clone();
@@ -550,24 +534,22 @@ impl Application for Furtherance {
                 self.pomodoro.on_break = true;
                 self.displayed_alert = None;
                 start_timer(self);
-                Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
             }
             Message::PomodoroStop => {
                 stop_timer(self, Local::now());
                 self.displayed_alert = None;
-                Command::none()
             }
             Message::PomodoroStopAfterBreak => {
                 self.timer_is_running = false;
                 reset_timer(self);
                 self.pomodoro.on_break = false;
                 self.displayed_alert = None;
-                Command::none()
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
                 self.task_input = last_task_input;
                 self.current_view = FurView::Timer;
-                Command::perform(async { Message::StartStopPressed }, |msg| msg)
+                return Command::perform(async { Message::StartStopPressed }, |msg| msg);
             }
             Message::SaveGroupEdit => {
                 if let Some(group_to_edit) = &self.group_to_edit {
@@ -576,7 +558,6 @@ impl Application for Furtherance {
                     self.group_to_edit = None;
                     self.task_history = get_task_history();
                 }
-                Command::none()
             }
             Message::SaveTaskEdit => {
                 if let Some(task_to_edit) = &self.task_to_edit {
@@ -624,13 +605,11 @@ impl Application for Furtherance {
                     self.group_to_edit = None;
                     self.task_history = get_task_history();
                 }
-                Command::none()
             }
             Message::SettingsDefaultViewSelected(selected_view) => {
                 if let Err(e) = self.fur_settings.change_default_view(&selected_view) {
                     eprintln!("Failed to change default_view in settings: {}", e);
                 }
-                Command::none()
             }
             Message::SettingsIdleTimeChanged(new_minutes) => {
                 if new_minutes >= 1 {
@@ -638,13 +617,11 @@ impl Application for Furtherance {
                         eprintln!("Failed to change chosen_idle_time in settings: {}", e);
                     }
                 }
-                Command::none()
             }
             Message::SettingsIdleToggled(new_value) => {
                 if let Err(e) = self.fur_settings.change_notify_on_idle(&new_value) {
                     eprintln!("Failed to change notify_on_idle in settings: {}", e);
                 }
-                Command::none()
             }
             Message::SettingsPomodoroBreakLengthChanged(new_minutes) => {
                 if new_minutes >= 1 {
@@ -652,7 +629,6 @@ impl Application for Furtherance {
                         eprintln!("Failed to change pomodoro in settings: {}", e);
                     }
                 }
-                Command::none()
             }
             Message::SettingsPomodoroLengthChanged(new_minutes) => {
                 if new_minutes >= 1 {
@@ -666,7 +642,6 @@ impl Application for Furtherance {
                             .num_seconds(),
                     );
                 }
-                Command::none()
             }
             Message::SettingsPomodoroToggled(new_value) => {
                 if let Err(e) = self.fur_settings.change_pomodoro(&new_value) {
@@ -678,15 +653,12 @@ impl Application for Furtherance {
                         .signed_duration_since(self.timer_start_time)
                         .num_seconds(),
                 );
-                Command::none()
             }
             Message::SettingsTabSelected(new_tab) => {
                 self.settings_active_tab = new_tab;
-                Command::none()
             }
             Message::ShowAlert(alert_to_show) => {
                 self.displayed_alert = Some(alert_to_show);
-                Command::none()
             }
             Message::StartStopPressed => {
                 if self.timer_is_running {
@@ -697,10 +669,10 @@ impl Application for Furtherance {
                     } else {
                         stop_timer(self, Local::now());
                     }
-                    Command::none()
+                    return Command::none();
                 } else {
                     start_timer(self);
-                    Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                    return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
                 }
             }
             Message::StopwatchTick => {
@@ -745,9 +717,9 @@ impl Application for Furtherance {
                         }
                     }
 
-                    Command::perform(get_timer_duration(), |_| Message::StopwatchTick)
+                    return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
                 } else {
-                    Command::none()
+                    return Command::none();
                 }
             }
             Message::SubmitCurrentTaskStartTime(new_time) => {
@@ -764,7 +736,6 @@ impl Application for Furtherance {
                         eprintln!("Error converting chosen time to local time.");
                     }
                 }
-                Command::none()
             }
             Message::SubmitTaskEditDate(new_date, property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
@@ -828,7 +799,6 @@ impl Application for Furtherance {
                         _ => {}
                     }
                 }
-                Command::none()
             }
             Message::SubmitTaskEditTime(new_time, property) => {
                 // TODO: Edit to fix issues in greater than stop, etc. like below
@@ -891,7 +861,6 @@ impl Application for Furtherance {
                         _ => {}
                     }
                 }
-                Command::none()
             }
             Message::TaskInputChanged(new_value) => {
                 // Handle all possible task input checks here rather than on start/stop press
@@ -942,15 +911,14 @@ impl Application for Furtherance {
                         self.task_input = new_value_trimmed.to_string();
                     }
                 }
-                Command::none()
             }
             Message::ToggleGroupEditor => {
                 self.group_to_edit
                     .as_mut()
                     .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
-                Command::none()
             }
         }
+        Command::none()
     }
 
     fn view(&self, _window_id: window::Id) -> Element<Message> {
