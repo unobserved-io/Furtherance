@@ -186,12 +186,8 @@ impl Application for Furtherance {
                 self.task_to_add = Some(TaskToAdd::new_from(&group_to_edit));
                 self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
             }
-            Message::AlertClose => {
-                self.displayed_alert = None;
-            }
-            Message::CancelCurrentTaskStartTime => {
-                self.show_timer_start_picker = false;
-            }
+            Message::AlertClose => self.displayed_alert = None,
+            Message::CancelCurrentTaskStartTime => self.show_timer_start_picker = false,
             Message::CancelGroupEdit => {
                 self.group_to_edit = None;
                 self.inspector_view = None;
@@ -240,9 +236,7 @@ impl Application for Furtherance {
                     }
                 }
             }
-            Message::ChooseCurrentTaskStartTime => {
-                self.show_timer_start_picker = true;
-            }
+            Message::ChooseCurrentTaskStartTime => self.show_timer_start_picker = true,
             Message::ChooseTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {
@@ -654,12 +648,8 @@ impl Application for Furtherance {
                         .num_seconds(),
                 );
             }
-            Message::SettingsTabSelected(new_tab) => {
-                self.settings_active_tab = new_tab;
-            }
-            Message::ShowAlert(alert_to_show) => {
-                self.displayed_alert = Some(alert_to_show);
-            }
+            Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
+            Message::ShowAlert(alert_to_show) => self.displayed_alert = Some(alert_to_show),
             Message::StartStopPressed => {
                 if self.timer_is_running {
                     if self.pomodoro.on_break {
