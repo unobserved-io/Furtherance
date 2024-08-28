@@ -962,14 +962,25 @@ impl Application for Furtherance {
                 nav_button("History", FurView::History),
                 nav_button("Report", FurView::Report),
                 vertical_space().height(Length::Fill),
-                // TODO: if timer is running and nav is not timer, show timer
+                if self.timer_is_running && self.current_view != FurView::Timer {
+                    text(convert_timer_text_to_vertical_hms(&self.timer_text))
+                        .size(50)
+                        .style(if self.pomodoro.on_break {
+                            theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
+                        } else {
+                            theme::Text::Default
+                        })
+                } else {
+                    text("")
+                },
                 nav_button("Settings", FurView::Settings)
             ]
             .spacing(12)
-            .padding(20)
-            .width(175)
             .align_items(Alignment::Start),
         )
+        .width(175)
+        .padding(10)
+        .clip(true)
         .style(style::gray_background);
 
         // MARK: Shortcuts
@@ -1971,6 +1982,33 @@ fn get_running_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
     } else {
         seconds_to_formatted_duration(seconds_elapsed)
     }
+}
+
+fn convert_timer_text_to_vertical_hms(timer_text: &str) -> String {
+    let mut split = timer_text.split(':');
+    let mut sidebar_timer_text = String::new();
+
+    if let Some(hours) = split.next() {
+        if hours != "0" {
+            sidebar_timer_text.push_str(&format!("{} h\n", hours));
+        }
+    }
+
+    if let Some(mins) = split.next() {
+        if mins != "00" {
+            sidebar_timer_text.push_str(&format!("{} m\n", mins.trim_start_matches('0')));
+        }
+    }
+
+    if let Some(secs) = split.next() {
+        if secs != "00" {
+            sidebar_timer_text.push_str(&format!("{} s", secs.trim_start_matches('0')));
+        } else {
+            sidebar_timer_text.push_str("0 s");
+        }
+    }
+
+    sidebar_timer_text
 }
 
 fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResult<DateTime<Local>> {
