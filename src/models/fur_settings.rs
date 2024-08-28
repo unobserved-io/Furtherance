@@ -31,6 +31,7 @@ pub struct FurSettings {
     pub pomodoro: bool,
     pub pomodoro_break_length: i64,
     pub pomodoro_length: i64,
+    pub pomodoro_snooze_length: i64,
 }
 
 impl Default for FurSettings {
@@ -45,6 +46,7 @@ impl Default for FurSettings {
             pomodoro: false,
             pomodoro_break_length: 5,
             pomodoro_length: 25,
+            pomodoro_snooze_length: 5,
         }
     }
 }
@@ -110,6 +112,11 @@ impl FurSettings {
 
     pub fn change_pomodoro_length(&mut self, value: &i64) -> Result<(), std::io::Error> {
         self.pomodoro_length = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_snooze_length(&mut self, value: &i64) -> Result<(), std::io::Error> {
+        self.pomodoro_snooze_length = value.to_owned();
         self.save()
     }
 }

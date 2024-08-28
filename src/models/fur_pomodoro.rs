@@ -14,17 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::{DateTime, Local};
+
 #[derive(Clone, Debug)]
 pub struct FurPomodoro {
     pub on_break: bool,
-    pub extended: bool,
+    pub snoozed: bool,
+    pub snoozed_at: DateTime<Local>,
 }
 
 impl FurPomodoro {
     pub fn new() -> Self {
         FurPomodoro {
             on_break: false,
-            extended: false,
+            snoozed: false,
+            snoozed_at: Local::now(),
         }
     }
 }

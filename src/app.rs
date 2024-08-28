@@ -93,7 +93,8 @@ pub enum Message {
     IdleReset,
     NavigateTo(FurView),
     PomodoroContinueAfterBreak,
-    PomodoroStartIntermission,
+    PomodoroSnooze,
+    PomodoroStartBreak,
     PomodoroStop,
     PomodoroStopAfterBreak,
     RepeatLastTaskPressed(String),
@@ -104,6 +105,7 @@ pub enum Message {
     SettingsIdleToggled(bool),
     SettingsPomodoroBreakLengthChanged(i64),
     SettingsPomodoroLengthChanged(i64),
+    SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
     SettingsTabSelected(TabId),
     ShowAlert(FurAlert),
@@ -513,17 +515,24 @@ impl Application for Furtherance {
                 reset_timer(self);
                 self.task_input = original_task_input;
                 self.pomodoro.on_break = false;
+                self.pomodoro.snoozed = false;
                 self.displayed_alert = None;
                 start_timer(self);
                 return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
             }
-            Message::PomodoroStartIntermission => {
+            Message::PomodoroSnooze => {
+                self.pomodoro.snoozed = true;
+                self.pomodoro.snoozed_at = Local::now();
+                self.displayed_alert = None;
+                return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
+            }
+            Message::PomodoroStartBreak => {
                 let original_task_input = self.task_input.clone();
                 let pomodoro_stop_time = self.timer_start_time
                     + Duration::minutes(self.fur_settings.pomodoro_break_length);
                 stop_timer(self, pomodoro_stop_time);
                 self.task_input = original_task_input;
-                self.pomodoro.extended = false;
+                self.pomodoro.snoozed = false;
                 self.pomodoro.on_break = true;
                 self.displayed_alert = None;
                 start_timer(self);
@@ -532,11 +541,13 @@ impl Application for Furtherance {
             Message::PomodoroStop => {
                 stop_timer(self, Local::now());
                 self.displayed_alert = None;
+                self.pomodoro.snoozed = false;
             }
             Message::PomodoroStopAfterBreak => {
                 self.timer_is_running = false;
                 reset_timer(self);
                 self.pomodoro.on_break = false;
+                self.pomodoro.snoozed = false;
                 self.displayed_alert = None;
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
@@ -619,14 +630,14 @@ impl Application for Furtherance {
             Message::SettingsPomodoroBreakLengthChanged(new_minutes) => {
                 if new_minutes >= 1 {
                     if let Err(e) = self.fur_settings.change_pomodoro_break_length(&new_minutes) {
-                        eprintln!("Failed to change pomodoro in settings: {}", e);
+                        eprintln!("Failed to change pomodoro_break_length in settings: {}", e);
                     }
                 }
             }
             Message::SettingsPomodoroLengthChanged(new_minutes) => {
                 if new_minutes >= 1 {
                     if let Err(e) = self.fur_settings.change_pomodoro_length(&new_minutes) {
-                        eprintln!("Failed to change pomodoro in settings: {}", e);
+                        eprintln!("Failed to change pomodoro_length in settings: {}", e);
                     }
                     self.timer_text = get_timer_text(
                         &self,
@@ -634,6 +645,16 @@ impl Application for Furtherance {
                             .signed_duration_since(self.timer_start_time)
                             .num_seconds(),
                     );
+                }
+            }
+            Message::SettingsPomodoroSnoozeLengthChanged(new_minutes) => {
+                if new_minutes >= 1 {
+                    if let Err(e) = self
+                        .fur_settings
+                        .change_pomodoro_snooze_length(&new_minutes)
+                    {
+                        eprintln!("Failed to change pomodoro_snooze_length in settings: {}", e);
+                    }
                 }
             }
             Message::SettingsPomodoroToggled(new_value) => {
@@ -1129,6 +1150,17 @@ impl Application for Furtherance {
                         ]
                         .spacing(10)
                         .align_items(Alignment::Center),
+                        row![
+                            text("Snooze length"),
+                            number_input(
+                                self.fur_settings.pomodoro_snooze_length,
+                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                Message::SettingsPomodoroSnoozeLengthChanged
+                            )
+                            .width(Length::Shrink)
+                        ]
+                        .spacing(10)
+                        .align_items(Alignment::Center),
                     ]
                     .padding(10),
                 ),
@@ -1587,7 +1619,7 @@ impl Application for Furtherance {
             let alert_description: &str;
             let mut close_button: Option<Button<'_, Message, Theme, Renderer>> = None;
             let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
-            let mut more_minutes_button: Option<Button<'_, Message, Theme, Renderer>> = None;
+            let mut snooze_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
                 FurAlert::DeleteGroupConfirmation => {
@@ -1683,6 +1715,18 @@ impl Application for Furtherance {
                 FurAlert::PomodoroOver => {
                     alert_text = "Time's up!".to_string();
                     alert_description = "Are you ready to take a break?";
+                    snooze_button = Some(
+                        button(
+                            text(format!(
+                                "{} more minutes",
+                                self.fur_settings.pomodoro_snooze_length
+                            ))
+                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .width(Length::Fill),
+                        )
+                        .on_press(Message::PomodoroSnooze)
+                        .style(theme::Button::Secondary),
+                    );
                     close_button = Some(
                         button(
                             text("Stop")
@@ -1698,7 +1742,7 @@ impl Application for Furtherance {
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
-                        .on_press(Message::PomodoroStartIntermission)
+                        .on_press(Message::PomodoroStartBreak)
                         .style(theme::Button::Primary),
                     );
                 }
@@ -1706,15 +1750,12 @@ impl Application for Furtherance {
 
             let mut buttons: Row<'_, Message, Theme, Renderer> =
                 row![].spacing(10).padding(5).width(Length::Fill);
-
-            if let Some(more) = more_minutes_button {
+            if let Some(more) = snooze_button {
                 buttons = buttons.push(more);
             }
-
             if let Some(close) = close_button {
                 buttons = buttons.push(close);
             }
-
             if let Some(confirmation) = confirmation_button {
                 buttons = buttons.push(confirmation);
             }
@@ -1926,7 +1967,12 @@ fn get_running_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
         let stop_time = if state.pomodoro.on_break {
             state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_break_length)
         } else {
-            state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_length)
+            if state.pomodoro.snoozed {
+                state.pomodoro.snoozed_at
+                    + Duration::minutes(state.fur_settings.pomodoro_snooze_length)
+            } else {
+                state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_length)
+            }
         };
 
         let seconds_until_end =
