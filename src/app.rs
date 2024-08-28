@@ -176,7 +176,6 @@ impl Application for Furtherance {
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
-        //TODO: Remove Command::none() returns and return it at end except where necessary
         match message {
             Message::AddNewTaskPressed => {
                 self.task_to_add = Some(TaskToAdd::new());
