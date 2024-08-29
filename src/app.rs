@@ -30,20 +30,20 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::{toggler, tooltip, Row};
+use iced::widget::{toggler, Row};
 use iced::Color;
 use iced::{
-    alignment, font, keyboard,
+    alignment, font,
     multi_window::Application,
     widget::{
         button, column, horizontal_space, pick_list, row, text, text_input, theme, vertical_space,
         Button, Column, Container, Scrollable,
     },
-    window, Alignment, Command, Element, Font, Length, Renderer, Settings, Size, Theme,
+    window, Alignment, Command, Element, Length, Renderer, Theme,
 };
 use iced_aw::{
     core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker, modal, number_input, time_picker, Card, Modal, TabBarPosition, TabLabel, Tabs,
+    date_picker, modal, number_input, time_picker, Card, TabBarPosition, TabLabel, Tabs,
     TimePicker,
 };
 use regex::Regex;
