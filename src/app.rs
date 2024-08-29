@@ -925,6 +925,12 @@ impl Application for Furtherance {
             }
             Message::TaskInputChanged(new_value) => {
                 // Handle all possible task input checks here rather than on start/stop press
+                // If timer is running, task can never be empty
+                if self.timer_is_running {
+                    if new_value.trim().is_empty() {
+                        return Command::none();
+                    }
+                }
                 let new_value_trimmed = new_value.trim_start();
                 // Doesn't start with @
                 if new_value_trimmed.chars().next() != Some('@')
