@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use core::f32;
-use std::{collections::BTreeMap, env};
+use std::collections::BTreeMap;
 
 use crate::{
     database::*,
