@@ -1813,7 +1813,7 @@ impl Application for Furtherance {
                                 }
                             ))
                             .horizontal_alignment(alignment::Horizontal::Center)
-                            .width(Length::Fill),
+                            .width(Length::Shrink),
                         )
                         .on_press(Message::PomodoroSnooze)
                         .style(theme::Button::Secondary),
@@ -1864,7 +1864,11 @@ impl Application for Furtherance {
             Some(
                 Card::new(text(alert_text), text(alert_description))
                     .foot(buttons)
-                    .max_width(300.0)
+                    .max_width(if self.displayed_alert == Some(FurAlert::PomodoroOver) {
+                        400.0
+                    } else {
+                        300.0
+                    })
                     .on_close(Message::AlertClose),
             )
         } else {
