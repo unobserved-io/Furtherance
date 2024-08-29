@@ -1097,11 +1097,24 @@ impl Application for Furtherance {
             ]);
         }
         for (date, task_groups) in self.task_history.iter().rev() {
-            let total_time = task_groups
-                .iter()
-                .map(|group| group.total_time)
-                .sum::<i64>();
-            all_history_rows = all_history_rows.push(history_title_row(date, total_time));
+            // let total_time = task_groups
+            //     .iter()
+            //     .map(|group| group.total_time)
+            //     .sum::<i64>();
+            let (total_time, total_earnings) = task_groups.iter().fold(
+                (0i64, 0f32),
+                |(accumulated_time, accumulated_earnings), group| {
+                    let group_time = group.total_time;
+                    let group_earnings = (group_time as f32 / 3600.0) * group.rate;
+
+                    (
+                        accumulated_time + group_time,
+                        accumulated_earnings + group_earnings,
+                    )
+                },
+            );
+            all_history_rows =
+                all_history_rows.push(history_title_row(date, total_time, total_earnings));
             for task_group in task_groups {
                 all_history_rows = all_history_rows.push(history_group_row(task_group))
             }
@@ -1952,37 +1965,31 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
     .style(theme::Button::Text)
 }
 
-// fn get_task_group_with_id(state: &Furtherance) -> Option<&FurTaskGroup> {
-//     for value in state.task_history.values() {
-//         if let Some(group_to_edit) = value.iter().find(|v| v.id == state.group_id_to_edit) {
-//             return Some(group_to_edit);
-//         }
-//     }
-//     None
-// }
-
-// fn get_mutable_task_group_with_id(state: &mut Furtherance) -> Option<&mut FurTaskGroup> {
-//     for value in map.values_mut() {
-//         if value.id == target_id {
-//             return Some(value);
-//         }
-//     }
-//     None
-// }
-
-fn history_title_row<'a>(date: &NaiveDate, total_time: i64) -> Row<'a, Message> {
+fn history_title_row<'a>(
+    date: &NaiveDate,
+    total_time: i64,
+    total_earnings: f32,
+) -> Row<'a, Message> {
     let total_time_str = seconds_to_formatted_duration(total_time);
+    let mut total_time_column = column![text(total_time_str).font(font::Font {
+        weight: iced::font::Weight::Bold,
+        ..Default::default()
+    })]
+    .align_items(Alignment::End);
+
+    if total_earnings > 0.0 {
+        total_time_column = total_time_column.push(text(format!("${:.2}", total_earnings)));
+    }
+
     row![
         text(format_history_date(date)).font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
         }),
         horizontal_space().width(Length::Fill),
-        text(total_time_str).font(font::Font {
-            weight: iced::font::Weight::Bold,
-            ..Default::default()
-        }),
+        total_time_column,
     ]
+    .align_items(Alignment::Center)
 }
 
 fn format_history_date(date: &NaiveDate) -> String {
