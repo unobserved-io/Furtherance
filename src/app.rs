@@ -1802,9 +1802,15 @@ impl Application for Furtherance {
                     alert_description = "Are you ready to take a break?";
                     snooze_button = Some(
                         button(
+                            // TODO: Try to handle plural with Fluent
                             text(format!(
-                                "{} more minutes",
-                                self.fur_settings.pomodoro_snooze_length
+                                "{} more {}",
+                                self.fur_settings.pomodoro_snooze_length,
+                                if self.fur_settings.pomodoro_snooze_length > 1 {
+                                    "minutes"
+                                } else {
+                                    "minute"
+                                }
                             ))
                             .horizontal_alignment(alignment::Horizontal::Center)
                             .width(Length::Fill),
