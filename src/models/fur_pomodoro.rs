@@ -19,6 +19,7 @@ use chrono::{DateTime, Local};
 #[derive(Clone, Debug)]
 pub struct FurPomodoro {
     pub on_break: bool,
+    pub sessions: u16,
     pub snoozed: bool,
     pub snoozed_at: DateTime<Local>,
 }
@@ -27,6 +28,7 @@ impl FurPomodoro {
     pub fn new() -> Self {
         FurPomodoro {
             on_break: false,
+            sessions: 0,
             snoozed: false,
             snoozed_at: Local::now(),
         }

@@ -30,6 +30,9 @@ pub struct FurSettings {
     pub chosen_idle_time: i64,
     pub pomodoro: bool,
     pub pomodoro_break_length: i64,
+    pub pomodoro_extended_breaks: bool,
+    pub pomodoro_extended_break_interval: u16,
+    pub pomodoro_extended_break_length: i64,
     pub pomodoro_length: i64,
     pub pomodoro_snooze_length: i64,
 }
@@ -45,6 +48,9 @@ impl Default for FurSettings {
             chosen_idle_time: 6,
             pomodoro: false,
             pomodoro_break_length: 5,
+            pomodoro_extended_breaks: false,
+            pomodoro_extended_break_interval: 4,
+            pomodoro_extended_break_length: 25,
             pomodoro_length: 25,
             pomodoro_snooze_length: 5,
         }
@@ -107,6 +113,27 @@ impl FurSettings {
 
     pub fn change_pomodoro_break_length(&mut self, value: &i64) -> Result<(), std::io::Error> {
         self.pomodoro_break_length = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_extended_breaks(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.pomodoro_extended_breaks = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_extended_break_interval(
+        &mut self,
+        value: &u16,
+    ) -> Result<(), std::io::Error> {
+        self.pomodoro_extended_break_interval = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_extended_break_length(
+        &mut self,
+        value: &i64,
+    ) -> Result<(), std::io::Error> {
+        self.pomodoro_extended_break_length = value.to_owned();
         self.save()
     }
 
