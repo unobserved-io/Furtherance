@@ -1046,7 +1046,11 @@ impl Application for Furtherance {
                         },
                         horizontal_space().width(Length::Fixed(5.0)),
                     ])
-                    .on_press(Message::StartStopPressed)
+                    .on_press_maybe(if self.task_input.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::StartStopPressed)
+                    })
                 ]
                 .spacing(10),
                 if self.timer_is_running {
