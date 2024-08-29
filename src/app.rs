@@ -354,10 +354,8 @@ impl Application for Furtherance {
                                     } else if new_value.contains('$') {
                                         task_to_add.input_error("Do not include a $ in the rate.");
                                     } else if new_value_parsed.is_ok()
-                                        && has_max_two_decimals(
-                                            new_value_parsed.clone().unwrap_or(0.0),
-                                        )
-                                        && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
+                                        && has_max_two_decimals(&new_value)
+                                        && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                     {
                                         task_to_add.new_rate = new_value;
                                         task_to_add.input_error("");
@@ -415,10 +413,8 @@ impl Application for Furtherance {
                                     } else if new_value.contains('$') {
                                         task_to_edit.input_error("Do not include a $ in the rate.");
                                     } else if new_value_parsed.is_ok()
-                                        && has_max_two_decimals(
-                                            new_value_parsed.clone().unwrap_or(0.0),
-                                        )
-                                        && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
+                                        && has_max_two_decimals(&new_value)
+                                        && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                     {
                                         task_to_edit.new_rate = new_value;
                                         task_to_edit.input_error("");
@@ -477,10 +473,8 @@ impl Application for Furtherance {
                                         group_to_edit
                                             .input_error("Do not include a $ in the rate.");
                                     } else if new_value_parsed.is_ok()
-                                        && has_max_two_decimals(
-                                            new_value_parsed.clone().unwrap_or(0.0),
-                                        )
-                                        && new_value_parsed.unwrap_or(f32::INFINITY).is_finite()
+                                        && has_max_two_decimals(&new_value)
+                                        && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                     {
                                         group_to_edit.new_rate = new_value;
                                         group_to_edit.input_error("");
@@ -956,7 +950,7 @@ impl Application for Furtherance {
                             let parsed_num = number_str.parse::<f32>();
 
                             if parsed_num.is_ok()
-                                && has_max_two_decimals(parsed_num.clone().unwrap_or(0.0))
+                                && has_max_two_decimals(&number_str)
                                 && parsed_num.unwrap_or(f32::MAX) < f32::MAX
                             {
                                 let remaining_str = &after_dollar[end_index..].trim_start();
@@ -2333,8 +2327,14 @@ fn combine_chosen_time_with_date(
     )
 }
 
-fn has_max_two_decimals(num: f32) -> bool {
-    let shifted = num * 100.0;
-    let rounded = shifted.round();
-    (shifted - rounded).abs() < f32::EPSILON
+fn has_max_two_decimals(input: &str) -> bool {
+    let parts: Vec<&str> = input.split('.').collect();
+    match parts.len() {
+        1 => true,
+        2 => {
+            let decimal_part = parts[1];
+            decimal_part.len() <= 2
+        }
+        _ => false,
+    }
 }
