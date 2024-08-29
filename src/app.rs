@@ -1895,7 +1895,6 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 }
 
 fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
-    let total_time_str = seconds_to_formatted_duration(task_group.total_time);
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name).font(font::Font {
             weight: iced::font::Weight::Bold,
@@ -1919,9 +1918,22 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
                 .style(style::group_count_circle),
         );
     }
+
+    let total_time_str = seconds_to_formatted_duration(task_group.total_time);
+    let mut totals_column: Column<'_, Message, Theme, Renderer> = column![text(total_time_str)
+        .font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        })]
+    .align_items(Alignment::End);
+    if task_group.rate > 0.0 {
+        let total_earnings = task_group.rate * (task_group.total_time as f32 / 3600.0);
+        totals_column = totals_column.push(text(&format!("${:.2}", total_earnings)));
+    }
+
     task_row = task_row.push(task_details_column);
     task_row = task_row.push(horizontal_space().width(Length::Fill));
-    task_row = task_row.push(text(total_time_str));
+    task_row = task_row.push(totals_column);
     task_row = task_row.push(
         button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
             .on_press(Message::RepeatLastTaskPressed(task_input_builder(
