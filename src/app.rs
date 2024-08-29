@@ -1868,17 +1868,13 @@ impl Application for Furtherance {
                         400.0
                     } else {
                         300.0
-                    })
-                    .on_close(Message::AlertClose),
+                    }),
             )
         } else {
             None
         };
 
-        modal(content, overlay)
-            .backdrop(Message::AlertClose)
-            .on_esc(Message::AlertClose)
-            .into()
+        modal(content, overlay).into()
     }
 }
 
