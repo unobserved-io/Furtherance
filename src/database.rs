@@ -100,7 +100,7 @@ pub fn db_init() -> Result<()> {
                         tags TEXT,
                         project TEXT,
                         rate REAL,
-                        currency TEXT,);",
+                        currency TEXT);",
         [],
     )?;
 
@@ -465,7 +465,7 @@ pub fn db_write_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
 }
 
 /// Retrieve all shortcuts from the database
-pub fn db_retrieve_all_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
+pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 
     let mut stmt = conn.prepare("SELECT * FROM shortcuts ORDER BY name")?;

@@ -47,6 +47,7 @@ pub enum FurAlert {
 #[derive(Debug)]
 pub enum FurInspectorView {
     AddNewTask,
+    AddShortcut,
     AddTaskToGroup,
     EditTask,
     EditGroup,
