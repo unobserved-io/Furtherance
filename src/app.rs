@@ -19,11 +19,11 @@ use std::collections::BTreeMap;
 
 use crate::{
     database::*,
-    helpers::idle::get_idle_time,
+    helpers::{color_utils::FromHex, idle::get_idle_time},
     models::{
-        fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_settings::FurSettings, fur_task::FurTask,
-        fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, task_to_add::TaskToAdd,
-        task_to_edit::TaskToEdit,
+        fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_settings::FurSettings,
+        fur_shortcut::FurShortcut, fur_task::FurTask, fur_task_group::FurTaskGroup,
+        group_to_edit::GroupToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
     },
     style,
     view_enums::*,
@@ -46,6 +46,9 @@ use iced_aw::{
     date_picker, modal, number_input, time_picker, Card, TabBarPosition, TabLabel, Tabs,
     TimePicker,
 };
+use palette::color_difference::Wcag21RelativeContrast;
+use palette::Srgb;
+use rand::Rng;
 use regex::Regex;
 use tokio::time;
 
@@ -62,6 +65,7 @@ pub struct Furtherance {
     inspector_view: Option<FurInspectorView>,
     pomodoro: FurPomodoro,
     settings_active_tab: TabId,
+    shortcuts: Vec<FurShortcut>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
@@ -111,6 +115,7 @@ pub enum Message {
     SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
     SettingsTabSelected(TabId),
+    ShortcutPressed,
     ShowAlert(FurAlert),
     StartStopPressed,
     StopwatchTick,
@@ -149,6 +154,13 @@ impl Application for Furtherance {
             pomodoro: FurPomodoro::new(),
             inspector_view: None,
             settings_active_tab: TabId::General,
+            shortcuts: match db_retrieve_all_shortcuts() {
+                Ok(shortcuts) => shortcuts,
+                Err(e) => {
+                    eprintln!("Error reading shortcuts from database: {}", e);
+                    vec![]
+                }
+            },
             show_timer_start_picker: false,
             task_history: get_task_history(),
             task_input: "".to_string(),
@@ -279,13 +291,13 @@ impl Application for Furtherance {
             Message::DeleteTasks => {
                 if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
-                    let _ = db_delete_by_ids(vec![task_to_edit.id]);
+                    let _ = db_delete_tasks_by_ids(vec![task_to_edit.id]);
                     self.task_to_edit = None;
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
-                    let _ = db_delete_by_ids(group_to_edit.task_ids());
+                    let _ = db_delete_tasks_by_ids(group_to_edit.task_ids());
                     self.group_to_edit = None;
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
@@ -707,6 +719,7 @@ impl Application for Furtherance {
                 );
             }
             Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
+            Message::ShortcutPressed => {}
             Message::ShowAlert(alert_to_show) => self.displayed_alert = Some(alert_to_show),
             Message::StartStopPressed => {
                 if self.timer_is_running {
@@ -1013,7 +1026,11 @@ impl Application for Furtherance {
         .style(style::gray_background);
 
         // MARK: Shortcuts
-        let shortcuts_view = column![Scrollable::new(column![])];
+        let mut shortcuts_column = column![].padding(20);
+        for shortcut in &self.shortcuts {
+            shortcuts_column = shortcuts_column.push(shortcut_button(shortcut));
+        }
+        let shortcuts_view = column![Scrollable::new(shortcuts_column,)];
 
         // MARK: TIMER
         let timer_view = column![
@@ -2006,7 +2023,7 @@ fn get_task_history() -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
     let mut grouped_tasks_by_date: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> = BTreeMap::new();
 
     //TODO : Change limit based on user limit or max limit. Also should limit by days not items.
-    if let Ok(all_tasks) = db_retrieve_all(SortBy::StopTime, SortOrder::Descending) {
+    if let Ok(all_tasks) = db_retrieve_all_tasks(SortBy::StopTime, SortOrder::Descending) {
         let tasks_by_date = group_tasks_by_date(all_tasks);
 
         for (date, tasks) in tasks_by_date {
@@ -2036,6 +2053,36 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
     }
 
     grouped_tasks
+}
+
+fn shortcut_button<'a>(shortcut: &FurShortcut) -> Button<'a, Message> {
+    let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
+        Ok(color) => color,
+        Err(_) => Srgb::new(0.694, 0.475, 0.945),
+    };
+    let text_color = if is_dark_color(shortcut_color) {
+        Color::WHITE
+    } else {
+        Color::BLACK
+    };
+
+    button(
+        column![
+            text(&shortcut.name).style(text_color),
+            text(&shortcut.project).style(text_color),
+            text(&shortcut.tags).style(text_color),
+            text(format!("${:.2}", shortcut.rate)).style(text_color),
+        ]
+        .width(200)
+        .height(170)
+        .padding(10),
+    )
+    .on_press(Message::ShortcutPressed)
+    .style(style::custom_button_style(shortcut_color))
+}
+
+fn is_dark_color(color: Srgb) -> bool {
+    color.relative_luminance().luma < 0.65
 }
 
 fn start_timer(state: &mut Furtherance) {
@@ -2179,14 +2226,6 @@ fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResul
     } else {
         LocalResult::None
     }
-}
-
-fn hex_to_color(hex: &str) -> Color {
-    let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
-    let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
-    let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
-
-    Color::from_rgb8(r, g, b)
 }
 
 async fn get_timer_duration() {
@@ -2337,4 +2376,13 @@ fn has_max_two_decimals(input: &str) -> bool {
         }
         _ => false,
     }
+}
+
+fn random_srgb() -> Srgb {
+    let mut rng = rand::thread_rng();
+    Srgb::new(
+        rng.gen_range(0.0..1.0),
+        rng.gen_range(0.0..1.0),
+        rng.gen_range(0.0..1.0),
+    )
 }

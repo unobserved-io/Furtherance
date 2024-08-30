@@ -18,6 +18,7 @@ pub mod app;
 mod constants;
 mod database;
 mod helpers {
+    pub mod color_utils;
     pub mod idle;
 }
 mod models {

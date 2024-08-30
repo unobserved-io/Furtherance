@@ -21,7 +21,15 @@ use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::models::{fur_settings::FurSettings, fur_task::FurTask, group_to_edit::GroupToEdit};
+use crate::{
+    helpers::color_utils::ToHex,
+    models::{
+        fur_settings::FurSettings,
+        fur_shortcut::{self, FurShortcut},
+        fur_task::FurTask,
+        group_to_edit::GroupToEdit,
+    },
+};
 
 #[derive(Debug)]
 pub enum SortOrder {
@@ -168,7 +176,10 @@ pub fn db_write_task(fur_task: FurTask) -> Result<()> {
     Ok(())
 }
 
-pub fn db_retrieve_all(sort: SortBy, order: SortOrder) -> Result<Vec<FurTask>, rusqlite::Error> {
+pub fn db_retrieve_all_tasks(
+    sort: SortBy,
+    order: SortOrder,
+) -> Result<Vec<FurTask>, rusqlite::Error> {
     // Retrieve all tasks from the database
     let conn = Connection::open(db_get_directory())?;
 
@@ -330,7 +341,7 @@ pub fn update_rate(id: i32, rate: f32) -> Result<()> {
     Ok(())
 }
 
-pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<FurTask>, rusqlite::Error> {
+pub fn get_tasks_by_id(id_list: Vec<i32>) -> Result<Vec<FurTask>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
     let mut stmt = conn.prepare("SELECT * FROM tasks WHERE id = ?")?;
     let mut tasks_vec = Vec::new();
@@ -357,7 +368,7 @@ pub fn get_list_by_id(id_list: Vec<i32>) -> Result<Vec<FurTask>, rusqlite::Error
     Ok(tasks_vec)
 }
 
-pub fn get_list_by_name_and_tags(
+pub fn get_tasks_by_name_and_tags(
     task_name: String,
     tag_list: Vec<String>,
 ) -> Result<Vec<FurTask>, rusqlite::Error> {
@@ -418,7 +429,7 @@ pub fn check_db_validity(db_path: String) -> Result<String> {
     )
 }
 
-pub fn db_delete_by_ids(id_list: Vec<u32>) -> Result<()> {
+pub fn db_delete_tasks_by_ids(id_list: Vec<u32>) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {
@@ -426,6 +437,56 @@ pub fn db_delete_by_ids(id_list: Vec<u32>) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Write a shortcut to the database
+pub fn db_write_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+    conn.execute(
+        "INSERT INTO shortcuts (
+            name,
+            tags,
+            project,
+            rate,
+            currency,
+            color_hex
+        ) values (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![
+            fur_shortcut.name,
+            fur_shortcut.tags,
+            fur_shortcut.project,
+            fur_shortcut.rate,
+            fur_shortcut.currency,
+            fur_shortcut.color_hex,
+        ],
+    )?;
+
+    Ok(())
+}
+
+/// Retrieve all shortcuts from the database
+pub fn db_retrieve_all_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn.prepare("SELECT * FROM shortcuts ORDER BY name")?;
+    let mut rows = stmt.query(params![])?;
+
+    let mut shortcuts: Vec<FurShortcut> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_shortcut = FurShortcut {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            tags: row.get(2)?,
+            project: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5)?,
+            color_hex: row.get(6)?,
+        };
+        shortcuts.push(fur_shortcut);
+    }
+
+    Ok(shortcuts)
 }
 
 pub fn delete_all() -> Result<()> {

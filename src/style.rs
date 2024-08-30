@@ -15,7 +15,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use iced::widget::{button, container};
-use iced::{Border, Color, Theme};
+use iced::{gradient, theme, Background, Border, Color, Gradient, Radians, Theme};
+use palette::color_difference::Wcag21RelativeContrast;
+use palette::{Lighten, Srgb};
 
 pub fn gray_background(theme: &Theme) -> container::Appearance {
     let palette = theme.extended_palette();
@@ -24,6 +26,11 @@ pub fn gray_background(theme: &Theme) -> container::Appearance {
         background: Some(palette.background.weak.color.into()),
         ..Default::default()
     }
+}
+
+fn palette_to_iced(color: Srgb) -> Color {
+    let (r, g, b) = color.into_components();
+    Color::from_rgb(r as f32, g as f32, b as f32)
 }
 
 pub fn task_row(theme: &Theme) -> container::Appearance {
@@ -65,4 +72,69 @@ pub fn group_count_circle(theme: &Theme) -> container::Appearance {
         },
         ..Default::default()
     }
+}
+
+struct ShortcutButtonStyle {
+    primary_color: Srgb,
+    light_color: Srgb,
+}
+
+impl button::StyleSheet for ShortcutButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Gradient(Gradient::Linear(
+                gradient::Linear::new(Radians(std::f32::consts::PI))
+                    .add_stop(0.0, palette_to_iced(self.light_color))
+                    .add_stop(1.0, palette_to_iced(self.primary_color)),
+            ))),
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 15.0.into(),
+            },
+            shadow: iced::Shadow {
+                color: Color::TRANSPARENT,
+                offset: iced::Vector { x: 0.0, y: 0.0 },
+                blur_radius: 0.0,
+            },
+            ..button::Appearance::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        let lighter_color = self.light_color.lighten(0.3);
+        button::Appearance {
+            background: Some(Background::Gradient(Gradient::Linear(
+                gradient::Linear::new(Radians(std::f32::consts::PI))
+                    .add_stop(0.0, palette_to_iced(lighter_color))
+                    .add_stop(1.0, palette_to_iced(self.light_color)),
+            ))),
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 15.0.into(),
+            },
+            shadow: iced::Shadow {
+                color: Color::TRANSPARENT,
+                offset: iced::Vector { x: 0.0, y: 0.0 },
+                blur_radius: 0.0,
+            },
+            ..button::Appearance::default()
+        }
+    }
+}
+
+pub fn custom_button_style(primary_color: Srgb) -> iced::theme::Button {
+    let light_color = primary_color.lighten(0.3);
+    println!(
+        "Base luminance: {:?}",
+        primary_color.relative_luminance().luma
+    );
+    println!("Light luminance: {:?}", light_color.relative_luminance());
+    iced::theme::Button::Custom(Box::new(ShortcutButtonStyle {
+        primary_color,
+        light_color,
+    }))
 }
