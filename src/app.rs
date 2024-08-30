@@ -1159,7 +1159,7 @@ impl Application for Furtherance {
         let mut shortcuts_column = column![].padding(20);
         for shortcut in &self.shortcuts {
             shortcuts_column =
-                shortcuts_column.push(shortcut_button(self.timer_is_running, shortcut));
+                shortcuts_column.push(shortcut_button(shortcut, self.timer_is_running));
         }
         let shortcuts_view = column![
             row![
@@ -2263,7 +2263,7 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
     grouped_tasks
 }
 
-fn shortcut_button<'a>(timer_is_running: bool, shortcut: &FurShortcut) -> Button<'a, Message> {
+fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button<'a, Message> {
     let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
         Ok(color) => color,
         Err(_) => Srgb::new(0.694, 0.475, 0.945),
