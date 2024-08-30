@@ -16,6 +16,8 @@
 
 use crate::models::fur_task::FurTask;
 
+use std::fmt;
+
 #[derive(Debug, Clone)]
 pub struct FurTaskGroup {
     pub id: u32,
@@ -55,5 +57,25 @@ impl FurTaskGroup {
         } else {
             false
         }
+    }
+}
+
+impl fmt::Display for FurTaskGroup {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)?;
+
+        if !self.project.is_empty() {
+            write!(f, " @{}", self.project)?;
+        }
+
+        if !self.tags.is_empty() {
+            write!(f, " #{}", self.tags)?;
+        }
+
+        if self.rate != 0.0 {
+            write!(f, " ${:.2}", self.rate)?;
+        }
+
+        Ok(())
     }
 }

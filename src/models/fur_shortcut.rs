@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FurShortcut {
@@ -25,4 +26,24 @@ pub struct FurShortcut {
     pub rate: f32,
     pub currency: String,
     pub color_hex: String,
+}
+
+impl fmt::Display for FurShortcut {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.name)?;
+
+        if !self.project.is_empty() {
+            write!(f, " @{}", self.project)?;
+        }
+
+        if !self.tags.is_empty() {
+            write!(f, " #{}", self.tags)?;
+        }
+
+        if self.rate != 0.0 {
+            write!(f, " ${:.2}", self.rate)?;
+        }
+
+        Ok(())
+    }
 }

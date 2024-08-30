@@ -129,7 +129,7 @@ pub enum Message {
     SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
     SettingsTabSelected(TabId),
-    ShortcutPressed,
+    ShortcutPressed(String),
     ShowAlert(FurAlert),
     StartStopPressed,
     StopwatchTick,
@@ -839,7 +839,11 @@ impl Application for Furtherance {
                 );
             }
             Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
-            Message::ShortcutPressed => {}
+            Message::ShortcutPressed(shortcut_task_input) => {
+                self.task_input = shortcut_task_input;
+                self.current_view = FurView::Timer;
+                return Command::perform(async { Message::StartStopPressed }, |msg| msg);
+            }
             Message::ShowAlert(alert_to_show) => self.displayed_alert = Some(alert_to_show),
             Message::StartStopPressed => {
                 if self.timer_is_running {
@@ -1154,7 +1158,8 @@ impl Application for Furtherance {
         // MARK: Shortcuts
         let mut shortcuts_column = column![].padding(20);
         for shortcut in &self.shortcuts {
-            shortcuts_column = shortcuts_column.push(shortcut_button(shortcut));
+            shortcuts_column =
+                shortcuts_column.push(shortcut_button(self.timer_is_running, shortcut));
         }
         let shortcuts_view = column![
             row![
@@ -1262,7 +1267,8 @@ impl Application for Furtherance {
             all_history_rows =
                 all_history_rows.push(history_title_row(date, total_time, total_earnings));
             for task_group in task_groups {
-                all_history_rows = all_history_rows.push(history_group_row(task_group))
+                all_history_rows =
+                    all_history_rows.push(history_group_row(task_group, self.timer_is_running))
             }
         }
         let history_view = column![Scrollable::new(all_history_rows)
@@ -2118,7 +2124,7 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
         .style(theme::Button::Text)
 }
 
-fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
+fn history_group_row<'a>(task_group: &FurTaskGroup, timer_is_running: bool) -> Button<'a, Message> {
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name).font(font::Font {
             weight: iced::font::Weight::Bold,
@@ -2160,9 +2166,11 @@ fn history_group_row<'a>(task_group: &FurTaskGroup) -> Button<'a, Message> {
     task_row = task_row.push(totals_column);
     task_row = task_row.push(
         button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
-            .on_press(Message::RepeatLastTaskPressed(task_input_builder(
-                task_group,
-            )))
+            .on_press_maybe(if timer_is_running {
+                None
+            } else {
+                Some(Message::RepeatLastTaskPressed(task_group.to_string()))
+            })
             .style(theme::Button::Text),
     );
 
@@ -2255,7 +2263,7 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
     grouped_tasks
 }
 
-fn shortcut_button<'a>(shortcut: &FurShortcut) -> Button<'a, Message> {
+fn shortcut_button<'a>(timer_is_running: bool, shortcut: &FurShortcut) -> Button<'a, Message> {
     let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
         Ok(color) => color,
         Err(_) => Srgb::new(0.694, 0.475, 0.945),
@@ -2277,7 +2285,11 @@ fn shortcut_button<'a>(shortcut: &FurShortcut) -> Button<'a, Message> {
         .height(170)
         .padding(10),
     )
-    .on_press(Message::ShortcutPressed)
+    .on_press_maybe(if timer_is_running {
+        None
+    } else {
+        Some(Message::ShortcutPressed(shortcut.to_string()))
+    })
     .style(style::custom_button_style(shortcut_color))
 }
 
@@ -2469,36 +2481,21 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
 }
 
 fn get_last_task_input(state: &Furtherance) -> Option<Message> {
-    let today = Local::now().date_naive();
-    if let Some(groups) = state.task_history.get(&today) {
-        if let Some(last_task) = groups.first() {
-            let task_input_builder = task_input_builder(last_task);
-            Some(Message::RepeatLastTaskPressed(task_input_builder))
+    if state.timer_is_running {
+        None
+    } else {
+        let today = Local::now().date_naive();
+        if let Some(groups) = state.task_history.get(&today) {
+            if let Some(last_task) = groups.first() {
+                let task_input_builder = last_task.to_string();
+                Some(Message::RepeatLastTaskPressed(task_input_builder))
+            } else {
+                None
+            }
         } else {
             None
         }
-    } else {
-        None
     }
-}
-
-// TODO: Use task.to_string instead
-fn task_input_builder(task_group: &FurTaskGroup) -> String {
-    let mut task_input_builder = task_group.name.to_string();
-
-    if !task_group.project.is_empty() {
-        task_input_builder += &format!(" @{}", task_group.project);
-    }
-
-    if !task_group.tags.is_empty() {
-        task_input_builder += &format!(" #{}", task_group.tags);
-    }
-
-    if task_group.rate != 0.0 {
-        task_input_builder += &format!(" ${}", task_group.rate);
-    }
-
-    task_input_builder
 }
 
 fn get_todays_total_time(state: &Furtherance) -> String {
