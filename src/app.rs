@@ -2280,7 +2280,7 @@ fn shortcut_button_content<'a>(shortcut: &FurShortcut) -> String {
     shortcut_button_text
 }
 
-fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Element<'a, Message> {
+fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button<'a, Message> {
     let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
         Ok(color) => color,
         Err(_) => Srgb::new(0.694, 0.475, 0.945),
@@ -2310,7 +2310,6 @@ fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Elemen
         Some(Message::ShortcutPressed(shortcut.to_string()))
     })
     .style(style::custom_button_style(shortcut_color))
-    .into()
 }
 
 fn is_dark_color(color: Srgb) -> bool {
