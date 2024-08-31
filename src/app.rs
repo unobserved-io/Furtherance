@@ -21,6 +21,7 @@ use crate::{
     database::*,
     helpers::{
         color_utils::{FromHex, ToHex, ToSrgb},
+        flow_row::FlowRow,
         idle::get_idle_time,
     },
     models::{
@@ -34,7 +35,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::{toggler, Row};
+use iced::widget::{container, toggler, Row};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -1156,10 +1157,9 @@ impl Application for Furtherance {
         .style(style::gray_background);
 
         // MARK: Shortcuts
-        let mut shortcuts_column = column![].padding(20);
+        let mut shortcuts_row = FlowRow::new().spacing(20.0);
         for shortcut in &self.shortcuts {
-            shortcuts_column =
-                shortcuts_column.push(shortcut_button(shortcut, self.timer_is_running));
+            shortcuts_row = shortcuts_row.push(shortcut_button(shortcut, self.timer_is_running));
         }
         let shortcuts_view = column![
             row![
@@ -1169,7 +1169,7 @@ impl Application for Furtherance {
                     .style(theme::Button::Text),
             ]
             .padding([10, 20]),
-            Scrollable::new(shortcuts_column,)
+            Scrollable::new(column![shortcuts_row].padding(20))
         ];
 
         // MARK: TIMER
@@ -1276,165 +1276,166 @@ impl Application for Furtherance {
             .height(Length::Fill)];
 
         // MARK: REPORT
-        let report_view = column![Scrollable::new(column![])];
+        let report_view: Column<'_, Message, Theme, Renderer> = column![Scrollable::new(column![])];
 
         // MARK: SETTINGS
-        let settings_view = column![Tabs::new(Message::SettingsTabSelected)
-            .tab_icon_position(iced_aw::tabs::Position::Top)
-            .push(
-                TabId::General,
-                TabLabel::IconText(
-                    bootstrap::icon_to_char(Bootstrap::GearFill),
-                    "General".to_string()
-                ),
-                Scrollable::new(
-                    column![row![
-                        text("Default view"),
-                        pick_list(
-                            &FurView::ALL[..],
-                            Some(self.fur_settings.default_view),
-                            Message::SettingsDefaultViewSelected,
-                        ),
-                    ]
-                    .spacing(10)
-                    .align_items(Alignment::Center),]
-                    .padding(10)
-                ),
-            )
-            .push(
-                TabId::Advanced,
-                TabLabel::IconText(
-                    bootstrap::icon_to_char(Bootstrap::GearWideConnected),
-                    "Advanced".to_string()
-                ),
-                Scrollable::new(
-                    column![
-                        row![
-                            text("Idle detection"),
-                            toggler(
-                                String::new(),
-                                self.fur_settings.notify_on_idle,
-                                Message::SettingsIdleToggled
-                            )
-                            .width(Length::Shrink)
+        let settings_view: Column<'_, Message, Theme, Renderer> =
+            column![Tabs::new(Message::SettingsTabSelected)
+                .tab_icon_position(iced_aw::tabs::Position::Top)
+                .push(
+                    TabId::General,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::GearFill),
+                        "General".to_string()
+                    ),
+                    Scrollable::new(
+                        column![row![
+                            text("Default view"),
+                            pick_list(
+                                &FurView::ALL[..],
+                                Some(self.fur_settings.default_view),
+                                Message::SettingsDefaultViewSelected,
+                            ),
                         ]
                         .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Minutes until idle"),
-                            number_input(
-                                self.fur_settings.chosen_idle_time,
-                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
-                                Message::SettingsIdleTimeChanged
-                            )
-                            .width(Length::Shrink)
+                        .align_items(Alignment::Center),]
+                        .padding(10)
+                    ),
+                )
+                .push(
+                    TabId::Advanced,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::GearWideConnected),
+                        "Advanced".to_string()
+                    ),
+                    Scrollable::new(
+                        column![
+                            row![
+                                text("Idle detection"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.notify_on_idle,
+                                    Message::SettingsIdleToggled
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Minutes until idle"),
+                                number_input(
+                                    self.fur_settings.chosen_idle_time,
+                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    Message::SettingsIdleTimeChanged
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                        ]
+                        .padding(10)
+                    ),
+                )
+                .push(
+                    TabId::Pomodoro,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::StopwatchFill),
+                        "Pomodoro".to_string()
+                    ),
+                    Scrollable::new(
+                        column![
+                            row![
+                                text("Countdown timer"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.pomodoro,
+                                    Message::SettingsPomodoroToggled
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Timer length"),
+                                number_input(
+                                    self.fur_settings.pomodoro_length,
+                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    Message::SettingsPomodoroLengthChanged
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Break length"),
+                                number_input(
+                                    self.fur_settings.pomodoro_break_length,
+                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    Message::SettingsPomodoroBreakLengthChanged
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Snooze length"),
+                                number_input(
+                                    self.fur_settings.pomodoro_snooze_length,
+                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    Message::SettingsPomodoroSnoozeLengthChanged
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Extended breaks"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.pomodoro_extended_breaks,
+                                    Message::SettingsPomodoroExtendedBreaksToggled
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Extended break interval"),
+                                number_input(
+                                    self.fur_settings.pomodoro_extended_break_interval,
+                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    Message::SettingsPomodoroExtendedBreakIntervalChanged
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Extended break length"),
+                                number_input(
+                                    self.fur_settings.pomodoro_extended_break_length,
+                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    Message::SettingsPomodoroExtendedBreakLengthChanged
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                         ]
                         .spacing(10)
-                        .align_items(Alignment::Center),
-                    ]
-                    .padding(10)
-                ),
-            )
-            .push(
-                TabId::Pomodoro,
-                TabLabel::IconText(
-                    bootstrap::icon_to_char(Bootstrap::StopwatchFill),
-                    "Pomodoro".to_string()
-                ),
-                Scrollable::new(
-                    column![
-                        row![
-                            text("Countdown timer"),
-                            toggler(
-                                String::new(),
-                                self.fur_settings.pomodoro,
-                                Message::SettingsPomodoroToggled
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Timer length"),
-                            number_input(
-                                self.fur_settings.pomodoro_length,
-                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
-                                Message::SettingsPomodoroLengthChanged
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Break length"),
-                            number_input(
-                                self.fur_settings.pomodoro_break_length,
-                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
-                                Message::SettingsPomodoroBreakLengthChanged
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Snooze length"),
-                            number_input(
-                                self.fur_settings.pomodoro_snooze_length,
-                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
-                                Message::SettingsPomodoroSnoozeLengthChanged
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Extended breaks"),
-                            toggler(
-                                String::new(),
-                                self.fur_settings.pomodoro_extended_breaks,
-                                Message::SettingsPomodoroExtendedBreaksToggled
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Extended break interval"),
-                            number_input(
-                                self.fur_settings.pomodoro_extended_break_interval,
-                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
-                                Message::SettingsPomodoroExtendedBreakIntervalChanged
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                        row![
-                            text("Extended break length"),
-                            number_input(
-                                self.fur_settings.pomodoro_extended_break_length,
-                                999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
-                                Message::SettingsPomodoroExtendedBreakLengthChanged
-                            )
-                            .width(Length::Shrink)
-                        ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),
-                    ]
-                    .spacing(10)
-                    .padding(10),
-                ),
-            )
-            .push(
-                TabId::Report,
-                TabLabel::IconText(
-                    bootstrap::icon_to_char(Bootstrap::GraphUp),
-                    "Report".to_string()
-                ),
-                Scrollable::new(column![].padding(10),),
-            )
-            .set_active_tab(&self.settings_active_tab)
-            .tab_bar_position(TabBarPosition::Top)];
+                        .padding(10),
+                    ),
+                )
+                .push(
+                    TabId::Report,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::GraphUp),
+                        "Report".to_string()
+                    ),
+                    Scrollable::new(column![].padding(10),),
+                )
+                .set_active_tab(&self.settings_active_tab)
+                .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: INSPECTOR
         let inspector: Column<'_, Message, Theme, Renderer> = match &self.inspector_view {
@@ -2263,7 +2264,23 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
     grouped_tasks
 }
 
-fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button<'a, Message> {
+fn shortcut_button_content<'a>(shortcut: &FurShortcut) -> String {
+    let mut shortcut_button_text: String = shortcut.name.to_string();
+
+    if !shortcut.project.is_empty() {
+        shortcut_button_text.push_str(&format!("\n{}", shortcut.project));
+    }
+    if !shortcut.tags.is_empty() {
+        shortcut_button_text.push_str(&format!("\n{}", shortcut.tags));
+    }
+    if shortcut.rate > 0.0 {
+        shortcut_button_text.push_str(&format!("\n${:.2}", shortcut.rate));
+    }
+
+    shortcut_button_text
+}
+
+fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Element<'a, Message> {
     let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
         Ok(color) => color,
         Err(_) => Srgb::new(0.694, 0.475, 0.945),
@@ -2274,23 +2291,26 @@ fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button
         Color::BLACK
     };
 
-    button(
-        column![
-            text(&shortcut.name).style(text_color),
-            text(&shortcut.project).style(text_color),
-            text(&shortcut.tags).style(text_color),
-            text(format!("${:.2}", shortcut.rate)).style(text_color),
-        ]
-        .width(200)
-        .height(170)
-        .padding(10),
-    )
+    // TODO: Try to make this work in the future for better format
+    // button(column![
+    //     text(&shortcut.name).style(text_color),
+    //     text(&shortcut.project).style(text_color),
+    //     text(&shortcut.tags).style(text_color),
+    //     text(format!("${:.2}", shortcut.rate)).style(text_color),
+    // ])
+    button(Container::new(
+        text(shortcut_button_content(shortcut)).style(text_color),
+    ))
+    .width(200)
+    .padding(10)
+    .height(170)
     .on_press_maybe(if timer_is_running {
         None
     } else {
         Some(Message::ShortcutPressed(shortcut.to_string()))
     })
     .style(style::custom_button_style(shortcut_color))
+    .into()
 }
 
 fn is_dark_color(color: Srgb) -> bool {
