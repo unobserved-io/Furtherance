@@ -72,3 +72,10 @@ pub enum TabId {
     Pomodoro,
     Report,
 }
+
+#[derive(Debug, Clone)]
+pub enum NotificationType {
+    PomodoroOver,
+    BreakOver,
+    Idle,
+}

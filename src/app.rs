@@ -55,6 +55,7 @@ use iced_aw::{
     date_picker, modal, number_input, time_picker, Card, TabBarPosition, TabLabel, Tabs,
     TimePicker,
 };
+use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
@@ -607,7 +608,6 @@ impl Application for Furtherance {
             Message::IdleReset => {
                 self.idle = FurIdle::new();
                 self.displayed_alert = None;
-                // TODO: Remove pending notifications?
             }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
@@ -880,8 +880,10 @@ impl Application for Furtherance {
                         // Check if idle or other alert is being displayed so as not to replace it
                         if self.displayed_alert.is_none() {
                             if self.pomodoro.on_break {
+                                show_notification(NotificationType::BreakOver);
                                 self.displayed_alert = Some(FurAlert::PomodoroBreakOver);
                             } else {
+                                show_notification(NotificationType::PomodoroOver);
                                 self.displayed_alert = Some(FurAlert::PomodoroOver);
                             }
                         }
@@ -905,7 +907,7 @@ impl Application for Furtherance {
                         {
                             // User is back - show idle message
                             self.idle.notified = true;
-                            // TODO: Set up notification to display
+                            show_notification(NotificationType::Idle);
                             self.displayed_alert = Some(FurAlert::Idle);
                         }
                     }
@@ -2592,4 +2594,31 @@ fn has_max_two_decimals(input: &str) -> bool {
         }
         _ => false,
     }
+}
+
+fn show_notification(notification_type: NotificationType) {
+    let heading: &str;
+    let details: &str;
+    match notification_type {
+        NotificationType::PomodoroOver => {
+            heading = "Time's up!";
+            details = "It's time to take a break.";
+        }
+        NotificationType::BreakOver => {
+            heading = "Break's over!";
+            details = "Time to get back to work.";
+        }
+        NotificationType::Idle => {
+            heading = "You've been idle.";
+            details = "Open Furtherance to continue or discard the idle time.";
+        }
+    }
+    // TODO: Enable later
+    // Notification::new()
+    //     .summary(heading)
+    //     .body(details)
+    //     .appname("furtherance")
+    //     .timeout(Timeout::Milliseconds(6000))
+    //     .show()
+    //     .unwrap();
 }
