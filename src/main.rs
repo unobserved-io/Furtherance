@@ -16,6 +16,7 @@
 
 pub mod app;
 mod charts {
+    pub mod earnings_chart;
     pub mod time_recorded_chart;
 }
 mod constants;

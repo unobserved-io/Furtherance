@@ -1373,6 +1373,7 @@ impl Application for Furtherance {
                                     row![]
                                 },
                                 self.report.time_recorded_chart.view(),
+                                self.report.earnings_chart.view(),
                             ]
                             .padding([0, 20, 20, 20])
                         ),

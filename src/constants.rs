@@ -14,5 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use plotters::{self, style::RGBColor};
+
 pub const VERSION: &str = "3.0.0";
 pub const CHART_HEIGHT: f32 = 400.0;
+pub const CHART_COLOR: RGBColor = plotters::style::colors::BLUE;

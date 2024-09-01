@@ -18,7 +18,7 @@ use chrono::{DateTime, Datelike, Days, Duration, Local, NaiveDate, Utc};
 use iced_aw::date_picker::Date;
 
 use crate::{
-    charts::time_recorded_chart::TimeRecordedChart,
+    charts::{earnings_chart::EarningsChart, time_recorded_chart::TimeRecordedChart},
     database::db_retrieve_tasks_by_date_range,
     view_enums::{FurDateRange, TabId},
 };
@@ -39,6 +39,7 @@ pub struct FurReport {
     pub total_earned: f32,
     pub tasks_in_range: Vec<FurTask>,
     pub time_recorded_chart: TimeRecordedChart,
+    pub earnings_chart: EarningsChart,
 }
 
 impl FurReport {
@@ -63,6 +64,7 @@ impl FurReport {
             total_earned: 0.0,
             tasks_in_range: vec![],
             time_recorded_chart: TimeRecordedChart::new(vec![]),
+            earnings_chart: EarningsChart::new(vec![]),
         };
 
         fur_report.update_tasks_in_range();
@@ -166,6 +168,7 @@ impl FurReport {
         );
 
         self.time_recorded_chart = TimeRecordedChart::new(self.tasks_in_range.clone());
+        self.earnings_chart = EarningsChart::new(self.tasks_in_range.clone());
     }
 
     fn subtract_months(&self, date: NaiveDate, months: i32) -> NaiveDate {
