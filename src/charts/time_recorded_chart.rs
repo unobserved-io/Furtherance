@@ -14,7 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{app::Message, constants::CHART_HEIGHT, models::fur_task::FurTask};
+use crate::{
+    app::Message,
+    constants::{CHART_COLOR, CHART_HEIGHT},
+    models::fur_task::FurTask,
+};
 use chrono::NaiveDate;
 use iced::{Element, Length};
 use plotters::prelude::*;
@@ -57,12 +61,6 @@ impl TimeRecordedChart {
 impl Chart<Message> for TimeRecordedChart {
     type State = ();
     fn build_chart<DB: DrawingBackend>(&self, _state: &Self::State, mut chart: ChartBuilder<DB>) {
-        // let date_count: BTreeMap<NaiveDate, u16> = BTreeMap::from([
-        //     (parse_time("2024-01-10"), 25),
-        //     (parse_time("2024-01-11"), 20),
-        //     (parse_time("2024-01-12"), 10),
-        //     (parse_time("2024-01-13"), 15),
-        // ]);
         let date_time: BTreeMap<NaiveDate, i64> = self.time_per_day();
         let min_time = date_time.values().copied().min().unwrap_or(0);
         let min_minus_five_percent = min_time as f32 - (min_time as f32 * 0.05);
@@ -103,7 +101,7 @@ impl Chart<Message> for TimeRecordedChart {
                     chart
                         .draw_series(LineSeries::new(
                             date_time.iter().map(|(d, t)| (*d, *t)),
-                            BLUE.filled(),
+                            CHART_COLOR.filled(),
                         ))
                         .unwrap();
                 }
