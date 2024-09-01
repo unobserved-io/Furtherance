@@ -1375,6 +1375,7 @@ impl Application for Furtherance {
                                 self.report.time_recorded_chart.view(),
                                 self.report.earnings_chart.view(),
                                 self.report.average_time_chart.view(),
+                                self.report.average_earnings_chart.view(),
                             ]
                             .padding([0, 20, 20, 20])
                         ),
