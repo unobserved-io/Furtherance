@@ -1402,6 +1402,8 @@ impl Application for Furtherance {
                                         ]
                                         .spacing(10)
                                         .width(Length::Fill),
+                                        horizontal_rule(20),
+                                        self.report.selection_time_recorded_chart.view(),
                                     ]
                                     .align_items(Alignment::Center)
                                 },

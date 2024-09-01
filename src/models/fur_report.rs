@@ -22,7 +22,8 @@ use iced_aw::date_picker::Date;
 use crate::{
     charts::{
         average_earnings_chart::AverageEarningsChart, average_time_chart::AverageTimeChart,
-        earnings_chart::EarningsChart, time_recorded_chart::TimeRecordedChart,
+        earnings_chart::EarningsChart, selection_time_recorded_chart::SelectionTimeRecordedChart,
+        time_recorded_chart::TimeRecordedChart,
     },
     database::db_retrieve_tasks_by_date_range,
     view_enums::{FurDateRange, FurTaskProperty, TabId},
@@ -42,6 +43,7 @@ pub struct FurReport {
     pub picked_start_date: Date,
     pub picked_task_property_key: Option<FurTaskProperty>,
     pub picked_task_property_value: Option<String>,
+    pub selection_time_recorded_chart: SelectionTimeRecordedChart,
     pub show_end_date_picker: bool,
     pub show_start_date_picker: bool,
     pub total_time: i64,
@@ -74,6 +76,7 @@ impl FurReport {
             ),
             picked_task_property_key: Some(FurTaskProperty::Title),
             picked_task_property_value: None,
+            selection_time_recorded_chart: SelectionTimeRecordedChart::new(vec![]),
             show_end_date_picker: false,
             show_start_date_picker: false,
             total_time: 0,
@@ -209,7 +212,13 @@ impl FurReport {
         self.update_selection_charts();
     }
 
-    fn update_selection_charts(&mut self) {}
+    fn update_selection_charts(&mut self) {
+        if let Some(value) = &self.picked_task_property_value {
+            if let Some(tasks) = self.task_property_values.get(value) {
+                self.selection_time_recorded_chart = SelectionTimeRecordedChart::new(tasks.clone());
+            }
+        }
+    }
 
     fn subtract_months(&self, date: NaiveDate, months: i32) -> NaiveDate {
         let mut year = date.year();
