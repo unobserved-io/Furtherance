@@ -19,6 +19,7 @@ mod charts {
     pub mod average_earnings_chart;
     pub mod average_time_chart;
     pub mod earnings_chart;
+    pub mod selection_earnings_recorded_chart;
     pub mod selection_time_recorded_chart;
     pub mod time_recorded_chart;
 }
