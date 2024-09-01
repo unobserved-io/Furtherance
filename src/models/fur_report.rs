@@ -18,7 +18,10 @@ use chrono::{DateTime, Datelike, Days, Duration, Local, NaiveDate, Utc};
 use iced_aw::date_picker::Date;
 
 use crate::{
-    charts::{earnings_chart::EarningsChart, time_recorded_chart::TimeRecordedChart},
+    charts::{
+        average_time_chart::AverageTimeChart, earnings_chart::EarningsChart,
+        time_recorded_chart::TimeRecordedChart,
+    },
     database::db_retrieve_tasks_by_date_range,
     view_enums::{FurDateRange, TabId},
 };
@@ -28,6 +31,7 @@ use super::fur_task::FurTask;
 #[derive(Clone, Debug)]
 pub struct FurReport {
     pub active_tab: TabId,
+    pub average_time_chart: AverageTimeChart,
     date_range_end: NaiveDate,
     date_range_start: NaiveDate,
     pub picked_date_range: Option<FurDateRange>,
@@ -49,8 +53,10 @@ impl FurReport {
             .unwrap_or(Utc::now());
         let mut fur_report = FurReport {
             active_tab: TabId::Charts,
+            average_time_chart: AverageTimeChart::new(vec![]),
             date_range_end: Local::now().date_naive(),
             date_range_start: (Local::now() - Duration::days(30)).date_naive(),
+            earnings_chart: EarningsChart::new(vec![]),
             picked_date_range: Some(FurDateRange::ThirtyDays),
             picked_end_date: Date::today(),
             picked_start_date: Date::from_ymd(
@@ -64,7 +70,6 @@ impl FurReport {
             total_earned: 0.0,
             tasks_in_range: vec![],
             time_recorded_chart: TimeRecordedChart::new(vec![]),
-            earnings_chart: EarningsChart::new(vec![]),
         };
 
         fur_report.update_tasks_in_range();
@@ -169,6 +174,7 @@ impl FurReport {
 
         self.time_recorded_chart = TimeRecordedChart::new(self.tasks_in_range.clone());
         self.earnings_chart = EarningsChart::new(self.tasks_in_range.clone());
+        self.average_time_chart = AverageTimeChart::new(self.tasks_in_range.clone());
     }
 
     fn subtract_months(&self, date: NaiveDate, months: i32) -> NaiveDate {
