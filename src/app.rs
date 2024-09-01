@@ -48,10 +48,7 @@ use iced::{
 };
 use iced_aw::{
     color_picker,
-    core::{
-        color::HexString,
-        icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
-    },
+    core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
     date_picker, modal, number_input, time_picker, Card, TabBarPosition, TabLabel, Tabs,
     TimePicker,
 };
@@ -102,6 +99,8 @@ pub enum Message {
     CancelStartDate,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
+    ChartTaskPropertyKeySelected(FurTaskProperty),
+    ChartTaskPropertyValueSelected(String),
     ChooseCurrentTaskStartTime,
     ChooseEndDate,
     ChooseShortcutColor,
@@ -299,6 +298,12 @@ impl Application for Furtherance {
                         _ => {}
                     }
                 }
+            }
+            Message::ChartTaskPropertyKeySelected(new_property) => {
+                self.report.set_picked_task_property_key(new_property);
+            }
+            Message::ChartTaskPropertyValueSelected(new_value) => {
+                self.report.set_picked_task_property_value(new_value);
             }
             Message::ChooseCurrentTaskStartTime => self.show_timer_start_picker = true,
             Message::ChooseEndDate => self.report.show_end_date_picker = true,
@@ -1376,7 +1381,32 @@ impl Application for Furtherance {
                                 self.report.earnings_chart.view(),
                                 self.report.average_time_chart.view(),
                                 self.report.average_earnings_chart.view(),
+                                if self.report.tasks_in_range.is_empty() {
+                                    column![]
+                                } else {
+                                    column![
+                                        text("Breakdown By Selection").size(40),
+                                        row![
+                                            pick_list(
+                                                &FurTaskProperty::ALL[..],
+                                                self.report.picked_task_property_key.clone(),
+                                                Message::ChartTaskPropertyKeySelected,
+                                            )
+                                            .width(Length::Fill),
+                                            pick_list(
+                                                &self.report.task_property_value_keys[..],
+                                                self.report.picked_task_property_value.clone(),
+                                                Message::ChartTaskPropertyValueSelected,
+                                            )
+                                            .width(Length::Fill),
+                                        ]
+                                        .spacing(10)
+                                        .width(Length::Fill),
+                                    ]
+                                    .align_items(Alignment::Center)
+                                },
                             ]
+                            .align_items(Alignment::Center)
                             .padding([0, 20, 20, 20])
                         ),
                     ]

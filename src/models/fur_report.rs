@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::{DateTime, Datelike, Days, Duration, Local, NaiveDate, Utc};
+use std::collections::HashMap;
+
+use chrono::{Datelike, Days, Duration, Local, NaiveDate, Utc};
 use iced_aw::date_picker::Date;
 
 use crate::{
@@ -23,7 +25,7 @@ use crate::{
         earnings_chart::EarningsChart, time_recorded_chart::TimeRecordedChart,
     },
     database::db_retrieve_tasks_by_date_range,
-    view_enums::{FurDateRange, TabId},
+    view_enums::{FurDateRange, FurTaskProperty, TabId},
 };
 
 use super::fur_task::FurTask;
@@ -38,11 +40,15 @@ pub struct FurReport {
     pub picked_date_range: Option<FurDateRange>,
     pub picked_end_date: Date,
     pub picked_start_date: Date,
+    pub picked_task_property_key: Option<FurTaskProperty>,
+    pub picked_task_property_value: Option<String>,
     pub show_end_date_picker: bool,
     pub show_start_date_picker: bool,
     pub total_time: i64,
     pub total_earned: f32,
     pub tasks_in_range: Vec<FurTask>,
+    pub task_property_value_keys: Vec<String>,
+    pub task_property_values: HashMap<String, Vec<FurTask>>,
     pub time_recorded_chart: TimeRecordedChart,
     pub earnings_chart: EarningsChart,
 }
@@ -66,11 +72,15 @@ impl FurReport {
                 thirty_days_ago.month(),
                 thirty_days_ago.day(),
             ),
+            picked_task_property_key: Some(FurTaskProperty::Title),
+            picked_task_property_value: None,
             show_end_date_picker: false,
             show_start_date_picker: false,
             total_time: 0,
             total_earned: 0.0,
             tasks_in_range: vec![],
+            task_property_value_keys: vec![],
+            task_property_values: HashMap::new(),
             time_recorded_chart: TimeRecordedChart::new(vec![]),
         };
 
@@ -80,53 +90,70 @@ impl FurReport {
     }
 
     pub fn set_picked_date_ranged(&mut self, new_range: FurDateRange) {
-        self.picked_date_range = Some(new_range);
-        match new_range {
-            FurDateRange::PastWeek => {
-                self.date_range_start = (Local::now() - Duration::days(7)).date_naive();
-                self.date_range_end = Local::now().date_naive();
-            }
-            FurDateRange::ThirtyDays => {
-                self.date_range_start = (Local::now() - Duration::days(30)).date_naive();
-                self.date_range_end = Local::now().date_naive();
-            }
-            FurDateRange::SixMonths => {
-                self.date_range_start = self.subtract_months(Local::now().date_naive(), 6);
-                self.date_range_end = Local::now().date_naive();
-            }
-            FurDateRange::AllTime => {
-                self.date_range_start = NaiveDate::parse_from_str("1971-01-01", "%Y-%m-%d")
-                    .unwrap_or(Local::now().date_naive());
-                self.date_range_end = NaiveDate::parse_from_str("2300-01-01", "%Y-%m-%d")
-                    .unwrap_or(Local::now().date_naive());
-            }
-            FurDateRange::Range => {
-                if let Some(new_start_date) = NaiveDate::from_ymd_opt(
-                    self.picked_start_date.year,
-                    self.picked_start_date.month,
-                    self.picked_start_date.day,
-                ) {
-                    if let Some(new_end_date) = NaiveDate::from_ymd_opt(
-                        self.picked_end_date.year,
-                        self.picked_end_date.month,
-                        self.picked_end_date.day,
+        if self.picked_date_range != Some(new_range) {
+            self.picked_date_range = Some(new_range);
+            match new_range {
+                FurDateRange::PastWeek => {
+                    self.date_range_start = (Local::now() - Duration::days(7)).date_naive();
+                    self.date_range_end = Local::now().date_naive();
+                }
+                FurDateRange::ThirtyDays => {
+                    self.date_range_start = (Local::now() - Duration::days(30)).date_naive();
+                    self.date_range_end = Local::now().date_naive();
+                }
+                FurDateRange::SixMonths => {
+                    self.date_range_start = self.subtract_months(Local::now().date_naive(), 6);
+                    self.date_range_end = Local::now().date_naive();
+                }
+                FurDateRange::AllTime => {
+                    self.date_range_start = NaiveDate::parse_from_str("1971-01-01", "%Y-%m-%d")
+                        .unwrap_or(Local::now().date_naive());
+                    self.date_range_end = NaiveDate::parse_from_str("2300-01-01", "%Y-%m-%d")
+                        .unwrap_or(Local::now().date_naive());
+                }
+                FurDateRange::Range => {
+                    if let Some(new_start_date) = NaiveDate::from_ymd_opt(
+                        self.picked_start_date.year,
+                        self.picked_start_date.month,
+                        self.picked_start_date.day,
                     ) {
-                        if new_start_date <= new_end_date {
-                            self.date_range_start = new_start_date;
-                            self.date_range_end = new_end_date;
+                        if let Some(new_end_date) = NaiveDate::from_ymd_opt(
+                            self.picked_end_date.year,
+                            self.picked_end_date.month,
+                            self.picked_end_date.day,
+                        ) {
+                            if new_start_date <= new_end_date {
+                                self.date_range_start = new_start_date;
+                                self.date_range_end = new_end_date;
+                            }
                         }
                     }
                 }
             }
+            self.update_tasks_in_range();
         }
-        self.update_tasks_in_range();
+    }
+
+    pub fn set_picked_task_property_key(&mut self, new_property: FurTaskProperty) {
+        if self.picked_task_property_key != Some(new_property) {
+            self.picked_task_property_key = Some(new_property);
+            self.populate_task_property_values();
+            self.update_selection_charts();
+        }
+    }
+
+    pub fn set_picked_task_property_value(&mut self, new_value: String) {
+        if self.picked_task_property_value != Some(new_value.clone()) {
+            self.picked_task_property_value = Some(new_value);
+            self.update_selection_charts();
+        }
     }
 
     pub fn set_date_range_end(&mut self, new_date: Date) {
         if let Some(new_end_date) =
             NaiveDate::from_ymd_opt(new_date.year, new_date.month, new_date.day)
         {
-            if new_end_date >= self.date_range_start {
+            if self.date_range_end != new_end_date && new_end_date >= self.date_range_start {
                 self.picked_end_date = new_date;
                 self.date_range_end = new_end_date;
                 self.show_end_date_picker = false;
@@ -139,7 +166,7 @@ impl FurReport {
         if let Some(new_start_date) =
             NaiveDate::from_ymd_opt(new_date.year, new_date.month, new_date.day)
         {
-            if new_start_date <= self.date_range_end {
+            if self.date_range_start != new_start_date && new_start_date <= self.date_range_end {
                 self.picked_start_date = new_date;
                 self.date_range_start = new_start_date;
                 self.show_start_date_picker = false;
@@ -160,6 +187,7 @@ impl FurReport {
             }
         }
 
+        self.populate_task_property_values();
         self.update_charts();
     }
 
@@ -178,7 +206,10 @@ impl FurReport {
         self.earnings_chart = EarningsChart::new(self.tasks_in_range.clone());
         self.average_time_chart = AverageTimeChart::new(self.tasks_in_range.clone());
         self.average_earnings_chart = AverageEarningsChart::new(self.tasks_in_range.clone());
+        self.update_selection_charts();
     }
+
+    fn update_selection_charts(&mut self) {}
 
     fn subtract_months(&self, date: NaiveDate, months: i32) -> NaiveDate {
         let mut year = date.year();
@@ -219,5 +250,73 @@ impl FurReport {
 
     fn is_leap_year(&self, year: i32) -> bool {
         (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+    }
+
+    fn populate_task_property_values(&mut self) {
+        if let Some(property_key) = self.picked_task_property_key {
+            self.task_property_values =
+                self.tasks_in_range
+                    .iter()
+                    .fold(HashMap::new(), |mut accumulated, task| {
+                        let keys = match property_key {
+                            FurTaskProperty::Title => vec![task.name.to_string()],
+                            FurTaskProperty::Project => vec![if task.project.trim().is_empty() {
+                                "None".to_string()
+                            } else {
+                                task.project.to_string()
+                            }],
+                            FurTaskProperty::Tags => {
+                                let tags = task
+                                    .tags
+                                    .split('#')
+                                    .map(|s| s.trim().to_string())
+                                    .filter(|s| !s.is_empty())
+                                    .collect::<Vec<String>>();
+                                if tags.is_empty() {
+                                    vec!["no tags".to_string()]
+                                } else {
+                                    tags
+                                }
+                            }
+                            FurTaskProperty::Rate => vec![if task.rate == 0.0 {
+                                "None".to_string()
+                            } else {
+                                format!("${:.2}", task.rate)
+                            }],
+                        };
+
+                        for key in keys {
+                            accumulated
+                                .entry(key)
+                                .or_insert_with(Vec::new)
+                                .push(task.clone());
+                        }
+                        accumulated
+                    });
+
+            self.task_property_value_keys = self.task_property_values.keys().cloned().collect();
+
+            // Sort keys
+            match property_key {
+                FurTaskProperty::Rate => {
+                    self.task_property_value_keys.sort_by(|a, b| {
+                        if a == "None" {
+                            std::cmp::Ordering::Greater
+                        } else if b == "None" {
+                            std::cmp::Ordering::Less
+                        } else {
+                            b.cmp(a)
+                        }
+                    });
+                }
+                _ => self
+                    .task_property_value_keys
+                    .sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase())),
+            }
+
+            if let Some(value) = self.task_property_value_keys.first() {
+                self.picked_task_property_value = Some(value.to_owned());
+            }
+        }
     }
 }

@@ -116,3 +116,35 @@ impl std::fmt::Display for FurDateRange {
         )
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum FurTaskProperty {
+    Title,
+    Project,
+    Tags,
+    Rate,
+}
+
+impl FurTaskProperty {
+    pub const ALL: [FurTaskProperty; 4] = [
+        FurTaskProperty::Title,
+        FurTaskProperty::Project,
+        FurTaskProperty::Tags,
+        FurTaskProperty::Rate,
+    ];
+}
+
+impl std::fmt::Display for FurTaskProperty {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                FurTaskProperty::Title => "Title",
+                FurTaskProperty::Project => "Project",
+                FurTaskProperty::Tags => "Tags",
+                FurTaskProperty::Rate => "Rate",
+            }
+        )
+    }
+}
