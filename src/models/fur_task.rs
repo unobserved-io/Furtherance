@@ -51,4 +51,8 @@ impl FurTask {
     pub fn total_time_in_seconds(&self) -> i64 {
         (self.stop_time - self.start_time).num_seconds()
     }
+
+    pub fn total_earnings(&self) -> f32 {
+        (self.total_time_in_seconds() as f32 / 3600.0) * self.rate
+    }
 }

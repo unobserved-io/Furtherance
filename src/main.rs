@@ -15,6 +15,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub mod app;
+mod charts {
+    pub mod time_recorded_chart;
+}
 mod constants;
 mod database;
 mod helpers {
@@ -25,6 +28,7 @@ mod helpers {
 mod models {
     pub mod fur_idle;
     pub mod fur_pomodoro;
+    pub mod fur_report;
     pub mod fur_settings;
     pub mod fur_shortcut;
     pub mod fur_task;

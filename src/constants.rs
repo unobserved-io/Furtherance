@@ -15,3 +15,4 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub const VERSION: &str = "3.0.0";
+pub const CHART_HEIGHT: f32 = 400.0;

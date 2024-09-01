@@ -71,6 +71,8 @@ pub enum TabId {
     Advanced,
     Pomodoro,
     Report,
+    Charts,
+    List,
 }
 
 #[derive(Debug, Clone)]
@@ -78,4 +80,39 @@ pub enum NotificationType {
     PomodoroOver,
     BreakOver,
     Idle,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum FurDateRange {
+    PastWeek,
+    ThirtyDays,
+    SixMonths,
+    AllTime,
+    Range,
+}
+
+impl FurDateRange {
+    pub const ALL: [FurDateRange; 5] = [
+        FurDateRange::PastWeek,
+        FurDateRange::ThirtyDays,
+        FurDateRange::SixMonths,
+        FurDateRange::AllTime,
+        FurDateRange::Range,
+    ];
+}
+
+impl std::fmt::Display for FurDateRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                FurDateRange::PastWeek => "Past week",
+                FurDateRange::ThirtyDays => "Past 30 days",
+                FurDateRange::SixMonths => "Past 6 months",
+                FurDateRange::AllTime => "All time",
+                FurDateRange::Range => "Date range",
+            }
+        )
+    }
 }

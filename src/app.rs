@@ -25,17 +25,17 @@ use crate::{
         idle::get_idle_time,
     },
     models::{
-        fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_settings::FurSettings,
-        fur_shortcut::FurShortcut, fur_task::FurTask, fur_task_group::FurTaskGroup,
-        group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd, task_to_add::TaskToAdd,
-        task_to_edit::TaskToEdit,
+        fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport,
+        fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
+        fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd,
+        task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
     },
     style,
     view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::{container, toggler, Row};
+use iced::widget::{container, horizontal_rule, toggler, Row};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -73,6 +73,7 @@ pub struct Furtherance {
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
     pomodoro: FurPomodoro,
+    report: FurReport,
     settings_active_tab: TabId,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
@@ -94,14 +95,19 @@ pub enum Message {
     AddTaskToGroup(GroupToEdit),
     AlertClose,
     CancelCurrentTaskStartTime,
+    CancelEndDate,
     CancelGroupEdit,
     CancelShortcut,
     CancelShortcutColor,
+    CancelStartDate,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
     ChooseCurrentTaskStartTime,
+    ChooseEndDate,
     ChooseShortcutColor,
+    ChooseStartDate,
     ChooseTaskEditDateTime(EditTaskProperty),
+    DateRangeSelected(FurDateRange),
     DeleteTasks,
     EditGroup(FurTaskGroup),
     EditShortcutTextChanged(String, EditTaskProperty),
@@ -117,6 +123,7 @@ pub enum Message {
     PomodoroStop,
     PomodoroStopAfterBreak,
     RepeatLastTaskPressed(String),
+    ReportTabSelected(TabId),
     SaveGroupEdit,
     SaveShortcut,
     SaveTaskEdit,
@@ -136,7 +143,9 @@ pub enum Message {
     StartStopPressed,
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
+    SubmitEndDate(date_picker::Date),
     SubmitShortcutColor(Color),
+    SubmitStartDate(date_picker::Date),
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     TaskInputChanged(String),
@@ -176,6 +185,7 @@ impl Application for Furtherance {
             idle: FurIdle::new(),
             pomodoro: FurPomodoro::new(),
             inspector_view: None,
+            report: FurReport::new(),
             settings_active_tab: TabId::General,
             shortcuts: match db_retrieve_shortcuts() {
                 Ok(shortcuts) => shortcuts,
@@ -231,6 +241,7 @@ impl Application for Furtherance {
             }
             Message::AlertClose => self.displayed_alert = None,
             Message::CancelCurrentTaskStartTime => self.show_timer_start_picker = false,
+            Message::CancelEndDate => self.report.show_end_date_picker = false,
             Message::CancelGroupEdit => {
                 self.group_to_edit = None;
                 self.inspector_view = None;
@@ -239,6 +250,7 @@ impl Application for Furtherance {
                 self.shortcut_to_add = None;
                 self.inspector_view = None;
             }
+            Message::CancelStartDate => self.report.show_start_date_picker = false,
             Message::CancelShortcutColor => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.show_color_picker = false;
@@ -289,11 +301,13 @@ impl Application for Furtherance {
                 }
             }
             Message::ChooseCurrentTaskStartTime => self.show_timer_start_picker = true,
+            Message::ChooseEndDate => self.report.show_end_date_picker = true,
             Message::ChooseShortcutColor => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.show_color_picker = true
                 }
             }
+            Message::ChooseStartDate => self.report.show_start_date_picker = true,
             Message::ChooseTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {
@@ -329,6 +343,7 @@ impl Application for Furtherance {
                     }
                 }
             }
+            Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
             Message::DeleteTasks => {
                 if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
@@ -665,6 +680,7 @@ impl Application for Furtherance {
                 self.current_view = FurView::Timer;
                 return Command::perform(async { Message::StartStopPressed }, |msg| msg);
             }
+            Message::ReportTabSelected(new_tab) => self.report.active_tab = new_tab,
             Message::SaveGroupEdit => {
                 if let Some(group_to_edit) = &self.group_to_edit {
                     let _ = db_update_group_of_tasks(group_to_edit);
@@ -932,12 +948,14 @@ impl Application for Furtherance {
                     }
                 }
             }
+            Message::SubmitEndDate(new_date) => self.report.set_date_range_end(new_date),
             Message::SubmitShortcutColor(new_color) => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.color = new_color;
                     shortcut_to_add.show_color_picker = false;
                 }
             }
+            Message::SubmitStartDate(new_date) => self.report.set_date_range_start(new_date),
             Message::SubmitTaskEditDate(new_date, property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {
@@ -1278,7 +1296,98 @@ impl Application for Furtherance {
             .height(Length::Fill)];
 
         // MARK: REPORT
-        let report_view: Column<'_, Message, Theme, Renderer> = column![Scrollable::new(column![])];
+        let report_view: Column<'_, Message, Theme, Renderer> =
+            column![Tabs::new(Message::ReportTabSelected)
+                .tab_icon_position(iced_aw::tabs::Position::Top)
+                .push(
+                    TabId::Charts,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::GraphUp),
+                        "Charts".to_string()
+                    ),
+                    column![
+                        column![
+                            pick_list(
+                                &FurDateRange::ALL[..],
+                                self.report.picked_date_range.clone(),
+                                Message::DateRangeSelected,
+                            )
+                            .width(Length::Fill),
+                            if self.report.picked_date_range == Some(FurDateRange::Range) {
+                                row![
+                                    horizontal_space().width(Length::Fill),
+                                    date_picker(
+                                        self.report.show_start_date_picker,
+                                        self.report.picked_start_date,
+                                        button(text(self.report.picked_start_date.to_string()))
+                                            .on_press(Message::ChooseStartDate),
+                                        Message::CancelStartDate,
+                                        Message::SubmitStartDate,
+                                    ),
+                                    column![text("to")
+                                        .vertical_alignment(alignment::Vertical::Center)
+                                        .height(Length::Fill),]
+                                    .height(30),
+                                    date_picker(
+                                        self.report.show_end_date_picker,
+                                        self.report.picked_end_date,
+                                        button(text(self.report.picked_end_date.to_string()))
+                                            .on_press(Message::ChooseEndDate),
+                                        Message::CancelEndDate,
+                                        Message::SubmitEndDate,
+                                    ),
+                                    horizontal_space().width(Length::Fill),
+                                ]
+                                .spacing(30)
+                                .padding([20, 0, 0, 0])
+                            } else {
+                                row![]
+                            },
+                            vertical_space().height(Length::Fixed(20.0)),
+                            horizontal_rule(1),
+                        ]
+                        .padding([20, 20, 0, 20]),
+                        Scrollable::new(
+                            column![
+                                if self.report.total_time > 0 || self.report.total_earned > 0.0 {
+                                    row![
+                                        horizontal_space().width(Length::Fill),
+                                        column![
+                                            text(seconds_to_formatted_duration(
+                                                self.report.total_time
+                                            ))
+                                            .size(50),
+                                            text("Total Time"),
+                                        ]
+                                        .align_items(Alignment::Center),
+                                        horizontal_space().width(Length::Fill),
+                                        column![
+                                            text(format!("${:.2}", self.report.total_earned))
+                                                .size(50),
+                                            text("Earned"),
+                                        ]
+                                        .align_items(Alignment::Center),
+                                        horizontal_space().width(Length::Fill),
+                                    ]
+                                } else {
+                                    row![]
+                                },
+                                self.report.time_recorded_chart.view(),
+                            ]
+                            .padding([0, 20, 20, 20])
+                        ),
+                    ]
+                )
+                .push(
+                    TabId::List,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::ListNested),
+                        "List".to_string()
+                    ),
+                    Scrollable::new(column![].padding(10)),
+                )
+                .set_active_tab(&self.report.active_tab)
+                .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: SETTINGS
         let settings_view: Column<'_, Message, Theme, Renderer> =

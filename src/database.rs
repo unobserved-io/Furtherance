@@ -212,6 +212,35 @@ pub fn db_retrieve_all_tasks(
     Ok(tasks_vec)
 }
 
+pub fn db_retrieve_tasks_by_date_range(
+    start_date: String,
+    end_date: String,
+) -> Result<Vec<FurTask>> {
+    let conn = Connection::open(db_get_directory())?;
+    let mut stmt = conn.prepare(
+        "SELECT * FROM tasks WHERE start_time BETWEEN ?1 AND ?2 ORDER BY start_time ASC",
+    )?;
+    let mut rows = stmt.query(params![start_date, end_date])?;
+
+    let mut tasks_vec: Vec<FurTask> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTask {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            start_time: row.get(2)?,
+            stop_time: row.get(3)?,
+            tags: row.get(4)?,
+            project: row.get(5)?,
+            rate: row.get(6)?,
+            currency: String::new(),
+        };
+        tasks_vec.push(fur_task);
+    }
+
+    Ok(tasks_vec)
+}
+
 pub fn db_update_task(fur_task: FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
