@@ -1401,27 +1401,29 @@ impl Application for Furtherance {
                 .padding([0, 20, 20, 20])
             ),
         ];
-        let report_view: Column<'_, Message, Theme, Renderer> =
-            column![Tabs::new(Message::ReportTabSelected)
-                .tab_icon_position(iced_aw::tabs::Position::Top)
-                .push(
-                    TabId::Charts,
-                    TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::GraphUp),
-                        "Charts".to_string()
-                    ),
-                    charts_view,
-                )
-                .push(
-                    TabId::List,
-                    TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::ListNested),
-                        "List".to_string()
-                    ),
-                    Scrollable::new(column![].padding(10)),
-                )
-                .set_active_tab(&self.report.active_tab)
-                .tab_bar_position(TabBarPosition::Top)];
+
+        // TODO: Change to tabbed report view once iced has lists
+        // let report_view: Column<'_, Message, Theme, Renderer> =
+        //     column![Tabs::new(Message::ReportTabSelected)
+        //         .tab_icon_position(iced_aw::tabs::Position::Top)
+        //         .push(
+        //             TabId::Charts,
+        //             TabLabel::IconText(
+        //                 bootstrap::icon_to_char(Bootstrap::GraphUp),
+        //                 "Charts".to_string()
+        //             ),
+        //             charts_view,
+        //         )
+        //         .push(
+        //             TabId::List,
+        //             TabLabel::IconText(
+        //                 bootstrap::icon_to_char(Bootstrap::ListNested),
+        //                 "List".to_string()
+        //             ),
+        //             Scrollable::new(column![].padding(10)),
+        //         )
+        //         .set_active_tab(&self.report.active_tab)
+        //         .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: SETTINGS
         let settings_view: Column<'_, Message, Theme, Renderer> =
@@ -2422,6 +2424,8 @@ fn shortcut_button_content<'a>(shortcut: &FurShortcut) -> String {
         shortcut_button_text.push_str(&format!("\n${:.2}", shortcut.rate));
     }
 
+    // TODO: Switch when markdown support is available (Iced 0.13)
+    // markdown::parse(&shortcut_button_text)
     shortcut_button_text
 }
 
