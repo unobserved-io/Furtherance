@@ -64,6 +64,7 @@ use crate::idle_wayland::run_on_idle;
 pub struct Furtherance {
     current_view: FurView,
     delete_ids_from_context: Option<Vec<u32>>,
+    delete_shortcut_from_context: Option<u32>,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
@@ -109,6 +110,8 @@ pub enum Message {
     ChooseTaskEditDateTime(EditTaskProperty),
     CreateShortcutFromTaskGroup(FurTaskGroup),
     DateRangeSelected(FurDateRange),
+    DeleteShortcut,
+    DeleteShortcutFromContext(u32),
     DeleteTasks,
     DeleteTasksFromContext(Vec<u32>),
     EditGroup(FurTaskGroup),
@@ -181,6 +184,7 @@ impl Application for Furtherance {
         let mut furtherance = Furtherance {
             current_view: settings.default_view,
             delete_ids_from_context: None,
+            delete_shortcut_from_context: None,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
@@ -244,6 +248,7 @@ impl Application for Furtherance {
             }
             Message::AlertClose => {
                 self.delete_ids_from_context = None;
+                self.delete_shortcut_from_context = None;
                 self.displayed_alert = None;
             }
             Message::CancelCurrentTaskStartTime => self.show_timer_start_picker = false,
@@ -374,6 +379,24 @@ impl Application for Furtherance {
                 self.current_view = FurView::Shortcuts;
             }
             Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
+            Message::DeleteShortcut => {
+                if let Some(id) = self.delete_shortcut_from_context {
+                    if let Err(e) = db_delete_shortcut_by_id(id) {
+                        eprintln!("Failed to delete shortcut: {}", e);
+                    }
+                    match db_retrieve_shortcuts() {
+                        Ok(shortcuts) => self.shortcuts = shortcuts,
+                        Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
+                    };
+                }
+            }
+            Message::DeleteShortcutFromContext(id) => {
+                self.delete_shortcut_from_context = Some(id);
+                return Command::perform(
+                    async { Message::ShowAlert(FurAlert::DeleteShortcutConfirmation) },
+                    |msg| msg,
+                );
+            }
             Message::DeleteTasks => {
                 if let Some(tasks_to_delete) = &self.delete_ids_from_context {
                     if let Err(e) = db_delete_tasks_by_ids(tasks_to_delete.clone()) {
@@ -2174,6 +2197,28 @@ impl Application for Furtherance {
                         .style(theme::Button::Destructive),
                     );
                 }
+                FurAlert::DeleteShortcutConfirmation => {
+                    alert_text = "Delete shortcut?".to_string();
+                    alert_description = "Are you sure you want to delete this shortcut?";
+                    close_button = Some(
+                        button(
+                            text("Cancel")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(theme::Button::Secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text("Delete")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::DeleteShortcut)
+                        .style(theme::Button::Destructive),
+                    );
+                }
                 FurAlert::DeleteTaskConfirmation => {
                     alert_text = "Delete task?".to_string();
                     alert_description = "Are you sure you want to permanently delete this task?";
@@ -2520,7 +2565,10 @@ fn shortcut_button_content<'a>(shortcut: &FurShortcut) -> String {
     shortcut_button_text
 }
 
-fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button<'a, Message> {
+fn shortcut_button<'a>(
+    shortcut: &FurShortcut,
+    timer_is_running: bool,
+) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'static>, Message> {
     let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
         Ok(color) => color,
         Err(_) => Srgb::new(0.694, 0.475, 0.945),
@@ -2538,7 +2586,7 @@ fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button
     //     text(&shortcut.tags).style(text_color),
     //     text(format!("${:.2}", shortcut.rate)).style(text_color),
     // ])
-    button(Container::new(
+    let shortcut_button = button(Container::new(
         text(shortcut_button_content(shortcut)).style(text_color),
     ))
     .width(200)
@@ -2549,7 +2597,27 @@ fn shortcut_button<'a>(shortcut: &FurShortcut, timer_is_running: bool) -> Button
     } else {
         Some(Message::ShortcutPressed(shortcut.to_string()))
     })
-    .style(style::custom_button_style(shortcut_color))
+    .style(style::custom_button_style(shortcut_color));
+
+    let shortcut_id = shortcut.id;
+
+    ContextMenu::new(
+        shortcut_button,
+        Box::new(move || -> Element<'a, Message, Theme, Renderer> {
+            Container::new(column![
+                iced::widget::button("Edit")
+                    // .on_press(Message::EditGroup(task_group_clone.clone()))
+                    .style(style::context_menu_button_style())
+                    .width(Length::Fill),
+                iced::widget::button("Delete")
+                    .on_press(Message::DeleteShortcutFromContext(shortcut_id.clone()))
+                    .style(style::context_menu_button_style())
+                    .width(Length::Fill),
+            ])
+            .max_width(150)
+            .into()
+        }),
+    )
 }
 
 fn is_dark_color(color: Srgb) -> bool {

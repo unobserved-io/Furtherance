@@ -518,6 +518,14 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
     Ok(shortcuts)
 }
 
+pub fn db_delete_shortcut_by_id(id: u32) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute("delete FROM shortcuts WHERE id = (?1)", &[&id.to_string()])?;
+
+    Ok(())
+}
+
 pub fn delete_all() -> Result<()> {
     // Delete everything from the database
     let conn = Connection::open(db_get_directory())?;

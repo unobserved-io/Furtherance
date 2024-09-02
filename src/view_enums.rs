@@ -38,6 +38,7 @@ impl std::fmt::Display for FurView {
 #[derive(Debug, Clone, PartialEq)]
 pub enum FurAlert {
     DeleteGroupConfirmation,
+    DeleteShortcutConfirmation,
     DeleteTaskConfirmation,
     Idle,
     PomodoroBreakOver,

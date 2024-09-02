@@ -1,12 +1,12 @@
 use iced::advanced::{layout, mouse, widget::Tree, Layout, Widget};
 use iced::{event, Element, Length, Renderer, Size, Theme};
 
-pub struct FlowRow<'a, Message> {
-    children: Vec<Element<'a, Message>>,
+pub struct FlowRow<'a, Message, Theme, Renderer> {
+    children: Vec<Element<'a, Message, Theme, Renderer>>,
     spacing: f32,
 }
 
-impl<'a, Message> FlowRow<'a, Message> {
+impl<'a, Message> FlowRow<'a, Message, Theme, Renderer> {
     pub fn new() -> Self {
         Self {
             children: Vec::new(),
@@ -28,7 +28,7 @@ impl<'a, Message> FlowRow<'a, Message> {
     }
 }
 
-impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message> {
+impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, Theme, Renderer> {
     fn size(&self) -> Size<Length> {
         Size {
             width: Length::Fill,
@@ -200,8 +200,8 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message> 
     }
 }
 
-impl<'a, Message: 'a> From<FlowRow<'a, Message>> for Element<'a, Message> {
-    fn from(row: FlowRow<'a, Message>) -> Self {
+impl<'a, Message: 'a> From<FlowRow<'a, Message, Theme, Renderer>> for Element<'a, Message> {
+    fn from(row: FlowRow<'a, Message, Theme, Renderer>) -> Self {
         Element::new(row)
     }
 }
