@@ -384,6 +384,8 @@ impl Application for Furtherance {
                     if let Err(e) = db_delete_shortcut_by_id(id) {
                         eprintln!("Failed to delete shortcut: {}", e);
                     }
+                    self.delete_shortcut_from_context = None;
+                    self.displayed_alert = None;
                     match db_retrieve_shortcuts() {
                         Ok(shortcuts) => self.shortcuts = shortcuts,
                         Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
@@ -2547,22 +2549,35 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
     grouped_tasks
 }
 
-fn shortcut_button_content<'a>(shortcut: &FurShortcut) -> String {
-    let mut shortcut_button_text: String = shortcut.name.to_string();
+fn shortcut_button_content<'a>(
+    shortcut: &FurShortcut,
+    text_color: Color,
+) -> Column<'a, Message, Theme, Renderer> {
+    let mut shortcut_text_column = column![text(shortcut.name.to_owned())
+        .font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        })
+        .style(text_color)]
+    .spacing(5);
 
     if !shortcut.project.is_empty() {
-        shortcut_button_text.push_str(&format!("\n{}", shortcut.project));
+        shortcut_text_column =
+            shortcut_text_column.push(text(shortcut.project.to_owned()).style(text_color));
     }
     if !shortcut.tags.is_empty() {
-        shortcut_button_text.push_str(&format!("\n{}", shortcut.tags));
+        shortcut_text_column =
+            shortcut_text_column.push(text(shortcut.tags.to_owned()).style(text_color));
     }
     if shortcut.rate > 0.0 {
-        shortcut_button_text.push_str(&format!("\n${:.2}", shortcut.rate));
+        shortcut_text_column = shortcut_text_column.push(vertical_space());
+        shortcut_text_column = shortcut_text_column.push(row![
+            horizontal_space(),
+            text(format!("${:.2}", shortcut.rate)).style(text_color)
+        ]);
     }
 
-    // TODO: Switch when markdown support is available (Iced 0.13)
-    // markdown::parse(&shortcut_button_text)
-    shortcut_button_text
+    shortcut_text_column
 }
 
 fn shortcut_button<'a>(
@@ -2579,25 +2594,16 @@ fn shortcut_button<'a>(
         Color::BLACK
     };
 
-    // TODO: Try to make this work in the future for better format
-    // button(column![
-    //     text(&shortcut.name).style(text_color),
-    //     text(&shortcut.project).style(text_color),
-    //     text(&shortcut.tags).style(text_color),
-    //     text(format!("${:.2}", shortcut.rate)).style(text_color),
-    // ])
-    let shortcut_button = button(Container::new(
-        text(shortcut_button_content(shortcut)).style(text_color),
-    ))
-    .width(200)
-    .padding(10)
-    .height(170)
-    .on_press_maybe(if timer_is_running {
-        None
-    } else {
-        Some(Message::ShortcutPressed(shortcut.to_string()))
-    })
-    .style(style::custom_button_style(shortcut_color));
+    let shortcut_button = button(shortcut_button_content(shortcut, text_color))
+        .width(200)
+        .padding(10)
+        .height(170)
+        .on_press_maybe(if timer_is_running {
+            None
+        } else {
+            Some(Message::ShortcutPressed(shortcut.to_string()))
+        })
+        .style(style::custom_button_style(shortcut_color));
 
     let shortcut_id = shortcut.id;
 
