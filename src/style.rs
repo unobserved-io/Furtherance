@@ -19,6 +19,7 @@ use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::{Lighten, Srgb};
 
+use crate::constants::FURTHERANCE_PURPLE;
 use crate::helpers::color_utils::ToIcedColor;
 
 pub fn gray_background(theme: &Theme) -> container::Appearance {
@@ -126,6 +127,48 @@ impl button::StyleSheet for ShortcutButtonStyle {
 pub fn custom_button_style(primary_color: Srgb) -> iced::theme::Button {
     let light_color = primary_color.lighten(0.3);
     iced::theme::Button::Custom(Box::new(ShortcutButtonStyle {
+        primary_color,
+        light_color,
+    }))
+}
+
+struct ContextMenuButtonStyle {
+    primary_color: Color,
+    light_color: Color,
+}
+
+impl button::StyleSheet for ContextMenuButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.light_color)),
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.primary_color)),
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+}
+
+pub fn context_menu_button_style() -> iced::theme::Button {
+    let light_color = FURTHERANCE_PURPLE.lighten(0.6).to_iced_color();
+    let primary_color = FURTHERANCE_PURPLE.to_iced_color();
+    iced::theme::Button::Custom(Box::new(ContextMenuButtonStyle {
         primary_color,
         light_color,
     }))

@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use palette::Srgb;
 use plotters::{self, style::RGBColor};
 
 pub const VERSION: &str = "3.0.0";
+pub const FURTHERANCE_PURPLE: Srgb = Srgb::new(0.694, 0.475, 0.945);
 pub const CHART_HEIGHT: f32 = 400.0;
 pub const CHART_COLOR: RGBColor = plotters::style::colors::BLUE;

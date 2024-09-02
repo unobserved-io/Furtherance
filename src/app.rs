@@ -2397,22 +2397,27 @@ fn history_group_row<'a>(
     ContextMenu::new(
         history_row_button,
         Box::new(move || -> Element<'a, Message, Theme, Renderer> {
-            column(vec![
+            Container::new(column![
                 iced::widget::button("Repeat")
                     .on_press(Message::RepeatLastTaskPressed(task_group_string.clone()))
-                    .into(),
+                    .style(style::context_menu_button_style())
+                    .width(Length::Fill),
                 iced::widget::button("Edit")
                     .on_press(Message::EditGroup(task_group_clone.clone()))
-                    .into(),
+                    .style(style::context_menu_button_style())
+                    .width(Length::Fill),
                 iced::widget::button("Create shortcut")
                     .on_press(Message::CreateShortcutFromTaskGroup(
                         task_group_clone.clone(),
                     ))
-                    .into(),
+                    .style(style::context_menu_button_style())
+                    .width(Length::Fill),
                 iced::widget::button("Delete")
                     .on_press(Message::DeleteTasksFromContext(task_group_ids.clone()))
-                    .into(),
+                    .style(style::context_menu_button_style())
+                    .width(Length::Fill),
             ])
+            .max_width(150)
             .into()
         }),
     )
