@@ -50,8 +50,9 @@ pub enum FurInspectorView {
     AddNewTask,
     AddShortcut,
     AddTaskToGroup,
-    EditTask,
     EditGroup,
+    EditShortcut,
+    EditTask,
 }
 
 #[derive(Debug, Clone)]

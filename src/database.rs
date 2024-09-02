@@ -518,6 +518,32 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
     Ok(shortcuts)
 }
 
+pub fn db_update_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "UPDATE shortcuts SET
+            name = (?1),
+            tags = (?2),
+            project = (?3),
+            rate = (?4),
+            currency = (?5),
+            color_hex = (?6)
+        WHERE id = (?7)",
+        params![
+            fur_shortcut.name,
+            fur_shortcut.tags,
+            fur_shortcut.project,
+            fur_shortcut.rate,
+            fur_shortcut.currency,
+            fur_shortcut.color_hex,
+            fur_shortcut.id,
+        ],
+    )?;
+
+    Ok(())
+}
+
 pub fn db_delete_shortcut_by_id(id: u32) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 

@@ -28,7 +28,7 @@ use crate::{
         fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport,
         fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
         fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd,
-        task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
+        shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
     },
     style,
     view_enums::*,
@@ -76,6 +76,7 @@ pub struct Furtherance {
     settings_active_tab: TabId,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
+    shortcut_to_edit: Option<ShortcutToEdit>,
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
@@ -115,6 +116,7 @@ pub enum Message {
     DeleteTasks,
     DeleteTasksFromContext(Vec<u32>),
     EditGroup(FurTaskGroup),
+    EditShortcutPressed(FurShortcut),
     EditShortcutTextChanged(String, EditTaskProperty),
     EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
@@ -202,6 +204,7 @@ impl Application for Furtherance {
                 }
             },
             shortcut_to_add: None,
+            shortcut_to_edit: None,
             show_timer_start_picker: false,
             task_history: get_task_history(),
             task_input: "".to_string(),
@@ -259,12 +262,15 @@ impl Application for Furtherance {
             }
             Message::CancelShortcut => {
                 self.shortcut_to_add = None;
+                self.shortcut_to_edit = None;
                 self.inspector_view = None;
             }
             Message::CancelStartDate => self.report.show_start_date_picker = false,
             Message::CancelShortcutColor => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.show_color_picker = false;
+                } else if let Some(shortcut_to_edit) = self.shortcut_to_edit.as_mut() {
+                    shortcut_to_edit.show_color_picker = false;
                 }
             }
             Message::CancelTaskEdit => {
@@ -322,6 +328,8 @@ impl Application for Furtherance {
             Message::ChooseShortcutColor => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.show_color_picker = true
+                } else if let Some(shortcut_to_edit) = self.shortcut_to_edit.as_mut() {
+                    shortcut_to_edit.show_color_picker = true
                 }
             }
             Message::ChooseStartDate => self.report.show_start_date_picker = true,
@@ -364,7 +372,11 @@ impl Application for Furtherance {
                 if let Err(e) = db_write_shortcut(FurShortcut {
                     id: 0,
                     name: task_group.name,
-                    tags: task_group.tags,
+                    tags: if task_group.tags.is_empty() {
+                        String::new()
+                    } else {
+                        format!("#{}", task_group.tags)
+                    },
                     project: task_group.project,
                     rate: task_group.rate,
                     currency: String::new(),
@@ -454,6 +466,10 @@ impl Application for Furtherance {
                     self.inspector_view = Some(FurInspectorView::EditGroup);
                 }
             }
+            Message::EditShortcutPressed(shortcut) => {
+                self.shortcut_to_edit = Some(ShortcutToEdit::new_from(&shortcut));
+                self.inspector_view = Some(FurInspectorView::EditShortcut);
+            }
             Message::EditShortcutTextChanged(new_value, property) => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     match property {
@@ -462,11 +478,10 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_add.invalid_input_error_message =
-                                    "Task name cannot contain #, @, or $.".to_string();
+                                shortcut_to_add.input_error("Task name cannot contain #, @, or $.");
                             } else {
                                 shortcut_to_add.name = new_value;
-                                shortcut_to_add.invalid_input_error_message = String::new();
+                                shortcut_to_add.input_error("");
                             }
                         }
                         EditTaskProperty::Project => {
@@ -474,10 +489,10 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                // TODO: Change to .input_error system
                                 shortcut_to_add.input_error("Project cannot contain #, @, or $.");
                             } else {
                                 shortcut_to_add.project = new_value;
+                                shortcut_to_add.input_error("");
                             }
                         }
                         EditTaskProperty::Tags => {
@@ -505,6 +520,60 @@ impl Application for Furtherance {
                                 shortcut_to_add.input_error("");
                             } else {
                                 shortcut_to_add.input_error("Rate must be a valid dollar amount.");
+                            }
+                        }
+                        _ => {}
+                    }
+                } else if let Some(shortcut_to_edit) = self.shortcut_to_edit.as_mut() {
+                    match property {
+                        EditTaskProperty::Name => {
+                            if new_value.contains('#')
+                                || new_value.contains('@')
+                                || new_value.contains('$')
+                            {
+                                shortcut_to_edit.input_error("Task name cannot contain #, @, or $.")
+                            } else {
+                                shortcut_to_edit.new_name = new_value;
+                                shortcut_to_edit.input_error("")
+                            }
+                        }
+                        EditTaskProperty::Project => {
+                            if new_value.contains('#')
+                                || new_value.contains('@')
+                                || new_value.contains('$')
+                            {
+                                shortcut_to_edit.input_error("Project cannot contain #, @, or $.");
+                            } else {
+                                shortcut_to_edit.new_project = new_value;
+                                shortcut_to_edit.input_error("");
+                            }
+                        }
+                        EditTaskProperty::Tags => {
+                            if new_value.contains('@') || new_value.contains('$') {
+                                shortcut_to_edit.input_error("Tags cannot contain @ or $.");
+                            } else if !new_value.is_empty() && new_value.chars().next() != Some('#')
+                            {
+                                shortcut_to_edit.input_error("Tags must start with a #.");
+                            } else {
+                                shortcut_to_edit.new_tags = new_value;
+                                shortcut_to_edit.input_error("");
+                            }
+                        }
+                        EditTaskProperty::Rate => {
+                            let new_value_parsed = new_value.parse::<f32>();
+                            if new_value.is_empty() {
+                                shortcut_to_edit.new_rate = String::new();
+                                shortcut_to_edit.input_error("");
+                            } else if new_value.contains('$') {
+                                shortcut_to_edit.input_error("Do not include a $ in the rate.");
+                            } else if new_value_parsed.is_ok()
+                                && has_max_two_decimals(&new_value)
+                                && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
+                            {
+                                shortcut_to_edit.new_rate = new_value;
+                                shortcut_to_edit.input_error("");
+                            } else {
+                                shortcut_to_edit.input_error("Rate must be a valid dollar amount.");
                             }
                         }
                         _ => {}
@@ -777,8 +846,8 @@ impl Application for Furtherance {
                 if let Some(shortcut_to_add) = &self.shortcut_to_add {
                     if let Err(e) = db_write_shortcut(FurShortcut {
                         id: 0,
-                        name: shortcut_to_add.name.clone(),
-                        tags: shortcut_to_add.tags.clone(),
+                        name: shortcut_to_add.name.trim().to_string(),
+                        tags: shortcut_to_add.tags.trim().to_string(),
                         project: shortcut_to_add.project.trim().to_string(),
                         rate: shortcut_to_add
                             .new_rate
@@ -792,6 +861,28 @@ impl Application for Furtherance {
                     }
                     self.inspector_view = None;
                     self.shortcut_to_add = None;
+                    match db_retrieve_shortcuts() {
+                        Ok(shortcuts) => self.shortcuts = shortcuts,
+                        Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
+                    };
+                } else if let Some(shortcut_to_edit) = &self.shortcut_to_edit {
+                    if let Err(e) = db_update_shortcut(FurShortcut {
+                        id: shortcut_to_edit.id,
+                        name: shortcut_to_edit.new_name.trim().to_string(),
+                        tags: shortcut_to_edit.new_tags.trim().to_string(),
+                        project: shortcut_to_edit.new_project.trim().to_string(),
+                        rate: shortcut_to_edit
+                            .new_rate
+                            .trim()
+                            .parse::<f32>()
+                            .unwrap_or(0.0),
+                        currency: String::new(),
+                        color_hex: shortcut_to_edit.new_color.to_hex(),
+                    }) {
+                        eprintln!("Failed to update shortcut in database: {}", e);
+                    }
+                    self.inspector_view = None;
+                    self.shortcut_to_edit = None;
                     match db_retrieve_shortcuts() {
                         Ok(shortcuts) => self.shortcuts = shortcuts,
                         Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
@@ -1038,6 +1129,9 @@ impl Application for Furtherance {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.color = new_color;
                     shortcut_to_add.show_color_picker = false;
+                } else if let Some(shortcut_to_edit) = self.shortcut_to_edit.as_mut() {
+                    shortcut_to_edit.new_color = new_color;
+                    shortcut_to_edit.show_color_picker = false;
                 }
             }
             Message::SubmitStartDate(new_date) => self.report.set_date_range_start(new_date),
@@ -1809,6 +1903,8 @@ impl Application for Furtherance {
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
+                    text(&shortcut_to_add.invalid_input_error_message)
+                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
                 ]
                 .spacing(12)
                 .padding(20)
@@ -1880,6 +1976,80 @@ impl Application for Furtherance {
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
+                ]
+                .spacing(12)
+                .padding(20)
+                .width(250)
+                .align_items(Alignment::Start),
+                None => column![]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_items(Alignment::Start),
+            },
+            // MARK: Edit Shortcut
+            Some(FurInspectorView::EditShortcut) => match &self.shortcut_to_edit {
+                Some(shortcut_to_edit) => column![
+                    text("New Shortcut").size(24),
+                    text_input("Task name", &shortcut_to_edit.new_name)
+                        .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
+                    text_input("Project", &shortcut_to_edit.new_project).on_input(|s| {
+                        Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
+                    }),
+                    text_input("#tags", &shortcut_to_edit.new_tags)
+                        .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
+                    row![
+                        text("$"),
+                        text_input("0.00", &shortcut_to_edit.new_rate).on_input(|s| {
+                            Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
+                        }),
+                        text("/hr"),
+                    ]
+                    .spacing(3)
+                    .align_items(Alignment::Center),
+                    color_picker(
+                        shortcut_to_edit.show_color_picker,
+                        shortcut_to_edit.new_color,
+                        button(
+                            text("Color")
+                                .style(if is_dark_color(shortcut_to_edit.new_color.to_srgb()) {
+                                    Color::WHITE
+                                } else {
+                                    Color::BLACK
+                                })
+                                .width(Length::Fill)
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .on_press(Message::ChooseShortcutColor)
+                        .width(Length::Fill)
+                        .style(style::custom_button_style(
+                            shortcut_to_edit.new_color.to_srgb(),
+                        )),
+                        Message::CancelShortcutColor,
+                        Message::SubmitShortcutColor,
+                    ),
+                    row![
+                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                            .style(theme::Button::Secondary)
+                            .on_press(Message::CancelShortcut)
+                            .width(Length::Fill),
+                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                            .style(theme::Button::Primary)
+                            .on_press_maybe(
+                                if shortcut_to_edit.new_name.trim().is_empty()
+                                    || !shortcut_to_edit.is_changed()
+                                {
+                                    None
+                                } else {
+                                    Some(Message::SaveShortcut)
+                                }
+                            )
+                            .width(Length::Fill),
+                    ]
+                    .padding([20, 0, 0, 0])
+                    .spacing(10),
+                    text(&shortcut_to_edit.invalid_input_error_message)
+                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
                 ]
                 .spacing(12)
                 .padding(20)
@@ -2605,18 +2775,20 @@ fn shortcut_button<'a>(
         })
         .style(style::custom_button_style(shortcut_color));
 
-    let shortcut_id = shortcut.id;
+    let shortcut_clone = shortcut.clone();
 
     ContextMenu::new(
         shortcut_button,
         Box::new(move || -> Element<'a, Message, Theme, Renderer> {
             Container::new(column![
                 iced::widget::button("Edit")
-                    // .on_press(Message::EditGroup(task_group_clone.clone()))
+                    .on_press(Message::EditShortcutPressed(shortcut_clone.clone()))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
                 iced::widget::button("Delete")
-                    .on_press(Message::DeleteShortcutFromContext(shortcut_id.clone()))
+                    .on_press(Message::DeleteShortcutFromContext(
+                        shortcut_clone.id.clone()
+                    ))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
             ])

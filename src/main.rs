@@ -40,6 +40,7 @@ mod models {
     pub mod fur_task_group;
     pub mod group_to_edit;
     pub mod shortcut_to_add;
+    pub mod shortcut_to_edit;
     pub mod task_to_add;
     pub mod task_to_edit;
 }
