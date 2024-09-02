@@ -1,5 +1,6 @@
+use iced::advanced::widget::Operation;
 use iced::advanced::{layout, mouse, widget::Tree, Layout, Widget};
-use iced::{event, Element, Length, Renderer, Size, Theme};
+use iced::{event, overlay, Element, Length, Renderer, Size, Theme, Vector};
 
 pub struct FlowRow<'a, Message, Theme, Renderer> {
     children: Vec<Element<'a, Message, Theme, Renderer>>,
@@ -90,6 +91,31 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, 
         layout::Node::with_children(Size::new(limits.max().width, total_height), layouts)
     }
 
+    // This method may need to be altered in the future. It's not currently used.
+    fn operate(
+        &self,
+        state: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation<Message>,
+    ) {
+        operation.container(None, layout.bounds(), &mut |operation| {
+            for ((child, state), layout) in self
+                .children
+                .iter()
+                .zip(&mut state.children)
+                .zip(layout.children())
+            {
+                child.as_widget().operate(
+                    state,
+                    layout.children().next().unwrap(),
+                    renderer,
+                    operation,
+                );
+            }
+        });
+    }
+
     fn draw(
         &self,
         state: &Tree,
@@ -110,7 +136,7 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, 
                 renderer,
                 theme,
                 style,
-                layout,
+                layout.children().next().unwrap(),
                 cursor,
                 viewport,
             );
@@ -197,6 +223,24 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, 
         }
 
         interaction
+    }
+
+    fn overlay<'b>(
+        &'b mut self,
+        tree: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        translation: Vector,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+        self.children
+            .iter_mut()
+            .zip(&mut tree.children)
+            .zip(layout.children())
+            .find_map(|((child, child_tree), child_layout)| {
+                child
+                    .as_widget_mut()
+                    .overlay(child_tree, child_layout, renderer, translation)
+            })
     }
 }
 
