@@ -1301,6 +1301,106 @@ impl Application for Furtherance {
             .height(Length::Fill)];
 
         // MARK: REPORT
+        let charts_view = column![
+            column![
+                pick_list(
+                    &FurDateRange::ALL[..],
+                    self.report.picked_date_range.clone(),
+                    Message::DateRangeSelected,
+                )
+                .width(Length::Fill),
+                if self.report.picked_date_range == Some(FurDateRange::Range) {
+                    row![
+                        horizontal_space().width(Length::Fill),
+                        date_picker(
+                            self.report.show_start_date_picker,
+                            self.report.picked_start_date,
+                            button(text(self.report.picked_start_date.to_string()))
+                                .on_press(Message::ChooseStartDate),
+                            Message::CancelStartDate,
+                            Message::SubmitStartDate,
+                        ),
+                        column![text("to")
+                            .vertical_alignment(alignment::Vertical::Center)
+                            .height(Length::Fill),]
+                        .height(30),
+                        date_picker(
+                            self.report.show_end_date_picker,
+                            self.report.picked_end_date,
+                            button(text(self.report.picked_end_date.to_string()))
+                                .on_press(Message::ChooseEndDate),
+                            Message::CancelEndDate,
+                            Message::SubmitEndDate,
+                        ),
+                        horizontal_space().width(Length::Fill),
+                    ]
+                    .spacing(30)
+                    .padding([20, 0, 0, 0])
+                } else {
+                    row![]
+                },
+                vertical_space().height(Length::Fixed(20.0)),
+                horizontal_rule(1),
+            ]
+            .padding([20, 20, 0, 20]),
+            Scrollable::new(
+                column![
+                    if self.report.total_time > 0 || self.report.total_earned > 0.0 {
+                        row![
+                            horizontal_space().width(Length::Fill),
+                            column![
+                                text(seconds_to_formatted_duration(self.report.total_time))
+                                    .size(50),
+                                text("Total Time"),
+                            ]
+                            .align_items(Alignment::Center),
+                            horizontal_space().width(Length::Fill),
+                            column![
+                                text(format!("${:.2}", self.report.total_earned)).size(50),
+                                text("Earned"),
+                            ]
+                            .align_items(Alignment::Center),
+                            horizontal_space().width(Length::Fill),
+                        ]
+                    } else {
+                        row![]
+                    },
+                    self.report.time_recorded_chart.view(),
+                    self.report.earnings_chart.view(),
+                    self.report.average_time_chart.view(),
+                    self.report.average_earnings_chart.view(),
+                    if self.report.tasks_in_range.is_empty() {
+                        column![]
+                    } else {
+                        column![
+                            text("Breakdown By Selection").size(40),
+                            row![
+                                pick_list(
+                                    &FurTaskProperty::ALL[..],
+                                    self.report.picked_task_property_key.clone(),
+                                    Message::ChartTaskPropertyKeySelected,
+                                )
+                                .width(Length::Fill),
+                                pick_list(
+                                    &self.report.task_property_value_keys[..],
+                                    self.report.picked_task_property_value.clone(),
+                                    Message::ChartTaskPropertyValueSelected,
+                                )
+                                .width(Length::Fill),
+                            ]
+                            .spacing(10)
+                            .width(Length::Fill),
+                            horizontal_rule(20),
+                            self.report.selection_time_recorded_chart.view(),
+                            self.report.selection_earnings_recorded_chart.view(),
+                        ]
+                        .align_items(Alignment::Center)
+                    },
+                ]
+                .align_items(Alignment::Center)
+                .padding([0, 20, 20, 20])
+            ),
+        ];
         let report_view: Column<'_, Message, Theme, Renderer> =
             column![Tabs::new(Message::ReportTabSelected)
                 .tab_icon_position(iced_aw::tabs::Position::Top)
@@ -1310,109 +1410,7 @@ impl Application for Furtherance {
                         bootstrap::icon_to_char(Bootstrap::GraphUp),
                         "Charts".to_string()
                     ),
-                    column![
-                        column![
-                            pick_list(
-                                &FurDateRange::ALL[..],
-                                self.report.picked_date_range.clone(),
-                                Message::DateRangeSelected,
-                            )
-                            .width(Length::Fill),
-                            if self.report.picked_date_range == Some(FurDateRange::Range) {
-                                row![
-                                    horizontal_space().width(Length::Fill),
-                                    date_picker(
-                                        self.report.show_start_date_picker,
-                                        self.report.picked_start_date,
-                                        button(text(self.report.picked_start_date.to_string()))
-                                            .on_press(Message::ChooseStartDate),
-                                        Message::CancelStartDate,
-                                        Message::SubmitStartDate,
-                                    ),
-                                    column![text("to")
-                                        .vertical_alignment(alignment::Vertical::Center)
-                                        .height(Length::Fill),]
-                                    .height(30),
-                                    date_picker(
-                                        self.report.show_end_date_picker,
-                                        self.report.picked_end_date,
-                                        button(text(self.report.picked_end_date.to_string()))
-                                            .on_press(Message::ChooseEndDate),
-                                        Message::CancelEndDate,
-                                        Message::SubmitEndDate,
-                                    ),
-                                    horizontal_space().width(Length::Fill),
-                                ]
-                                .spacing(30)
-                                .padding([20, 0, 0, 0])
-                            } else {
-                                row![]
-                            },
-                            vertical_space().height(Length::Fixed(20.0)),
-                            horizontal_rule(1),
-                        ]
-                        .padding([20, 20, 0, 20]),
-                        Scrollable::new(
-                            column![
-                                if self.report.total_time > 0 || self.report.total_earned > 0.0 {
-                                    row![
-                                        horizontal_space().width(Length::Fill),
-                                        column![
-                                            text(seconds_to_formatted_duration(
-                                                self.report.total_time
-                                            ))
-                                            .size(50),
-                                            text("Total Time"),
-                                        ]
-                                        .align_items(Alignment::Center),
-                                        horizontal_space().width(Length::Fill),
-                                        column![
-                                            text(format!("${:.2}", self.report.total_earned))
-                                                .size(50),
-                                            text("Earned"),
-                                        ]
-                                        .align_items(Alignment::Center),
-                                        horizontal_space().width(Length::Fill),
-                                    ]
-                                } else {
-                                    row![]
-                                },
-                                self.report.time_recorded_chart.view(),
-                                self.report.earnings_chart.view(),
-                                self.report.average_time_chart.view(),
-                                self.report.average_earnings_chart.view(),
-                                if self.report.tasks_in_range.is_empty() {
-                                    column![]
-                                } else {
-                                    column![
-                                        text("Breakdown By Selection").size(40),
-                                        row![
-                                            pick_list(
-                                                &FurTaskProperty::ALL[..],
-                                                self.report.picked_task_property_key.clone(),
-                                                Message::ChartTaskPropertyKeySelected,
-                                            )
-                                            .width(Length::Fill),
-                                            pick_list(
-                                                &self.report.task_property_value_keys[..],
-                                                self.report.picked_task_property_value.clone(),
-                                                Message::ChartTaskPropertyValueSelected,
-                                            )
-                                            .width(Length::Fill),
-                                        ]
-                                        .spacing(10)
-                                        .width(Length::Fill),
-                                        horizontal_rule(20),
-                                        self.report.selection_time_recorded_chart.view(),
-                                        self.report.selection_earnings_recorded_chart.view(),
-                                    ]
-                                    .align_items(Alignment::Center)
-                                },
-                            ]
-                            .align_items(Alignment::Center)
-                            .padding([0, 20, 20, 20])
-                        ),
-                    ]
+                    charts_view,
                 )
                 .push(
                     TabId::List,
