@@ -20,7 +20,7 @@ use std::collections::BTreeMap;
 use crate::{
     database::*,
     helpers::{
-        color_utils::{FromHex, ToHex, ToSrgb},
+        color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         flow_row::FlowRow,
         idle::get_idle_time,
     },
@@ -35,7 +35,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::{container, horizontal_rule, toggler, Row};
+use iced::widget::{horizontal_rule, toggler, Row};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -49,8 +49,8 @@ use iced::{
 use iced_aw::{
     color_picker,
     core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker, modal, number_input, time_picker, Card, TabBarPosition, TabLabel, Tabs,
-    TimePicker,
+    date_picker, modal, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel,
+    Tabs, TimePicker,
 };
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
@@ -63,6 +63,7 @@ use crate::idle_wayland::run_on_idle;
 
 pub struct Furtherance {
     current_view: FurView,
+    delete_ids_from_context: Option<Vec<u32>>,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
@@ -106,8 +107,10 @@ pub enum Message {
     ChooseShortcutColor,
     ChooseStartDate,
     ChooseTaskEditDateTime(EditTaskProperty),
+    CreateShortcutFromTaskGroup(FurTaskGroup),
     DateRangeSelected(FurDateRange),
     DeleteTasks,
+    DeleteTasksFromContext(Vec<u32>),
     EditGroup(FurTaskGroup),
     EditShortcutTextChanged(String, EditTaskProperty),
     EditTask(FurTask),
@@ -177,6 +180,7 @@ impl Application for Furtherance {
 
         let mut furtherance = Furtherance {
             current_view: settings.default_view,
+            delete_ids_from_context: None,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
@@ -238,7 +242,10 @@ impl Application for Furtherance {
                 self.task_to_add = Some(TaskToAdd::new_from(&group_to_edit));
                 self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
             }
-            Message::AlertClose => self.displayed_alert = None,
+            Message::AlertClose => {
+                self.delete_ids_from_context = None;
+                self.displayed_alert = None;
+            }
             Message::CancelCurrentTaskStartTime => self.show_timer_start_picker = false,
             Message::CancelEndDate => self.report.show_end_date_picker = false,
             Message::CancelGroupEdit => {
@@ -348,20 +355,67 @@ impl Application for Furtherance {
                     }
                 }
             }
+            Message::CreateShortcutFromTaskGroup(task_group) => {
+                if let Err(e) = db_write_shortcut(FurShortcut {
+                    id: 0,
+                    name: task_group.name,
+                    tags: task_group.tags,
+                    project: task_group.project,
+                    rate: task_group.rate,
+                    currency: String::new(),
+                    color_hex: Srgb::random().to_hex(),
+                }) {
+                    eprintln!("Failed to write shortcut to database: {}", e);
+                }
+                match db_retrieve_shortcuts() {
+                    Ok(shortcuts) => self.shortcuts = shortcuts,
+                    Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
+                };
+                self.current_view = FurView::Shortcuts;
+            }
             Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
             Message::DeleteTasks => {
-                if let Some(task_to_edit) = &self.task_to_edit {
+                if let Some(tasks_to_delete) = &self.delete_ids_from_context {
+                    if let Err(e) = db_delete_tasks_by_ids(tasks_to_delete.clone()) {
+                        eprintln!("Failed to delete tasks: {}", e);
+                    }
+                    self.delete_ids_from_context = None;
                     self.inspector_view = None;
-                    let _ = db_delete_tasks_by_ids(vec![task_to_edit.id]);
+                    self.group_to_edit = None;
+                    self.task_to_edit = None;
+                    self.displayed_alert = None;
+                    self.task_history = get_task_history();
+                } else if let Some(task_to_edit) = &self.task_to_edit {
+                    self.inspector_view = None;
+                    if let Err(e) = db_delete_tasks_by_ids(vec![task_to_edit.id]) {
+                        eprintln!("Failed to delete task: {}", e);
+                    }
                     self.task_to_edit = None;
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
-                    let _ = db_delete_tasks_by_ids(group_to_edit.task_ids());
+                    if let Err(e) = db_delete_tasks_by_ids(group_to_edit.task_ids()) {
+                        eprintln!("Failed to delete tasks: {}", e);
+                    }
                     self.group_to_edit = None;
                     self.displayed_alert = None;
                     self.task_history = get_task_history();
+                }
+            }
+            Message::DeleteTasksFromContext(task_group_ids) => {
+                let number_of_tasks = task_group_ids.len();
+                self.delete_ids_from_context = Some(task_group_ids);
+                if number_of_tasks > 1 {
+                    return Command::perform(
+                        async { Message::ShowAlert(FurAlert::DeleteGroupConfirmation) },
+                        |msg| msg,
+                    );
+                } else {
+                    return Command::perform(
+                        async { Message::ShowAlert(FurAlert::DeleteTaskConfirmation) },
+                        |msg| msg,
+                    );
                 }
             }
             Message::EditGroup(task_group) => {
@@ -713,8 +767,9 @@ impl Application for Furtherance {
                     }
                     self.inspector_view = None;
                     self.shortcut_to_add = None;
-                    if let Ok(all_shortcuts) = db_retrieve_shortcuts() {
-                        self.shortcuts = all_shortcuts;
+                    match db_retrieve_shortcuts() {
+                        Ok(shortcuts) => self.shortcuts = shortcuts,
+                        Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
                     };
                 }
             }
@@ -1674,6 +1729,7 @@ impl Application for Furtherance {
                     .width(250)
                     .align_items(Alignment::Start),
             },
+            // Add shortcut
             Some(FurInspectorView::AddShortcut) => match &self.shortcut_to_add {
                 Some(shortcut_to_add) => column![
                     text("New Shortcut").size(24),
@@ -2076,7 +2132,7 @@ impl Application for Furtherance {
                 FurView::Shortcuts => shortcuts_view,
                 FurView::Timer => timer_view,
                 FurView::History => history_view,
-                FurView::Report => report_view,
+                FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },
             inspector.width(if self.inspector_view.is_some() {
@@ -2272,7 +2328,10 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
         .style(theme::Button::Text)
 }
 
-fn history_group_row<'a>(task_group: &FurTaskGroup, timer_is_running: bool) -> Button<'a, Message> {
+fn history_group_row<'a>(
+    task_group: &FurTaskGroup,
+    timer_is_running: bool,
+) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'static>, Message> {
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name).font(font::Font {
             weight: iced::font::Weight::Bold,
@@ -2309,6 +2368,8 @@ fn history_group_row<'a>(task_group: &FurTaskGroup, timer_is_running: bool) -> B
         totals_column = totals_column.push(text(&format!("${:.2}", total_earnings)));
     }
 
+    let task_group_string = task_group.to_string();
+
     task_row = task_row.push(task_details_column);
     task_row = task_row.push(horizontal_space().width(Length::Fill));
     task_row = task_row.push(totals_column);
@@ -2317,19 +2378,44 @@ fn history_group_row<'a>(task_group: &FurTaskGroup, timer_is_running: bool) -> B
             .on_press_maybe(if timer_is_running {
                 None
             } else {
-                Some(Message::RepeatLastTaskPressed(task_group.to_string()))
+                Some(Message::RepeatLastTaskPressed(task_group_string.clone()))
             })
             .style(theme::Button::Text),
     );
 
-    button(
+    let history_row_button = button(
         Container::new(task_row)
             .padding([10, 15, 10, 15])
             .width(Length::Fill)
             .style(style::task_row),
     )
     .on_press(Message::EditGroup(task_group.clone()))
-    .style(theme::Button::Text)
+    .style(theme::Button::Text);
+
+    let task_group_ids = task_group.all_task_ids();
+    let task_group_clone = task_group.clone();
+    ContextMenu::new(
+        history_row_button,
+        Box::new(move || -> Element<'a, Message, Theme, Renderer> {
+            column(vec![
+                iced::widget::button("Repeat")
+                    .on_press(Message::RepeatLastTaskPressed(task_group_string.clone()))
+                    .into(),
+                iced::widget::button("Edit")
+                    .on_press(Message::EditGroup(task_group_clone.clone()))
+                    .into(),
+                iced::widget::button("Create shortcut")
+                    .on_press(Message::CreateShortcutFromTaskGroup(
+                        task_group_clone.clone(),
+                    ))
+                    .into(),
+                iced::widget::button("Delete")
+                    .on_press(Message::DeleteTasksFromContext(task_group_ids.clone()))
+                    .into(),
+            ])
+            .into()
+        }),
+    )
 }
 
 fn history_title_row<'a>(

@@ -58,6 +58,10 @@ impl FurTaskGroup {
             false
         }
     }
+
+    pub fn all_task_ids(&self) -> Vec<u32> {
+        self.tasks.iter().map(|task| task.id).collect()
+    }
 }
 
 impl fmt::Display for FurTaskGroup {
