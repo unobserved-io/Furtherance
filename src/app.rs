@@ -1651,6 +1651,7 @@ impl Application for Furtherance {
                     ),
                     Scrollable::new(
                         column![
+                            settings_heading("Interface"),
                             row![
                                 text("Default view"),
                                 pick_list(
@@ -1672,6 +1673,7 @@ impl Application for Furtherance {
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
+                            settings_heading("Task History"),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10)
@@ -3168,4 +3170,15 @@ fn show_notification(notification_type: NotificationType) {
     //     .timeout(Timeout::Milliseconds(6000))
     //     .show()
     //     .unwrap();
+}
+
+fn settings_heading(heading: &str) -> Column<'_, Message, Theme, Renderer> {
+    column![
+        text(heading).font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        }),
+        Container::new(horizontal_rule(1)).max_width(200.0)
+    ]
+    .padding([15, 0, 5, 0])
 }
