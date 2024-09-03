@@ -136,6 +136,7 @@ pub enum Message {
     SaveGroupEdit,
     SaveShortcut,
     SaveTaskEdit,
+    SettingsDaysToShowChanged(i64),
     SettingsDefaultViewSelected(FurView),
     SettingsDeleteConfirmationToggled(bool),
     SettingsIdleTimeChanged(i64),
@@ -214,7 +215,7 @@ impl Application for Furtherance {
             shortcut_to_add: None,
             shortcut_to_edit: None,
             show_timer_start_picker: false,
-            task_history: get_task_history(),
+            task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
             timer_is_running: false,
             timer_start_time: Local::now(),
@@ -225,6 +226,7 @@ impl Application for Furtherance {
         };
 
         furtherance.timer_text = get_timer_text(&furtherance, 0);
+        furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
 
         (
             furtherance,
@@ -436,7 +438,7 @@ impl Application for Furtherance {
                     self.group_to_edit = None;
                     self.task_to_edit = None;
                     self.displayed_alert = None;
-                    self.task_history = get_task_history();
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
                     if let Err(e) = db_delete_tasks_by_ids(vec![task_to_edit.id]) {
@@ -444,7 +446,7 @@ impl Application for Furtherance {
                     }
                     self.task_to_edit = None;
                     self.displayed_alert = None;
-                    self.task_history = get_task_history();
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
                     if let Err(e) = db_delete_tasks_by_ids(group_to_edit.task_ids()) {
@@ -452,7 +454,7 @@ impl Application for Furtherance {
                     }
                     self.group_to_edit = None;
                     self.displayed_alert = None;
-                    self.task_history = get_task_history();
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
                 }
             }
             Message::DeleteTasksFromContext(task_group_ids) => {
@@ -869,7 +871,7 @@ impl Application for Furtherance {
                     let _ = db_update_group_of_tasks(group_to_edit);
                     self.inspector_view = None;
                     self.group_to_edit = None;
-                    self.task_history = get_task_history();
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
                 }
             }
             Message::SaveShortcut => {
@@ -941,7 +943,7 @@ impl Application for Furtherance {
                     self.inspector_view = None;
                     self.task_to_edit = None;
                     self.group_to_edit = None;
-                    self.task_history = get_task_history();
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(task_to_add) = &self.task_to_add {
                     let tags_without_first_pound = task_to_add
                         .tags
@@ -963,7 +965,15 @@ impl Application for Furtherance {
                     self.inspector_view = None;
                     self.task_to_add = None;
                     self.group_to_edit = None;
-                    self.task_history = get_task_history();
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                }
+            }
+            Message::SettingsDaysToShowChanged(new_days) => {
+                if new_days >= 1 {
+                    match self.fur_settings.change_days_to_show(&new_days) {
+                        Ok(_) => self.task_history = get_task_history(new_days),
+                        Err(e) => eprintln!("Failed to change days_to_show in settings: {}", e),
+                    }
                 }
             }
             Message::SettingsDefaultViewSelected(selected_view) => {
@@ -1719,7 +1729,9 @@ impl Application for Furtherance {
                                     Message::SettingsShowProjectToggled
                                 )
                                 .width(Length::Shrink),
-                            ],
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                             row![
                                 text("Show tags"),
                                 toggler(
@@ -1728,7 +1740,9 @@ impl Application for Furtherance {
                                     Message::SettingsShowTagsToggled
                                 )
                                 .width(Length::Shrink),
-                            ],
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                             row![
                                 text("Show earnings"),
                                 toggler(
@@ -1737,7 +1751,9 @@ impl Application for Furtherance {
                                     Message::SettingsShowEarningsToggled
                                 )
                                 .width(Length::Shrink),
-                            ],
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                             row![
                                 text("Show seconds"),
                                 toggler(
@@ -1746,7 +1762,9 @@ impl Application for Furtherance {
                                     Message::SettingsShowSecondsToggled
                                 )
                                 .width(Length::Shrink),
-                            ],
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                             row![
                                 text("Show daily time total"),
                                 toggler(
@@ -1755,7 +1773,9 @@ impl Application for Furtherance {
                                     Message::SettingsShowDailyTimeTotalToggled
                                 )
                                 .width(Length::Shrink),
-                            ],
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10)
@@ -1769,6 +1789,7 @@ impl Application for Furtherance {
                     ),
                     Scrollable::new(
                         column![
+                            settings_heading("Idle"),
                             row![
                                 text("Idle detection"),
                                 toggler(
@@ -1788,6 +1809,18 @@ impl Application for Furtherance {
                                     Message::SettingsIdleTimeChanged
                                 )
                                 .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            settings_heading("Task History"),
+                            row![
+                                text("Days to show"),
+                                number_input(
+                                    self.fur_settings.days_to_show,
+                                    365, // TODO: This will accept a range in a future version of iced_aw (make 1..365)
+                                    Message::SettingsDaysToShowChanged
+                                )
+                                .width(Length::Shrink),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2838,23 +2871,29 @@ fn format_history_date(date: &NaiveDate) -> String {
     }
 }
 
-fn get_task_history() -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
+fn get_task_history(limit: i64) -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
     let mut grouped_tasks_by_date: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> = BTreeMap::new();
 
-    //TODO : Change limit based on user limit or max limit. Also should limit by days not items.
-    if let Ok(all_tasks) = db_retrieve_all_tasks(SortBy::StopTime, SortOrder::Descending) {
-        let tasks_by_date = group_tasks_by_date(all_tasks);
+    match db_retrieve_tasks_with_day_limit(limit, SortBy::StopTime, SortOrder::Descending) {
+        Ok(all_tasks) => {
+            let tasks_by_date = group_tasks_by_date(all_tasks);
 
-        for (date, tasks) in tasks_by_date {
-            let mut all_groups: Vec<FurTaskGroup> = vec![];
-            for task in tasks {
-                if let Some(matching_group) = all_groups.iter_mut().find(|x| x.is_equal_to(&task)) {
-                    matching_group.add(task);
-                } else {
-                    all_groups.push(FurTaskGroup::new_from(task));
+            for (date, tasks) in tasks_by_date {
+                let mut all_groups: Vec<FurTaskGroup> = vec![];
+                for task in tasks {
+                    if let Some(matching_group) =
+                        all_groups.iter_mut().find(|x| x.is_equal_to(&task))
+                    {
+                        matching_group.add(task);
+                    } else {
+                        all_groups.push(FurTaskGroup::new_from(task));
+                    }
                 }
+                grouped_tasks_by_date.insert(date, all_groups);
             }
-            grouped_tasks_by_date.insert(date, all_groups);
+        }
+        Err(e) => {
+            eprintln!("Error retrieving tasks from database: {}", e);
         }
     }
     grouped_tasks_by_date
@@ -2987,7 +3026,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
 
 fn reset_timer(state: &mut Furtherance) {
     state.task_input = "".to_string();
-    state.task_history = get_task_history();
+    state.task_history = get_task_history(state.fur_settings.days_to_show);
     state.timer_text = get_timer_text(state, 0);
     state.idle = FurIdle::new();
 }

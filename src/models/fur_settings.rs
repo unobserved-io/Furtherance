@@ -26,7 +26,9 @@ use std::path::PathBuf;
 pub struct FurSettings {
     pub chosen_idle_time: i64,
     pub database_url: String,
+    pub days_to_show: i64,
     pub default_view: FurView,
+    pub dynamic_total: bool,
     pub notify_on_idle: bool,
     pub pomodoro: bool,
     pub pomodoro_break_length: i64,
@@ -50,7 +52,9 @@ impl Default for FurSettings {
         FurSettings {
             chosen_idle_time: 6,
             database_url: db_url.to_string_lossy().into_owned(),
+            days_to_show: 365,
             default_view: FurView::Timer,
+            dynamic_total: true,
             notify_on_idle: true,
             pomodoro: false,
             pomodoro_break_length: 5,
@@ -97,7 +101,16 @@ impl FurSettings {
         fs::write(get_settings_path(), toml)
     }
 
-    // Change the database_url and save the settings
+    pub fn change_chosen_idle_time(&mut self, value: &i64) -> Result<(), std::io::Error> {
+        self.chosen_idle_time = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_days_to_show(&mut self, value: &i64) -> Result<(), std::io::Error> {
+        self.days_to_show = value.to_owned();
+        self.save()
+    }
+
     pub fn change_db_url(&mut self, value: &str) -> Result<(), std::io::Error> {
         self.database_url = value.to_owned();
         self.save()
@@ -113,8 +126,8 @@ impl FurSettings {
         self.save()
     }
 
-    pub fn change_chosen_idle_time(&mut self, value: &i64) -> Result<(), std::io::Error> {
-        self.chosen_idle_time = value.to_owned();
+    pub fn change_dynamic_total(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.dynamic_total = value.to_owned();
         self.save()
     }
 

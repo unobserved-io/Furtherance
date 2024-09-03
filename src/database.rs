@@ -241,6 +241,43 @@ pub fn db_retrieve_tasks_by_date_range(
     Ok(tasks_vec)
 }
 
+/// Retrieve a limited number of days worth of tasks
+pub fn db_retrieve_tasks_with_day_limit(
+    days: i64,
+    sort: SortBy,
+    order: SortOrder,
+) -> Result<Vec<FurTask>> {
+    let conn = Connection::open(db_get_directory())?;
+
+    // Construct the query string dynamically
+    let query = format!(
+        "SELECT * FROM tasks WHERE start_time >= date('now', ?) ORDER BY {} {}",
+        sort.to_sqlite(),
+        order.to_sqlite()
+    );
+
+    let mut stmt = conn.prepare(&query)?;
+    let mut rows = stmt.query(params![format!("-{} days", days - 1)])?;
+
+    let mut tasks_vec: Vec<FurTask> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTask {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            start_time: row.get(2)?,
+            stop_time: row.get(3)?,
+            tags: row.get(4)?,
+            project: row.get(5)?,
+            rate: row.get(6)?,
+            currency: String::new(),
+        };
+        tasks_vec.push(fur_task);
+    }
+
+    Ok(tasks_vec)
+}
+
 pub fn db_update_task(fur_task: FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
