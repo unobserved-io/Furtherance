@@ -147,6 +147,11 @@ pub enum Message {
     SettingsPomodoroLengthChanged(i64),
     SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
+    SettingsShowProjectToggled(bool),
+    SettingsShowTagsToggled(bool),
+    SettingsShowEarningsToggled(bool),
+    SettingsShowSecondsToggled(bool),
+    SettingsShowDailyTimeTotalToggled(bool),
     SettingsTabSelected(TabId),
     ShortcutPressed(String),
     ShowAlert(FurAlert),
@@ -1077,6 +1082,31 @@ impl Application for Furtherance {
                 return Command::perform(async { Message::StartStopPressed }, |msg| msg);
             }
             Message::ShowAlert(alert_to_show) => self.displayed_alert = Some(alert_to_show),
+            Message::SettingsShowProjectToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_project(&new_value) {
+                    eprintln!("Failed to change show_project in settings: {}", e);
+                }
+            }
+            Message::SettingsShowTagsToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_tags(&new_value) {
+                    eprintln!("Failed to change show_tags in settings: {}", e);
+                }
+            }
+            Message::SettingsShowEarningsToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_earnings(&new_value) {
+                    eprintln!("Failed to change show_earnings in settings: {}", e);
+                }
+            }
+            Message::SettingsShowSecondsToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_seconds(&new_value) {
+                    eprintln!("Failed to change show_seconds in settings: {}", e);
+                }
+            }
+            Message::SettingsShowDailyTimeTotalToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_daily_time_total(&new_value) {
+                    eprintln!("Failed to change show_daily_time_total in settings: {}", e);
+                }
+            }
             Message::StartStopPressed => {
                 if self.timer_is_running {
                     // Do not more declarations to after if else
@@ -1674,6 +1704,51 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             settings_heading("Task History"),
+                            row![
+                                text("Show project"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.show_project,
+                                    Message::SettingsShowProjectToggled
+                                )
+                                .width(Length::Shrink),
+                            ],
+                            row![
+                                text("Show tags"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.show_tags,
+                                    Message::SettingsShowTagsToggled
+                                )
+                                .width(Length::Shrink),
+                            ],
+                            row![
+                                text("Show earnings"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.show_earnings,
+                                    Message::SettingsShowEarningsToggled
+                                )
+                                .width(Length::Shrink),
+                            ],
+                            row![
+                                text("Show seconds"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.show_seconds,
+                                    Message::SettingsShowSecondsToggled
+                                )
+                                .width(Length::Shrink),
+                            ],
+                            row![
+                                text("Show daily time total"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.show_daily_time_total,
+                                    Message::SettingsShowDailyTimeTotalToggled
+                                )
+                                .width(Length::Shrink),
+                            ],
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10)

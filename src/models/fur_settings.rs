@@ -36,6 +36,11 @@ pub struct FurSettings {
     pub pomodoro_length: i64,
     pub pomodoro_snooze_length: i64,
     pub show_delete_confirmation: bool,
+    pub show_project: bool,
+    pub show_tags: bool,
+    pub show_earnings: bool,
+    pub show_seconds: bool,
+    pub show_daily_time_total: bool,
 }
 
 impl Default for FurSettings {
@@ -55,6 +60,11 @@ impl Default for FurSettings {
             pomodoro_length: 25,
             pomodoro_snooze_length: 5,
             show_delete_confirmation: true,
+            show_project: true,
+            show_tags: true,
+            show_earnings: true,
+            show_seconds: true,
+            show_daily_time_total: true,
         }
     }
 }
@@ -151,6 +161,31 @@ impl FurSettings {
 
     pub fn change_show_delete_confirmation(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_delete_confirmation = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_project(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_project = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_tags = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_earnings = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_seconds(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_seconds = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_daily_time_total(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_daily_time_total = value.to_owned();
         self.save()
     }
 }
