@@ -409,8 +409,15 @@ impl Application for Furtherance {
             }
             Message::DeleteShortcutFromContext(id) => {
                 self.delete_shortcut_from_context = Some(id);
+                let delete_confirmation = self.fur_settings.show_delete_confirmation;
                 return Command::perform(
-                    async { Message::ShowAlert(FurAlert::DeleteShortcutConfirmation) },
+                    async move {
+                        if delete_confirmation {
+                            Message::ShowAlert(FurAlert::DeleteShortcutConfirmation)
+                        } else {
+                            Message::DeleteShortcut
+                        }
+                    },
                     |msg| msg,
                 );
             }
@@ -446,17 +453,22 @@ impl Application for Furtherance {
             Message::DeleteTasksFromContext(task_group_ids) => {
                 let number_of_tasks = task_group_ids.len();
                 self.delete_ids_from_context = Some(task_group_ids);
-                if number_of_tasks > 1 {
-                    return Command::perform(
-                        async { Message::ShowAlert(FurAlert::DeleteGroupConfirmation) },
-                        |msg| msg,
-                    );
-                } else {
-                    return Command::perform(
-                        async { Message::ShowAlert(FurAlert::DeleteTaskConfirmation) },
-                        |msg| msg,
-                    );
-                }
+                let delete_confirmation = self.fur_settings.show_delete_confirmation;
+
+                return Command::perform(
+                    async move {
+                        if delete_confirmation {
+                            if number_of_tasks > 1 {
+                                Message::ShowAlert(FurAlert::DeleteGroupConfirmation)
+                            } else {
+                                Message::ShowAlert(FurAlert::DeleteTaskConfirmation)
+                            }
+                        } else {
+                            Message::DeleteTasks
+                        }
+                    },
+                    |msg| msg,
+                );
             }
             Message::EditGroup(task_group) => {
                 if task_group.tasks.len() == 1 {
@@ -2110,7 +2122,11 @@ impl Application for Furtherance {
                     row![
                         horizontal_space(),
                         button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                            .on_press(Message::ShowAlert(FurAlert::DeleteTaskConfirmation)) // TODO: if ! delete confirmation run delete only
+                            .on_press(if self.fur_settings.show_delete_confirmation {
+                                Message::ShowAlert(FurAlert::DeleteTaskConfirmation)
+                            } else {
+                                Message::DeleteTasks
+                            })
                             .style(theme::Button::Text),
                     ],
                     text_input(&task_to_edit.name, &task_to_edit.new_name)
@@ -2290,7 +2306,11 @@ impl Application for Furtherance {
                                 })
                                 .style(theme::Button::Text),
                             button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
-                                .on_press(Message::ShowAlert(FurAlert::DeleteGroupConfirmation)) // TODO: if ! delete confirmation run delete only
+                                .on_press(if self.fur_settings.show_delete_confirmation {
+                                    Message::ShowAlert(FurAlert::DeleteGroupConfirmation)
+                                } else {
+                                    Message::DeleteTasks
+                                })
                                 .style(theme::Button::Text),
                         ]
                         .spacing(5),
