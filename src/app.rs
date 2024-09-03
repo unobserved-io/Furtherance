@@ -1533,11 +1533,18 @@ impl Application for Furtherance {
                     )
                 },
             );
-            all_history_rows =
-                all_history_rows.push(history_title_row(date, total_time, total_earnings));
+            all_history_rows = all_history_rows.push(history_title_row(
+                date,
+                total_time,
+                total_earnings,
+                &self.fur_settings,
+            ));
             for task_group in task_groups {
-                all_history_rows =
-                    all_history_rows.push(history_group_row(task_group, self.timer_is_running))
+                all_history_rows = all_history_rows.push(history_group_row(
+                    task_group,
+                    self.timer_is_running,
+                    &self.fur_settings,
+                ))
             }
         }
         let history_view = column![Scrollable::new(all_history_rows)
@@ -1593,7 +1600,7 @@ impl Application for Furtherance {
                         row![
                             horizontal_space().width(Length::Fill),
                             column![
-                                text(seconds_to_formatted_duration(self.report.total_time))
+                                text(seconds_to_formatted_duration(self.report.total_time, true))
                                     .size(50),
                                 text("Total Time"),
                             ]
@@ -2344,7 +2351,8 @@ impl Application for Furtherance {
                                                 text(format!(
                                                     "Total: {}",
                                                     seconds_to_formatted_duration(
-                                                        task.total_time_in_seconds()
+                                                        task.total_time_in_seconds(),
+                                                        self.fur_settings.show_seconds
                                                     )
                                                 ))
                                             ])
@@ -2688,6 +2696,7 @@ fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
 fn history_group_row<'a>(
     task_group: &FurTaskGroup,
     timer_is_running: bool,
+    settings: &FurSettings,
 ) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'static>, Message> {
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name).font(font::Font {
@@ -2695,10 +2704,10 @@ fn history_group_row<'a>(
             ..Default::default()
         }),]
         .width(Length::FillPortion(6));
-    if !task_group.project.is_empty() {
+    if settings.show_project && !task_group.project.is_empty() {
         task_details_column = task_details_column.push(text(format!("@{}", task_group.project)));
     }
-    if !task_group.tags.is_empty() {
+    if settings.show_tags && !task_group.tags.is_empty() {
         task_details_column = task_details_column.push(text(format!("#{}", task_group.tags)));
     }
 
@@ -2713,14 +2722,16 @@ fn history_group_row<'a>(
         );
     }
 
-    let total_time_str = seconds_to_formatted_duration(task_group.total_time);
+    let total_time_str =
+        seconds_to_formatted_duration(task_group.total_time, settings.show_seconds);
     let mut totals_column: Column<'_, Message, Theme, Renderer> = column![text(total_time_str)
         .font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
         })]
     .align_items(Alignment::End);
-    if task_group.rate > 0.0 {
+
+    if settings.show_earnings && task_group.rate > 0.0 {
         let total_earnings = task_group.rate * (task_group.total_time as f32 / 3600.0);
         totals_column = totals_column.push(text(&format!("${:.2}", total_earnings)));
     }
@@ -2784,15 +2795,19 @@ fn history_title_row<'a>(
     date: &NaiveDate,
     total_time: i64,
     total_earnings: f32,
+    settings: &FurSettings,
 ) -> Row<'a, Message> {
-    let total_time_str = seconds_to_formatted_duration(total_time);
-    let mut total_time_column = column![text(total_time_str).font(font::Font {
-        weight: iced::font::Weight::Bold,
-        ..Default::default()
-    })]
-    .align_items(Alignment::End);
+    let mut total_time_column = column![].align_items(Alignment::End);
 
-    if total_earnings > 0.0 {
+    if settings.show_daily_time_total {
+        let total_time_str = seconds_to_formatted_duration(total_time, settings.show_seconds);
+        total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        }));
+    }
+
+    if settings.show_earnings && total_earnings > 0.0 {
         total_time_column = total_time_column.push(text(format!("${:.2}", total_earnings)));
     }
 
@@ -2994,14 +3009,15 @@ fn get_stopped_timer_text(state: &Furtherance) -> String {
             {
                 seconds_to_formatted_duration(
                     state.fur_settings.pomodoro_extended_break_length * 60,
+                    true,
                 )
             } else {
-                seconds_to_formatted_duration(state.fur_settings.pomodoro_break_length * 60)
+                seconds_to_formatted_duration(state.fur_settings.pomodoro_break_length * 60, true)
             }
         } else if state.pomodoro.snoozed {
-            seconds_to_formatted_duration(state.fur_settings.pomodoro_snooze_length * 60)
+            seconds_to_formatted_duration(state.fur_settings.pomodoro_snooze_length * 60, true)
         } else {
-            seconds_to_formatted_duration((state.fur_settings.pomodoro_length * 60))
+            seconds_to_formatted_duration(state.fur_settings.pomodoro_length * 60, true)
         }
     } else {
         "0:00:00".to_string()
@@ -3032,12 +3048,12 @@ fn get_running_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
         let seconds_until_end =
             (stop_time - state.timer_start_time).num_seconds() - seconds_elapsed;
         if seconds_until_end > 0 {
-            seconds_to_formatted_duration(seconds_until_end)
+            seconds_to_formatted_duration(seconds_until_end, true)
         } else {
             "0:00:00".to_string()
         }
     } else {
-        seconds_to_formatted_duration(seconds_elapsed)
+        seconds_to_formatted_duration(seconds_elapsed, true)
     }
 }
 
@@ -3150,13 +3166,15 @@ fn get_todays_total_time(state: &Furtherance) -> String {
     } else {
         0
     };
-    seconds_to_formatted_duration(total_seconds)
+    seconds_to_formatted_duration(total_seconds, state.fur_settings.show_seconds)
 }
 
-fn seconds_to_formatted_duration(total_seconds: i64) -> String {
-    seconds_to_hms(total_seconds)
-    // TODO: If don't show seconds:
-    // seconds_to_hm(total_seconds)
+fn seconds_to_formatted_duration(total_seconds: i64, show_seconds: bool) -> String {
+    if show_seconds {
+        seconds_to_hms(total_seconds)
+    } else {
+        seconds_to_hm(total_seconds)
+    }
 }
 
 fn seconds_to_hms(total_seconds: i64) -> String {
