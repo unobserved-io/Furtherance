@@ -120,6 +120,7 @@ pub enum Message {
     EditShortcutTextChanged(String, EditTaskProperty),
     EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
+    EnterPressedInTaskInput,
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
     IdleReset,
@@ -768,6 +769,13 @@ impl Application for Furtherance {
                     _ => {}
                 }
             }
+            Message::EnterPressedInTaskInput => {
+                if !self.task_input.is_empty() {
+                    if !self.timer_is_running {
+                        return Command::perform(async { Message::StartStopPressed }, |msg| msg);
+                    }
+                }
+            }
             Message::FontLoaded(_) => {}
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
@@ -1398,6 +1406,7 @@ impl Application for Furtherance {
                 row![
                     text_input("Task name @Project #tags $rate", &self.task_input)
                         .on_input(Message::TaskInputChanged)
+                        .on_submit(Message::EnterPressedInTaskInput)
                         .size(20),
                     button(row![
                         horizontal_space().width(Length::Fixed(5.0)),
