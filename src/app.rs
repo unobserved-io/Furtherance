@@ -36,7 +36,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{Duration, TimeZone, Timelike};
-use iced::widget::{horizontal_rule, toggler, Row};
+use iced::widget::{checkbox, horizontal_rule, toggler, Row};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -1569,6 +1569,8 @@ impl Application for Furtherance {
             .height(Length::Fill)];
 
         // MARK: REPORT
+        let mut charts_column = Column::new();
+
         let charts_view = column![
             column![
                 pick_list(
@@ -1633,10 +1635,7 @@ impl Application for Furtherance {
                     } else {
                         row![]
                     },
-                    self.report.time_recorded_chart.view(),
-                    self.report.earnings_chart.view(),
-                    self.report.average_time_chart.view(),
-                    self.report.average_earnings_chart.view(),
+                    charts_column,
                     if self.report.tasks_in_range.is_empty() {
                         column![]
                     } else {
@@ -1858,6 +1857,7 @@ impl Application for Furtherance {
                     ),
                     Scrollable::new(
                         column![
+                            settings_heading("Pomodoro timer"),
                             row![
                                 text("Countdown timer"),
                                 toggler(
@@ -1902,6 +1902,7 @@ impl Application for Furtherance {
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
+                            settings_heading("Extended break"),
                             row![
                                 text("Extended breaks"),
                                 toggler(
@@ -1946,7 +1947,42 @@ impl Application for Furtherance {
                         bootstrap::icon_to_char(Bootstrap::GraphUp),
                         "Report".to_string()
                     ),
-                    Scrollable::new(column![].spacing(SETTINGS_SPACING).padding(10),),
+                    Scrollable::new(
+                        column![
+                            settings_heading("Toggle charts"),
+                            checkbox(
+                                "Total time box",
+                                self.fur_settings.show_chart_total_time_box
+                            ),
+                            checkbox(
+                                "Total earnings box",
+                                self.fur_settings.show_chart_total_earnings_box
+                            ),
+                            checkbox("Earnings", self.fur_settings.show_chart_earnings),
+                            checkbox(
+                                "Average time per task",
+                                self.fur_settings.show_chart_average_time
+                            ),
+                            checkbox(
+                                "Average earnings per task",
+                                self.fur_settings.show_chart_average_earnings
+                            ),
+                            checkbox(
+                                "Breakdown by selection section",
+                                self.fur_settings.show_chart_breakdown_by_selection
+                            ),
+                            checkbox(
+                                "Time recorded for selection",
+                                self.fur_settings.show_chart_selection_time
+                            ),
+                            checkbox(
+                                "Earnings for selection",
+                                self.fur_settings.show_chart_seleciton_earnings
+                            ),
+                        ]
+                        .spacing(SETTINGS_SPACING)
+                        .padding(10),
+                    ),
                 )
                 .set_active_tab(&self.settings_active_tab)
                 .tab_bar_position(TabBarPosition::Top)];

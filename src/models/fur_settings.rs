@@ -37,12 +37,21 @@ pub struct FurSettings {
     pub pomodoro_extended_break_length: i64,
     pub pomodoro_length: i64,
     pub pomodoro_snooze_length: i64,
-    pub show_delete_confirmation: bool,
-    pub show_project: bool,
-    pub show_tags: bool,
-    pub show_earnings: bool,
-    pub show_seconds: bool,
+    pub show_chart_average_earnings: bool,
+    pub show_chart_average_time: bool,
+    pub show_chart_breakdown_by_selection: bool,
+    pub show_chart_earnings: bool,
+    pub show_chart_seleciton_earnings: bool,
+    pub show_chart_selection_time: bool,
+    pub show_chart_time_recorded: bool,
+    pub show_chart_total_earnings_box: bool,
+    pub show_chart_total_time_box: bool,
     pub show_daily_time_total: bool,
+    pub show_delete_confirmation: bool,
+    pub show_earnings: bool,
+    pub show_project: bool,
+    pub show_seconds: bool,
+    pub show_tags: bool,
 }
 
 impl Default for FurSettings {
@@ -63,12 +72,21 @@ impl Default for FurSettings {
             pomodoro_extended_break_length: 25,
             pomodoro_length: 25,
             pomodoro_snooze_length: 5,
-            show_delete_confirmation: true,
-            show_project: true,
-            show_tags: true,
-            show_earnings: true,
-            show_seconds: true,
+            show_chart_average_earnings: true,
+            show_chart_average_time: true,
+            show_chart_breakdown_by_selection: true,
+            show_chart_earnings: true,
+            show_chart_seleciton_earnings: true,
+            show_chart_selection_time: true,
+            show_chart_time_recorded: true,
+            show_chart_total_earnings_box: true,
+            show_chart_total_time_box: true,
             show_daily_time_total: true,
+            show_delete_confirmation: true,
+            show_earnings: true,
+            show_project: true,
+            show_seconds: true,
+            show_tags: true,
         }
     }
 }
@@ -172,18 +190,67 @@ impl FurSettings {
         self.save()
     }
 
+    pub fn change_show_daily_time_total(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_daily_time_total = value.to_owned();
+        self.save()
+    }
+
     pub fn change_show_delete_confirmation(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_delete_confirmation = value.to_owned();
         self.save()
     }
 
-    pub fn change_show_project(&mut self, value: &bool) -> Result<(), std::io::Error> {
-        self.show_project = value.to_owned();
+    pub fn show_chart_average_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_chart_average_earnings = value.to_owned();
         self.save()
     }
 
-    pub fn change_show_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
-        self.show_tags = value.to_owned();
+    pub fn show_chart_average_time(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_chart_average_time = value.to_owned();
+        self.save()
+    }
+
+    pub fn show_chart_breakdown_by_selection(
+        &mut self,
+        value: &bool,
+    ) -> Result<(), std::io::Error> {
+        self.show_chart_breakdown_by_selection = value.to_owned();
+        self.save()
+    }
+
+    pub fn show_chart_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_chart_earnings = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_chart_selection_earnings(
+        &mut self,
+        value: &bool,
+    ) -> Result<(), std::io::Error> {
+        self.show_chart_seleciton_earnings = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_chart_selection_time(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_chart_selection_time = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_chart_time_recorded(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_chart_time_recorded = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_chart_total_earnings_box(
+        &mut self,
+        value: &bool,
+    ) -> Result<(), std::io::Error> {
+        self.show_chart_total_earnings_box = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_chart_total_time_box(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_chart_total_time_box = value.to_owned();
         self.save()
     }
 
@@ -192,13 +259,18 @@ impl FurSettings {
         self.save()
     }
 
+    pub fn change_show_project(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_project = value.to_owned();
+        self.save()
+    }
+
     pub fn change_show_seconds(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_seconds = value.to_owned();
         self.save()
     }
 
-    pub fn change_show_daily_time_total(&mut self, value: &bool) -> Result<(), std::io::Error> {
-        self.show_daily_time_total = value.to_owned();
+    pub fn change_show_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_tags = value.to_owned();
         self.save()
     }
 }
