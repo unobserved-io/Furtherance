@@ -1037,6 +1037,9 @@ impl Application for Furtherance {
             Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
             Message::ShortcutPressed(shortcut_task_input) => {
                 self.task_input = shortcut_task_input;
+                self.inspector_view = None;
+                self.shortcut_to_add = None;
+                self.shortcut_to_edit = None;
                 self.current_view = FurView::Timer;
                 return Command::perform(async { Message::StartStopPressed }, |msg| msg);
             }
