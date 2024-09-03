@@ -830,6 +830,9 @@ impl Application for Furtherance {
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
                 self.task_input = last_task_input;
+                self.inspector_view = None;
+                self.task_to_add = None;
+                self.task_to_edit = None;
                 self.current_view = FurView::Timer;
                 return Command::perform(async { Message::StartStopPressed }, |msg| msg);
             }
