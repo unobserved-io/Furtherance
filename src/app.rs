@@ -18,6 +18,7 @@ use core::f32;
 use std::collections::BTreeMap;
 
 use crate::{
+    constants::SETTINGS_SPACING,
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
@@ -1660,6 +1661,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                         ]
+                        .spacing(SETTINGS_SPACING)
                         .padding(10)
                     ),
                 )
@@ -1694,6 +1696,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                         ]
+                        .spacing(SETTINGS_SPACING)
                         .padding(10)
                     ),
                 )
@@ -1783,7 +1786,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                         ]
-                        .spacing(10)
+                        .spacing(SETTINGS_SPACING)
                         .padding(10),
                     ),
                 )
@@ -1793,7 +1796,7 @@ impl Application for Furtherance {
                         bootstrap::icon_to_char(Bootstrap::GraphUp),
                         "Report".to_string()
                     ),
-                    Scrollable::new(column![].padding(10),),
+                    Scrollable::new(column![].spacing(SETTINGS_SPACING).padding(10),),
                 )
                 .set_active_tab(&self.settings_active_tab)
                 .tab_bar_position(TabBarPosition::Top)];
