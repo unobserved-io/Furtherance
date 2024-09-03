@@ -2045,7 +2045,7 @@ impl Application for Furtherance {
             // MARK: Edit Shortcut
             Some(FurInspectorView::EditShortcut) => match &self.shortcut_to_edit {
                 Some(shortcut_to_edit) => column![
-                    text("New Shortcut").size(24),
+                    text("Edit Shortcut").size(24),
                     text_input("Task name", &shortcut_to_edit.new_name)
                         .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
                     text_input("Project", &shortcut_to_edit.new_project).on_input(|s| {
