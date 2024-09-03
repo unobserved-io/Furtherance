@@ -1532,11 +1532,7 @@ impl Application for Furtherance {
                     .style(theme::Button::Text),
             ]);
         }
-        for (date, task_groups) in self.task_history.iter().rev() {
-            // let total_time = task_groups
-            //     .iter()
-            //     .map(|group| group.total_time)
-            //     .sum::<i64>();
+        for (i, (date, task_groups)) in self.task_history.iter().rev().enumerate() {
             let (total_time, total_earnings) = task_groups.iter().fold(
                 (0i64, 0f32),
                 |(accumulated_time, accumulated_earnings), group| {
@@ -1554,6 +1550,11 @@ impl Application for Furtherance {
                 total_time,
                 total_earnings,
                 &self.fur_settings,
+                if i == 0 {
+                    Some((self.timer_is_running, &self.timer_text))
+                } else {
+                    None
+                },
             ));
             for task_group in task_groups {
                 all_history_rows = all_history_rows.push(history_group_row(
@@ -2849,15 +2850,29 @@ fn history_title_row<'a>(
     total_time: i64,
     total_earnings: f32,
     settings: &FurSettings,
+    running_timer: Option<(bool, &str)>,
 ) -> Row<'a, Message> {
     let mut total_time_column = column![].align_items(Alignment::End);
 
     if settings.show_daily_time_total {
-        let total_time_str = seconds_to_formatted_duration(total_time, settings.show_seconds);
-        total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
-            weight: iced::font::Weight::Bold,
-            ..Default::default()
-        }));
+        if let Some((running, timer_text)) = running_timer {
+            if running {
+                let total_time_str = seconds_to_formatted_duration(
+                    combine_timer_with_seconds(timer_text, total_time),
+                    settings.show_seconds,
+                );
+                total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
+                    weight: iced::font::Weight::Bold,
+                    ..Default::default()
+                }));
+            }
+        } else {
+            let total_time_str = seconds_to_formatted_duration(total_time, settings.show_seconds);
+            total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
+                weight: iced::font::Weight::Bold,
+                ..Default::default()
+            }));
+        }
     }
 
     if settings.show_earnings && total_earnings > 0.0 {
@@ -3220,11 +3235,14 @@ fn get_last_task_input(state: &Furtherance) -> Option<Message> {
 
 fn get_todays_total_time(state: &Furtherance) -> String {
     let today = Local::now().date_naive();
-    let total_seconds: i64 = if let Some(groups) = state.task_history.get(&today) {
+    let mut total_seconds: i64 = if let Some(groups) = state.task_history.get(&today) {
         groups.iter().map(|group| group.total_time).sum()
     } else {
         0
     };
+    if state.fur_settings.dynamic_total && state.timer_is_running {
+        total_seconds = combine_timer_with_seconds(&state.timer_text, total_seconds);
+    }
     seconds_to_formatted_duration(total_seconds, state.fur_settings.show_seconds)
 }
 
@@ -3333,4 +3351,28 @@ fn settings_heading(heading: &str) -> Column<'_, Message, Theme, Renderer> {
         Container::new(horizontal_rule(1)).max_width(200.0)
     ]
     .padding([15, 0, 5, 0])
+}
+
+fn combine_timer_with_seconds(timer: &str, seconds: i64) -> i64 {
+    let timer_seconds = parse_timer_text_to_seconds(timer);
+    timer_seconds + seconds
+}
+
+fn parse_timer_text_to_seconds(timer_text: &str) -> i64 {
+    let parts: Vec<&str> = timer_text.split(':').collect();
+    match parts.len() {
+        3 => {
+            let hours: i64 = parts[0].parse().unwrap_or(0);
+            let minutes: i64 = parts[1].parse().unwrap_or(0);
+            let seconds: i64 = parts[2].parse().unwrap_or(0);
+            hours * 3600 + minutes * 60 + seconds
+        }
+        2 => {
+            let minutes: i64 = parts[0].parse().unwrap_or(0);
+            let seconds: i64 = parts[1].parse().unwrap_or(0);
+            minutes * 60 + seconds
+        }
+        1 => parts[0].parse().unwrap_or(0),
+        _ => 0,
+    }
 }
