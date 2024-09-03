@@ -139,6 +139,7 @@ pub enum Message {
     SettingsDaysToShowChanged(i64),
     SettingsDefaultViewSelected(FurView),
     SettingsDeleteConfirmationToggled(bool),
+    SettingsDynamicTotalToggled(bool),
     SettingsIdleTimeChanged(i64),
     SettingsIdleToggled(bool),
     SettingsPomodoroBreakLengthChanged(i64),
@@ -992,6 +993,11 @@ impl Application for Furtherance {
                     );
                 }
             }
+            Message::SettingsDynamicTotalToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_dynamic_total(&new_value) {
+                    eprintln!("Failed to change dynamic_total in settings: {}", e);
+                }
+            }
             Message::SettingsIdleTimeChanged(new_minutes) => {
                 if new_minutes >= 1 {
                     if let Err(e) = self.fur_settings.change_chosen_idle_time(&new_minutes) {
@@ -1813,6 +1819,20 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             settings_heading("Task History"),
+                            row![
+                                column![
+                                    text("Dynamic total"),
+                                    text("Today's total time ticks up with the timer").size(12),
+                                ],
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.dynamic_total,
+                                    Message::SettingsDynamicTotalToggled
+                                )
+                                .width(Length::Shrink)
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                             row![
                                 text("Days to show"),
                                 number_input(

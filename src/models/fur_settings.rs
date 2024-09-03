@@ -54,7 +54,7 @@ impl Default for FurSettings {
             database_url: db_url.to_string_lossy().into_owned(),
             days_to_show: 365,
             default_view: FurView::Timer,
-            dynamic_total: true,
+            dynamic_total: false,
             notify_on_idle: true,
             pomodoro: false,
             pomodoro_break_length: 5,
