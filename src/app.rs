@@ -136,6 +136,7 @@ pub enum Message {
     SaveShortcut,
     SaveTaskEdit,
     SettingsDefaultViewSelected(FurView),
+    SettingsDeleteConfirmationToggled(bool),
     SettingsIdleTimeChanged(i64),
     SettingsIdleToggled(bool),
     SettingsPomodoroBreakLengthChanged(i64),
@@ -952,6 +953,17 @@ impl Application for Furtherance {
                     eprintln!("Failed to change default_view in settings: {}", e);
                 }
             }
+            Message::SettingsDeleteConfirmationToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_delete_confirmation(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_delete_confirmation in settings: {}",
+                        e
+                    );
+                }
+            }
             Message::SettingsIdleTimeChanged(new_minutes) => {
                 if new_minutes >= 1 {
                     if let Err(e) = self.fur_settings.change_chosen_idle_time(&new_minutes) {
@@ -1625,16 +1637,29 @@ impl Application for Furtherance {
                         "General".to_string()
                     ),
                     Scrollable::new(
-                        column![row![
-                            text("Default view"),
-                            pick_list(
-                                &FurView::ALL[..],
-                                Some(self.fur_settings.default_view),
-                                Message::SettingsDefaultViewSelected,
-                            ),
+                        column![
+                            row![
+                                text("Default view"),
+                                pick_list(
+                                    &FurView::ALL[..],
+                                    Some(self.fur_settings.default_view),
+                                    Message::SettingsDefaultViewSelected,
+                                ),
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
+                            row![
+                                text("Show delete confirmation"),
+                                toggler(
+                                    String::new(),
+                                    self.fur_settings.show_delete_confirmation,
+                                    Message::SettingsDeleteConfirmationToggled
+                                )
+                                .width(Length::Shrink),
+                            ]
+                            .spacing(10)
+                            .align_items(Alignment::Center),
                         ]
-                        .spacing(10)
-                        .align_items(Alignment::Center),]
                         .padding(10)
                     ),
                 )

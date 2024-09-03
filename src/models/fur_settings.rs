@@ -24,10 +24,10 @@ use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FurSettings {
+    pub chosen_idle_time: i64,
     pub database_url: String,
     pub default_view: FurView,
     pub notify_on_idle: bool,
-    pub chosen_idle_time: i64,
     pub pomodoro: bool,
     pub pomodoro_break_length: i64,
     pub pomodoro_extended_breaks: bool,
@@ -35,6 +35,7 @@ pub struct FurSettings {
     pub pomodoro_extended_break_length: i64,
     pub pomodoro_length: i64,
     pub pomodoro_snooze_length: i64,
+    pub show_delete_confirmation: bool,
 }
 
 impl Default for FurSettings {
@@ -42,10 +43,10 @@ impl Default for FurSettings {
         let db_url: PathBuf = get_default_db_path();
 
         FurSettings {
+            chosen_idle_time: 6,
             database_url: db_url.to_string_lossy().into_owned(),
             default_view: FurView::Timer,
             notify_on_idle: true,
-            chosen_idle_time: 6,
             pomodoro: false,
             pomodoro_break_length: 5,
             pomodoro_extended_breaks: false,
@@ -53,6 +54,7 @@ impl Default for FurSettings {
             pomodoro_extended_break_length: 25,
             pomodoro_length: 25,
             pomodoro_snooze_length: 5,
+            show_delete_confirmation: true,
         }
     }
 }
@@ -144,6 +146,11 @@ impl FurSettings {
 
     pub fn change_pomodoro_snooze_length(&mut self, value: &i64) -> Result<(), std::io::Error> {
         self.pomodoro_snooze_length = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_delete_confirmation(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_delete_confirmation = value.to_owned();
         self.save()
     }
 }
