@@ -47,11 +47,7 @@ impl ShortcutToEdit {
             name: shortcut.name.clone(),
             new_name: shortcut.name.clone(),
             tags: shortcut.tags.clone(),
-            new_tags: if shortcut.tags.is_empty() {
-                shortcut.tags.clone()
-            } else {
-                format!("#{}", shortcut.tags)
-            },
+            new_tags: shortcut.tags.clone(),
             project: shortcut.project.clone(),
             new_project: shortcut.project.clone(),
             rate: shortcut.rate,

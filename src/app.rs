@@ -2723,7 +2723,7 @@ fn shortcut_button_content<'a>(
     shortcut: &FurShortcut,
     text_color: Color,
 ) -> Column<'a, Message, Theme, Renderer> {
-    let mut shortcut_text_column = column![text(shortcut.name.to_owned())
+    let mut shortcut_text_column = column![text(shortcut.name.clone())
         .font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
@@ -2732,12 +2732,12 @@ fn shortcut_button_content<'a>(
     .spacing(5);
 
     if !shortcut.project.is_empty() {
-        shortcut_text_column =
-            shortcut_text_column.push(text(shortcut.project.to_owned()).style(text_color));
+        shortcut_text_column = shortcut_text_column
+            .push(text(format!("@{}", shortcut.project.clone())).style(text_color));
     }
     if !shortcut.tags.is_empty() {
         shortcut_text_column =
-            shortcut_text_column.push(text(shortcut.tags.to_owned()).style(text_color));
+            shortcut_text_column.push(text(shortcut.tags.clone()).style(text_color));
     }
     if shortcut.rate > 0.0 {
         shortcut_text_column = shortcut_text_column.push(vertical_space());
@@ -2764,7 +2764,7 @@ fn shortcut_button<'a>(
         Color::BLACK
     };
 
-    let shortcut_button = button(shortcut_button_content(shortcut, text_color))
+    let shortcut_button = button(shortcut_button_content(&shortcut, text_color))
         .width(200)
         .padding(10)
         .height(170)

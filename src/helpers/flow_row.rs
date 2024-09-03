@@ -43,6 +43,7 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, 
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
+        self.diff(tree);
         let limits = limits.width(Length::Fill).height(Length::Shrink);
         let mut current_row_width: f32 = 0.0;
         let mut current_row_height: f32 = 0.0;
@@ -223,6 +224,19 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, 
         }
 
         interaction
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        if tree.children.len() != self.children.len() {
+            // Clear existing children and create new ones
+            tree.children.clear();
+            tree.children = self.children.iter().map(|child| Tree::new(child)).collect();
+        }
+
+        // Update each child
+        for (child, child_tree) in self.children.iter().zip(&mut tree.children) {
+            child.as_widget().diff(child_tree);
+        }
     }
 
     fn overlay<'b>(
