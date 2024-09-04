@@ -35,7 +35,7 @@ use crate::{
     view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
-use chrono::{Duration, TimeZone, Timelike};
+use chrono::{TimeDelta, TimeZone, Timelike};
 use iced::widget::{checkbox, horizontal_rule, toggler, Row};
 use iced::Color;
 use iced::{
@@ -59,8 +59,8 @@ use palette::Srgb;
 use regex::Regex;
 use tokio::time;
 
-#[cfg(target_os = "linux")]
-use crate::idle_wayland::run_on_idle;
+#[cfg(not(target_os = "macos"))]
+use iced::Subscription;
 
 pub struct Furtherance {
     current_view: FurView,
@@ -81,6 +81,7 @@ pub struct Furtherance {
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
+    theme: Theme,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
     timer_stop_time: DateTime<Local>,
@@ -103,6 +104,7 @@ pub enum Message {
     CancelStartDate,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
+    ChangeTheme,
     ChartTaskPropertyKeySelected(FurTaskProperty),
     ChartTaskPropertyValueSelected(String),
     ChooseCurrentTaskStartTime,
@@ -227,6 +229,7 @@ impl Application for Furtherance {
             show_timer_start_picker: false,
             task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
+            theme: get_system_theme(),
             timer_is_running: false,
             timer_start_time: Local::now(),
             timer_stop_time: Local::now(),
@@ -249,10 +252,15 @@ impl Application for Furtherance {
     }
 
     fn theme(&self, _window_id: window::Id) -> Theme {
-        match dark_light::detect() {
-            dark_light::Mode::Light | dark_light::Mode::Default => Theme::Light,
-            dark_light::Mode::Dark => Theme::Dark,
-        }
+        self.theme.clone()
+    }
+
+    // Live dark-light theme switching does not currently work on macOS
+    #[cfg(not(target_os = "macos"))]
+    fn subscription(&self) -> Subscription<Message> {
+        Subscription::batch([
+            iced::time::every(time::Duration::from_secs(1)).map(|_| Message::ChangeTheme)
+        ])
     }
 
     fn update(&mut self, message: Message) -> Command<Message> {
@@ -337,6 +345,7 @@ impl Application for Furtherance {
                     }
                 }
             }
+            Message::ChangeTheme => self.theme = get_system_theme(),
             Message::ChartTaskPropertyKeySelected(new_property) => {
                 self.report.set_picked_task_property_key(new_property);
             }
@@ -844,7 +853,7 @@ impl Application for Furtherance {
             Message::PomodoroStartBreak => {
                 let original_task_input = self.task_input.clone();
                 let pomodoro_stop_time = self.timer_start_time
-                    + Duration::minutes(self.fur_settings.pomodoro_break_length);
+                    + TimeDelta::minutes(self.fur_settings.pomodoro_break_length);
                 self.pomodoro.on_break = true;
                 self.pomodoro.snoozed = false;
                 stop_timer(self, pomodoro_stop_time);
@@ -1276,7 +1285,7 @@ impl Application for Furtherance {
                             // User is idle
                             self.idle.reached = true;
                             self.idle.start_time = Local::now()
-                                - Duration::seconds(self.fur_settings.chosen_idle_time * 60);
+                                - TimeDelta::seconds(self.fur_settings.chosen_idle_time * 60);
                         } else if idle_time < self.fur_settings.chosen_idle_time * 60
                             && self.idle.reached
                             && !self.idle.notified
@@ -3085,7 +3094,7 @@ fn history_title_row<'a>(
 
 fn format_history_date(date: &NaiveDate) -> String {
     let today = Local::now().date_naive();
-    let yesterday = today - Duration::days(1);
+    let yesterday = today - TimeDelta::days(1);
     let current_year = today.year();
 
     if date == &today {
@@ -3221,7 +3230,7 @@ fn shortcut_button<'a>(
 }
 
 fn is_dark_color(color: Srgb) -> bool {
-    color.relative_luminance().luma < 0.65
+    color.relative_luminance().luma < 0.6
 }
 
 fn start_timer(state: &mut Furtherance) {
@@ -3299,16 +3308,17 @@ fn get_running_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
                     == 0
             {
                 state.timer_start_time
-                    + Duration::minutes(state.fur_settings.pomodoro_extended_break_length)
+                    + TimeDelta::minutes(state.fur_settings.pomodoro_extended_break_length)
             } else {
-                state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_break_length)
+                state.timer_start_time
+                    + TimeDelta::minutes(state.fur_settings.pomodoro_break_length)
             }
         } else {
             if state.pomodoro.snoozed {
                 state.pomodoro.snoozed_at
-                    + Duration::minutes(state.fur_settings.pomodoro_snooze_length)
+                    + TimeDelta::minutes(state.fur_settings.pomodoro_snooze_length)
             } else {
-                state.timer_start_time + Duration::minutes(state.fur_settings.pomodoro_length)
+                state.timer_start_time + TimeDelta::minutes(state.fur_settings.pomodoro_length)
             }
         };
 
@@ -3567,5 +3577,12 @@ fn parse_timer_text_to_seconds(timer_text: &str) -> i64 {
         }
         1 => parts[0].parse().unwrap_or(0),
         _ => 0,
+    }
+}
+
+fn get_system_theme() -> Theme {
+    match dark_light::detect() {
+        dark_light::Mode::Light | dark_light::Mode::Default => Theme::Light,
+        dark_light::Mode::Dark => Theme::Dark,
     }
 }
