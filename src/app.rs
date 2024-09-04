@@ -1571,6 +1571,91 @@ impl Application for Furtherance {
         // MARK: REPORT
         let mut charts_column = Column::new();
 
+        let mut timer_earnings_boxes_widgets: Vec<Element<'_, Message, Theme, Renderer>> =
+            Vec::new();
+        if self.fur_settings.show_chart_total_time_box && self.report.total_time > 0 {
+            timer_earnings_boxes_widgets.push(
+                column![
+                    text(seconds_to_formatted_duration(self.report.total_time, true)).size(50),
+                    text("Total Time"),
+                ]
+                .align_items(Alignment::Center)
+                .into(),
+            );
+        }
+        if self.fur_settings.show_chart_total_earnings_box && self.report.total_earned > 0.0 {
+            timer_earnings_boxes_widgets.push(
+                column![
+                    text(format!("${:.2}", self.report.total_earned)).size(50),
+                    text("Earned"),
+                ]
+                .align_items(Alignment::Center)
+                .into(),
+            );
+        }
+        if !timer_earnings_boxes_widgets.is_empty() {
+            // If both boxes are present, place a spacer between them
+            if timer_earnings_boxes_widgets.len() == 2 {
+                timer_earnings_boxes_widgets
+                    .insert(1, horizontal_space().width(Length::Fill).into());
+            }
+            // Then place the bookend spacers
+            timer_earnings_boxes_widgets.insert(0, horizontal_space().width(Length::Fill).into());
+            timer_earnings_boxes_widgets.push(horizontal_space().width(Length::Fill).into());
+
+            charts_column = charts_column.push(Row::with_children(timer_earnings_boxes_widgets));
+        }
+
+        if self.fur_settings.show_chart_time_recorded {
+            charts_column = charts_column.push(self.report.time_recorded_chart.view());
+        }
+        if self.fur_settings.show_chart_earnings {
+            charts_column = charts_column.push(self.report.earnings_chart.view());
+        }
+        if self.fur_settings.show_chart_average_time {
+            charts_column = charts_column.push(self.report.average_time_chart.view());
+        }
+        if self.fur_settings.show_chart_average_earnings {
+            charts_column = charts_column.push(self.report.average_earnings_chart.view());
+        }
+
+        // Breakdown by Selection Picker & Charts
+        let mut charts_breakdown_by_selection_column = Column::new().align_items(Alignment::Center);
+        if !self.report.tasks_in_range.is_empty()
+            && self.fur_settings.show_chart_breakdown_by_selection
+        {
+            charts_breakdown_by_selection_column =
+                charts_breakdown_by_selection_column.push(text("Breakdown By Selection").size(40));
+            charts_breakdown_by_selection_column = charts_breakdown_by_selection_column.push(
+                row![
+                    pick_list(
+                        &FurTaskProperty::ALL[..],
+                        self.report.picked_task_property_key.clone(),
+                        Message::ChartTaskPropertyKeySelected,
+                    )
+                    .width(Length::Fill),
+                    pick_list(
+                        &self.report.task_property_value_keys[..],
+                        self.report.picked_task_property_value.clone(),
+                        Message::ChartTaskPropertyValueSelected,
+                    )
+                    .width(Length::Fill),
+                ]
+                .spacing(10)
+                .width(Length::Fill),
+            );
+            charts_breakdown_by_selection_column =
+                charts_breakdown_by_selection_column.push(horizontal_rule(20));
+            if self.fur_settings.show_chart_selection_time {
+                charts_breakdown_by_selection_column = charts_breakdown_by_selection_column
+                    .push(self.report.selection_time_recorded_chart.view());
+            }
+            if self.fur_settings.show_chart_seleciton_earnings {
+                charts_breakdown_by_selection_column = charts_breakdown_by_selection_column
+                    .push(self.report.selection_earnings_recorded_chart.view());
+            }
+        };
+
         let charts_view = column![
             column![
                 pick_list(
@@ -1614,58 +1699,9 @@ impl Application for Furtherance {
             ]
             .padding([20, 20, 0, 20]),
             Scrollable::new(
-                column![
-                    if self.report.total_time > 0 || self.report.total_earned > 0.0 {
-                        row![
-                            horizontal_space().width(Length::Fill),
-                            column![
-                                text(seconds_to_formatted_duration(self.report.total_time, true))
-                                    .size(50),
-                                text("Total Time"),
-                            ]
-                            .align_items(Alignment::Center),
-                            horizontal_space().width(Length::Fill),
-                            column![
-                                text(format!("${:.2}", self.report.total_earned)).size(50),
-                                text("Earned"),
-                            ]
-                            .align_items(Alignment::Center),
-                            horizontal_space().width(Length::Fill),
-                        ]
-                    } else {
-                        row![]
-                    },
-                    charts_column,
-                    if self.report.tasks_in_range.is_empty() {
-                        column![]
-                    } else {
-                        column![
-                            text("Breakdown By Selection").size(40),
-                            row![
-                                pick_list(
-                                    &FurTaskProperty::ALL[..],
-                                    self.report.picked_task_property_key.clone(),
-                                    Message::ChartTaskPropertyKeySelected,
-                                )
-                                .width(Length::Fill),
-                                pick_list(
-                                    &self.report.task_property_value_keys[..],
-                                    self.report.picked_task_property_value.clone(),
-                                    Message::ChartTaskPropertyValueSelected,
-                                )
-                                .width(Length::Fill),
-                            ]
-                            .spacing(10)
-                            .width(Length::Fill),
-                            horizontal_rule(20),
-                            self.report.selection_time_recorded_chart.view(),
-                            self.report.selection_earnings_recorded_chart.view(),
-                        ]
-                        .align_items(Alignment::Center)
-                    },
-                ]
-                .align_items(Alignment::Center)
-                .padding([0, 20, 20, 20])
+                column![charts_column, charts_breakdown_by_selection_column]
+                    .align_items(Alignment::Center)
+                    .padding([0, 20, 20, 20])
             ),
         ];
 
