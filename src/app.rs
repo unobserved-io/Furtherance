@@ -149,6 +149,15 @@ pub enum Message {
     SettingsPomodoroLengthChanged(i64),
     SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
+    SettingsShowChartAverageEarningsToggled(bool),
+    SettingsShowChartAverageTimeToggled(bool),
+    SettingsShowChartBreakdownBySelectionToggled(bool),
+    SettingsShowChartEarningsToggled(bool),
+    SettingsShowChartSelectionEarningsToggled(bool),
+    SettingsShowChartSelectionTimeToggled(bool),
+    SettingsShowChartTimeRecordedToggled(bool),
+    SettingsShowChartTotalEarningsBoxToggled(bool),
+    SettingsShowChartTotalTimeBoxToggled(bool),
     SettingsShowProjectToggled(bool),
     SettingsShowTagsToggled(bool),
     SettingsShowEarningsToggled(bool),
@@ -1088,6 +1097,96 @@ impl Application for Furtherance {
                         .num_seconds(),
                 );
             }
+            Message::SettingsShowChartAverageEarningsToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_average_earnings(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_average_earnings in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartAverageTimeToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_chart_average_time(&new_value) {
+                    eprintln!(
+                        "Failed to change show_chart_average_time in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartBreakdownBySelectionToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_breakdown_by_selection(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_breakdown_by_selection in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartEarningsToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_chart_earnings(&new_value) {
+                    eprintln!("Failed to change show_chart_earnings in settings: {}", e);
+                }
+            }
+            Message::SettingsShowChartSelectionEarningsToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_selection_earnings(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_selection_earnings in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartSelectionTimeToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_selection_time(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_selection_time in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartTimeRecordedToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_time_recorded(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_time_recorded in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartTotalEarningsBoxToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_total_earnings_box(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_total_earnings_box in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsShowChartTotalTimeBoxToggled(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_show_chart_total_time_box(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change show_chart_total_time_box in settings: {}",
+                        e
+                    );
+                }
+            }
             Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
             Message::ShortcutPressed(shortcut_task_input) => {
                 self.task_input = shortcut_task_input;
@@ -1989,31 +2088,53 @@ impl Application for Furtherance {
                             checkbox(
                                 "Total time box",
                                 self.fur_settings.show_chart_total_time_box
-                            ),
+                            )
+                            .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled),
                             checkbox(
                                 "Total earnings box",
                                 self.fur_settings.show_chart_total_earnings_box
-                            ),
-                            checkbox("Earnings", self.fur_settings.show_chart_earnings),
+                            )
+                            .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled),
+                            checkbox("Time recorded", self.fur_settings.show_chart_time_recorded)
+                                .on_toggle(Message::SettingsShowChartTimeRecordedToggled),
+                            checkbox("Earnings", self.fur_settings.show_chart_earnings)
+                                .on_toggle(Message::SettingsShowChartEarningsToggled),
                             checkbox(
                                 "Average time per task",
                                 self.fur_settings.show_chart_average_time
-                            ),
+                            )
+                            .on_toggle(Message::SettingsShowChartAverageTimeToggled),
                             checkbox(
                                 "Average earnings per task",
                                 self.fur_settings.show_chart_average_earnings
-                            ),
+                            )
+                            .on_toggle(Message::SettingsShowChartAverageEarningsToggled),
                             checkbox(
                                 "Breakdown by selection section",
                                 self.fur_settings.show_chart_breakdown_by_selection
-                            ),
+                            )
+                            .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled),
                             checkbox(
                                 "Time recorded for selection",
                                 self.fur_settings.show_chart_selection_time
+                            )
+                            .on_toggle_maybe(
+                                if self.fur_settings.show_chart_breakdown_by_selection {
+                                    Some(Message::SettingsShowChartSelectionTimeToggled)
+                                } else {
+                                    None
+                                }
                             ),
                             checkbox(
                                 "Earnings for selection",
                                 self.fur_settings.show_chart_seleciton_earnings
+                            )
+                            .on_toggle_maybe(
+                                if self.fur_settings.show_chart_breakdown_by_selection {
+                                    Some(Message::SettingsShowChartSelectionEarningsToggled)
+                                } else {
+                                    None
+                                }
                             ),
                         ]
                         .spacing(SETTINGS_SPACING)

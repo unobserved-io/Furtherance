@@ -200,17 +200,20 @@ impl FurSettings {
         self.save()
     }
 
-    pub fn show_chart_average_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
+    pub fn change_show_chart_average_earnings(
+        &mut self,
+        value: &bool,
+    ) -> Result<(), std::io::Error> {
         self.show_chart_average_earnings = value.to_owned();
         self.save()
     }
 
-    pub fn show_chart_average_time(&mut self, value: &bool) -> Result<(), std::io::Error> {
+    pub fn change_show_chart_average_time(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_chart_average_time = value.to_owned();
         self.save()
     }
 
-    pub fn show_chart_breakdown_by_selection(
+    pub fn change_show_chart_breakdown_by_selection(
         &mut self,
         value: &bool,
     ) -> Result<(), std::io::Error> {
@@ -218,7 +221,7 @@ impl FurSettings {
         self.save()
     }
 
-    pub fn show_chart_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
+    pub fn change_show_chart_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_chart_earnings = value.to_owned();
         self.save()
     }
