@@ -17,6 +17,8 @@
 use palette::Srgb;
 use plotters::{self, style::RGBColor};
 
+pub const ALLOWED_DB_EXTENSIONS: &[&str] =
+    &["db", "sqlite", "sqlite3", "db3", "database", "data", "s3db"];
 pub const CHART_HEIGHT: f32 = 400.0;
 pub const CHART_COLOR: RGBColor = plotters::style::colors::BLUE;
 pub const FURTHERANCE_PURPLE: Srgb = Srgb::new(0.694, 0.475, 0.945);

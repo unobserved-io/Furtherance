@@ -17,9 +17,9 @@
 use chrono::{DateTime, Local};
 use directories::ProjectDirs;
 use rusqlite::{backup, params, Connection, Result};
-use std::fs::create_dir_all;
 use std::path::PathBuf;
 use std::time::Duration;
+use std::{fs::create_dir_all, path::Path};
 
 use crate::{
     helpers::color_utils::ToHex,
@@ -620,4 +620,125 @@ pub fn import_db(new_db: String) -> Result<()> {
         // TODO: Show error
         Ok(())
     }
+}
+
+pub fn db_is_valid_v3(path: &Path) -> Result<bool> {
+    let conn = match Connection::open(path) {
+        Ok(conn) => conn,
+        Err(_) => return Ok(false),
+    };
+
+    // Check if the table 'tasks' exists
+    let mut stmt =
+        match conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'") {
+            Ok(stmt) => stmt,
+            Err(_) => return Ok(false),
+        };
+    let table_exists = match stmt.exists([]) {
+        Ok(exists) => exists,
+        Err(_) => return Ok(false),
+    };
+    if !table_exists {
+        return Ok(false);
+    }
+
+    // Verify the table's structure
+    let expected_columns = [
+        "id integer",
+        "task_name text",
+        "start_time timestamp",
+        "stop_time timestamp",
+        "tags text",
+        "project text",
+        "rate real",
+        "currency text",
+    ];
+    let mut stmt = match conn.prepare("PRAGMA table_info(tasks)") {
+        Ok(stmt) => stmt,
+        Err(_) => return Ok(false),
+    };
+    let column_info = match stmt.query_map([], |row| {
+        Ok(format!(
+            "{} {}",
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?.to_lowercase()
+        ))
+    }) {
+        Ok(iter) => iter,
+        Err(_) => return Ok(false),
+    };
+
+    let mut columns: Vec<String> = Vec::new();
+    for column in column_info {
+        match column {
+            Ok(col) => columns.push(col),
+            Err(_) => return Ok(false),
+        }
+    }
+    for expected_col in expected_columns.iter() {
+        if !columns.contains(&expected_col.to_string()) {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
+pub fn db_is_valid_v1(path: &Path) -> Result<bool> {
+    let conn = match Connection::open(path) {
+        Ok(conn) => conn,
+        Err(_) => return Ok(false),
+    };
+
+    // Check if the table 'tasks' exists
+    let mut stmt =
+        match conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'") {
+            Ok(stmt) => stmt,
+            Err(_) => return Ok(false),
+        };
+    let table_exists = match stmt.exists([]) {
+        Ok(exists) => exists,
+        Err(_) => return Ok(false),
+    };
+    if !table_exists {
+        return Ok(false);
+    }
+
+    // Verify the table's structure
+    let expected_columns = [
+        "id integer",
+        "task_name text",
+        "start_time timestamp",
+        "stop_time timestamp",
+        "tags text",
+    ];
+    let mut stmt = match conn.prepare("PRAGMA table_info(tasks)") {
+        Ok(stmt) => stmt,
+        Err(_) => return Ok(false),
+    };
+    let column_info = match stmt.query_map([], |row| {
+        Ok(format!(
+            "{} {}",
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?.to_lowercase()
+        ))
+    }) {
+        Ok(iter) => iter,
+        Err(_) => return Ok(false),
+    };
+
+    let mut columns: Vec<String> = Vec::new();
+    for column in column_info {
+        match column {
+            Ok(col) => columns.push(col),
+            Err(_) => return Ok(false),
+        }
+    }
+    for expected_col in expected_columns.iter() {
+        if !columns.contains(&expected_col.to_string()) {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
 }

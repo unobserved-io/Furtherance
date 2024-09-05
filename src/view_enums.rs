@@ -73,6 +73,7 @@ pub enum TabId {
     Advanced,
     Pomodoro,
     Report,
+    Data,
     Charts,
     List,
 }
@@ -82,6 +83,12 @@ pub enum NotificationType {
     PomodoroOver,
     BreakOver,
     Idle,
+}
+
+#[derive(Debug, Clone)]
+pub enum ChangeDB {
+    Open,
+    New,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

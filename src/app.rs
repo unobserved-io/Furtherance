@@ -15,10 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use core::f32;
-use std::{collections::BTreeMap, time::Duration};
+use std::{collections::BTreeMap, path::Path, time::Duration};
 
 use crate::{
-    constants::SETTINGS_SPACING,
+    constants::{ALLOWED_DB_EXTENSIONS, SETTINGS_SPACING},
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
@@ -60,6 +60,7 @@ use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
+use rfd::FileDialog;
 use tokio::time::{self, interval_at};
 
 #[cfg(not(target_os = "macos"))]
@@ -78,6 +79,7 @@ pub struct Furtherance {
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
+    settings_database_error: String,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
     shortcut_to_edit: Option<ShortcutToEdit>,
@@ -142,6 +144,8 @@ pub enum Message {
     SaveGroupEdit,
     SaveShortcut,
     SaveTaskEdit,
+    SettingsChangeDatabaseLocationPressed(ChangeDB),
+    SettingsDatabaseLocationInputChanged(String),
     SettingsDaysToShowChanged(i64),
     SettingsDefaultViewSelected(FurView),
     SettingsDeleteConfirmationToggled(bool),
@@ -221,6 +225,7 @@ impl Application for Furtherance {
             inspector_view: None,
             report: FurReport::new(),
             settings_active_tab: TabId::General,
+            settings_database_error: String::new(),
             shortcuts: match db_retrieve_shortcuts() {
                 Ok(shortcuts) => shortcuts,
                 Err(e) => {
@@ -1020,6 +1025,82 @@ impl Application for Furtherance {
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
                 }
             }
+            Message::SettingsChangeDatabaseLocationPressed(new_or_open) => {
+                let path = Path::new(&self.fur_settings.database_url);
+                let starting_dialog = FileDialog::new()
+                    .set_title("Choose Database Directory")
+                    .set_directory(&path)
+                    .add_filter("SQLite files", ALLOWED_DB_EXTENSIONS)
+                    .set_can_create_directories(true);
+
+                let selected_file = match new_or_open {
+                    ChangeDB::New => starting_dialog.set_file_name("furtherance.db").save_file(),
+                    ChangeDB::Open => starting_dialog.pick_file(),
+                };
+
+                let mut is_old_db = false;
+
+                if let Some(file) = selected_file {
+                    self.settings_database_error = String::new();
+
+                    if file.exists() {
+                        match db_is_valid_v3(file.as_path()) {
+                            Err(e) => {
+                                eprintln!("Invalid database: {}", e);
+                                self.settings_database_error = "Invalid database.".to_string();
+                            }
+                            Ok(is_valid_v3) => {
+                                if !is_valid_v3 {
+                                    match db_is_valid_v1(file.as_path()) {
+                                        Ok(is_valid_v2) => {
+                                            if is_valid_v2 {
+                                                is_old_db = true
+                                            } else {
+                                                self.settings_database_error =
+                                                    "Invalid database.".to_string();
+                                            }
+                                        }
+                                        Err(e) => {
+                                            eprintln!("Invalid v1 database: {}", e);
+                                            self.settings_database_error =
+                                                "Invalid database.".to_string();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if self.settings_database_error.is_empty() {
+                        // Valid file or not yet a file
+                        if let Some(file_str) = file.to_str() {
+                            if let Ok(_) = self.fur_settings.change_db_url(file_str) {
+                                match db_init() {
+                                    Ok(_) => {
+                                        if is_old_db {
+                                            if let Err(e) = db_upgrade_old() {
+                                                eprintln!("Error upgrading legacy database: {}", e);
+                                                self.settings_database_error =
+                                                    "Error upgrading legacy database.".to_string();
+                                                return Command::none();
+                                            }
+                                        }
+                                        self.task_history =
+                                            get_task_history(self.fur_settings.days_to_show);
+                                        self.settings_database_error = String::new();
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Error accessing new database: {}", e);
+                                        self.settings_database_error =
+                                            "Error accessing new database.".to_string();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Message::SettingsDatabaseLocationInputChanged(_) => {}
             Message::SettingsDaysToShowChanged(new_days) => {
                 if new_days >= 1 {
                     match self.fur_settings.change_days_to_show(&new_days) {
@@ -2178,6 +2259,42 @@ impl Application for Furtherance {
                                     None
                                 }
                             ),
+                        ]
+                        .spacing(SETTINGS_SPACING)
+                        .padding(10),
+                    ),
+                )
+                // MARK: SETTINGS DATA TAB
+                .push(
+                    TabId::Data,
+                    TabLabel::IconText(
+                        bootstrap::icon_to_char(Bootstrap::FloppyFill),
+                        "Data".to_string()
+                    ),
+                    Scrollable::new(
+                        column![
+                            settings_heading("Local Database"),
+                            column![
+                                text("Database location"),
+                                text_input(
+                                    &self.fur_settings.database_url,
+                                    &self.fur_settings.database_url,
+                                ),
+                                row![
+                                    button("Create New").on_press(
+                                        Message::SettingsChangeDatabaseLocationPressed(
+                                            ChangeDB::New
+                                        )
+                                    ),
+                                    button("Open Existing").on_press(
+                                        Message::SettingsChangeDatabaseLocationPressed(
+                                            ChangeDB::Open
+                                        )
+                                    ),
+                                ]
+                                .spacing(10)
+                            ]
+                            .spacing(10),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),

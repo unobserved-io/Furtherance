@@ -32,6 +32,7 @@ plotters = "0.3"
 plotters-iced = "0.10"
 rand = "0.8"
 regex = "1.10"
+rfd = "0.14.1"
 rusqlite = { version = "0.32", features = ["bundled", "chrono", "backup"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
