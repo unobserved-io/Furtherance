@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use core::f32;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, time::Duration};
 
 use crate::{
     constants::SETTINGS_SPACING,
@@ -36,7 +36,6 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
-use iced::widget::{checkbox, horizontal_rule, toggler, Row};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -46,6 +45,10 @@ use iced::{
         Button, Column, Container, Scrollable,
     },
     window, Alignment, Command, Element, Length, Renderer, Theme,
+};
+use iced::{
+    widget::{checkbox, horizontal_rule, toggler, Row},
+    Subscription,
 };
 use iced_aw::{
     color_picker,
@@ -57,7 +60,7 @@ use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
-use tokio::time;
+use tokio::time::{self, interval_at};
 
 #[cfg(not(target_os = "macos"))]
 use iced::Subscription;
@@ -127,6 +130,7 @@ pub enum Message {
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
     IdleReset,
+    MidnightReached,
     NavigateTo(FurView),
     PomodoroContinueAfterBreak,
     PomodoroSnooze,
@@ -255,11 +259,37 @@ impl Application for Furtherance {
         self.theme.clone()
     }
 
-    // Live dark-light theme switching does not currently work on macOS
-    #[cfg(not(target_os = "macos"))]
     fn subscription(&self) -> Subscription<Message> {
+        // Live dark-light theme switching does not currently work on macOS
+        #[cfg(not(target_os = "macos"))]
+        let theme_watcher =
+            iced::time::every(time::Duration::from_secs(1)).map(|_| Message::ChangeTheme);
+
+        // Watch for midnight to update the history
+        struct MidnightSub;
+        let midnight_subscription =
+            iced::subscription::unfold(std::any::TypeId::of::<MidnightSub>(), (), |_| async {
+                let now = Local::now();
+                let next_midnight = (now + chrono::Duration::days(1))
+                    .date_naive()
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .and_local_timezone(Local)
+                    .unwrap();
+                let duration_until_midnight = next_midnight - now;
+                let tokio_instant = tokio::time::Instant::now()
+                    + Duration::from_secs(duration_until_midnight.num_seconds() as u64);
+
+                let mut interval = interval_at(tokio_instant, Duration::from_secs(24 * 60 * 60));
+                interval.tick().await; // Wait for the first tick (midnight)
+
+                (Message::MidnightReached, ())
+            });
+
         Subscription::batch([
-            iced::time::every(time::Duration::from_secs(1)).map(|_| Message::ChangeTheme)
+            midnight_subscription,
+            #[cfg(not(target_os = "macos"))]
+            theme_watcher,
         ])
     }
 
@@ -824,6 +854,9 @@ impl Application for Furtherance {
             Message::IdleReset => {
                 self.idle = FurIdle::new();
                 self.displayed_alert = None;
+            }
+            Message::MidnightReached => {
+                self.task_history = get_task_history(self.fur_settings.days_to_show);
             }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
