@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::{DateTime, Local};
+use csv::Reader;
 use directories::ProjectDirs;
 use rusqlite::{backup, params, Connection, Result};
 use std::path::PathBuf;
@@ -172,6 +173,37 @@ pub fn db_write_task(fur_task: FurTask) -> Result<()> {
             fur_task.rate,
         ],
     )?;
+
+    Ok(())
+}
+
+pub fn db_write_tasks(tasks: &[FurTask]) -> Result<()> {
+    let mut conn = Connection::open(db_get_directory())?;
+
+    let tx = conn.transaction()?;
+
+    {
+        let mut stmt = tx.prepare(
+            "
+            INSERT INTO tasks (task_name, start_time, stop_time, tags, project, rate, currency)
+            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+        ",
+        )?;
+
+        for task in tasks {
+            stmt.execute(params![
+                task.name,
+                task.start_time.to_rfc3339(),
+                task.stop_time.to_rfc3339(),
+                task.tags,
+                task.project,
+                task.rate,
+                task.currency,
+            ])?;
+        }
+    } // stmt is dropped here, releasing the borrow on tx
+
+    tx.commit()?;
 
     Ok(())
 }
@@ -485,14 +517,34 @@ pub fn check_for_tasks() -> Result<String> {
     )
 }
 
-pub fn check_db_validity(db_path: String) -> Result<String> {
-    let conn = Connection::open(db_path)?;
+pub fn db_task_exists(task: &FurTask) -> Result<bool> {
+    let conn = Connection::open(db_get_directory())?;
 
-    conn.query_row(
-        "SELECT task_name FROM tasks ORDER BY ROWID ASC LIMIT 1",
-        [],
-        |row| row.get(0),
-    )
+    let query = "
+        SELECT 1 FROM tasks
+        WHERE task_name = ?2
+        AND start_time = ?3
+        AND stop_time = ?4
+        AND tags = ?5
+        AND project = ?6
+        AND rate = ?7
+        AND currency = ?8
+        LIMIT 1
+    ";
+
+    let mut stmt = conn.prepare(query)?;
+
+    let exists = stmt.exists(params![
+        task.name,
+        task.start_time.to_rfc3339(),
+        task.stop_time.to_rfc3339(),
+        task.tags,
+        task.project,
+        task.rate,
+        task.currency,
+    ])?;
+
+    Ok(exists)
 }
 
 pub fn db_delete_tasks_by_ids(id_list: Vec<u32>) -> Result<()> {
@@ -605,22 +657,22 @@ pub fn backup_db(backup_file: String) -> Result<()> {
     backup.run_to_completion(5, Duration::from_millis(250), None)
 }
 
-pub fn import_db(new_db: String) -> Result<()> {
-    let new_conn = Connection::open(new_db.clone())?;
-    let valid = match check_db_validity(new_db) {
-        Ok(_) => true,
-        Err(_) => false,
-    };
+// pub fn import_db(new_db: String) -> Result<()> {
+//     let new_conn = Connection::open(new_db.clone())?;
+//     let valid = match check_db_validity(new_db) {
+//         Ok(_) => true,
+//         Err(_) => false,
+//     };
 
-    if valid {
-        let mut conn = Connection::open(db_get_directory())?;
-        let backup = backup::Backup::new(&new_conn, &mut conn)?;
-        backup.run_to_completion(5, Duration::from_millis(250), None)
-    } else {
-        // TODO: Show error
-        Ok(())
-    }
-}
+//     if valid {
+//         let mut conn = Connection::open(db_get_directory())?;
+//         let backup = backup::Backup::new(&new_conn, &mut conn)?;
+//         backup.run_to_completion(5, Duration::from_millis(250), None)
+//     } else {
+//         // TODO: Show error
+//         Ok(())
+//     }
+// }
 
 pub fn db_is_valid_v3(path: &Path) -> Result<bool> {
     let conn = match Connection::open(path) {

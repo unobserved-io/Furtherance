@@ -17,6 +17,7 @@
 use core::f32;
 use std::{
     collections::BTreeMap,
+    fs::File,
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -40,7 +41,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
-use csv::Writer;
+use csv::{Reader, StringRecord, Writer};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -84,6 +85,7 @@ pub struct Furtherance {
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
+    settings_csv_error: String,
     settings_database_error: String,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
@@ -232,6 +234,7 @@ impl Application for Furtherance {
             inspector_view: None,
             report: FurReport::new(),
             settings_active_tab: TabId::General,
+            settings_csv_error: String::new(),
             settings_database_error: String::new(),
             shortcuts: match db_retrieve_shortcuts() {
                 Ok(shortcuts) => shortcuts,
@@ -861,7 +864,7 @@ impl Application for Furtherance {
             Message::ExportCsvPressed => {
                 let file_name = format!("furtherance-{}.csv", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
-                    .set_title("Choose Database Directory")
+                    .set_title("Save Furtherance CSV")
                     .add_filter("CSV", &["csv"])
                     .set_can_create_directories(true)
                     .set_file_name(file_name)
@@ -882,7 +885,24 @@ impl Application for Furtherance {
                 self.idle = FurIdle::new();
                 self.displayed_alert = None;
             }
-            Message::ImportCsvPressed => {}
+            Message::ImportCsvPressed => {
+                let selected_file = FileDialog::new()
+                    .set_title("Open Furtherance CSV")
+                    .add_filter("CSV", &["csv"])
+                    .set_can_create_directories(false)
+                    .pick_file();
+                if let Some(path) = selected_file {
+                    if let Ok(file) = File::open(path) {
+                        match verify_csv_structure(&file) {
+                            Ok(_) => import_csv_to_database(&file),
+                            Err(e) => {
+                                eprintln!("Invalid CSV file: {}", e);
+                                self.settings_csv_error = "Invalid CSV file".to_string();
+                            }
+                        }
+                    }
+                }
+            }
             Message::MidnightReached => {
                 self.task_history = get_task_history(self.fur_settings.days_to_show);
             }
@@ -1051,14 +1071,18 @@ impl Application for Furtherance {
             Message::SettingsChangeDatabaseLocationPressed(new_or_open) => {
                 let path = Path::new(&self.fur_settings.database_url);
                 let starting_dialog = FileDialog::new()
-                    .set_title("Choose Database Directory")
                     .set_directory(&path)
                     .add_filter("SQLite files", ALLOWED_DB_EXTENSIONS)
                     .set_can_create_directories(true);
 
                 let selected_file = match new_or_open {
-                    ChangeDB::New => starting_dialog.set_file_name("furtherance.db").save_file(),
-                    ChangeDB::Open => starting_dialog.pick_file(),
+                    ChangeDB::New => starting_dialog
+                        .set_file_name("furtherance.db")
+                        .set_title("New Furtherance Database")
+                        .save_file(),
+                    ChangeDB::Open => starting_dialog
+                        .set_title("Open Furtherance Database")
+                        .pick_file(),
                 };
 
                 let mut is_old_db = false;
@@ -2315,7 +2339,8 @@ impl Application for Furtherance {
                                         )
                                     ),
                                 ]
-                                .spacing(10)
+                                .spacing(10),
+                                text(&self.settings_database_error),
                             ]
                             .spacing(10),
                             settings_heading("CSV"),
@@ -2324,6 +2349,7 @@ impl Application for Furtherance {
                                 button("Import CSV").on_press(Message::ImportCsvPressed)
                             ]
                             .spacing(10),
+                            text(&self.settings_csv_error),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),
@@ -3805,5 +3831,84 @@ pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Er
         }
     } else {
         Err("Failed to create the file".into())
+    }
+}
+
+pub fn verify_csv_structure(file: &std::fs::File) -> Result<(), Box<dyn std::error::Error>> {
+    let mut rdr = Reader::from_reader(file);
+
+    let expected_headers = vec![
+        "ID",
+        "Name",
+        "Start Time",
+        "Stop Time",
+        "Tags",
+        "Project",
+        "Rate",
+        "Currency",
+        "Total Time",
+        "Total Earnings",
+    ];
+
+    if let Ok(headers) = rdr.headers() {
+        verify_headers(headers, &expected_headers)?;
+    } else {
+        return Err("Failed to read the headers".into());
+    }
+
+    Ok(())
+}
+
+fn verify_headers(
+    headers: &StringRecord,
+    expected: &[&str],
+) -> Result<(), Box<dyn std::error::Error>> {
+    for (i, expected_header) in expected.iter().enumerate() {
+        match headers.get(i) {
+            Some(header) if header == *expected_header => continue,
+            Some(_) => {
+                return Err(format!("Wrong column order. Expected: {}", expected_header).into());
+            }
+            None => {
+                return Err(format!("Missing column: {}", expected_header).into());
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn read_csv_to_tasks(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
+    let mut rdr = Reader::from_reader(file);
+    let mut tasks = Vec::new();
+
+    for result in rdr.records() {
+        let record = result?;
+
+        let task = FurTask {
+            id: record.get(0).unwrap_or("0").parse().unwrap_or(0),
+            name: record.get(1).unwrap_or("").to_string(),
+            start_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
+            stop_time: record.get(3).unwrap_or("").parse().unwrap_or_default(),
+            tags: record.get(4).unwrap_or("").to_string(),
+            project: record.get(5).unwrap_or("").to_string(),
+            rate: record.get(6).unwrap_or("0").parse().unwrap_or(0.0),
+            currency: record.get(7).unwrap_or("").to_string(),
+        };
+
+        if let Ok(exists) = db_task_exists(&task) {
+            if !exists {
+                tasks.push(task);
+            }
+        }
+    }
+
+    Ok(tasks)
+}
+
+pub fn import_csv_to_database(file: &File) {
+    if let Ok(tasks_to_import) = read_csv_to_tasks(file) {
+        if let Err(e) = db_write_tasks(&tasks_to_import) {
+            eprintln!("Failed to import tasks: {}", e);
+        }
     }
 }
