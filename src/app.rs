@@ -15,7 +15,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use core::f32;
-use std::{collections::BTreeMap, path::Path, time::Duration};
+use std::{
+    collections::BTreeMap,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use crate::{
     constants::{ALLOWED_DB_EXTENSIONS, SETTINGS_SPACING},
@@ -36,6 +40,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
+use csv::Writer;
 use iced::Color;
 use iced::{
     alignment, font,
@@ -129,9 +134,11 @@ pub enum Message {
     EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
     EnterPressedInTaskInput,
+    ExportCsvPressed,
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
     IdleReset,
+    ImportCsvPressed,
     MidnightReached,
     NavigateTo(FurView),
     PomodoroContinueAfterBreak,
@@ -851,6 +858,21 @@ impl Application for Furtherance {
                     }
                 }
             }
+            Message::ExportCsvPressed => {
+                let file_name = format!("furtherance-{}.csv", Local::now().format("%Y-%m-%d"));
+                let selected_file = FileDialog::new()
+                    .set_title("Choose Database Directory")
+                    .add_filter("CSV", &["csv"])
+                    .set_can_create_directories(true)
+                    .set_file_name(file_name)
+                    .save_file();
+
+                if let Some(path) = selected_file {
+                    if let Err(e) = write_furtasks_to_csv(path) {
+                        eprintln!("Error writing data to CSV: {}", e);
+                    }
+                }
+            }
             Message::FontLoaded(_) => {}
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
@@ -860,6 +882,7 @@ impl Application for Furtherance {
                 self.idle = FurIdle::new();
                 self.displayed_alert = None;
             }
+            Message::ImportCsvPressed => {}
             Message::MidnightReached => {
                 self.task_history = get_task_history(self.fur_settings.days_to_show);
             }
@@ -2293,6 +2316,12 @@ impl Application for Furtherance {
                                     ),
                                 ]
                                 .spacing(10)
+                            ]
+                            .spacing(10),
+                            settings_heading("CSV"),
+                            row![
+                                button("Export CSV").on_press(Message::ExportCsvPressed),
+                                button("Import CSV").on_press(Message::ImportCsvPressed)
                             ]
                             .spacing(10),
                         ]
@@ -3734,5 +3763,47 @@ fn get_system_theme() -> Theme {
     match dark_light::detect() {
         dark_light::Mode::Light | dark_light::Mode::Default => Theme::Light,
         dark_light::Mode::Dark => Theme::Dark,
+    }
+}
+
+pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    if let Ok(file) = std::fs::File::create(path) {
+        if let Ok(tasks) = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Descending) {
+            let mut csv_writer = Writer::from_writer(file);
+            csv_writer.write_record(&[
+                "ID",
+                "Name",
+                "Start Time",
+                "Stop Time",
+                "Tags",
+                "Project",
+                "Rate",
+                "Currency",
+                "Total Time",
+                "Total Earnings",
+            ])?;
+
+            for task in tasks {
+                csv_writer.write_record(&[
+                    task.id.to_string(),
+                    task.name.clone(),
+                    task.start_time.to_rfc3339(),
+                    task.stop_time.to_rfc3339(),
+                    task.tags.clone(),
+                    task.project.clone(),
+                    task.rate.to_string(),
+                    task.currency.clone(),
+                    seconds_to_formatted_duration(task.total_time_in_seconds(), true),
+                    format!("${:.2}", task.total_earnings()),
+                ])?;
+            }
+
+            csv_writer.flush()?;
+            Ok(())
+        } else {
+            Err("Failed to retrieve tasks from the database".into())
+        }
+    } else {
+        Err("Failed to create the file".into())
     }
 }
