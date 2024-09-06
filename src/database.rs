@@ -522,13 +522,13 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
 
     let query = "
         SELECT 1 FROM tasks
-        WHERE task_name = ?2
-        AND start_time = ?3
-        AND stop_time = ?4
-        AND tags = ?5
-        AND project = ?6
-        AND rate = ?7
-        AND currency = ?8
+        WHERE task_name = ?1
+        AND start_time = ?2
+        AND stop_time = ?3
+        AND tags = ?4
+        AND project = ?5
+        AND rate = ?6
+        AND currency = ?7
         LIMIT 1
     ";
 

@@ -18,6 +18,8 @@ use core::f32;
 use std::{
     collections::BTreeMap,
     fs::File,
+    io::{BufRead, Read, Seek},
+    os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -41,7 +43,7 @@ use crate::{
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
-use csv::{Reader, StringRecord, Writer};
+use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::Color;
 use iced::{
     alignment, font,
@@ -85,8 +87,8 @@ pub struct Furtherance {
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
-    settings_csv_error: String,
-    settings_database_error: String,
+    settings_csv_message: Result<String, Box<dyn std::error::Error>>,
+    settings_database_error: Result<String, Box<dyn std::error::Error>>,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
     shortcut_to_edit: Option<ShortcutToEdit>,
@@ -234,8 +236,8 @@ impl Application for Furtherance {
             inspector_view: None,
             report: FurReport::new(),
             settings_active_tab: TabId::General,
-            settings_csv_error: String::new(),
-            settings_database_error: String::new(),
+            settings_csv_message: Ok(String::new()),
+            settings_database_error: Ok(String::new()),
             shortcuts: match db_retrieve_shortcuts() {
                 Ok(shortcuts) => shortcuts,
                 Err(e) => {
@@ -862,6 +864,8 @@ impl Application for Furtherance {
                 }
             }
             Message::ExportCsvPressed => {
+                self.settings_csv_message = Ok(String::new());
+                self.settings_database_error = Ok(String::new());
                 let file_name = format!("furtherance-{}.csv", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
                     .set_title("Save Furtherance CSV")
@@ -871,8 +875,12 @@ impl Application for Furtherance {
                     .save_file();
 
                 if let Some(path) = selected_file {
-                    if let Err(e) = write_furtasks_to_csv(path) {
-                        eprintln!("Error writing data to CSV: {}", e);
+                    match write_furtasks_to_csv(path) {
+                        Ok(_) => self.settings_csv_message = Ok("CSV file saved.".to_string()),
+                        Err(e) => {
+                            eprintln!("Error writing data to CSV: {}", e);
+                            self.settings_csv_message = Err("Error writing data to CSV.".into());
+                        }
                     }
                 }
             }
@@ -886,18 +894,23 @@ impl Application for Furtherance {
                 self.displayed_alert = None;
             }
             Message::ImportCsvPressed => {
+                self.settings_csv_message = Ok(String::new());
+                self.settings_database_error = Ok(String::new());
                 let selected_file = FileDialog::new()
                     .set_title("Open Furtherance CSV")
                     .add_filter("CSV", &["csv"])
                     .set_can_create_directories(false)
                     .pick_file();
                 if let Some(path) = selected_file {
-                    if let Ok(file) = File::open(path) {
-                        match verify_csv_structure(&file) {
-                            Ok(_) => import_csv_to_database(&file),
+                    if let Ok(mut file) = File::open(path) {
+                        match verify_csv(&file) {
+                            Ok(_) => {
+                                import_csv_to_database(&mut file);
+                                self.settings_csv_message = Ok("CSV imported successfully".into());
+                            }
                             Err(e) => {
                                 eprintln!("Invalid CSV file: {}", e);
-                                self.settings_csv_error = "Invalid CSV file".to_string();
+                                self.settings_csv_message = Err("Invalid CSV file".into());
                             }
                         }
                     }
@@ -1069,6 +1082,8 @@ impl Application for Furtherance {
                 }
             }
             Message::SettingsChangeDatabaseLocationPressed(new_or_open) => {
+                self.settings_csv_message = Ok(String::new());
+                self.settings_database_error = Ok(String::new());
                 let path = Path::new(&self.fur_settings.database_url);
                 let starting_dialog = FileDialog::new()
                     .set_directory(&path)
@@ -1088,13 +1103,13 @@ impl Application for Furtherance {
                 let mut is_old_db = false;
 
                 if let Some(file) = selected_file {
-                    self.settings_database_error = String::new();
+                    self.settings_database_error = Ok(String::new());
 
                     if file.exists() {
                         match db_is_valid_v3(file.as_path()) {
                             Err(e) => {
                                 eprintln!("Invalid database: {}", e);
-                                self.settings_database_error = "Invalid database.".to_string();
+                                self.settings_database_error = Err("Invalid database.".into());
                             }
                             Ok(is_valid_v3) => {
                                 if !is_valid_v3 {
@@ -1104,13 +1119,13 @@ impl Application for Furtherance {
                                                 is_old_db = true
                                             } else {
                                                 self.settings_database_error =
-                                                    "Invalid database.".to_string();
+                                                    Err("Invalid database.".into());
                                             }
                                         }
                                         Err(e) => {
                                             eprintln!("Invalid v1 database: {}", e);
                                             self.settings_database_error =
-                                                "Invalid database.".to_string();
+                                                Err("Invalid database.".into());
                                         }
                                     }
                                 }
@@ -1118,7 +1133,7 @@ impl Application for Furtherance {
                         }
                     }
 
-                    if self.settings_database_error.is_empty() {
+                    if self.settings_database_error.is_ok() {
                         // Valid file or not yet a file
                         if let Some(file_str) = file.to_str() {
                             if let Ok(_) = self.fur_settings.change_db_url(file_str) {
@@ -1128,18 +1143,21 @@ impl Application for Furtherance {
                                             if let Err(e) = db_upgrade_old() {
                                                 eprintln!("Error upgrading legacy database: {}", e);
                                                 self.settings_database_error =
-                                                    "Error upgrading legacy database.".to_string();
+                                                    Err("Error upgrading legacy database.".into());
                                                 return Command::none();
                                             }
                                         }
                                         self.task_history =
                                             get_task_history(self.fur_settings.days_to_show);
-                                        self.settings_database_error = String::new();
+                                        self.settings_database_error = Ok(match new_or_open {
+                                            ChangeDB::Open => "Database loaded.".to_string(),
+                                            ChangeDB::New => "Database created.".to_string(),
+                                        });
                                     }
                                     Err(e) => {
                                         eprintln!("Error accessing new database: {}", e);
                                         self.settings_database_error =
-                                            "Error accessing new database.".to_string();
+                                            Err("Error accessing new database.".into());
                                     }
                                 }
                             }
@@ -2016,13 +2034,15 @@ impl Application for Furtherance {
         ]
         .spacing(10);
         database_location_col =
-            database_location_col.push_maybe(if self.settings_database_error.is_empty() {
-                None
-            } else {
-                Some(
-                    text(&self.settings_database_error)
-                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
-                )
+            database_location_col.push_maybe(match &self.settings_database_error {
+                Ok(msg) => {
+                    if msg.is_empty() {
+                        None
+                    } else {
+                        Some(text(msg).style(theme::Text::Color(Color::from_rgb(0.0, 255.0, 0.0))))
+                    }
+                }
+                Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
             });
 
         let mut csv_col = column![row![
@@ -2031,13 +2051,15 @@ impl Application for Furtherance {
         ]
         .spacing(10),]
         .spacing(10);
-        csv_col = csv_col.push_maybe(if self.settings_csv_error.is_empty() {
-            None
-        } else {
-            Some(
-                text(&self.settings_csv_error)
-                    .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
-            )
+        csv_col = csv_col.push_maybe(match &self.settings_csv_message {
+            Ok(msg) => {
+                if msg.is_empty() {
+                    None
+                } else {
+                    Some(text(msg).style(theme::Text::Color(Color::from_rgb(0.0, 255.0, 0.0))))
+                }
+            }
+            Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
         });
 
         let settings_view: Column<'_, Message, Theme, Renderer> =
@@ -3813,7 +3835,6 @@ pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Er
         if let Ok(tasks) = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Descending) {
             let mut csv_writer = Writer::from_writer(file);
             csv_writer.write_record(&[
-                "ID",
                 "Name",
                 "Start Time",
                 "Stop Time",
@@ -3827,7 +3848,6 @@ pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Er
 
             for task in tasks {
                 csv_writer.write_record(&[
-                    task.id.to_string(),
                     task.name.clone(),
                     task.start_time.to_rfc3339(),
                     task.stop_time.to_rfc3339(),
@@ -3850,11 +3870,10 @@ pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Er
     }
 }
 
-pub fn verify_csv_structure(file: &std::fs::File) -> Result<(), Box<dyn std::error::Error>> {
+pub fn verify_csv(file: &std::fs::File) -> Result<(), Box<dyn std::error::Error>> {
     let mut rdr = Reader::from_reader(file);
 
-    let expected_headers = vec![
-        "ID",
+    let v3_headers = vec![
         "Name",
         "Start Time",
         "Stop Time",
@@ -3865,9 +3884,30 @@ pub fn verify_csv_structure(file: &std::fs::File) -> Result<(), Box<dyn std::err
         "Total Time",
         "Total Earnings",
     ];
+    let v2_headers = vec![
+        "Name",
+        "Project",
+        "Tags",
+        "Rate",
+        "Start Time",
+        "Stop Time",
+        "Total Seconds",
+    ];
+    let v1_headers = vec![
+        "id",
+        "task_name",
+        "start_time",
+        "stop_time",
+        "tags",
+        "seconds",
+    ];
 
     if let Ok(headers) = rdr.headers() {
-        verify_headers(headers, &expected_headers)?;
+        if verify_headers(headers, &v3_headers).is_err() {
+            if verify_headers(headers, &v2_headers).is_err() {
+                verify_headers(headers, &v1_headers)?;
+            }
+        }
     } else {
         return Err("Failed to read the headers".into());
     }
@@ -3883,32 +3923,59 @@ fn verify_headers(
         match headers.get(i) {
             Some(header) if header == *expected_header => continue,
             Some(_) => {
-                return Err(format!("Wrong column order. Expected: {}", expected_header).into());
+                return Err(format!("Wrong column order.").into());
             }
             None => {
-                return Err(format!("Missing column: {}", expected_header).into());
+                return Err(format!("Missing column").into());
             }
         }
     }
     Ok(())
 }
 
-pub fn read_csv_to_tasks(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
-    let mut rdr = Reader::from_reader(file);
+pub fn read_csv(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
+    let mut rdr = ReaderBuilder::new().flexible(true).from_reader(file);
     let mut tasks = Vec::new();
 
     for result in rdr.records() {
         let record = result?;
 
-        let task = FurTask {
-            id: record.get(0).unwrap_or("0").parse().unwrap_or(0),
-            name: record.get(1).unwrap_or("").to_string(),
-            start_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
-            stop_time: record.get(3).unwrap_or("").parse().unwrap_or_default(),
-            tags: record.get(4).unwrap_or("").to_string(),
-            project: record.get(5).unwrap_or("").to_string(),
-            rate: record.get(6).unwrap_or("0").parse().unwrap_or(0.0),
-            currency: record.get(7).unwrap_or("").to_string(),
+        let task = match record.len() {
+            9 => FurTask {
+                // v3 - Iced
+                id: 0,
+                name: record.get(0).unwrap_or("").to_string(),
+                start_time: record.get(1).unwrap_or("").parse().unwrap_or_default(),
+                stop_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
+                tags: record.get(3).unwrap_or("").trim().to_string(),
+                project: record.get(4).unwrap_or("").trim().to_string(),
+                rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
+                currency: record.get(6).unwrap_or("").trim().to_string(),
+            },
+            7 => FurTask {
+                // v2 - macOS SwiftUI
+                id: 0,
+                name: record.get(0).unwrap_or("").to_string(),
+                start_time: record.get(4).unwrap_or("").parse().unwrap_or_default(),
+                stop_time: record.get(5).unwrap_or("").parse().unwrap_or_default(),
+                tags: record.get(2).unwrap_or("").trim().to_string(),
+                project: record.get(1).unwrap_or("").trim().to_string(),
+                rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
+                currency: String::new(),
+            },
+            6 => FurTask {
+                // v1 - GTK
+                id: record.get(0).unwrap_or("0").parse().unwrap_or(0),
+                name: record.get(1).unwrap_or("").to_string(),
+                start_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
+                stop_time: record.get(3).unwrap_or("").parse().unwrap_or_default(),
+                tags: record.get(4).unwrap_or("").trim().to_string(),
+                project: String::new(),
+                rate: 0.0,
+                currency: String::new(),
+            },
+
+            _ => return Err("Invalid CSV".into()),
         };
 
         if let Ok(exists) = db_task_exists(&task) {
@@ -3921,10 +3988,19 @@ pub fn read_csv_to_tasks(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error
     Ok(tasks)
 }
 
-pub fn import_csv_to_database(file: &File) {
-    if let Ok(tasks_to_import) = read_csv_to_tasks(file) {
-        if let Err(e) = db_write_tasks(&tasks_to_import) {
-            eprintln!("Failed to import tasks: {}", e);
+pub fn import_csv_to_database(file: &mut File) {
+    // Seek back to the start of the file after verification
+    if let Err(e) = file.seek(std::io::SeekFrom::Start(0)) {
+        eprintln!("Failed to seek to start of file: {}", e);
+        return;
+    }
+
+    match read_csv(file) {
+        Ok(tasks_to_import) => {
+            if let Err(e) = db_write_tasks(&tasks_to_import) {
+                eprintln!("Failed to import tasks: {}", e);
+            }
         }
+        Err(e) => eprintln!("Failed to read the CSV file: {}", e),
     }
 }
