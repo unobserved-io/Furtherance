@@ -1998,6 +1998,48 @@ impl Application for Furtherance {
         //         .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: SETTINGS
+        let mut database_location_col = column![
+            text("Database location"),
+            text_input(
+                &self.fur_settings.database_url,
+                &self.fur_settings.database_url,
+            ),
+            row![
+                button("Create New").on_press(Message::SettingsChangeDatabaseLocationPressed(
+                    ChangeDB::New
+                )),
+                button("Open Existing").on_press(Message::SettingsChangeDatabaseLocationPressed(
+                    ChangeDB::Open
+                )),
+            ]
+            .spacing(10),
+        ]
+        .spacing(10);
+        database_location_col =
+            database_location_col.push_maybe(if self.settings_database_error.is_empty() {
+                None
+            } else {
+                Some(
+                    text(&self.settings_database_error)
+                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
+                )
+            });
+
+        let mut csv_col = column![row![
+            button("Export CSV").on_press(Message::ExportCsvPressed),
+            button("Import CSV").on_press(Message::ImportCsvPressed)
+        ]
+        .spacing(10),]
+        .spacing(10);
+        csv_col = csv_col.push_maybe(if self.settings_csv_error.is_empty() {
+            None
+        } else {
+            Some(
+                text(&self.settings_csv_error)
+                    .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
+            )
+        });
+
         let settings_view: Column<'_, Message, Theme, Renderer> =
             column![Tabs::new(Message::SettingsTabSelected)
                 .tab_icon_position(iced_aw::tabs::Position::Top)
@@ -2321,35 +2363,9 @@ impl Application for Furtherance {
                     Scrollable::new(
                         column![
                             settings_heading("Local Database"),
-                            column![
-                                text("Database location"),
-                                text_input(
-                                    &self.fur_settings.database_url,
-                                    &self.fur_settings.database_url,
-                                ),
-                                row![
-                                    button("Create New").on_press(
-                                        Message::SettingsChangeDatabaseLocationPressed(
-                                            ChangeDB::New
-                                        )
-                                    ),
-                                    button("Open Existing").on_press(
-                                        Message::SettingsChangeDatabaseLocationPressed(
-                                            ChangeDB::Open
-                                        )
-                                    ),
-                                ]
-                                .spacing(10),
-                                text(&self.settings_database_error),
-                            ]
-                            .spacing(10),
+                            database_location_col,
                             settings_heading("CSV"),
-                            row![
-                                button("Export CSV").on_press(Message::ExportCsvPressed),
-                                button("Import CSV").on_press(Message::ImportCsvPressed)
-                            ]
-                            .spacing(10),
-                            text(&self.settings_csv_error),
+                            csv_col,
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),
