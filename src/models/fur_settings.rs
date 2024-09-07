@@ -276,6 +276,11 @@ impl FurSettings {
         self.show_tags = value.to_owned();
         self.save()
     }
+
+    pub fn reset_to_default_db_location(&mut self) -> Result<(), std::io::Error> {
+        self.database_url = get_default_db_path().to_string_lossy().into_owned();
+        self.save()
+    }
 }
 
 pub fn get_data_path() -> PathBuf {

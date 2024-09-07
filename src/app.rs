@@ -207,7 +207,7 @@ impl Application for Furtherance {
 
     fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
         // Load settings
-        let settings = match FurSettings::new() {
+        let mut settings = match FurSettings::new() {
             Ok(loaded_settings) => loaded_settings,
             Err(e) => {
                 eprintln!("Error loading settings: {}", e);
@@ -216,11 +216,17 @@ impl Application for Furtherance {
         };
         // Load or create database
         if let Err(e) = db_init() {
-            eprintln!("Error loading database. Can't load or save data: {}", e);
+            if let Err(e) = settings.reset_to_default_db_location() {
+                eprintln!("Error loading database. Can't load or save data: {}", e);
+            }
+            eprintln!(
+                "Error loading database. Reverting to default location: {}",
+                e
+            );
         }
         // Update old furtherance databases with new properties
         if let Err(e) = db_upgrade_old() {
-            eprintln!("Error upgrading legacy database: {}", e);
+            eprintln!("Error encountered while upgrading legacy database: {}", e);
         }
 
         let mut furtherance = Furtherance {
