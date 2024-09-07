@@ -1927,13 +1927,13 @@ impl Application for Furtherance {
         if self.fur_settings.show_chart_time_recorded {
             charts_column = charts_column.push(self.report.time_recorded_chart.view());
         }
-        if self.fur_settings.show_chart_earnings {
+        if self.fur_settings.show_chart_earnings && self.report.total_earned > 0.0 {
             charts_column = charts_column.push(self.report.earnings_chart.view());
         }
         if self.fur_settings.show_chart_average_time {
             charts_column = charts_column.push(self.report.average_time_chart.view());
         }
-        if self.fur_settings.show_chart_average_earnings {
+        if self.fur_settings.show_chart_average_earnings && self.report.total_earned > 0.0 {
             charts_column = charts_column.push(self.report.average_earnings_chart.view());
         }
 
