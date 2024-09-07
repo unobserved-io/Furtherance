@@ -16,7 +16,7 @@
 
 use crate::{
     app::Message,
-    constants::{CHART_COLOR, CHART_HEIGHT},
+    constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
     models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
@@ -93,6 +93,7 @@ impl Chart<Message> for AverageTimeChart {
                         .configure_mesh()
                         .label_style(&light_dark_color())
                         .x_label_style(("sans-serif", 12).into_font().color(&light_dark_color()))
+                        .x_labels(MAX_X_VALUES)
                         .y_label_style(
                             ("sans-serif", 12)
                                 .into_font()

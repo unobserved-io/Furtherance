@@ -16,14 +16,11 @@
 
 use crate::{
     app::Message,
-    constants::{CHART_COLOR, CHART_HEIGHT},
+    constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
     models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
-use iced::{
-    widget::{Row, Text},
-    Element, Length,
-};
+use iced::{widget::Text, Element, Length};
 use plotters::prelude::*;
 use plotters_backend::DrawingBackend;
 use plotters_iced::{plotters_backend, Chart, ChartWidget};
@@ -92,6 +89,7 @@ impl Chart<Message> for SelectionTimeRecordedChart {
                         .configure_mesh()
                         .label_style(&light_dark_color())
                         .x_label_style(("sans-serif", 12).into_font().color(&light_dark_color()))
+                        .x_labels(MAX_X_VALUES)
                         .y_label_style(
                             ("sans-serif", 12)
                                 .into_font()
