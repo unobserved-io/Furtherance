@@ -87,6 +87,7 @@ pub struct Furtherance {
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
+    settings_backup_message: Result<String, Box<dyn std::error::Error>>,
     settings_csv_message: Result<String, Box<dyn std::error::Error>>,
     settings_database_error: Result<String, Box<dyn std::error::Error>>,
     shortcuts: Vec<FurShortcut>,
@@ -110,6 +111,7 @@ pub enum Message {
     AddNewTaskPressed,
     AddTaskToGroup(GroupToEdit),
     AlertClose,
+    BackupDatabase,
     CancelCurrentTaskStartTime,
     CancelEndDate,
     CancelGroupEdit,
@@ -242,6 +244,7 @@ impl Application for Furtherance {
             inspector_view: None,
             report: FurReport::new(),
             settings_active_tab: TabId::General,
+            settings_backup_message: Ok(String::new()),
             settings_csv_message: Ok(String::new()),
             settings_database_error: Ok(String::new()),
             shortcuts: match db_retrieve_shortcuts() {
@@ -334,6 +337,29 @@ impl Application for Furtherance {
                 self.delete_ids_from_context = None;
                 self.delete_shortcut_from_context = None;
                 self.displayed_alert = None;
+            }
+            Message::BackupDatabase => {
+                self.settings_csv_message = Ok(String::new());
+                self.settings_database_error = Ok(String::new());
+                let file_name = format!("furtherance-bkup-{}.db", Local::now().format("%Y-%m-%d"));
+                let selected_file = FileDialog::new()
+                    .set_title("Save Furtherance Backup")
+                    .add_filter("SQLite Database", &["db"])
+                    .set_can_create_directories(true)
+                    .set_file_name(file_name)
+                    .save_file();
+
+                if let Some(file) = selected_file {
+                    match db_backup(file) {
+                        Ok(_) => {
+                            self.settings_backup_message =
+                                Ok("Database backup successful".to_string());
+                        }
+                        Err(e) => {
+                            self.settings_backup_message = Err("Failed to backup database".into());
+                        }
+                    }
+                }
             }
             Message::CancelCurrentTaskStartTime => self.show_timer_start_picker = false,
             Message::CancelEndDate => self.report.show_end_date_picker = false,
@@ -2068,6 +2094,19 @@ impl Application for Furtherance {
             Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
         });
 
+        let mut backup_col =
+            column![button("Backup Database").on_press(Message::BackupDatabase)].spacing(10);
+        backup_col = backup_col.push_maybe(match &self.settings_backup_message {
+            Ok(msg) => {
+                if msg.is_empty() {
+                    None
+                } else {
+                    Some(text(msg).style(theme::Text::Color(Color::from_rgb(0.0, 255.0, 0.0))))
+                }
+            }
+            Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
+        });
+
         let settings_view: Column<'_, Message, Theme, Renderer> =
             column![Tabs::new(Message::SettingsTabSelected)
                 .tab_icon_position(iced_aw::tabs::Position::Top)
@@ -2394,6 +2433,8 @@ impl Application for Furtherance {
                             database_location_col,
                             settings_heading("CSV"),
                             csv_col,
+                            settings_heading("Backup"),
+                            backup_col,
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),

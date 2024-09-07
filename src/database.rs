@@ -650,7 +650,7 @@ pub fn delete_all() -> Result<()> {
     Ok(())
 }
 
-pub fn backup_db(backup_file: String) -> Result<()> {
+pub fn db_backup(backup_file: PathBuf) -> Result<()> {
     let mut bkup_conn = Connection::open(backup_file)?;
     let conn = Connection::open(db_get_directory())?;
     let backup = backup::Backup::new(&conn, &mut bkup_conn)?;
