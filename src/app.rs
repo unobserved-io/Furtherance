@@ -954,6 +954,9 @@ impl Application for Furtherance {
                 if self.current_view != destination {
                     self.inspector_view = None;
                     self.current_view = destination;
+                    if destination == FurView::Report {
+                        self.report.update_tasks_in_range();
+                    }
                 }
             }
             Message::PomodoroContinueAfterBreak => {

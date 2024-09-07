@@ -182,7 +182,7 @@ impl FurReport {
         }
     }
 
-    fn update_tasks_in_range(&mut self) {
+    pub fn update_tasks_in_range(&mut self) {
         match db_retrieve_tasks_by_date_range(
             self.date_range_start.to_string(),
             self.date_range_end.to_string(),
