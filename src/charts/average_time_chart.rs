@@ -20,7 +20,7 @@ use crate::{
     models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
-use iced::{Element, Length};
+use iced::{widget::Text, Element, Length};
 use plotters::prelude::*;
 use plotters_backend::DrawingBackend;
 use plotters_iced::{plotters_backend, Chart, ChartWidget};
@@ -28,53 +28,39 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 pub struct AverageTimeChart {
-    tasks: Vec<FurTask>,
+    date_time: BTreeMap<NaiveDate, i64>,
 }
 
 impl AverageTimeChart {
     pub fn new(tasks: Vec<FurTask>) -> Self {
-        Self { tasks }
+        Self {
+            date_time: time_per_day(tasks),
+        }
     }
 
     pub fn view(&self) -> Element<Message> {
-        let chart = ChartWidget::new(self)
-            .width(Length::Fill)
-            .height(Length::Fixed(if self.tasks.is_empty() {
-                0.0
-            } else {
-                CHART_HEIGHT
-            }));
+        if self.date_time.len() <= 1 {
+            Text::new("").into()
+        } else {
+            let chart = ChartWidget::new(self)
+                .width(Length::Fill)
+                .height(Length::Fixed(CHART_HEIGHT));
 
-        chart.into()
-    }
-
-    pub fn time_per_day(&self) -> BTreeMap<NaiveDate, i64> {
-        self.tasks
-            .iter()
-            .fold(BTreeMap::new(), |mut accumulator, task| {
-                let date = task.start_time.date_naive();
-                let entry = accumulator.entry(date).or_insert((0, 0));
-                entry.0 += task.total_time_in_seconds();
-                entry.1 += 1;
-                accumulator
-            })
-            .into_iter()
-            .map(|(date, (total_time, count))| (date, total_time / count))
-            .collect()
+            chart.into()
+        }
     }
 }
 
 impl Chart<Message> for AverageTimeChart {
     type State = ();
     fn build_chart<DB: DrawingBackend>(&self, _state: &Self::State, mut chart: ChartBuilder<DB>) {
-        let date_time: BTreeMap<NaiveDate, i64> = self.time_per_day();
-        let min_time = date_time.values().copied().min().unwrap_or(0);
+        let min_time = self.date_time.values().copied().min().unwrap_or(0);
         let min_minus_five_percent = min_time as f32 - (min_time as f32 * 0.05);
-        let max_time = date_time.values().copied().max().unwrap_or(0);
+        let max_time = self.date_time.values().copied().max().unwrap_or(0);
 
-        if date_time.len() > 1 {
-            if let Some(first_date) = date_time.first_key_value() {
-                if let Some(last_date) = date_time.last_key_value() {
+        if self.date_time.len() > 1 {
+            if let Some(first_date) = self.date_time.first_key_value() {
+                if let Some(last_date) = self.date_time.last_key_value() {
                     let mut chart = chart
                         .margin(30)
                         .caption(
@@ -107,7 +93,7 @@ impl Chart<Message> for AverageTimeChart {
 
                     chart
                         .draw_series(LineSeries::new(
-                            date_time.iter().map(|(d, t)| (*d, *t)),
+                            self.date_time.iter().map(|(d, t)| (*d, *t)),
                             CHART_COLOR.filled(),
                         ))
                         .unwrap();
@@ -115,6 +101,21 @@ impl Chart<Message> for AverageTimeChart {
             }
         }
     }
+}
+
+fn time_per_day(tasks: Vec<FurTask>) -> BTreeMap<NaiveDate, i64> {
+    tasks
+        .iter()
+        .fold(BTreeMap::new(), |mut accumulator, task| {
+            let date = task.start_time.date_naive();
+            let entry = accumulator.entry(date).or_insert((0, 0));
+            entry.0 += task.total_time_in_seconds();
+            entry.1 += 1;
+            accumulator
+        })
+        .into_iter()
+        .map(|(date, (total_time, count))| (date, total_time / count))
+        .collect()
 }
 
 fn light_dark_color() -> RGBColor {

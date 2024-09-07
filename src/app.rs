@@ -1890,7 +1890,7 @@ impl Application for Furtherance {
             .height(Length::Fill)];
 
         // MARK: REPORT
-        let mut charts_column = Column::new();
+        let mut charts_column = Column::new().align_items(Alignment::Center);
 
         let mut timer_earnings_boxes_widgets: Vec<Element<'_, Message, Theme, Renderer>> =
             Vec::new();
@@ -1924,7 +1924,8 @@ impl Application for Furtherance {
             timer_earnings_boxes_widgets.insert(0, horizontal_space().width(Length::Fill).into());
             timer_earnings_boxes_widgets.push(horizontal_space().width(Length::Fill).into());
 
-            charts_column = charts_column.push(Row::with_children(timer_earnings_boxes_widgets));
+            charts_column = charts_column
+                .push(Row::with_children(timer_earnings_boxes_widgets).padding([0, 0, 10, 0]));
         }
 
         if self.fur_settings.show_chart_time_recorded {
@@ -2018,7 +2019,7 @@ impl Application for Furtherance {
                 vertical_space().height(Length::Fixed(20.0)),
                 horizontal_rule(1),
             ]
-            .padding([20, 20, 0, 20]),
+            .padding([20, 20, 10, 20]),
             Scrollable::new(
                 column![charts_column, charts_breakdown_by_selection_column]
                     .align_items(Alignment::Center)

@@ -20,7 +20,7 @@ use crate::{
     models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
-use iced::{Element, Length};
+use iced::{widget::Text, Element, Length};
 use plotters::prelude::*;
 use plotters_backend::DrawingBackend;
 use plotters_iced::{plotters_backend, Chart, ChartWidget};
@@ -28,61 +28,49 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 pub struct AverageEarningsChart {
-    tasks: Vec<FurTask>,
+    date_earned: BTreeMap<NaiveDate, f32>,
 }
 
 impl AverageEarningsChart {
     pub fn new(tasks: Vec<FurTask>) -> Self {
-        Self { tasks }
+        Self {
+            date_earned: earnings_per_day(tasks),
+        }
     }
 
     pub fn view(&self) -> Element<Message> {
-        let chart = ChartWidget::new(self)
-            .width(Length::Fill)
-            .height(Length::Fixed(if self.tasks.is_empty() {
-                0.0
-            } else {
-                CHART_HEIGHT
-            }));
+        if self.date_earned.len() <= 1 {
+            Text::new("").into()
+        } else {
+            let chart = ChartWidget::new(self)
+                .width(Length::Fill)
+                .height(Length::Fixed(CHART_HEIGHT));
 
-        chart.into()
-    }
-
-    pub fn earnings_per_day(&self) -> BTreeMap<NaiveDate, f32> {
-        self.tasks
-            .iter()
-            .fold(BTreeMap::new(), |mut accumulator, task| {
-                let date = task.start_time.date_naive();
-                let entry = accumulator.entry(date).or_insert((0.0, 0));
-                entry.0 += task.total_earnings();
-                entry.1 += 1;
-                accumulator
-            })
-            .into_iter()
-            .map(|(date, (total_time, count))| (date, total_time / count as f32))
-            .collect()
+            chart.into()
+        }
     }
 }
 
 impl Chart<Message> for AverageEarningsChart {
     type State = ();
     fn build_chart<DB: DrawingBackend>(&self, _state: &Self::State, mut chart: ChartBuilder<DB>) {
-        let date_earned: BTreeMap<NaiveDate, f32> = self.earnings_per_day();
-        let min_earned = date_earned
+        let min_earned = self
+            .date_earned
             .values()
             .copied()
             .max_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(0.0);
         let min_minus_five_percent = min_earned as f32 - (min_earned as f32 * 0.05);
-        let max_earned = date_earned
+        let max_earned = self
+            .date_earned
             .values()
             .copied()
             .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(0.0);
 
-        if date_earned.len() > 1 {
-            if let Some(first_date) = date_earned.first_key_value() {
-                if let Some(last_date) = date_earned.last_key_value() {
+        if self.date_earned.len() > 1 {
+            if let Some(first_date) = self.date_earned.first_key_value() {
+                if let Some(last_date) = self.date_earned.last_key_value() {
                     let mut chart = chart
                         .margin(30)
                         .caption(
@@ -115,7 +103,7 @@ impl Chart<Message> for AverageEarningsChart {
 
                     chart
                         .draw_series(LineSeries::new(
-                            date_earned.iter().map(|(d, t)| (*d, *t)),
+                            self.date_earned.iter().map(|(d, t)| (*d, *t)),
                             CHART_COLOR.filled(),
                         ))
                         .unwrap();
@@ -123,6 +111,21 @@ impl Chart<Message> for AverageEarningsChart {
             }
         }
     }
+}
+
+fn earnings_per_day(tasks: Vec<FurTask>) -> BTreeMap<NaiveDate, f32> {
+    tasks
+        .iter()
+        .fold(BTreeMap::new(), |mut accumulator, task| {
+            let date = task.start_time.date_naive();
+            let entry = accumulator.entry(date).or_insert((0.0, 0));
+            entry.0 += task.total_earnings();
+            entry.1 += 1;
+            accumulator
+        })
+        .into_iter()
+        .map(|(date, (total_time, count))| (date, total_time / count as f32))
+        .collect()
 }
 
 fn light_dark_color() -> RGBColor {
