@@ -14,22 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::{DateTime, Local};
-use csv::Reader;
-use directories::ProjectDirs;
 use rusqlite::{backup, params, Connection, Result};
+use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
-use std::{fs::create_dir_all, path::Path};
 
-use crate::{
-    helpers::color_utils::ToHex,
-    models::{
-        fur_settings::FurSettings,
-        fur_shortcut::{self, FurShortcut},
-        fur_task::FurTask,
-        group_to_edit::GroupToEdit,
-    },
+use crate::models::{
+    fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
+    group_to_edit::GroupToEdit,
 };
 
 #[derive(Debug)]

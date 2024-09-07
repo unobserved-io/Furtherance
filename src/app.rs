@@ -18,8 +18,7 @@ use core::f32;
 use std::{
     collections::BTreeMap,
     fs::File,
-    io::{BufRead, Read, Seek},
-    os::unix::fs::PermissionsExt,
+    io::Seek,
     path::{Path, PathBuf},
     time::Duration,
 };
