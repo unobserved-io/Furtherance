@@ -37,7 +37,7 @@ impl fmt::Display for FurShortcut {
         }
 
         if !self.tags.is_empty() {
-            write!(f, " #{}", self.tags)?;
+            write!(f, " {}", self.tags)?;
         }
 
         if self.rate != 0.0 {
