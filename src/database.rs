@@ -625,6 +625,32 @@ pub fn db_update_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
     Ok(())
 }
 
+pub fn db_shortcut_exists(shortcut: &FurShortcut) -> Result<bool> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let query = "
+        SELECT 1 FROM shortcuts
+        WHERE name = ?1
+        AND tags = ?2
+        AND project = ?3
+        AND rate = ?4
+        AND currency = ?5
+        LIMIT 1
+    ";
+
+    let mut stmt = conn.prepare(query)?;
+
+    let exists = stmt.exists(params![
+        shortcut.name,
+        shortcut.tags,
+        shortcut.project,
+        shortcut.rate,
+        shortcut.currency,
+    ])?;
+
+    Ok(exists)
+}
+
 pub fn db_delete_shortcut_by_id(id: u32) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 

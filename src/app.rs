@@ -476,7 +476,7 @@ impl Application for Furtherance {
                 }
             }
             Message::CreateShortcutFromTaskGroup(task_group) => {
-                if let Err(e) = db_write_shortcut(FurShortcut {
+                let new_shortcut = FurShortcut {
                     id: 0,
                     name: task_group.name,
                     tags: if task_group.tags.is_empty() {
@@ -488,14 +488,27 @@ impl Application for Furtherance {
                     rate: task_group.rate,
                     currency: String::new(),
                     color_hex: Srgb::random().to_hex(),
-                }) {
-                    eprintln!("Failed to write shortcut to database: {}", e);
-                }
-                match db_retrieve_shortcuts() {
-                    Ok(shortcuts) => self.shortcuts = shortcuts,
-                    Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
                 };
-                self.current_view = FurView::Shortcuts;
+
+                match db_shortcut_exists(&new_shortcut) {
+                    Ok(exists) => {
+                        if exists {
+                            self.displayed_alert = Some(FurAlert::ShortcutExists);
+                        } else {
+                            if let Err(e) = db_write_shortcut(new_shortcut) {
+                                eprintln!("Failed to write shortcut to database: {}", e);
+                            }
+                            match db_retrieve_shortcuts() {
+                                Ok(shortcuts) => self.shortcuts = shortcuts,
+                                Err(e) => {
+                                    eprintln!("Failed to retrieve shortcuts from database: {}", e)
+                                }
+                            };
+                            self.current_view = FurView::Shortcuts;
+                        }
+                    }
+                    Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
+                }
             }
             Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
             Message::DeleteShortcut => {
@@ -1023,7 +1036,7 @@ impl Application for Furtherance {
             }
             Message::SaveShortcut => {
                 if let Some(shortcut_to_add) = &self.shortcut_to_add {
-                    if let Err(e) = db_write_shortcut(FurShortcut {
+                    let new_shortcut = FurShortcut {
                         id: 0,
                         name: shortcut_to_add.name.trim().to_string(),
                         tags: shortcut_to_add.tags.trim().to_string(),
@@ -1035,15 +1048,28 @@ impl Application for Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_add.color.to_hex(),
-                    }) {
-                        eprintln!("Failed to write shortcut to database: {}", e);
-                    }
-                    self.inspector_view = None;
-                    self.shortcut_to_add = None;
-                    match db_retrieve_shortcuts() {
-                        Ok(shortcuts) => self.shortcuts = shortcuts,
-                        Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
                     };
+                    match db_shortcut_exists(&new_shortcut) {
+                        Ok(exists) => {
+                            if exists {
+                                self.displayed_alert = Some(FurAlert::ShortcutExists);
+                            } else {
+                                if let Err(e) = db_write_shortcut(new_shortcut) {
+                                    eprintln!("Failed to write shortcut to database: {}", e);
+                                }
+                                self.inspector_view = None;
+                                self.shortcut_to_add = None;
+                                match db_retrieve_shortcuts() {
+                                    Ok(shortcuts) => self.shortcuts = shortcuts,
+                                    Err(e) => eprintln!(
+                                        "Failed to retrieve shortcuts from database: {}",
+                                        e
+                                    ),
+                                };
+                            }
+                        }
+                        Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
+                    }
                 } else if let Some(shortcut_to_edit) = &self.shortcut_to_edit {
                     if let Err(e) = db_update_shortcut(FurShortcut {
                         id: shortcut_to_edit.id,
@@ -3202,6 +3228,19 @@ impl Application for Furtherance {
                             .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroStartBreak)
+                        .style(theme::Button::Primary),
+                    );
+                }
+                FurAlert::ShortcutExists => {
+                    alert_text = "Shortcut exists".to_string();
+                    alert_description = "A shortcut for that task already exists.";
+                    close_button = Some(
+                        button(
+                            text("OK")
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
                         .style(theme::Button::Primary),
                     );
                 }

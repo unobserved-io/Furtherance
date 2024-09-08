@@ -43,6 +43,7 @@ pub enum FurAlert {
     Idle,
     PomodoroBreakOver,
     PomodoroOver,
+    ShortcutExists,
 }
 
 #[derive(Debug)]
