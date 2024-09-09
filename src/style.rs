@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use iced::widget::{button, container};
-use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
+use iced::{gradient, theme, Background, Border, Color, Gradient, Radians, Theme};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::{Lighten, Srgb};
 
@@ -172,4 +172,82 @@ pub fn context_menu_button_style() -> iced::theme::Button {
         primary_color,
         light_color,
     }))
+}
+
+struct ActiveNavigationButtonStyle {
+    primary_color: Color,
+}
+
+impl button::StyleSheet for ActiveNavigationButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.primary_color)),
+            text_color: Color::WHITE,
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 15.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.primary_color)),
+            text_color: Color::WHITE,
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 15.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+}
+
+pub fn active_nav_menu_button_style() -> iced::theme::Button {
+    let primary_color = FURTHERANCE_PURPLE.to_iced_color();
+    iced::theme::Button::Custom(Box::new(ActiveNavigationButtonStyle { primary_color }))
+}
+
+struct InactiveNavigationButtonStyle {
+    primary_color: Color,
+}
+
+impl button::StyleSheet for InactiveNavigationButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(Color::TRANSPARENT)),
+            text_color: Color::BLACK,
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.primary_color)),
+            text_color: Color::WHITE,
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 15.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+}
+
+pub fn inactive_nav_menu_button_style() -> iced::theme::Button {
+    let primary_color = FURTHERANCE_PURPLE.to_iced_color();
+    iced::theme::Button::Custom(Box::new(InactiveNavigationButtonStyle { primary_color }))
 }

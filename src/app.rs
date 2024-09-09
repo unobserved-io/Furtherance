@@ -1761,10 +1761,22 @@ impl Application for Furtherance {
         // MARK: SIDEBAR
         let sidebar = Container::new(
             column![
-                nav_button("Shortcuts", FurView::Shortcuts),
-                nav_button("Timer", FurView::Timer),
-                nav_button("History", FurView::History),
-                nav_button("Report", FurView::Report),
+                nav_button(
+                    "Shortcuts",
+                    FurView::Shortcuts,
+                    self.current_view == FurView::Shortcuts
+                ),
+                nav_button("Timer", FurView::Timer, self.current_view == FurView::Timer),
+                nav_button(
+                    "History",
+                    FurView::History,
+                    self.current_view == FurView::History
+                ),
+                nav_button(
+                    "Report",
+                    FurView::Report,
+                    self.current_view == FurView::Report
+                ),
                 vertical_space().height(Length::Fill),
                 if self.timer_is_running && self.current_view != FurView::Timer {
                     text(convert_timer_text_to_vertical_hms(&self.timer_text))
@@ -1777,7 +1789,11 @@ impl Application for Furtherance {
                 } else {
                     text("")
                 },
-                nav_button("Settings", FurView::Settings)
+                nav_button(
+                    "Settings",
+                    FurView::Settings,
+                    self.current_view == FurView::Settings
+                ),
             ]
             .spacing(12)
             .align_items(Alignment::Start),
@@ -3275,10 +3291,16 @@ impl Application for Furtherance {
     }
 }
 
-fn nav_button<'a>(text: &'a str, destination: FurView) -> Button<'a, Message> {
+fn nav_button<'a>(text: &'a str, destination: FurView, active: bool) -> Button<'a, Message> {
     button(text)
+        .padding([5, 15])
         .on_press(Message::NavigateTo(destination))
-        .style(theme::Button::Text)
+        .width(Length::Fill)
+        .style(if active {
+            style::active_nav_menu_button_style()
+        } else {
+            style::inactive_nav_menu_button_style()
+        })
 }
 
 fn history_group_row<'a>(
