@@ -3776,10 +3776,9 @@ fn get_last_task_input(state: &Furtherance) -> Option<Message> {
     if state.timer_is_running {
         None
     } else {
-        let today = Local::now().date_naive();
-        if let Some(groups) = state.task_history.get(&today) {
-            if let Some(last_task) = groups.first() {
-                let task_input_builder = last_task.to_string();
+        if let Some((_, first_gorup)) = state.task_history.last_key_value() {
+            if let Some(last_run_task) = first_gorup.first() {
+                let task_input_builder = last_run_task.to_string();
                 Some(Message::RepeatLastTaskPressed(task_input_builder))
             } else {
                 None
