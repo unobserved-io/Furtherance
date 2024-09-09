@@ -3080,7 +3080,7 @@ impl Application for Furtherance {
         {
             let alert_text: String;
             let alert_description: &str;
-            let mut close_button: Option<Button<'_, Message, Theme, Renderer>> = None;
+            let close_button: Option<Button<'_, Message, Theme, Renderer>>;
             let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
             let mut snooze_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
