@@ -43,7 +43,6 @@ use crate::{
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
-use iced::Color;
 use iced::{
     alignment, font,
     multi_window::Application,
@@ -53,6 +52,7 @@ use iced::{
     },
     window, Alignment, Command, Element, Length, Renderer, Theme,
 };
+use iced::{widget::vertical_rule, Color};
 use iced::{
     widget::{checkbox, horizontal_rule, toggler, Row},
     Subscription,
@@ -3069,7 +3069,7 @@ impl Application for Furtherance {
                 FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },
-            inspector.width(if self.inspector_view.is_some() {
+            row![vertical_rule(1), inspector].width(if self.inspector_view.is_some() {
                 260
             } else {
                 0
