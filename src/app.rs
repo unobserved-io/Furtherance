@@ -29,7 +29,7 @@ use crate::{
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         flow_row::FlowRow,
-        idle::get_idle_time,
+        idle::mac_win_idle::get_idle_time,
     },
     models::{
         fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport,
