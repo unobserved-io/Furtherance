@@ -72,8 +72,8 @@ impl GroupToEdit {
         }
     }
 
-    pub fn input_error(&mut self, message: &str) {
-        self.invalid_input_error_message = message.to_string();
+    pub fn input_error(&mut self, message: String) {
+        self.invalid_input_error_message = message;
     }
 
     pub fn task_ids(&self) -> Vec<u32> {

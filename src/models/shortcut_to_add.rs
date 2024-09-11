@@ -44,7 +44,7 @@ impl ShortcutToAdd {
         }
     }
 
-    pub fn input_error(&mut self, message: &str) {
-        self.invalid_input_error_message = message.to_string();
+    pub fn input_error(&mut self, message: String) {
+        self.invalid_input_error_message = message;
     }
 }

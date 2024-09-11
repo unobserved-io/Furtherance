@@ -348,7 +348,10 @@ impl Application for Furtherance {
                 let file_name = format!("furtherance-bkup-{}.db", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
                     .set_title(self.localization.get_message("save-backup-title", None))
-                    .add_filter("SQLite Database", &["db"])
+                    .add_filter(
+                        self.localization.get_message("sqlite-database", None),
+                        &["db"],
+                    )
                     .set_can_create_directories(true)
                     .set_file_name(file_name)
                     .save_file();
@@ -357,10 +360,10 @@ impl Application for Furtherance {
                     match db_backup(file) {
                         Ok(_) => {
                             self.settings_backup_message =
-                                Ok("Database backup successful".to_string());
+                                Ok(self.localization.get_message("backup-successful", None));
                         }
-                        Err(e) => {
-                            self.settings_backup_message = Err("Failed to backup database".into());
+                        Err(_) => {
+                            self.settings_backup_message = Err(self.localization.get_message("backup-database-failed", None).into());
                         }
                     }
                 }
@@ -615,10 +618,10 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_add.input_error("Task name cannot contain #, @, or $.");
+                                shortcut_to_add.input_error(self.localization.get_message("name-cannot-contain", None));
                             } else {
                                 shortcut_to_add.name = new_value;
-                                shortcut_to_add.input_error("");
+                                shortcut_to_add.input_error(String::new());
                             }
                         }
                         EditTaskProperty::Project => {
@@ -626,21 +629,21 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_add.input_error("Project cannot contain #, @, or $.");
+                                shortcut_to_add.input_error(self.localization.get_message("project-cannot-contain", None));
                             } else {
                                 shortcut_to_add.project = new_value;
-                                shortcut_to_add.input_error("");
+                                shortcut_to_add.input_error(String::new());
                             }
                         }
                         EditTaskProperty::Tags => {
                             if new_value.contains('@') || new_value.contains('$') {
-                                shortcut_to_add.input_error("Tags cannot contain @ or $.");
+                                shortcut_to_add.input_error(self.localization.get_message("tags-cannot-contain", None));
                             } else if !new_value.is_empty() && new_value.chars().next() != Some('#')
                             {
-                                shortcut_to_add.input_error("Tags must start with a #.");
+                                shortcut_to_add.input_error(self.localization.get_message("tags-must-start", None));
                             } else {
                                 shortcut_to_add.tags = new_value;
-                                shortcut_to_add.input_error("");
+                                shortcut_to_add.input_error(String::new());
                             }
                         }
                         EditTaskProperty::Rate => {
@@ -648,15 +651,15 @@ impl Application for Furtherance {
                             if new_value.is_empty() {
                                 shortcut_to_add.new_rate = String::new();
                             } else if new_value.contains('$') {
-                                shortcut_to_add.input_error("Do not include a $ in the rate.");
+                                shortcut_to_add.input_error(self.localization.get_message("no-symbol-in-rate", None));
                             } else if new_value_parsed.is_ok()
                                 && has_max_two_decimals(&new_value)
                                 && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                             {
                                 shortcut_to_add.new_rate = new_value;
-                                shortcut_to_add.input_error("");
+                                shortcut_to_add.input_error(String::new());
                             } else {
-                                shortcut_to_add.input_error("Rate must be a valid dollar amount.");
+                                shortcut_to_add.input_error(self.localization.get_message("rate-invalid", None));
                             }
                         }
                         _ => {}
@@ -668,10 +671,10 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_edit.input_error("Task name cannot contain #, @, or $.")
+                                shortcut_to_edit.input_error(self.localization.get_message("name-cannot-contain", None))
                             } else {
                                 shortcut_to_edit.new_name = new_value;
-                                shortcut_to_edit.input_error("")
+                                shortcut_to_edit.input_error(String::new())
                             }
                         }
                         EditTaskProperty::Project => {
@@ -679,38 +682,38 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_edit.input_error("Project cannot contain #, @, or $.");
+                                shortcut_to_edit.input_error(self.localization.get_message("project-cannot-contain", None));
                             } else {
                                 shortcut_to_edit.new_project = new_value;
-                                shortcut_to_edit.input_error("");
+                                shortcut_to_edit.input_error(String::new());
                             }
                         }
                         EditTaskProperty::Tags => {
                             if new_value.contains('@') || new_value.contains('$') {
-                                shortcut_to_edit.input_error("Tags cannot contain @ or $.");
+                                shortcut_to_edit.input_error(self.localization.get_message("tags-cannot-contain", None));
                             } else if !new_value.is_empty() && new_value.chars().next() != Some('#')
                             {
-                                shortcut_to_edit.input_error("Tags must start with a #.");
+                                shortcut_to_edit.input_error(self.localization.get_message("tags-must-start", None));
                             } else {
                                 shortcut_to_edit.new_tags = new_value;
-                                shortcut_to_edit.input_error("");
+                                shortcut_to_edit.input_error(String::new());
                             }
                         }
                         EditTaskProperty::Rate => {
                             let new_value_parsed = new_value.parse::<f32>();
                             if new_value.is_empty() {
                                 shortcut_to_edit.new_rate = String::new();
-                                shortcut_to_edit.input_error("");
+                                shortcut_to_edit.input_error(String::new());
                             } else if new_value.contains('$') {
-                                shortcut_to_edit.input_error("Do not include a $ in the rate.");
+                                shortcut_to_edit.input_error(self.localization.get_message("no-symbol-in-rate", None));
                             } else if new_value_parsed.is_ok()
                                 && has_max_two_decimals(&new_value)
                                 && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                             {
                                 shortcut_to_edit.new_rate = new_value;
-                                shortcut_to_edit.input_error("");
+                                shortcut_to_edit.input_error(String::new());
                             } else {
-                                shortcut_to_edit.input_error("Rate must be a valid dollar amount.");
+                                shortcut_to_edit.input_error(self.localization.get_message("rate-invalid", None));
                             }
                         }
                         _ => {}
@@ -732,7 +735,7 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         task_to_add.invalid_input_error_message =
-                                            "Task name cannot contain #, @, or $.".to_string();
+                                            self.localization.get_message("name-cannot-contain", None);
                                     } else {
                                         task_to_add.name = new_value;
                                         task_to_add.invalid_input_error_message = String::new();
@@ -745,21 +748,21 @@ impl Application for Furtherance {
                                     {
                                         // TODO: Change to .input_error system
                                         task_to_add
-                                            .input_error("Project cannot contain #, @, or $.");
+                                            .input_error(self.localization.get_message("project-cannot-contain", None));
                                     } else {
                                         task_to_add.project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_add.input_error("Tags cannot contain @ or $.");
+                                        task_to_add.input_error(self.localization.get_message("tags-cannot-contain", None));
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        task_to_add.input_error("Tags must start with a #.");
+                                        task_to_add.input_error(self.localization.get_message("tags-must-start", None));
                                     } else {
                                         task_to_add.tags = new_value;
-                                        task_to_add.input_error("");
+                                        task_to_add.input_error(String::new());
                                     }
                                 }
                                 EditTaskProperty::Rate => {
@@ -767,16 +770,16 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         task_to_add.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        task_to_add.input_error("Do not include a $ in the rate.");
+                                        task_to_add.input_error(self.localization.get_message("no-symbol-in-rate", None));
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(&new_value)
                                         && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                     {
                                         task_to_add.new_rate = new_value;
-                                        task_to_add.input_error("");
+                                        task_to_add.input_error(String::new());
                                     } else {
                                         task_to_add
-                                            .input_error("Rate must be a valid dollar amount.");
+                                            .input_error(self.localization.get_message("rate-invalid", None));
                                     }
                                 }
                                 _ => {}
@@ -792,10 +795,10 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         task_to_edit
-                                            .input_error("Task name cannot contain #, @, or $.");
+                                            .input_error(self.localization.get_message("name-cannot-contain", None));
                                     } else {
                                         task_to_edit.new_name = new_value;
-                                        task_to_edit.input_error("");
+                                        task_to_edit.input_error(String::new());
                                     }
                                 }
                                 EditTaskProperty::Project => {
@@ -804,21 +807,21 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         task_to_edit
-                                            .input_error("Project cannot contain #, @, or $.");
+                                            .input_error(self.localization.get_message("project-cannot-contain", None));
                                     } else {
                                         task_to_edit.new_project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_edit.input_error("Tags cannot contain @ or $.");
+                                        task_to_edit.input_error(self.localization.get_message("tags-cannot-contain", None));
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        task_to_edit.input_error("Tags must start with a #.");
+                                        task_to_edit.input_error(self.localization.get_message("tags-must-start", None));
                                     } else {
                                         task_to_edit.new_tags = new_value;
-                                        task_to_edit.input_error("");
+                                        task_to_edit.input_error(String::new());
                                     }
                                 }
                                 EditTaskProperty::Rate => {
@@ -826,16 +829,16 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        task_to_edit.input_error("Do not include a $ in the rate.");
+                                        task_to_edit.input_error(self.localization.get_message("no-symbol-in-rate", None));
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(&new_value)
                                         && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                     {
                                         task_to_edit.new_rate = new_value;
-                                        task_to_edit.input_error("");
+                                        task_to_edit.input_error(String::new());
                                     } else {
                                         task_to_edit
-                                            .input_error("Rate must be a valid dollar amount.");
+                                            .input_error(self.localization.get_message("rate-invalid", None));
                                     }
                                 }
                                 _ => {}
@@ -851,10 +854,10 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         group_to_edit
-                                            .input_error("Task name cannot contain #, @, or $.");
+                                            .input_error(self.localization.get_message("name-cannot-contain", None));
                                     } else {
                                         group_to_edit.new_name = new_value;
-                                        group_to_edit.input_error("");
+                                        group_to_edit.input_error(String::new());
                                     }
                                 }
                                 EditTaskProperty::Project => {
@@ -863,21 +866,21 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         group_to_edit
-                                            .input_error("Project cannot contain #, @, or $.");
+                                            .input_error(self.localization.get_message("project-cannot-contain", None));
                                     } else {
                                         group_to_edit.new_project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        group_to_edit.input_error("Tags cannot contain @ or $.");
+                                        group_to_edit.input_error(self.localization.get_message("tags-cannot-contain", None));
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        group_to_edit.input_error("Tags must start with a #.");
+                                        group_to_edit.input_error(self.localization.get_message("tags-must-start", None));
                                     } else {
                                         group_to_edit.new_tags = new_value;
-                                        group_to_edit.input_error("");
+                                        group_to_edit.input_error(String::new());
                                     }
                                 }
                                 EditTaskProperty::Rate => {
@@ -886,16 +889,16 @@ impl Application for Furtherance {
                                         group_to_edit.new_rate = String::new();
                                     } else if new_value.contains('$') {
                                         group_to_edit
-                                            .input_error("Do not include a $ in the rate.");
+                                            .input_error(self.localization.get_message("no-symbol-in-rate", None));
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(&new_value)
                                         && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                     {
                                         group_to_edit.new_rate = new_value;
-                                        group_to_edit.input_error("");
+                                        group_to_edit.input_error(String::new());
                                     } else {
                                         group_to_edit
-                                            .input_error("Rate must be a valid dollar amount.");
+                                            .input_error(self.localization.get_message("rate-invalid", None));
                                     }
                                 }
                                 _ => {}
