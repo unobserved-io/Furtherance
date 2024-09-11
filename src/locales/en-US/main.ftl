@@ -4,6 +4,7 @@
 ## File dialogs
 save-backup-title = Save Furtherance Backup
 sqlite-database = SQLite Database
+sqlite-files = SQLite Files
 backup-successful = Database Backup Successful
 save-csv-title = Save Furtherance CSV
 open-csv-title = Open Furtherance CSV

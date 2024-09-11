@@ -60,6 +60,7 @@ impl Localization {
             for (k, v) in arg_map {
                 fluent_args.set(Cow::Borrowed(*k), Cow::Borrowed(*v));
             }
+
             bundle.format_pattern(pattern, Some(&fluent_args), &mut errors)
         } else {
             bundle.format_pattern(pattern, None, &mut errors)
@@ -69,7 +70,11 @@ impl Localization {
             println!("Errors occurred during formatting: {:?}", errors);
         }
 
+        // Prevent odd symbols in iced
+        // TODO: Try to remove when iced has rtl text formatting
         formatted.to_string()
+            .replace('\u{2068}', "")
+            .replace('\u{2069}', "")
     }
 
     fn set_language(&mut self, lang: &str) {

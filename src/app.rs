@@ -16,7 +16,7 @@
 
 use core::f32;
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, HashMap},
     fs::File,
     io::Seek,
     path::{Path, PathBuf},
@@ -949,7 +949,7 @@ impl Application for Furtherance {
                 self.settings_csv_message = Ok(String::new());
                 self.settings_database_error = Ok(String::new());
                 let selected_file = FileDialog::new()
-                    .set_title("Open Furtherance CSV")
+                    .set_title(self.localization.get_message("open-csv-title", None))
                     .add_filter("CSV", &["csv"])
                     .set_can_create_directories(false)
                     .pick_file();
@@ -958,11 +958,11 @@ impl Application for Furtherance {
                         match verify_csv(&file) {
                             Ok(_) => {
                                 import_csv_to_database(&mut file);
-                                self.settings_csv_message = Ok("CSV imported successfully".into());
+                                self.settings_csv_message = Ok(self.localization.get_message("csv-imported", None).into());
                             }
                             Err(e) => {
                                 eprintln!("Invalid CSV file: {}", e);
-                                self.settings_csv_message = Err("Invalid CSV file".into());
+                                self.settings_csv_message = Err(self.localization.get_message("invalid-csv-file", None).into());
                             }
                         }
                     }
@@ -1155,16 +1155,16 @@ impl Application for Furtherance {
                 let path = Path::new(&self.fur_settings.database_url);
                 let starting_dialog = FileDialog::new()
                     .set_directory(&path)
-                    .add_filter("SQLite files", ALLOWED_DB_EXTENSIONS)
+                    .add_filter(self.localization.get_message("sqlite-files", None), ALLOWED_DB_EXTENSIONS)
                     .set_can_create_directories(true);
 
                 let selected_file = match new_or_open {
                     ChangeDB::New => starting_dialog
                         .set_file_name("furtherance.db")
-                        .set_title("New Furtherance Database")
+                        .set_title(self.localization.get_message("new-database-title", None))
                         .save_file(),
                     ChangeDB::Open => starting_dialog
-                        .set_title("Open Furtherance Database")
+                        .set_title(self.localization.get_message("open-database-title", None))
                         .pick_file(),
                 };
 
@@ -1177,7 +1177,7 @@ impl Application for Furtherance {
                         match db_is_valid_v3(file.as_path()) {
                             Err(e) => {
                                 eprintln!("Invalid database: {}", e);
-                                self.settings_database_error = Err("Invalid database.".into());
+                                self.settings_database_error = Err(self.localization.get_message("invalid-database", None).into());
                             }
                             Ok(is_valid_v3) => {
                                 if !is_valid_v3 {
@@ -1187,13 +1187,13 @@ impl Application for Furtherance {
                                                 is_old_db = true
                                             } else {
                                                 self.settings_database_error =
-                                                    Err("Invalid database.".into());
+                                                    Err(self.localization.get_message("invalid-database", None).into());
                                             }
                                         }
                                         Err(e) => {
                                             eprintln!("Invalid v1 database: {}", e);
                                             self.settings_database_error =
-                                                Err("Invalid database.".into());
+                                                Err(self.localization.get_message("invalid-database", None).into());
                                         }
                                     }
                                 }
@@ -1211,21 +1211,21 @@ impl Application for Furtherance {
                                             if let Err(e) = db_upgrade_old() {
                                                 eprintln!("Error upgrading legacy database: {}", e);
                                                 self.settings_database_error =
-                                                    Err("Error upgrading legacy database.".into());
+                                                    Err(self.localization.get_message("error-upgrading-database", None).into());
                                                 return Command::none();
                                             }
                                         }
                                         self.task_history =
                                             get_task_history(self.fur_settings.days_to_show);
                                         self.settings_database_error = Ok(match new_or_open {
-                                            ChangeDB::Open => "Database loaded.".to_string(),
-                                            ChangeDB::New => "Database created.".to_string(),
+                                            ChangeDB::Open => self.localization.get_message("database-loaded", None),
+                                            ChangeDB::New => self.localization.get_message("database-created", None).to_string(),
                                         });
                                     }
                                     Err(e) => {
                                         eprintln!("Error accessing new database: {}", e);
                                         self.settings_database_error =
-                                            Err("Error accessing new database.".into());
+                                            Err(self.localization.get_message("error-accessing-database", None).into());
                                     }
                                 }
                             }
@@ -1770,18 +1770,18 @@ impl Application for Furtherance {
         let sidebar = Container::new(
             column![
                 nav_button(
-                    "Shortcuts",
+                    self.localization.get_message("shortcuts", None),
                     FurView::Shortcuts,
                     self.current_view == FurView::Shortcuts
                 ),
-                nav_button("Timer", FurView::Timer, self.current_view == FurView::Timer),
+                nav_button(self.localization.get_message("timer", None), FurView::Timer, self.current_view == FurView::Timer),
                 nav_button(
-                    "History",
+                    self.localization.get_message("history", None),
                     FurView::History,
                     self.current_view == FurView::History
                 ),
                 nav_button(
-                    "Report",
+                    self.localization.get_message("report", None),
                     FurView::Report,
                     self.current_view == FurView::Report
                 ),
@@ -1798,7 +1798,7 @@ impl Application for Furtherance {
                     text("")
                 },
                 nav_button(
-                    "Settings",
+                    self.localization.get_message("settings", None),
                     FurView::Settings,
                     self.current_view == FurView::Settings
                 ),
@@ -1834,7 +1834,7 @@ impl Application for Furtherance {
                     .on_press_maybe(get_last_task_input(&self))
                     .style(theme::Button::Text),
                 horizontal_space().width(Length::Fill),
-                text(format!("Recorded today: {}", get_todays_total_time(&self)))
+                text(self.localization.get_message("recorded-today", Some(&HashMap::from([("time", get_todays_total_time(&self).as_str())])))),
             ],
             vertical_space().height(Length::Fill),
             text(&self.timer_text)
@@ -3299,8 +3299,8 @@ impl Application for Furtherance {
     }
 }
 
-fn nav_button<'a>(text: &'a str, destination: FurView, active: bool) -> Button<'a, Message> {
-    button(text)
+fn nav_button<'a>(nav_text: String, destination: FurView, active: bool) -> Button<'a, Message> {
+    button(text(nav_text))
         .padding([5, 15])
         .on_press(Message::NavigateTo(destination))
         .width(Length::Fill)
