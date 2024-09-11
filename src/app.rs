@@ -920,7 +920,7 @@ impl Application for Furtherance {
                 self.settings_database_error = Ok(String::new());
                 let file_name = format!("furtherance-{}.csv", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
-                    .set_title("Save Furtherance CSV")
+                    .set_title(self.localization.get_message("save-csv-title", None))
                     .add_filter("CSV", &["csv"])
                     .set_can_create_directories(true)
                     .set_file_name(file_name)
@@ -928,10 +928,10 @@ impl Application for Furtherance {
 
                 if let Some(path) = selected_file {
                     match write_furtasks_to_csv(path) {
-                        Ok(_) => self.settings_csv_message = Ok("CSV file saved.".to_string()),
+                        Ok(_) => self.settings_csv_message = Ok(self.localization.get_message("csv-file-saved", None)),
                         Err(e) => {
                             eprintln!("Error writing data to CSV: {}", e);
-                            self.settings_csv_message = Err("Error writing data to CSV.".into());
+                            self.settings_csv_message = Err(self.localization.get_message("error-writing-csv", None).into());
                         }
                     }
                 }

@@ -104,7 +104,6 @@ local-database = Local Database
 database-location = Database location
 create-new = Create New
 open-existing = Open Existing
-csv = CSV
 export-csv = Export CSV
 import-csv = Import CSV
 backup = Backup
