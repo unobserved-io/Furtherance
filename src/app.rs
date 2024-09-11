@@ -20,6 +20,7 @@ use std::{
     fs::File,
     io::Seek,
     path::{Path, PathBuf},
+    sync::Arc,
     time::Duration,
 };
 
@@ -31,6 +32,7 @@ use crate::{
         flow_row::FlowRow,
         idle::mac_win_idle::get_idle_time,
     },
+    localization::Localization,
     models::{
         fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport,
         fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
@@ -43,6 +45,7 @@ use crate::{
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
+use fluent::{FluentBundle, FluentResource};
 use iced::{
     alignment, font,
     multi_window::Application,
@@ -83,6 +86,7 @@ pub struct Furtherance {
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
+    localization: Arc<Localization>,
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
@@ -239,6 +243,7 @@ impl Application for Furtherance {
             fur_settings: settings,
             group_to_edit: None,
             idle: FurIdle::new(),
+            localization: Arc::new(Localization::new()),
             pomodoro: FurPomodoro::new(),
             inspector_view: None,
             report: FurReport::new(),
@@ -342,7 +347,7 @@ impl Application for Furtherance {
                 self.settings_database_error = Ok(String::new());
                 let file_name = format!("furtherance-bkup-{}.db", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
-                    .set_title("Save Furtherance Backup")
+                    .set_title(self.localization.get_message("save-backup-title", None))
                     .add_filter("SQLite Database", &["db"])
                     .set_can_create_directories(true)
                     .set_file_name(file_name)

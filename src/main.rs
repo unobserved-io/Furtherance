@@ -33,6 +33,7 @@ mod helpers {
         pub mod mac_win_idle;
     }
 }
+mod localization;
 mod models {
     pub mod fur_idle;
     pub mod fur_pomodoro;
