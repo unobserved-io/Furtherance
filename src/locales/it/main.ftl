@@ -1,4 +1,4 @@
-### Localization resource for Furtherance (Finnish)
+### Localization resource for Furtherance (Italian)
 ### This file is distributed under the same license as the Furtherance package.
 ### Last updated: 2024-09-12
 ### Translated by: Musiclover <Musiclover382@protonmail.com>, 2022
