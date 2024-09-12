@@ -1457,6 +1457,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "sys-locale",
  "tokio",
  "toml",
  "user-idle",

@@ -17,6 +17,7 @@
 use std::{borrow::Cow, collections::HashMap, fs};
 
 use fluent::{FluentArgs, FluentBundle, FluentResource, FluentValue};
+use sys_locale::get_locale;
 
 fn load_fluent_resource(path: &str) -> FluentResource {
     let source = fs::read_to_string(path).expect("Failed to read the file");
@@ -55,7 +56,7 @@ impl Localization {
 
         Localization {
             bundles,
-            current_lang: "en-US".to_string(),
+            current_lang: get_locale().unwrap_or_else(|| String::from("en-US")),
         }
     }
 
