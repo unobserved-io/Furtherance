@@ -171,9 +171,9 @@ shortcut-exists-description = Já existe um atalho para essa atividade.
 
 ## Sidebar
 # Number of hours, mins, secs with only one letter formatter
-x-h = {$hours}h
-x-m = {$minutes}m
-x-s = {$seconds}s
+x-h = {$hours} h
+x-m = {$minutes} m
+x-s = {$seconds} s
 
 ## Notifications
 pomodoro-over-notification-body = É hora de fazer uma pausa.

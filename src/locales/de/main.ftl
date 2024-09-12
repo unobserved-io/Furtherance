@@ -170,9 +170,9 @@ shortcut-exists-description = Eine Verknüpfung für diese Aufgabe existiert ber
 
 ## Sidebar
 # Number of hours, mins, secs with only one letter formatter
-x-h = {$hours} Std
-x-m = {$minutes} Min
-x-s = {$seconds} Sek
+x-h = {$hours} s
+x-m = {$minutes} m
+x-s = {$seconds} s
 
 ## Notifications
 pomodoro-over-notification-body = Es ist Zeit, eine Pause zu machen.

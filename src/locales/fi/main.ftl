@@ -171,7 +171,7 @@ shortcut-exists-description = Tälle tehtävälle on jo olemassa pikakuvake.
 ## Sidebar
 # Number of hours, mins, secs with only one letter formatter
 x-h = {$hours} t
-x-m = {$minutes} min
+x-m = {$minutes} m
 x-s = {$seconds} s
 
 ## Notifications
