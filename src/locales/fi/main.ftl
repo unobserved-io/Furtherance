@@ -1,6 +1,6 @@
 ### Localization resource for Furtherance (Finnish)
 ### This file is distributed under the same license as the Furtherance package.
-### Last updated: 2024-09-11
+### Last updated: 2024-09-12
 ### Translated by: Jiri Grönroos <jiri.gronroos@iki.fi>, 2023.
 ### Modified with Claude AI for transition to Fluent
 
