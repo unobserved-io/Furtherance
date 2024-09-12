@@ -16,7 +16,7 @@
 
 use std::{borrow::Cow, collections::HashMap, fs};
 
-use fluent::{FluentArgs, FluentBundle, FluentResource};
+use fluent::{FluentArgs, FluentBundle, FluentResource, FluentValue};
 
 fn load_fluent_resource(path: &str) -> FluentResource {
     let source = fs::read_to_string(path).expect("Failed to read the file");
@@ -49,7 +49,7 @@ impl Localization {
         }
     }
 
-    pub fn get_message(&self, key: &str, args: Option<&HashMap<&str, &str>>) -> String {
+    pub fn get_message(&self, key: &str, args: Option<&HashMap<&str, String>>) -> String {
         let bundle = self.bundles.get(&self.current_lang).unwrap();
         let msg = bundle.get_message(key).expect("Message doesn't exist");
         let pattern = msg.value().expect("Message has no value");
@@ -58,7 +58,8 @@ impl Localization {
         let formatted = if let Some(arg_map) = args {
             let mut fluent_args = FluentArgs::new();
             for (k, v) in arg_map {
-                fluent_args.set(Cow::Borrowed(*k), Cow::Borrowed(*v));
+                let cow_str: Cow<str> = Cow::Borrowed(v.as_str());
+                fluent_args.set(Cow::Borrowed(*k), FluentValue::from(cow_str));
             }
 
             bundle.format_pattern(pattern, Some(&fluent_args), &mut errors)

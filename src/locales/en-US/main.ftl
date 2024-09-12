@@ -30,7 +30,7 @@ discard = Discard
 
 ## Timer
 task-input-placeholder = Task name @Project #tags $rate
-start-at = Started at {$time}
+started-at = Started at {$time}
 recorded-today = Recorded today: {$time}
 
 ## History
@@ -40,18 +40,20 @@ task-count = {$count ->
     [one] {$count} task
     *[other] {$count} tasks
 }
-total-time = Total: {$time}
+total-time-dynamic = Total: {$time}
 total-earnings = ${$amount}
+repeat = Repeat
 
 ## Shortcuts
 new-shortcut = New Shortcut
-shortcut-exists = A shortcut for that task already exists.
 create-shortcut = Create shortcut
 
 ## Reports
 charts = Charts
 list = List
 breakdown-by-selection = Breakdown By Selection
+total-time = Total Time
+earned = Earned
 
 ## Settings
 general = General
@@ -79,6 +81,7 @@ dynamic-total-description = Today's total time ticks up with the timer
 days-to-show = Days to show
 
 ### Pomodoro Settings
+pomodoro-timer = Pomodoro timer
 countdown-timer = Countdown timer
 timer-length = Timer length
 break-length = Break length
@@ -110,12 +113,25 @@ import-csv = Import CSV
 backup = Backup
 backup-database = Backup Database
 
+## Inspector
+task-name = Task name
+project = Project
+hashtag-tags = #tags
+start-colon = Start:
+stop-colon = Stop:
+per-hour = /hr
+color = Color
+edit-shortcut = Edit Shortcut
+start-to-stop = {$start} to {$stop}
+nothing-selected = Nothing selected.
+
 ## Alerts
-delete-all-title = Delete all?
+delete-all = Delete All
+delete-all-question = Delete all?
 delete-all-description = Are you sure you want to permanently delete all tasks in this group?
-delete-shortcut-title = Delete shortcut?
+delete-shortcut-question = Delete shortcut?
 delete-shortcut-description = Are you sure you want to delete this shortcut?
-delete-task-title = Delete task?
+delete-task-question = Delete task?
 delete-task-description = Are you sure you want to permanently delete this task?
 idle-alert-title = You have been idle for {$duration}
 idle-alert-description = Would you like to discard that time, or continue the clock?
@@ -129,12 +145,17 @@ snooze-button = {$duration} more {$duration ->
 }
 long-break = Long break
 break = Break
+shortcut-exists = Shortcut exists
+shortcut-exists-description = A shortcut for that task already exists.
+
+## Sidebar
+# Number of hours, mins, secs with only one letter formatter
+x-h = {$hours} h
+x-m = {$minutes} m
+x-s = {$seconds} s
 
 ## Notifications
-pomodoro-over-notification-title = Time's up!
 pomodoro-over-notification-body = It's time to take a break.
-break-over-notification-title = Break's over!
-break-over-notification-body = Time to get back to work.
 idle-notification-title = You've been idle.
 idle-notification-body = Open Furtherance to continue or discard the idle time.
 

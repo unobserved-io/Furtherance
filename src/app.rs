@@ -363,7 +363,10 @@ impl Application for Furtherance {
                                 Ok(self.localization.get_message("backup-successful", None));
                         }
                         Err(_) => {
-                            self.settings_backup_message = Err(self.localization.get_message("backup-database-failed", None).into());
+                            self.settings_backup_message = Err(self
+                                .localization
+                                .get_message("backup-database-failed", None)
+                                .into());
                         }
                     }
                 }
@@ -618,7 +621,9 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_add.input_error(self.localization.get_message("name-cannot-contain", None));
+                                shortcut_to_add.input_error(
+                                    self.localization.get_message("name-cannot-contain", None),
+                                );
                             } else {
                                 shortcut_to_add.name = new_value;
                                 shortcut_to_add.input_error(String::new());
@@ -629,7 +634,10 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_add.input_error(self.localization.get_message("project-cannot-contain", None));
+                                shortcut_to_add.input_error(
+                                    self.localization
+                                        .get_message("project-cannot-contain", None),
+                                );
                             } else {
                                 shortcut_to_add.project = new_value;
                                 shortcut_to_add.input_error(String::new());
@@ -637,10 +645,14 @@ impl Application for Furtherance {
                         }
                         EditTaskProperty::Tags => {
                             if new_value.contains('@') || new_value.contains('$') {
-                                shortcut_to_add.input_error(self.localization.get_message("tags-cannot-contain", None));
+                                shortcut_to_add.input_error(
+                                    self.localization.get_message("tags-cannot-contain", None),
+                                );
                             } else if !new_value.is_empty() && new_value.chars().next() != Some('#')
                             {
-                                shortcut_to_add.input_error(self.localization.get_message("tags-must-start", None));
+                                shortcut_to_add.input_error(
+                                    self.localization.get_message("tags-must-start", None),
+                                );
                             } else {
                                 shortcut_to_add.tags = new_value;
                                 shortcut_to_add.input_error(String::new());
@@ -651,7 +663,9 @@ impl Application for Furtherance {
                             if new_value.is_empty() {
                                 shortcut_to_add.new_rate = String::new();
                             } else if new_value.contains('$') {
-                                shortcut_to_add.input_error(self.localization.get_message("no-symbol-in-rate", None));
+                                shortcut_to_add.input_error(
+                                    self.localization.get_message("no-symbol-in-rate", None),
+                                );
                             } else if new_value_parsed.is_ok()
                                 && has_max_two_decimals(&new_value)
                                 && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
@@ -659,7 +673,9 @@ impl Application for Furtherance {
                                 shortcut_to_add.new_rate = new_value;
                                 shortcut_to_add.input_error(String::new());
                             } else {
-                                shortcut_to_add.input_error(self.localization.get_message("rate-invalid", None));
+                                shortcut_to_add.input_error(
+                                    self.localization.get_message("rate-invalid", None),
+                                );
                             }
                         }
                         _ => {}
@@ -671,7 +687,9 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_edit.input_error(self.localization.get_message("name-cannot-contain", None))
+                                shortcut_to_edit.input_error(
+                                    self.localization.get_message("name-cannot-contain", None),
+                                )
                             } else {
                                 shortcut_to_edit.new_name = new_value;
                                 shortcut_to_edit.input_error(String::new())
@@ -682,7 +700,10 @@ impl Application for Furtherance {
                                 || new_value.contains('@')
                                 || new_value.contains('$')
                             {
-                                shortcut_to_edit.input_error(self.localization.get_message("project-cannot-contain", None));
+                                shortcut_to_edit.input_error(
+                                    self.localization
+                                        .get_message("project-cannot-contain", None),
+                                );
                             } else {
                                 shortcut_to_edit.new_project = new_value;
                                 shortcut_to_edit.input_error(String::new());
@@ -690,10 +711,14 @@ impl Application for Furtherance {
                         }
                         EditTaskProperty::Tags => {
                             if new_value.contains('@') || new_value.contains('$') {
-                                shortcut_to_edit.input_error(self.localization.get_message("tags-cannot-contain", None));
+                                shortcut_to_edit.input_error(
+                                    self.localization.get_message("tags-cannot-contain", None),
+                                );
                             } else if !new_value.is_empty() && new_value.chars().next() != Some('#')
                             {
-                                shortcut_to_edit.input_error(self.localization.get_message("tags-must-start", None));
+                                shortcut_to_edit.input_error(
+                                    self.localization.get_message("tags-must-start", None),
+                                );
                             } else {
                                 shortcut_to_edit.new_tags = new_value;
                                 shortcut_to_edit.input_error(String::new());
@@ -705,7 +730,9 @@ impl Application for Furtherance {
                                 shortcut_to_edit.new_rate = String::new();
                                 shortcut_to_edit.input_error(String::new());
                             } else if new_value.contains('$') {
-                                shortcut_to_edit.input_error(self.localization.get_message("no-symbol-in-rate", None));
+                                shortcut_to_edit.input_error(
+                                    self.localization.get_message("no-symbol-in-rate", None),
+                                );
                             } else if new_value_parsed.is_ok()
                                 && has_max_two_decimals(&new_value)
                                 && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
@@ -713,7 +740,9 @@ impl Application for Furtherance {
                                 shortcut_to_edit.new_rate = new_value;
                                 shortcut_to_edit.input_error(String::new());
                             } else {
-                                shortcut_to_edit.input_error(self.localization.get_message("rate-invalid", None));
+                                shortcut_to_edit.input_error(
+                                    self.localization.get_message("rate-invalid", None),
+                                );
                             }
                         }
                         _ => {}
@@ -734,8 +763,9 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        task_to_add.invalid_input_error_message =
-                                            self.localization.get_message("name-cannot-contain", None);
+                                        task_to_add.invalid_input_error_message = self
+                                            .localization
+                                            .get_message("name-cannot-contain", None);
                                     } else {
                                         task_to_add.name = new_value;
                                         task_to_add.invalid_input_error_message = String::new();
@@ -747,19 +777,26 @@ impl Application for Furtherance {
                                         || new_value.contains('$')
                                     {
                                         // TODO: Change to .input_error system
-                                        task_to_add
-                                            .input_error(self.localization.get_message("project-cannot-contain", None));
+                                        task_to_add.input_error(
+                                            self.localization
+                                                .get_message("project-cannot-contain", None),
+                                        );
                                     } else {
                                         task_to_add.project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_add.input_error(self.localization.get_message("tags-cannot-contain", None));
+                                        task_to_add.input_error(
+                                            self.localization
+                                                .get_message("tags-cannot-contain", None),
+                                        );
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        task_to_add.input_error(self.localization.get_message("tags-must-start", None));
+                                        task_to_add.input_error(
+                                            self.localization.get_message("tags-must-start", None),
+                                        );
                                     } else {
                                         task_to_add.tags = new_value;
                                         task_to_add.input_error(String::new());
@@ -770,7 +807,10 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         task_to_add.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        task_to_add.input_error(self.localization.get_message("no-symbol-in-rate", None));
+                                        task_to_add.input_error(
+                                            self.localization
+                                                .get_message("no-symbol-in-rate", None),
+                                        );
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(&new_value)
                                         && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
@@ -778,8 +818,9 @@ impl Application for Furtherance {
                                         task_to_add.new_rate = new_value;
                                         task_to_add.input_error(String::new());
                                     } else {
-                                        task_to_add
-                                            .input_error(self.localization.get_message("rate-invalid", None));
+                                        task_to_add.input_error(
+                                            self.localization.get_message("rate-invalid", None),
+                                        );
                                     }
                                 }
                                 _ => {}
@@ -794,8 +835,10 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        task_to_edit
-                                            .input_error(self.localization.get_message("name-cannot-contain", None));
+                                        task_to_edit.input_error(
+                                            self.localization
+                                                .get_message("name-cannot-contain", None),
+                                        );
                                     } else {
                                         task_to_edit.new_name = new_value;
                                         task_to_edit.input_error(String::new());
@@ -806,19 +849,26 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        task_to_edit
-                                            .input_error(self.localization.get_message("project-cannot-contain", None));
+                                        task_to_edit.input_error(
+                                            self.localization
+                                                .get_message("project-cannot-contain", None),
+                                        );
                                     } else {
                                         task_to_edit.new_project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_edit.input_error(self.localization.get_message("tags-cannot-contain", None));
+                                        task_to_edit.input_error(
+                                            self.localization
+                                                .get_message("tags-cannot-contain", None),
+                                        );
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        task_to_edit.input_error(self.localization.get_message("tags-must-start", None));
+                                        task_to_edit.input_error(
+                                            self.localization.get_message("tags-must-start", None),
+                                        );
                                     } else {
                                         task_to_edit.new_tags = new_value;
                                         task_to_edit.input_error(String::new());
@@ -829,7 +879,10 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         task_to_edit.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        task_to_edit.input_error(self.localization.get_message("no-symbol-in-rate", None));
+                                        task_to_edit.input_error(
+                                            self.localization
+                                                .get_message("no-symbol-in-rate", None),
+                                        );
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(&new_value)
                                         && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
@@ -837,8 +890,9 @@ impl Application for Furtherance {
                                         task_to_edit.new_rate = new_value;
                                         task_to_edit.input_error(String::new());
                                     } else {
-                                        task_to_edit
-                                            .input_error(self.localization.get_message("rate-invalid", None));
+                                        task_to_edit.input_error(
+                                            self.localization.get_message("rate-invalid", None),
+                                        );
                                     }
                                 }
                                 _ => {}
@@ -853,8 +907,10 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        group_to_edit
-                                            .input_error(self.localization.get_message("name-cannot-contain", None));
+                                        group_to_edit.input_error(
+                                            self.localization
+                                                .get_message("name-cannot-contain", None),
+                                        );
                                     } else {
                                         group_to_edit.new_name = new_value;
                                         group_to_edit.input_error(String::new());
@@ -865,19 +921,26 @@ impl Application for Furtherance {
                                         || new_value.contains('@')
                                         || new_value.contains('$')
                                     {
-                                        group_to_edit
-                                            .input_error(self.localization.get_message("project-cannot-contain", None));
+                                        group_to_edit.input_error(
+                                            self.localization
+                                                .get_message("project-cannot-contain", None),
+                                        );
                                     } else {
                                         group_to_edit.new_project = new_value;
                                     }
                                 }
                                 EditTaskProperty::Tags => {
                                     if new_value.contains('@') || new_value.contains('$') {
-                                        group_to_edit.input_error(self.localization.get_message("tags-cannot-contain", None));
+                                        group_to_edit.input_error(
+                                            self.localization
+                                                .get_message("tags-cannot-contain", None),
+                                        );
                                     } else if !new_value.is_empty()
                                         && new_value.chars().next() != Some('#')
                                     {
-                                        group_to_edit.input_error(self.localization.get_message("tags-must-start", None));
+                                        group_to_edit.input_error(
+                                            self.localization.get_message("tags-must-start", None),
+                                        );
                                     } else {
                                         group_to_edit.new_tags = new_value;
                                         group_to_edit.input_error(String::new());
@@ -888,8 +951,10 @@ impl Application for Furtherance {
                                     if new_value.is_empty() {
                                         group_to_edit.new_rate = String::new();
                                     } else if new_value.contains('$') {
-                                        group_to_edit
-                                            .input_error(self.localization.get_message("no-symbol-in-rate", None));
+                                        group_to_edit.input_error(
+                                            self.localization
+                                                .get_message("no-symbol-in-rate", None),
+                                        );
                                     } else if new_value_parsed.is_ok()
                                         && has_max_two_decimals(&new_value)
                                         && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
@@ -897,8 +962,9 @@ impl Application for Furtherance {
                                         group_to_edit.new_rate = new_value;
                                         group_to_edit.input_error(String::new());
                                     } else {
-                                        group_to_edit
-                                            .input_error(self.localization.get_message("rate-invalid", None));
+                                        group_to_edit.input_error(
+                                            self.localization.get_message("rate-invalid", None),
+                                        );
                                     }
                                 }
                                 _ => {}
@@ -927,11 +993,17 @@ impl Application for Furtherance {
                     .save_file();
 
                 if let Some(path) = selected_file {
-                    match write_furtasks_to_csv(path) {
-                        Ok(_) => self.settings_csv_message = Ok(self.localization.get_message("csv-file-saved", None)),
+                    match write_furtasks_to_csv(path, &self.localization) {
+                        Ok(_) => {
+                            self.settings_csv_message =
+                                Ok(self.localization.get_message("csv-file-saved", None))
+                        }
                         Err(e) => {
                             eprintln!("Error writing data to CSV: {}", e);
-                            self.settings_csv_message = Err(self.localization.get_message("error-writing-csv", None).into());
+                            self.settings_csv_message = Err(self
+                                .localization
+                                .get_message("error-writing-csv", None)
+                                .into());
                         }
                     }
                 }
@@ -955,14 +1027,18 @@ impl Application for Furtherance {
                     .pick_file();
                 if let Some(path) = selected_file {
                     if let Ok(mut file) = File::open(path) {
-                        match verify_csv(&file) {
+                        match verify_csv(&file, &self.localization) {
                             Ok(_) => {
-                                import_csv_to_database(&mut file);
-                                self.settings_csv_message = Ok(self.localization.get_message("csv-imported", None).into());
+                                import_csv_to_database(&mut file, &self.localization);
+                                self.settings_csv_message =
+                                    Ok(self.localization.get_message("csv-imported", None).into());
                             }
                             Err(e) => {
                                 eprintln!("Invalid CSV file: {}", e);
-                                self.settings_csv_message = Err(self.localization.get_message("invalid-csv-file", None).into());
+                                self.settings_csv_message = Err(self
+                                    .localization
+                                    .get_message("invalid-csv-file", None)
+                                    .into());
                             }
                         }
                     }
@@ -1155,7 +1231,10 @@ impl Application for Furtherance {
                 let path = Path::new(&self.fur_settings.database_url);
                 let starting_dialog = FileDialog::new()
                     .set_directory(&path)
-                    .add_filter(self.localization.get_message("sqlite-files", None), ALLOWED_DB_EXTENSIONS)
+                    .add_filter(
+                        self.localization.get_message("sqlite-files", None),
+                        ALLOWED_DB_EXTENSIONS,
+                    )
                     .set_can_create_directories(true);
 
                 let selected_file = match new_or_open {
@@ -1177,7 +1256,10 @@ impl Application for Furtherance {
                         match db_is_valid_v3(file.as_path()) {
                             Err(e) => {
                                 eprintln!("Invalid database: {}", e);
-                                self.settings_database_error = Err(self.localization.get_message("invalid-database", None).into());
+                                self.settings_database_error = Err(self
+                                    .localization
+                                    .get_message("invalid-database", None)
+                                    .into());
                             }
                             Ok(is_valid_v3) => {
                                 if !is_valid_v3 {
@@ -1186,14 +1268,18 @@ impl Application for Furtherance {
                                             if is_valid_v2 {
                                                 is_old_db = true
                                             } else {
-                                                self.settings_database_error =
-                                                    Err(self.localization.get_message("invalid-database", None).into());
+                                                self.settings_database_error = Err(self
+                                                    .localization
+                                                    .get_message("invalid-database", None)
+                                                    .into());
                                             }
                                         }
                                         Err(e) => {
                                             eprintln!("Invalid v1 database: {}", e);
-                                            self.settings_database_error =
-                                                Err(self.localization.get_message("invalid-database", None).into());
+                                            self.settings_database_error = Err(self
+                                                .localization
+                                                .get_message("invalid-database", None)
+                                                .into());
                                         }
                                     }
                                 }
@@ -1210,22 +1296,31 @@ impl Application for Furtherance {
                                         if is_old_db {
                                             if let Err(e) = db_upgrade_old() {
                                                 eprintln!("Error upgrading legacy database: {}", e);
-                                                self.settings_database_error =
-                                                    Err(self.localization.get_message("error-upgrading-database", None).into());
+                                                self.settings_database_error = Err(self
+                                                    .localization
+                                                    .get_message("error-upgrading-database", None)
+                                                    .into());
                                                 return Command::none();
                                             }
                                         }
                                         self.task_history =
                                             get_task_history(self.fur_settings.days_to_show);
                                         self.settings_database_error = Ok(match new_or_open {
-                                            ChangeDB::Open => self.localization.get_message("database-loaded", None),
-                                            ChangeDB::New => self.localization.get_message("database-created", None).to_string(),
+                                            ChangeDB::Open => self
+                                                .localization
+                                                .get_message("database-loaded", None),
+                                            ChangeDB::New => self
+                                                .localization
+                                                .get_message("database-created", None)
+                                                .to_string(),
                                         });
                                     }
                                     Err(e) => {
                                         eprintln!("Error accessing new database: {}", e);
-                                        self.settings_database_error =
-                                            Err(self.localization.get_message("error-accessing-database", None).into());
+                                        self.settings_database_error = Err(self
+                                            .localization
+                                            .get_message("error-accessing-database", None)
+                                            .into());
                                     }
                                 }
                             }
@@ -1512,10 +1607,10 @@ impl Application for Furtherance {
                         // Check if idle or other alert is being displayed so as not to replace it
                         if self.displayed_alert.is_none() {
                             if self.pomodoro.on_break {
-                                show_notification(NotificationType::BreakOver);
+                                show_notification(NotificationType::BreakOver, &self.localization);
                                 self.displayed_alert = Some(FurAlert::PomodoroBreakOver);
                             } else {
-                                show_notification(NotificationType::PomodoroOver);
+                                show_notification(NotificationType::PomodoroOver, &self.localization);
                                 self.displayed_alert = Some(FurAlert::PomodoroOver);
                             }
                         }
@@ -1539,7 +1634,7 @@ impl Application for Furtherance {
                         {
                             // User is back - show idle message
                             self.idle.notified = true;
-                            show_notification(NotificationType::Idle);
+                            show_notification(NotificationType::Idle, &self.localization);
                             self.displayed_alert = Some(FurAlert::Idle);
                         }
                     }
@@ -1774,7 +1869,11 @@ impl Application for Furtherance {
                     FurView::Shortcuts,
                     self.current_view == FurView::Shortcuts
                 ),
-                nav_button(self.localization.get_message("timer", None), FurView::Timer, self.current_view == FurView::Timer),
+                nav_button(
+                    self.localization.get_message("timer", None),
+                    FurView::Timer,
+                    self.current_view == FurView::Timer
+                ),
                 nav_button(
                     self.localization.get_message("history", None),
                     FurView::History,
@@ -1787,7 +1886,7 @@ impl Application for Furtherance {
                 ),
                 vertical_space().height(Length::Fill),
                 if self.timer_is_running && self.current_view != FurView::Timer {
-                    text(convert_timer_text_to_vertical_hms(&self.timer_text))
+                    text(convert_timer_text_to_vertical_hms(&self.timer_text, &self.localization))
                         .size(50)
                         .style(if self.pomodoro.on_break {
                             theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
@@ -1814,7 +1913,7 @@ impl Application for Furtherance {
         // MARK: Shortcuts
         let mut shortcuts_row = FlowRow::new().spacing(20.0);
         for shortcut in &self.shortcuts {
-            shortcuts_row = shortcuts_row.push(shortcut_button(shortcut, self.timer_is_running));
+            shortcuts_row = shortcuts_row.push(shortcut_button(shortcut, self.timer_is_running, &self.localization));
         }
         let shortcuts_view = column![
             row![
@@ -1834,7 +1933,13 @@ impl Application for Furtherance {
                     .on_press_maybe(get_last_task_input(&self))
                     .style(theme::Button::Text),
                 horizontal_space().width(Length::Fill),
-                text(self.localization.get_message("recorded-today", Some(&HashMap::from([("time", get_todays_total_time(&self).as_str())])))),
+                text(self.localization.get_message(
+                    "recorded-today",
+                    Some(&HashMap::from([(
+                        "time",
+                        get_todays_total_time(&self)
+                    )]))
+                )),
             ],
             vertical_space().height(Length::Fill),
             text(&self.timer_text)
@@ -1846,10 +1951,15 @@ impl Application for Furtherance {
                 }),
             column![
                 row![
-                    text_input("Task name @Project #tags $rate", &self.task_input)
-                        .on_input(Message::TaskInputChanged)
-                        .on_submit(Message::EnterPressedInTaskInput)
-                        .size(20),
+                    text_input(
+                        &self
+                            .localization
+                            .get_message("task-input-placeholder", None),
+                        &self.task_input
+                    )
+                    .on_input(Message::TaskInputChanged)
+                    .on_submit(Message::EnterPressedInTaskInput)
+                    .size(20),
                     button(row![
                         horizontal_space().width(Length::Fixed(5.0)),
                         if self.timer_is_running {
@@ -1870,10 +1980,14 @@ impl Application for Furtherance {
                     row![TimePicker::new(
                         self.show_timer_start_picker,
                         self.displayed_task_start_time,
-                        Button::new(text(format!(
-                            "Started at {}",
-                            self.displayed_task_start_time.to_string()
-                        )))
+                        Button::new(text(self.localization.get_message(
+                            "started-at",
+                            Some(&HashMap::from([(
+                                "time",
+                                self.displayed_task_start_time.to_string()
+                            )]))
+                        )
+                            ))
                         .on_press(Message::ChooseCurrentTaskStartTime),
                         Message::CancelCurrentTaskStartTime,
                         Message::SubmitCurrentTaskStartTime,
@@ -1926,12 +2040,14 @@ impl Application for Furtherance {
                 } else {
                     None
                 },
+                &self.localization
             ));
             for task_group in task_groups {
                 all_history_rows = all_history_rows.push(history_group_row(
                     task_group,
                     self.timer_is_running,
                     &self.fur_settings,
+                    &self.localization,
                 ))
             }
         }
@@ -1948,7 +2064,7 @@ impl Application for Furtherance {
             timer_earnings_boxes_widgets.push(
                 column![
                     text(seconds_to_formatted_duration(self.report.total_time, true)).size(50),
-                    text("Total Time"),
+                    text(self.localization.get_message("total-time", None)),
                 ]
                 .align_items(Alignment::Center)
                 .into(),
@@ -1958,7 +2074,7 @@ impl Application for Furtherance {
             timer_earnings_boxes_widgets.push(
                 column![
                     text(format!("${:.2}", self.report.total_earned)).size(50),
-                    text("Earned"),
+                    text(self.localization.get_message("earned", None)),
                 ]
                 .align_items(Alignment::Center)
                 .into(),
@@ -1997,7 +2113,7 @@ impl Application for Furtherance {
             && self.fur_settings.show_chart_breakdown_by_selection
         {
             charts_breakdown_by_selection_column =
-                charts_breakdown_by_selection_column.push(text("Breakdown By Selection").size(40));
+                charts_breakdown_by_selection_column.push(text(self.localization.get_message("breakdown-by-selection", None)).size(40));
             charts_breakdown_by_selection_column = charts_breakdown_by_selection_column.push(
                 row![
                     pick_list(
@@ -2102,16 +2218,16 @@ impl Application for Furtherance {
 
         // MARK: SETTINGS
         let mut database_location_col = column![
-            text("Database location"),
+            text(self.localization.get_message("database-location", None)),
             text_input(
                 &self.fur_settings.database_url,
                 &self.fur_settings.database_url,
             ),
             row![
-                button("Create New").on_press(Message::SettingsChangeDatabaseLocationPressed(
+                button(text(self.localization.get_message("create-new", None))).on_press(Message::SettingsChangeDatabaseLocationPressed(
                     ChangeDB::New
                 )),
-                button("Open Existing").on_press(Message::SettingsChangeDatabaseLocationPressed(
+                button(text(self.localization.get_message("open-existing", None))).on_press(Message::SettingsChangeDatabaseLocationPressed(
                     ChangeDB::Open
                 )),
             ]
@@ -2131,8 +2247,8 @@ impl Application for Furtherance {
             });
 
         let mut csv_col = column![row![
-            button("Export CSV").on_press(Message::ExportCsvPressed),
-            button("Import CSV").on_press(Message::ImportCsvPressed)
+            button(text(self.localization.get_message("export-csv", None))).on_press(Message::ExportCsvPressed),
+            button(text(self.localization.get_message("import-csv", None))).on_press(Message::ImportCsvPressed)
         ]
         .spacing(10),]
         .spacing(10);
@@ -2148,7 +2264,7 @@ impl Application for Furtherance {
         });
 
         let mut backup_col =
-            column![button("Backup Database").on_press(Message::BackupDatabase)].spacing(10);
+            column![button(text(self.localization.get_message("backup-database", None))).on_press(Message::BackupDatabase)].spacing(10);
         backup_col = backup_col.push_maybe(match &self.settings_backup_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -2167,13 +2283,13 @@ impl Application for Furtherance {
                     TabId::General,
                     TabLabel::IconText(
                         bootstrap::icon_to_char(Bootstrap::GearFill),
-                        "General".to_string()
+                        self.localization.get_message("general", None)
                     ),
                     Scrollable::new(
                         column![
-                            settings_heading("Interface"),
+                            settings_heading(self.localization.get_message("interface", None)),
                             row![
-                                text("Default view"),
+                                text(self.localization.get_message("default-view", None)),
                                 pick_list(
                                     &FurView::ALL[..],
                                     Some(self.fur_settings.default_view),
@@ -2183,7 +2299,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Show delete confirmation"),
+                                text(self.localization.get_message("show-delete-confirmation", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_delete_confirmation,
@@ -2193,9 +2309,9 @@ impl Application for Furtherance {
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
-                            settings_heading("Task History"),
+                            settings_heading(self.localization.get_message("task-history", None)),
                             row![
-                                text("Show project"),
+                                text(self.localization.get_message("show-project", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_project,
@@ -2206,7 +2322,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Show tags"),
+                                text(self.localization.get_message("show-tags", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_tags,
@@ -2217,7 +2333,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Show earnings"),
+                                text(self.localization.get_message("show-earnings", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_earnings,
@@ -2228,7 +2344,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Show seconds"),
+                                text(self.localization.get_message("show-seconds", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_seconds,
@@ -2239,7 +2355,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Show daily time total"),
+                                text(self.localization.get_message("show-daily-time-total", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_daily_time_total,
@@ -2258,13 +2374,13 @@ impl Application for Furtherance {
                     TabId::Advanced,
                     TabLabel::IconText(
                         bootstrap::icon_to_char(Bootstrap::GearWideConnected),
-                        "Advanced".to_string()
+                        self.localization.get_message("advanced", None)
                     ),
                     Scrollable::new(
                         column![
-                            settings_heading("Idle"),
+                            settings_heading(self.localization.get_message("idle", None)),
                             row![
-                                text("Idle detection"),
+                                text(self.localization.get_message("idle-detection", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.notify_on_idle,
@@ -2275,7 +2391,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Minutes until idle"),
+                                text(self.localization.get_message("minutes-until-idle", None)),
                                 number_input(
                                     self.fur_settings.chosen_idle_time,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2285,11 +2401,11 @@ impl Application for Furtherance {
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
-                            settings_heading("Task History"),
+                            settings_heading(self.localization.get_message("task-history", None)),
                             row![
                                 column![
-                                    text("Dynamic total"),
-                                    text("Today's total time ticks up with the timer").size(12),
+                                    text(self.localization.get_message("dynamic-total", None)),
+                                    text(self.localization.get_message("dynamic-total-description", None)).size(12),
                                 ],
                                 toggler(
                                     String::new(),
@@ -2301,7 +2417,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Days to show"),
+                                text(self.localization.get_message("days-to-show", None)),
                                 number_input(
                                     self.fur_settings.days_to_show,
                                     365, // TODO: This will accept a range in a future version of iced_aw (make 1..365)
@@ -2320,13 +2436,13 @@ impl Application for Furtherance {
                     TabId::Pomodoro,
                     TabLabel::IconText(
                         bootstrap::icon_to_char(Bootstrap::StopwatchFill),
-                        "Pomodoro".to_string()
+                        self.localization.get_message("pomodoro", None)
                     ),
                     Scrollable::new(
                         column![
-                            settings_heading("Pomodoro timer"),
+                            settings_heading(self.localization.get_message("pomodoro-timer", None)),
                             row![
-                                text("Countdown timer"),
+                                text(self.localization.get_message("countdown-timer", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.pomodoro,
@@ -2337,7 +2453,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Timer length"),
+                                text(self.localization.get_message("timer-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_length,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2348,7 +2464,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Break length"),
+                                text(self.localization.get_message("break-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_break_length,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2359,7 +2475,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Snooze length"),
+                                text(self.localization.get_message("snooze-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_snooze_length,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2369,9 +2485,9 @@ impl Application for Furtherance {
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
-                            settings_heading("Extended break"),
+                            settings_heading(self.localization.get_message("extended-break", None)),
                             row![
-                                text("Extended breaks"),
+                                text(self.localization.get_message("extended-breaks", None)),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.pomodoro_extended_breaks,
@@ -2382,7 +2498,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Extended break interval"),
+                                text(self.localization.get_message("extended-break-interval", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_extended_break_interval,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2393,7 +2509,7 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text("Extended break length"),
+                                text(self.localization.get_message("extended-break-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_extended_break_length,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2412,42 +2528,42 @@ impl Application for Furtherance {
                     TabId::Report,
                     TabLabel::IconText(
                         bootstrap::icon_to_char(Bootstrap::GraphUp),
-                        "Report".to_string()
+                        self.localization.get_message("report", None)
                     ),
                     Scrollable::new(
                         column![
-                            settings_heading("Toggle charts"),
+                            settings_heading(self.localization.get_message("toggle-charts", None)),
                             checkbox(
-                                "Total time box",
+                                self.localization.get_message("total-time-box", None),
                                 self.fur_settings.show_chart_total_time_box
                             )
                             .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled),
                             checkbox(
-                                "Total earnings box",
+                                self.localization.get_message("total-earnings-box", None),
                                 self.fur_settings.show_chart_total_earnings_box
                             )
                             .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled),
-                            checkbox("Time recorded", self.fur_settings.show_chart_time_recorded)
+                            checkbox(self.localization.get_message("time-recorded", None), self.fur_settings.show_chart_time_recorded)
                                 .on_toggle(Message::SettingsShowChartTimeRecordedToggled),
-                            checkbox("Earnings", self.fur_settings.show_chart_earnings)
+                            checkbox(self.localization.get_message("earnings", None), self.fur_settings.show_chart_earnings)
                                 .on_toggle(Message::SettingsShowChartEarningsToggled),
                             checkbox(
-                                "Average time per task",
+                                self.localization.get_message("average-time-per-task", None),
                                 self.fur_settings.show_chart_average_time
                             )
                             .on_toggle(Message::SettingsShowChartAverageTimeToggled),
                             checkbox(
-                                "Average earnings per task",
+                                self.localization.get_message("average-earnings-per-task", None),
                                 self.fur_settings.show_chart_average_earnings
                             )
                             .on_toggle(Message::SettingsShowChartAverageEarningsToggled),
                             checkbox(
-                                "Breakdown by selection section",
+                                self.localization.get_message("breakdown-by-selection-section", None),
                                 self.fur_settings.show_chart_breakdown_by_selection
                             )
                             .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled),
                             checkbox(
-                                "Time recorded for selection",
+                                self.localization.get_message("time-recorded-for-selection", None),
                                 self.fur_settings.show_chart_selection_time
                             )
                             .on_toggle_maybe(
@@ -2458,7 +2574,7 @@ impl Application for Furtherance {
                                 }
                             ),
                             checkbox(
-                                "Earnings for selection",
+                                self.localization.get_message("earnings-for-selection", None),
                                 self.fur_settings.show_chart_seleciton_earnings
                             )
                             .on_toggle_maybe(
@@ -2478,15 +2594,15 @@ impl Application for Furtherance {
                     TabId::Data,
                     TabLabel::IconText(
                         bootstrap::icon_to_char(Bootstrap::FloppyFill),
-                        "Data".to_string()
+                        self.localization.get_message("data", None)
                     ),
                     Scrollable::new(
                         column![
-                            settings_heading("Local Database"),
+                            settings_heading(self.localization.get_message("local-database", None)),
                             database_location_col,
-                            settings_heading("CSV"),
+                            settings_heading(self.localization.get_message("csv", None)),
                             csv_col,
-                            settings_heading("Backup"),
+                            settings_heading(self.localization.get_message("backup", None)),
                             backup_col,
                         ]
                         .spacing(SETTINGS_SPACING)
@@ -2501,16 +2617,16 @@ impl Application for Furtherance {
             // MARK: Add Task To Group
             Some(FurInspectorView::AddNewTask) => match &self.task_to_add {
                 Some(task_to_add) => column![
-                    text_input("Task name", &task_to_add.name)
+                    text_input(&self.localization.get_message("task-name", None), &task_to_add.name)
                         .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
-                    text_input("Project", &task_to_add.project)
+                    text_input(&self.localization.get_message("project", None), &task_to_add.project)
                         .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
-                    text_input("#tags", &task_to_add.tags)
+                    text_input(&self.localization.get_message("hashtag-tags", None), &task_to_add.tags)
                         .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
                     text_input("0.00", &task_to_add.new_rate)
                         .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Rate)),
                     row![
-                        text("Start:"),
+                        text(self.localization.get_message("start-colon", None)),
                         date_picker(
                             task_to_add.show_start_date_picker,
                             task_to_add.displayed_start_date,
@@ -2535,7 +2651,7 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        text("Stop:"),
+                        text(self.localization.get_message("stop-colon", None)),
                         date_picker(
                             task_to_add.show_stop_date_picker,
                             task_to_add.displayed_stop_date,
@@ -2560,11 +2676,11 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelTaskEdit)
                             .width(Length::Fill),
-                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
                             .on_press_maybe(if task_to_add.name.trim().is_empty() {
                                 None
@@ -2589,20 +2705,20 @@ impl Application for Furtherance {
             // Add shortcut
             Some(FurInspectorView::AddShortcut) => match &self.shortcut_to_add {
                 Some(shortcut_to_add) => column![
-                    text("New Shortcut").size(24),
-                    text_input("Task name", &shortcut_to_add.name)
+                    text(self.localization.get_message("new-shortcut", None)).size(24),
+                    text_input(&self.localization.get_message("task-name", None), &shortcut_to_add.name)
                         .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
-                    text_input("Project", &shortcut_to_add.project).on_input(|s| {
+                    text_input(&self.localization.get_message("project", None), &shortcut_to_add.project).on_input(|s| {
                         Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
                     }),
-                    text_input("#tags", &shortcut_to_add.tags)
+                    text_input(&self.localization.get_message("hashtag-tags", None), &shortcut_to_add.tags)
                         .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
                     row![
                         text("$"),
                         text_input("0.00", &shortcut_to_add.new_rate).on_input(|s| {
                             Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
                         }),
-                        text("/hr"),
+                        text(self.localization.get_message("per-hour", None)),
                     ]
                     .spacing(3)
                     .align_items(Alignment::Center),
@@ -2610,7 +2726,7 @@ impl Application for Furtherance {
                         shortcut_to_add.show_color_picker,
                         shortcut_to_add.color,
                         button(
-                            text("Color")
+                            text(self.localization.get_message("color", None))
                                 .style(if is_dark_color(shortcut_to_add.color.to_srgb()) {
                                     Color::WHITE
                                 } else {
@@ -2626,11 +2742,11 @@ impl Application for Furtherance {
                         Message::SubmitShortcutColor,
                     ),
                     row![
-                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelShortcut)
                             .width(Length::Fill),
-                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
                             .on_press_maybe(if shortcut_to_add.name.trim().is_empty() {
                                 None
@@ -2661,7 +2777,7 @@ impl Application for Furtherance {
                     text_input(&task_to_add.tags, ""),
                     text_input(&format!("{:.2}", task_to_add.rate), ""),
                     row![
-                        text("Start:"),
+                        text(self.localization.get_message("start-colon", None)),
                         button(
                             text(&task_to_add.displayed_start_date.to_string())
                                 .horizontal_alignment(alignment::Horizontal::Center)
@@ -2682,7 +2798,7 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        text("Stop:"),
+                        text(self.localization.get_message("stop-colon", None)),
                         button(
                             text(&task_to_add.displayed_stop_date.to_string())
                                 .horizontal_alignment(alignment::Horizontal::Center)
@@ -2703,11 +2819,11 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelTaskEdit)
                             .width(Length::Fill),
-                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
                             .on_press(Message::SaveTaskEdit)
                             .width(Length::Fill),
@@ -2728,20 +2844,20 @@ impl Application for Furtherance {
             // MARK: Edit Shortcut
             Some(FurInspectorView::EditShortcut) => match &self.shortcut_to_edit {
                 Some(shortcut_to_edit) => column![
-                    text("Edit Shortcut").size(24),
-                    text_input("Task name", &shortcut_to_edit.new_name)
+                    text(self.localization.get_message("edit-shortcut", None)).size(24),
+                    text_input(&self.localization.get_message("task-name", None), &shortcut_to_edit.new_name)
                         .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
-                    text_input("Project", &shortcut_to_edit.new_project).on_input(|s| {
+                    text_input(&self.localization.get_message("project", None), &shortcut_to_edit.new_project).on_input(|s| {
                         Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
                     }),
-                    text_input("#tags", &shortcut_to_edit.new_tags)
+                    text_input(&self.localization.get_message("hashtag-tags", None), &shortcut_to_edit.new_tags)
                         .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
                     row![
                         text("$"),
                         text_input("0.00", &shortcut_to_edit.new_rate).on_input(|s| {
                             Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
                         }),
-                        text("/hr"),
+                        text(self.localization.get_message("per-hour", None)),
                     ]
                     .spacing(3)
                     .align_items(Alignment::Center),
@@ -2749,7 +2865,7 @@ impl Application for Furtherance {
                         shortcut_to_edit.show_color_picker,
                         shortcut_to_edit.new_color,
                         button(
-                            text("Color")
+                            text(self.localization.get_message("color", None))
                                 .style(if is_dark_color(shortcut_to_edit.new_color.to_srgb()) {
                                     Color::WHITE
                                 } else {
@@ -2767,11 +2883,11 @@ impl Application for Furtherance {
                         Message::SubmitShortcutColor,
                     ),
                     row![
-                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelShortcut)
                             .width(Length::Fill),
-                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
                             .on_press_maybe(
                                 if shortcut_to_edit.new_name.trim().is_empty()
@@ -2829,7 +2945,7 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        text("Start:"),
+                        text(self.localization.get_message("start-colon", None)),
                         date_picker(
                             task_to_edit.show_displayed_start_date_picker,
                             task_to_edit.displayed_start_date,
@@ -2854,7 +2970,7 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        text("Stop:"),
+                        text(self.localization.get_message("stop-colon", None)),
                         date_picker(
                             task_to_edit.show_displayed_stop_date_picker,
                             task_to_edit.displayed_stop_date,
@@ -2879,11 +2995,11 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        button(text("Cancel").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Secondary)
                             .on_press(Message::CancelTaskEdit)
                             .width(Length::Fill),
-                        button(text("Save").horizontal_alignment(alignment::Horizontal::Center))
+                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
                             .style(theme::Button::Primary)
                             .on_press_maybe(
                                 if task_to_edit.is_changed()
@@ -2938,22 +3054,34 @@ impl Application for Furtherance {
                                     .push(
                                         button(
                                             Container::new(column![
-                                                text(format!(
-                                                    "{} to {}",
-                                                    task.start_time.format("%H:%M").to_string(),
-                                                    task.stop_time.format("%H:%M").to_string()
-                                                ))
+                                                text(
+                                                    self.localization.get_message(
+                                                        "start-to-stop",
+                                                        Some(&HashMap::from([(
+                                                            "start",
+                                                            task.start_time.format("%H:%M").to_string()
+                                                        ), (
+                                                            "stop",
+                                                            task.stop_time.format("%H:%M").to_string()
+                                                        )]))
+                                                    )
+                                                )
                                                 .font(font::Font {
                                                     weight: iced::font::Weight::Bold,
                                                     ..Default::default()
                                                 }),
-                                                text(format!(
-                                                    "Total: {}",
-                                                    seconds_to_formatted_duration(
-                                                        task.total_time_in_seconds(),
-                                                        self.fur_settings.show_seconds
+                                                text(
+                                                    self.localization.get_message(
+                                                        "total-time-dynamic",
+                                                        Some(&HashMap::from([(
+                                                            "time",
+                                                            seconds_to_formatted_duration(
+                                                                task.total_time_in_seconds(),
+                                                                self.fur_settings.show_seconds
+                                                            )
+                                                        )]))
                                                     )
-                                                ))
+                                                )
                                             ])
                                             .width(Length::Fill)
                                             .padding([5, 8])
@@ -3025,14 +3153,14 @@ impl Application for Furtherance {
                                 .spacing(5),
                                 row![
                                     button(
-                                        text("Cancel")
+                                        text(self.localization.get_message("cancel", None))
                                             .horizontal_alignment(alignment::Horizontal::Center)
                                     )
                                     .style(theme::Button::Secondary)
                                     .on_press(Message::ToggleGroupEditor)
                                     .width(Length::Fill),
                                     button(
-                                        text("Save")
+                                        text(self.localization.get_message("save", None))
                                             .horizontal_alignment(alignment::Horizontal::Center)
                                     )
                                     .style(theme::Button::Primary)
@@ -3059,7 +3187,7 @@ impl Application for Furtherance {
                     .spacing(5)
                     .align_items(Alignment::Start)
                 }
-                None => column![text("Nothing selected.")]
+                None => column![text(self.localization.get_message("nothing-selected", None))]
                     .spacing(12)
                     .padding(20)
                     .align_items(Alignment::Start),
@@ -3087,19 +3215,19 @@ impl Application for Furtherance {
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
         {
             let alert_text: String;
-            let alert_description: &str;
+            let alert_description: String;
             let close_button: Option<Button<'_, Message, Theme, Renderer>>;
             let mut confirmation_button: Option<Button<'_, Message, Theme, Renderer>> = None;
             let mut snooze_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
                 FurAlert::DeleteGroupConfirmation => {
-                    alert_text = "Delete all?".to_string();
+                    alert_text = self.localization.get_message("delete-all-question", None);
                     alert_description =
-                        "Are you sure you want to permanently delete all tasks in this group?";
+                        self.localization.get_message("delete-all-description", None);
                     close_button = Some(
                         button(
-                            text("Cancel")
+                            text(self.localization.get_message("cancel", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3108,7 +3236,7 @@ impl Application for Furtherance {
                     );
                     confirmation_button = Some(
                         button(
-                            text("Delete All")
+                            text(self.localization.get_message("delete-all", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3117,11 +3245,11 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::DeleteShortcutConfirmation => {
-                    alert_text = "Delete shortcut?".to_string();
-                    alert_description = "Are you sure you want to delete this shortcut?";
+                    alert_text = self.localization.get_message("delete-shortcut-question", None);
+                    alert_description = self.localization.get_message("delete-shortcut-description", None);
                     close_button = Some(
                         button(
-                            text("Cancel")
+                            text(self.localization.get_message("cancel", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3130,7 +3258,7 @@ impl Application for Furtherance {
                     );
                     confirmation_button = Some(
                         button(
-                            text("Delete")
+                            text(self.localization.get_message("delete", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3139,11 +3267,11 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::DeleteTaskConfirmation => {
-                    alert_text = "Delete task?".to_string();
-                    alert_description = "Are you sure you want to permanently delete this task?";
+                    alert_text = self.localization.get_message("delete-task-question", None);
+                    alert_description = self.localization.get_message("delete-task-description", None);
                     close_button = Some(
                         button(
-                            text("Cancel")
+                            text(self.localization.get_message("cancel", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3152,7 +3280,7 @@ impl Application for Furtherance {
                     );
                     confirmation_button = Some(
                         button(
-                            text("Delete")
+                            text(self.localization.get_message("delete", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3161,12 +3289,18 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::Idle => {
-                    alert_text = format!("You have been idle for {}", self.idle.duration());
+                    alert_text = self.localization.get_message(
+                                                    "idle-alert-title",
+                                                    Some(&HashMap::from([(
+                                                        "duration",
+                                                        self.idle.duration()
+                                                    )]))
+                                                );
                     alert_description =
-                        "Would you like to discard that time, or continue the clock?";
+                        self.localization.get_message("idle-alert-description", None);
                     close_button = Some(
                         button(
-                            text("Continue")
+                            text(self.localization.get_message("continue", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3175,7 +3309,7 @@ impl Application for Furtherance {
                     );
                     confirmation_button = Some(
                         button(
-                            text("Discard")
+                            text(self.localization.get_message("discard", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3184,11 +3318,11 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::PomodoroBreakOver => {
-                    alert_text = "Break's over!".to_string();
-                    alert_description = "Time to get back to work.";
+                    alert_text = self.localization.get_message("break-over-title", None);
+                    alert_description = self.localization.get_message("break-over-description", None);
                     close_button = Some(
                         button(
-                            text("Stop")
+                            text(self.localization.get_message("stop", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3197,7 +3331,7 @@ impl Application for Furtherance {
                     );
                     confirmation_button = Some(
                         button(
-                            text("Continue")
+                            text(self.localization.get_message("continue", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3206,19 +3340,17 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::PomodoroOver => {
-                    alert_text = "Time's up!".to_string();
-                    alert_description = "Are you ready to take a break?";
+                    alert_text = self.localization.get_message("pomodoro-over-title", None);
+                    alert_description = self.localization.get_message("pomodoro-over-description", None);
                     snooze_button = Some(
                         button(
-                            // TODO: Try to handle plural with Fluent
-                            text(format!(
-                                "{} more {}",
-                                self.fur_settings.pomodoro_snooze_length,
-                                if self.fur_settings.pomodoro_snooze_length > 1 {
-                                    "minutes"
-                                } else {
-                                    "minute"
-                                }
+                            text(
+                                self.localization.get_message(
+                                    "snooze-button",
+                                    Some(&HashMap::from([(
+                                        "duration",
+                                        self.fur_settings.pomodoro_snooze_length.to_string()
+                                    )]))
                             ))
                             .horizontal_alignment(alignment::Horizontal::Center)
                             .width(Length::Shrink),
@@ -3228,7 +3360,7 @@ impl Application for Furtherance {
                     );
                     close_button = Some(
                         button(
-                            text("Stop")
+                            text(self.localization.get_message("stop", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3243,9 +3375,9 @@ impl Application for Furtherance {
                                         % self.fur_settings.pomodoro_extended_break_interval
                                         == 0
                                 {
-                                    "Long break"
+                                    self.localization.get_message("long-break", None)
                                 } else {
-                                    "Break"
+                                    self.localization.get_message("break", None)
                                 },
                             )
                             .horizontal_alignment(alignment::Horizontal::Center)
@@ -3256,11 +3388,11 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::ShortcutExists => {
-                    alert_text = "Shortcut exists".to_string();
-                    alert_description = "A shortcut for that task already exists.";
+                    alert_text = self.localization.get_message("shortcut-exists", None);
+                    alert_description = self.localization.get_message("shortcut-exists-description", None);
                     close_button = Some(
                         button(
-                            text("OK")
+                            text(self.localization.get_message("ok", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
@@ -3311,11 +3443,12 @@ fn nav_button<'a>(nav_text: String, destination: FurView, active: bool) -> Butto
         })
 }
 
-fn history_group_row<'a>(
-    task_group: &FurTaskGroup,
+fn history_group_row<'a, 'loc>(
+    task_group: &'a FurTaskGroup,
     timer_is_running: bool,
-    settings: &FurSettings,
-) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'static>, Message> {
+    settings: &'a FurSettings,
+    localization: &'loc Localization,
+) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
         column![text(&task_group.name).font(font::Font {
             weight: iced::font::Weight::Bold,
@@ -3380,25 +3513,26 @@ fn history_group_row<'a>(
 
     let task_group_ids = task_group.all_task_ids();
     let task_group_clone = task_group.clone();
+
     ContextMenu::new(
         history_row_button,
         Box::new(move || -> Element<'a, Message, Theme, Renderer> {
             Container::new(column![
-                iced::widget::button("Repeat")
+                iced::widget::button(text(localization.get_message("repeat", None)))
                     .on_press(Message::RepeatLastTaskPressed(task_group_string.clone()))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
-                iced::widget::button("Edit")
+                iced::widget::button(text(localization.get_message("edit", None)))
                     .on_press(Message::EditGroup(task_group_clone.clone()))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
-                iced::widget::button("Create shortcut")
+                iced::widget::button(text(localization.get_message("create-shortcut", None)))
                     .on_press(Message::CreateShortcutFromTaskGroup(
                         task_group_clone.clone(),
                     ))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
-                iced::widget::button("Delete")
+                iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteTasksFromContext(task_group_ids.clone()))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
@@ -3415,6 +3549,7 @@ fn history_title_row<'a>(
     total_earnings: f32,
     settings: &FurSettings,
     running_timer: Option<(bool, &str)>,
+    localization: &Localization,
 ) -> Row<'a, Message> {
     let mut total_time_column = column![].align_items(Alignment::End);
 
@@ -3444,7 +3579,7 @@ fn history_title_row<'a>(
     }
 
     row![
-        text(format_history_date(date)).font(font::Font {
+        text(format_history_date(date, localization)).font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
         }),
@@ -3454,15 +3589,15 @@ fn history_title_row<'a>(
     .align_items(Alignment::Center)
 }
 
-fn format_history_date(date: &NaiveDate) -> String {
+fn format_history_date(date: &NaiveDate, localization: &Localization) -> String {
     let today = Local::now().date_naive();
     let yesterday = today - TimeDelta::days(1);
     let current_year = today.year();
 
     if date == &today {
-        "Today".to_string()
+        localization.get_message("today", None)
     } else if date == &yesterday {
-        "Yesterday".to_string()
+        localization.get_message("yesterday", None)
     } else if date.year() == current_year {
         date.format("%b %d").to_string()
     } else {
@@ -3543,10 +3678,11 @@ fn shortcut_button_content<'a>(
     shortcut_text_column
 }
 
-fn shortcut_button<'a>(
+fn shortcut_button<'a, 'loc>(
     shortcut: &FurShortcut,
     timer_is_running: bool,
-) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'static>, Message> {
+    localization: &'loc Localization,
+) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
     let shortcut_color = match Srgb::from_hex(&shortcut.color_hex) {
         Ok(color) => color,
         Err(_) => Srgb::new(0.694, 0.475, 0.945),
@@ -3574,11 +3710,11 @@ fn shortcut_button<'a>(
         shortcut_button,
         Box::new(move || -> Element<'a, Message, Theme, Renderer> {
             Container::new(column![
-                iced::widget::button("Edit")
+                iced::widget::button(text(localization.get_message("edit", None)))
                     .on_press(Message::EditShortcutPressed(shortcut_clone.clone()))
                     .style(style::context_menu_button_style())
                     .width(Length::Fill),
-                iced::widget::button("Delete")
+                iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteShortcutFromContext(
                         shortcut_clone.id.clone()
                     ))
@@ -3696,27 +3832,54 @@ fn get_running_timer_text(state: &Furtherance, seconds_elapsed: i64) -> String {
     }
 }
 
-fn convert_timer_text_to_vertical_hms(timer_text: &str) -> String {
+fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localization) -> String {
     let mut split = timer_text.split(':');
     let mut sidebar_timer_text = String::new();
 
     if let Some(hours) = split.next() {
         if hours != "0" {
-            sidebar_timer_text.push_str(&format!("{} h\n", hours));
+
+            sidebar_timer_text.push_str(&localization.get_message(
+                "x-h",
+                Some(&HashMap::from([(
+                    "hours",
+                    hours.to_string()
+                )]))
+            ));
+            sidebar_timer_text.push_str("\n");
         }
     }
 
     if let Some(mins) = split.next() {
         if mins != "00" {
-            sidebar_timer_text.push_str(&format!("{} m\n", mins.trim_start_matches('0')));
+            sidebar_timer_text.push_str(&localization.get_message(
+                "x-m",
+                Some(&HashMap::from([(
+                    "minutes",
+                    mins.trim_start_matches('0').to_string()
+                )]))
+            ));
+            sidebar_timer_text.push_str("\n");
         }
     }
 
     if let Some(secs) = split.next() {
         if secs != "00" {
-            sidebar_timer_text.push_str(&format!("{} s", secs.trim_start_matches('0')));
+            sidebar_timer_text.push_str(&localization.get_message(
+                "x-s",
+                Some(&HashMap::from([(
+                    "seconds",
+                    secs.trim_start_matches('0').to_string()
+                )]))
+            ));
         } else {
-            sidebar_timer_text.push_str("0 s");
+            sidebar_timer_text.push_str(&localization.get_message(
+                "x-s",
+                Some(&HashMap::from([(
+                    "seconds",
+                    "0".to_string()
+                )]))
+            ));
         }
     }
 
@@ -3879,21 +4042,21 @@ fn has_max_two_decimals(input: &str) -> bool {
     }
 }
 
-fn show_notification(notification_type: NotificationType) {
-    let heading: &str;
-    let details: &str;
+fn show_notification(notification_type: NotificationType, localization: &Localization) {
+    let heading: String;
+    let details: String;
     match notification_type {
         NotificationType::PomodoroOver => {
-            heading = "Time's up!";
-            details = "It's time to take a break.";
+            heading = localization.get_message("pomodoro-over-title", None);
+            details = localization.get_message("pomodoro-over-notification-body", None);
         }
         NotificationType::BreakOver => {
-            heading = "Break's over!";
-            details = "Time to get back to work.";
+            heading = localization.get_message("break-over-title", None);
+            details = localization.get_message("break-over-description", None);
         }
         NotificationType::Idle => {
-            heading = "You've been idle.";
-            details = "Open Furtherance to continue or discard the idle time.";
+            heading = localization.get_message("idle-notification-title", None);
+            details = localization.get_message("idle-notification-body", None);
         }
     }
     // TODO: Enable later
@@ -3906,7 +4069,7 @@ fn show_notification(notification_type: NotificationType) {
     //     .unwrap();
 }
 
-fn settings_heading(heading: &str) -> Column<'_, Message, Theme, Renderer> {
+fn settings_heading<'a>(heading: String) -> Column<'a, Message, Theme, Renderer> {
     column![
         text(heading).font(font::Font {
             weight: iced::font::Weight::Bold,
@@ -3948,7 +4111,7 @@ fn get_system_theme() -> Theme {
     }
 }
 
-pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+pub fn write_furtasks_to_csv(path: PathBuf, localization: &Localization) -> Result<(), Box<dyn std::error::Error>> {
     if let Ok(file) = std::fs::File::create(path) {
         if let Ok(tasks) = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Descending) {
             let mut csv_writer = Writer::from_writer(file);
@@ -3981,14 +4144,14 @@ pub fn write_furtasks_to_csv(path: PathBuf) -> Result<(), Box<dyn std::error::Er
             csv_writer.flush()?;
             Ok(())
         } else {
-            Err("Failed to retrieve tasks from the database".into())
+            Err(localization.get_message("error-retrieving-tasks", None).into())
         }
     } else {
-        Err("Failed to create the file".into())
+        Err(localization.get_message("error-creating-file", None).into())
     }
 }
 
-pub fn verify_csv(file: &std::fs::File) -> Result<(), Box<dyn std::error::Error>> {
+pub fn verify_csv(file: &std::fs::File, localization: &Localization) -> Result<(), Box<dyn std::error::Error>> {
     let mut rdr = Reader::from_reader(file);
 
     let v3_headers = vec![
@@ -4021,13 +4184,13 @@ pub fn verify_csv(file: &std::fs::File) -> Result<(), Box<dyn std::error::Error>
     ];
 
     if let Ok(headers) = rdr.headers() {
-        if verify_headers(headers, &v3_headers).is_err() {
-            if verify_headers(headers, &v2_headers).is_err() {
-                verify_headers(headers, &v1_headers)?;
+        if verify_headers(headers, &v3_headers, localization).is_err() {
+            if verify_headers(headers, &v2_headers, localization).is_err() {
+                verify_headers(headers, &v1_headers, localization)?;
             }
         }
     } else {
-        return Err("Failed to read the headers".into());
+        return Err(localization.get_message("error-reading-headers", None).into());
     }
 
     Ok(())
@@ -4036,22 +4199,23 @@ pub fn verify_csv(file: &std::fs::File) -> Result<(), Box<dyn std::error::Error>
 fn verify_headers(
     headers: &StringRecord,
     expected: &[&str],
+    localization: &Localization,
 ) -> Result<(), Box<dyn std::error::Error>> {
     for (i, expected_header) in expected.iter().enumerate() {
         match headers.get(i) {
             Some(header) if header == *expected_header => continue,
             Some(_) => {
-                return Err(format!("Wrong column order.").into());
+                return Err(localization.get_message("wrong-column-order", None).into());
             }
             None => {
-                return Err(format!("Missing column").into());
+                return Err(localization.get_message("missing-column", None).into());
             }
         }
     }
     Ok(())
 }
 
-pub fn read_csv(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
+pub fn read_csv(file: &File, localization: &Localization) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
     let mut rdr = ReaderBuilder::new().flexible(true).from_reader(file);
     let mut tasks = Vec::new();
 
@@ -4093,7 +4257,7 @@ pub fn read_csv(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error::Error>>
                 currency: String::new(),
             },
 
-            _ => return Err("Invalid CSV".into()),
+            _ => return Err(localization.get_message("invalid-csv", None).into()),
         };
 
         if let Ok(exists) = db_task_exists(&task) {
@@ -4106,14 +4270,14 @@ pub fn read_csv(file: &File) -> Result<Vec<FurTask>, Box<dyn std::error::Error>>
     Ok(tasks)
 }
 
-pub fn import_csv_to_database(file: &mut File) {
+pub fn import_csv_to_database(file: &mut File, localization: &Localization) {
     // Seek back to the start of the file after verification
     if let Err(e) = file.seek(std::io::SeekFrom::Start(0)) {
         eprintln!("Failed to seek to start of file: {}", e);
         return;
     }
 
-    match read_csv(file) {
+    match read_csv(file, localization) {
         Ok(tasks_to_import) => {
             if let Err(e) = db_write_tasks(&tasks_to_import) {
                 eprintln!("Failed to import tasks: {}", e);
