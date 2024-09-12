@@ -43,6 +43,15 @@ impl Localization {
         bundles.insert("de".to_string(), create_bundle("de"));
         bundles.insert("en-US".to_string(), create_bundle("en-US"));
         bundles.insert("es".to_string(), create_bundle("es"));
+        bundles.insert("fi".to_string(), create_bundle("fi"));
+        bundles.insert("fr".to_string(), create_bundle("fr"));
+        bundles.insert("it".to_string(), create_bundle("it"));
+        bundles.insert("nl".to_string(), create_bundle("nl"));
+        bundles.insert("pt-BR".to_string(), create_bundle("pt-BR"));
+        bundles.insert("pt-PT".to_string(), create_bundle("pt-PT"));
+        bundles.insert("ru".to_string(), create_bundle("ru"));
+        bundles.insert("sk".to_string(), create_bundle("sk"));
+        bundles.insert("tr".to_string(), create_bundle("tr"));
 
         Localization {
             bundles,
