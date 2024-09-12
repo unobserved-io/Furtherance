@@ -2600,7 +2600,7 @@ impl Application for Furtherance {
                         column![
                             settings_heading(self.localization.get_message("local-database", None)),
                             database_location_col,
-                            settings_heading(self.localization.get_message("csv", None)),
+                            settings_heading("CSV".to_string()),
                             csv_col,
                             settings_heading(self.localization.get_message("backup", None)),
                             backup_col,
