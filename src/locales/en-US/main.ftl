@@ -54,6 +54,14 @@ list = List
 breakdown-by-selection = Breakdown By Selection
 total-time = Total Time
 earned = Earned
+past-week = Past week
+past-thirty-days = Past 30 days
+past-six-months = Past 6 months
+all-time = All time
+date-range = Date range
+title = Title
+tags = Tags
+rate = Rate
 
 ## Settings
 general = General

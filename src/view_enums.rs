@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::localization::Localization;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -37,15 +39,16 @@ impl FurView {
 
 impl std::fmt::Display for FurView {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let localization = Localization::new();
         write!(
             f,
             "{}",
             match self {
-                FurView::Shortcuts => "Shortcuts",
-                FurView::Timer => "Timer",
-                FurView::History => "History",
-                FurView::Report => "Report",
-                FurView::Settings => "Settings",
+                FurView::Shortcuts => localization.get_message("shortcuts", None),
+                FurView::Timer => localization.get_message("timer", None),
+                FurView::History => localization.get_message("history", None),
+                FurView::Report => localization.get_message("report", None),
+                FurView::Settings => localization.get_message("settings", None),
             }
         )
     }
@@ -129,15 +132,16 @@ impl FurDateRange {
 
 impl std::fmt::Display for FurDateRange {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let localization = Localization::new();
         write!(
             f,
             "{}",
             match self {
-                FurDateRange::PastWeek => "Past week",
-                FurDateRange::ThirtyDays => "Past 30 days",
-                FurDateRange::SixMonths => "Past 6 months",
-                FurDateRange::AllTime => "All time",
-                FurDateRange::Range => "Date range",
+                FurDateRange::PastWeek => localization.get_message("past-week", None),
+                FurDateRange::ThirtyDays => localization.get_message("past-thirty-days", None),
+                FurDateRange::SixMonths => localization.get_message("past-six-months", None),
+                FurDateRange::AllTime => localization.get_message("all-time", None),
+                FurDateRange::Range => localization.get_message("date-range", None),
             }
         )
     }
@@ -162,14 +166,15 @@ impl FurTaskProperty {
 
 impl std::fmt::Display for FurTaskProperty {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let localization = Localization::new();
         write!(
             f,
             "{}",
             match self {
-                FurTaskProperty::Title => "Title",
-                FurTaskProperty::Project => "Project",
-                FurTaskProperty::Tags => "Tags",
-                FurTaskProperty::Rate => "Rate",
+                FurTaskProperty::Title => localization.get_message("title", None),
+                FurTaskProperty::Project => localization.get_message("project", None),
+                FurTaskProperty::Tags => localization.get_message("tags", None),
+                FurTaskProperty::Rate => localization.get_message("rate", None),
             }
         )
     }
