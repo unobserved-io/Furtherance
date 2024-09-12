@@ -28,6 +28,7 @@ use crate::{
         time_recorded_chart::TimeRecordedChart,
     },
     database::db_retrieve_tasks_by_date_range,
+    localization::Localization,
     view_enums::{FurDateRange, FurTaskProperty, TabId},
 };
 
@@ -268,6 +269,7 @@ impl FurReport {
     }
 
     fn populate_task_property_values(&mut self) {
+        let localization = Localization::new();
         if let Some(property_key) = self.picked_task_property_key {
             self.task_property_values =
                 self.tasks_in_range
@@ -276,7 +278,7 @@ impl FurReport {
                         let keys = match property_key {
                             FurTaskProperty::Title => vec![task.name.to_string()],
                             FurTaskProperty::Project => vec![if task.project.trim().is_empty() {
-                                "None".to_string()
+                                localization.get_message("none", None)
                             } else {
                                 task.project.to_string()
                             }],
@@ -288,13 +290,13 @@ impl FurReport {
                                     .filter(|s| !s.is_empty())
                                     .collect::<Vec<String>>();
                                 if tags.is_empty() {
-                                    vec!["no tags".to_string()]
+                                    vec![localization.get_message("no-tags", None)]
                                 } else {
                                     tags
                                 }
                             }
                             FurTaskProperty::Rate => vec![if task.rate == 0.0 {
-                                "None".to_string()
+                                localization.get_message("none", None)
                             } else {
                                 format!("${:.2}", task.rate)
                             }],
@@ -315,9 +317,9 @@ impl FurReport {
             match property_key {
                 FurTaskProperty::Rate => {
                     self.task_property_value_keys.sort_by(|a, b| {
-                        if a == "None" {
+                        if a == &localization.get_message("none", None) {
                             std::cmp::Ordering::Greater
-                        } else if b == "None" {
+                        } else if b == &localization.get_message("none", None) {
                             std::cmp::Ordering::Less
                         } else {
                             b.cmp(a)

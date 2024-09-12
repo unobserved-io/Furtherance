@@ -62,6 +62,8 @@ date-range = Date range
 title = Title
 tags = Tags
 rate = Rate
+none = None
+no-tags = no tags
 
 ## Settings
 general = General
