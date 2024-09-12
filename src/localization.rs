@@ -41,7 +41,7 @@ impl Localization {
     pub fn new() -> Self {
         let mut bundles = HashMap::new();
         bundles.insert("en-US".to_string(), create_bundle("en-US"));
-        // bundles.insert("es".to_string(), create_bundle("es"));
+        bundles.insert("es".to_string(), create_bundle("es"));
 
         Localization {
             bundles,
