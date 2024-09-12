@@ -18,6 +18,7 @@ use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
     models::fur_task::FurTask,
+    localization::Localization,
 };
 use chrono::NaiveDate;
 use iced::{widget::Text, Element, Length};
@@ -54,6 +55,8 @@ impl EarningsChart {
 impl Chart<Message> for EarningsChart {
     type State = ();
     fn build_chart<DB: DrawingBackend>(&self, _state: &Self::State, mut chart: ChartBuilder<DB>) {
+        let localization = Localization::new();
+
         let min_earned = self
             .date_earned
             .values()
@@ -74,7 +77,7 @@ impl Chart<Message> for EarningsChart {
                     let mut chart = chart
                         .margin(30)
                         .caption(
-                            "Earnings",
+                            localization.get_message("earnings", None),
                             ("sans-serif", 15).into_font().color(&light_dark_color()),
                         )
                         .x_label_area_size(30)

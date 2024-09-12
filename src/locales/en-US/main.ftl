@@ -125,6 +125,13 @@ edit-shortcut = Edit Shortcut
 start-to-stop = {$start} to {$stop}
 nothing-selected = Nothing selected.
 
+## Charts
+average-earnings-per-task-title = Average Earnings Per Task
+average-time-per-task-title = Average Time Per Task
+time-recorded-title = Time Recorded
+time-recorded-for-selection-title = Time Recorded For Selection
+earnings-for-selection-title = Earnings For Selection
+
 ## Alerts
 delete-all = Delete All
 delete-all-question = Delete all?

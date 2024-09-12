@@ -18,6 +18,7 @@ use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
     models::fur_task::FurTask,
+    localization::Localization,
 };
 use chrono::NaiveDate;
 use iced::{widget::Text, Element, Length};
@@ -71,10 +72,12 @@ impl Chart<Message> for SelectionTimeRecordedChart {
         if date_time.len() > 1 {
             if let Some(first_date) = date_time.first_key_value() {
                 if let Some(last_date) = date_time.last_key_value() {
+                    let localization = Localization::new();
+
                     let mut chart = chart
                         .margin(30)
                         .caption(
-                            "Time Recorded For Selection",
+                            localization.get_message("time-recorded-for-selection-title", None),
                             ("sans-serif", 15).into_font().color(&light_dark_color()),
                         )
                         .x_label_area_size(30)

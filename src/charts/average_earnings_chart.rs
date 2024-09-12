@@ -17,6 +17,7 @@
 use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
+    localization::Localization,
     models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
@@ -71,10 +72,12 @@ impl Chart<Message> for AverageEarningsChart {
         if self.date_earned.len() > 1 {
             if let Some(first_date) = self.date_earned.first_key_value() {
                 if let Some(last_date) = self.date_earned.last_key_value() {
+                    let localization = Localization::new();
+
                     let mut chart = chart
                         .margin(30)
                         .caption(
-                            "Average Earnings Per Task",
+                            localization.get_message("average-earnings-per-task-title", None),
                             ("sans-serif", 15).into_font().color(&light_dark_color()),
                         )
                         .x_label_area_size(30)
