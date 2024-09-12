@@ -1,5 +1,6 @@
-### Localization resource for Furtherance
-### Last updated: 2024-09-11
+### Localization resource for Furtherance (Default: English, US)
+### This file is distributed under the same license as the Furtherance package.
+### Last updated: 2024-09-12
 
 ## File dialogs
 save-backup-title = Save Furtherance Backup
