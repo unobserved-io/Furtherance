@@ -40,6 +40,7 @@ pub struct Localization {
 impl Localization {
     pub fn new() -> Self {
         let mut bundles = HashMap::new();
+        bundles.insert("de".to_string(), create_bundle("de"));
         bundles.insert("en-US".to_string(), create_bundle("en-US"));
         bundles.insert("es".to_string(), create_bundle("es"));
 
