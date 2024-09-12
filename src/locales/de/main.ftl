@@ -1,5 +1,8 @@
-### Localization resource for Furtherance (German)
-### Last updated: 2024-09-11
+### Localization resource for Furtherance (Finnish)
+### This file is distributed under the same license as the Furtherance package.
+### Last updated: 2024-09-12
+### Translated by: Gabriel Brand <gabr.brand@gmail.com>, 2022,2023.
+### Modified with Claude AI for transition to Fluent
 
 ## File dialogs
 save-backup-title = Sicherungsdatenbank speichern

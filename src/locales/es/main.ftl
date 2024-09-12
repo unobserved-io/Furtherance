@@ -1,5 +1,8 @@
-### Localization resource for Furtherance (Spanish)
-### Last updated: 2024-09-11
+### Localization resource for Furtherance (Finnish)
+### This file is distributed under the same license as the Furtherance package.
+### Last updated: 2024-09-12
+### Translated by: Óscar Fernández Díaz <oscfdezdz@tuta.io>, 2022
+### Modified with Claude AI for transition to Fluent
 
 ## File dialogs
 save-backup-title = Guardar copia de seguridad de Furtherance
