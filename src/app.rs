@@ -73,9 +73,6 @@ use regex::Regex;
 use rfd::FileDialog;
 use tokio::time::{self, interval_at};
 
-#[cfg(not(target_os = "macos"))]
-use iced::Subscription;
-
 pub struct Furtherance {
     current_view: FurView,
     delete_ids_from_context: Option<Vec<u32>>,
