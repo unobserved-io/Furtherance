@@ -18,15 +18,27 @@ use std::{borrow::Cow, collections::HashMap, fs};
 
 use fluent::{FluentArgs, FluentBundle, FluentResource, FluentValue};
 use sys_locale::get_locale;
+use rust_embed::{RustEmbed};
 
-fn load_fluent_resource(path: &str) -> FluentResource {
-    let source = fs::read_to_string(path).expect("Failed to read the file");
-    FluentResource::try_new(source).expect("Failed to parse an FTL string")
+// Embed the files in the app package
+#[derive(RustEmbed)]
+#[folder = "src/locales/"]
+struct Locales;
+
+fn load_fluent_resource(lang: &str) -> FluentResource {
+    let file_path = format!("{}/main.ftl", lang);
+    let source = Locales::get(&file_path)
+        .expect("Failed to load embedded file")
+        .data;
+    let source_str = std::str::from_utf8(&source)
+        .expect("Failed to convert to UTF-8");
+    FluentResource::try_new(source_str.to_string())
+        .expect("Failed to parse an FTL string")
 }
 
 fn create_bundle(lang: &str) -> FluentBundle<FluentResource> {
     let mut bundle = FluentBundle::new(vec![lang.parse().expect("Failed to parse language tag")]);
-    let resource = load_fluent_resource(&format!("src/locales/{}/main.ftl", lang));
+    let resource = load_fluent_resource(lang);
     bundle
         .add_resource(resource)
         .expect("Failed to add FTL resources to the bundle");
