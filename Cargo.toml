@@ -1,8 +1,32 @@
 [package]
 name = "furtherance"
-version = "3.0.0"
+version = "24.9.0"
 authors = ["Ricky Kresslein <ricky@unobserved.io>"]
+description = "Track your time without being tracked."
+license = "GPL-3.0-or-later"
 edition = "2021"
+
+[package.metadata.bundle]
+name = "Furtherance"
+identifier = "io.unobserved.furtherance"
+copyright = "© Unobserved 2024"
+icon = [
+    "assets/icon/16x16.png",
+    "assets/icon/32x32.png",
+    "assets/icon/64x64.png",
+    "assets/icon/128x128.png",
+    "assets/icon/128x128@2x.png",
+    "assets/icon/256x256.png",
+    "assets/icon/256x256@2x.png",
+    "assets/icon/512x512.png",
+    "assets/icon/512x512@2x.png",
+]
+category = "Productivity"
+short_description = "Track your time without being tracked."
+long_description = """
+Furtherance is a time tracking application that respects your privacy.
+It allows you to track time spent on different activities without worrying about your data being captured and sold.
+"""
 
 [dependencies]
 config = "0.14"
@@ -36,6 +60,7 @@ rand = "0.8"
 regex = "1.10"
 rfd = "0.14.1"
 rusqlite = { version = "0.32", features = ["bundled", "chrono", "backup"] }
+rust-embed = "8.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sys-locale = "0.3.1"
