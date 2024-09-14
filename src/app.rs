@@ -45,7 +45,6 @@ use crate::{
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
-use fluent::{FluentBundle, FluentResource};
 use iced::{
     alignment, font,
     multi_window::Application,
