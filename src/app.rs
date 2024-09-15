@@ -1606,7 +1606,10 @@ impl Application for Furtherance {
                                 show_notification(NotificationType::BreakOver, &self.localization);
                                 self.displayed_alert = Some(FurAlert::PomodoroBreakOver);
                             } else {
-                                show_notification(NotificationType::PomodoroOver, &self.localization);
+                                show_notification(
+                                    NotificationType::PomodoroOver,
+                                    &self.localization,
+                                );
                                 self.displayed_alert = Some(FurAlert::PomodoroOver);
                             }
                         }
@@ -1882,13 +1885,16 @@ impl Application for Furtherance {
                 ),
                 vertical_space().height(Length::Fill),
                 if self.timer_is_running && self.current_view != FurView::Timer {
-                    text(convert_timer_text_to_vertical_hms(&self.timer_text, &self.localization))
-                        .size(50)
-                        .style(if self.pomodoro.on_break {
-                            theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
-                        } else {
-                            theme::Text::Default
-                        })
+                    text(convert_timer_text_to_vertical_hms(
+                        &self.timer_text,
+                        &self.localization,
+                    ))
+                    .size(50)
+                    .style(if self.pomodoro.on_break {
+                        theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
+                    } else {
+                        theme::Text::Default
+                    })
                 } else {
                     text("")
                 },
@@ -1909,7 +1915,11 @@ impl Application for Furtherance {
         // MARK: Shortcuts
         let mut shortcuts_row = FlowRow::new().spacing(20.0);
         for shortcut in &self.shortcuts {
-            shortcuts_row = shortcuts_row.push(shortcut_button(shortcut, self.timer_is_running, &self.localization));
+            shortcuts_row = shortcuts_row.push(shortcut_button(
+                shortcut,
+                self.timer_is_running,
+                &self.localization,
+            ));
         }
         let shortcuts_view = column![
             row![
@@ -1931,10 +1941,7 @@ impl Application for Furtherance {
                 horizontal_space().width(Length::Fill),
                 text(self.localization.get_message(
                     "recorded-today",
-                    Some(&HashMap::from([(
-                        "time",
-                        get_todays_total_time(&self)
-                    )]))
+                    Some(&HashMap::from([("time", get_todays_total_time(&self))]))
                 )),
             ],
             vertical_space().height(Length::Fill),
@@ -1982,8 +1989,7 @@ impl Application for Furtherance {
                                 "time",
                                 self.displayed_task_start_time.to_string()
                             )]))
-                        )
-                            ))
+                        )))
                         .on_press(Message::ChooseCurrentTaskStartTime),
                         Message::CancelCurrentTaskStartTime,
                         Message::SubmitCurrentTaskStartTime,
@@ -2036,7 +2042,7 @@ impl Application for Furtherance {
                 } else {
                     None
                 },
-                &self.localization
+                &self.localization,
             ));
             for task_group in task_groups {
                 all_history_rows = all_history_rows.push(history_group_row(
@@ -2108,8 +2114,13 @@ impl Application for Furtherance {
         if !self.report.tasks_in_range.is_empty()
             && self.fur_settings.show_chart_breakdown_by_selection
         {
-            charts_breakdown_by_selection_column =
-                charts_breakdown_by_selection_column.push(text(self.localization.get_message("breakdown-by-selection", None)).size(40));
+            charts_breakdown_by_selection_column = charts_breakdown_by_selection_column.push(
+                text(
+                    self.localization
+                        .get_message("breakdown-by-selection", None),
+                )
+                .size(40),
+            );
             charts_breakdown_by_selection_column = charts_breakdown_by_selection_column.push(
                 row![
                     pick_list(
@@ -2220,12 +2231,12 @@ impl Application for Furtherance {
                 &self.fur_settings.database_url,
             ),
             row![
-                button(text(self.localization.get_message("create-new", None))).on_press(Message::SettingsChangeDatabaseLocationPressed(
-                    ChangeDB::New
-                )),
-                button(text(self.localization.get_message("open-existing", None))).on_press(Message::SettingsChangeDatabaseLocationPressed(
-                    ChangeDB::Open
-                )),
+                button(text(self.localization.get_message("create-new", None))).on_press(
+                    Message::SettingsChangeDatabaseLocationPressed(ChangeDB::New)
+                ),
+                button(text(self.localization.get_message("open-existing", None))).on_press(
+                    Message::SettingsChangeDatabaseLocationPressed(ChangeDB::Open)
+                ),
             ]
             .spacing(10),
         ]
@@ -2243,8 +2254,10 @@ impl Application for Furtherance {
             });
 
         let mut csv_col = column![row![
-            button(text(self.localization.get_message("export-csv", None))).on_press(Message::ExportCsvPressed),
-            button(text(self.localization.get_message("import-csv", None))).on_press(Message::ImportCsvPressed)
+            button(text(self.localization.get_message("export-csv", None)))
+                .on_press(Message::ExportCsvPressed),
+            button(text(self.localization.get_message("import-csv", None)))
+                .on_press(Message::ImportCsvPressed)
         ]
         .spacing(10),]
         .spacing(10);
@@ -2260,7 +2273,11 @@ impl Application for Furtherance {
         });
 
         let mut backup_col =
-            column![button(text(self.localization.get_message("backup-database", None))).on_press(Message::BackupDatabase)].spacing(10);
+            column![
+                button(text(self.localization.get_message("backup-database", None)))
+                    .on_press(Message::BackupDatabase)
+            ]
+            .spacing(10);
         backup_col = backup_col.push_maybe(match &self.settings_backup_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -2295,7 +2312,10 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text(self.localization.get_message("show-delete-confirmation", None)),
+                                text(
+                                    self.localization
+                                        .get_message("show-delete-confirmation", None)
+                                ),
                                 toggler(
                                     String::new(),
                                     self.fur_settings.show_delete_confirmation,
@@ -2401,7 +2421,11 @@ impl Application for Furtherance {
                             row![
                                 column![
                                     text(self.localization.get_message("dynamic-total", None)),
-                                    text(self.localization.get_message("dynamic-total-description", None)).size(12),
+                                    text(
+                                        self.localization
+                                            .get_message("dynamic-total-description", None)
+                                    )
+                                    .size(12),
                                 ],
                                 toggler(
                                     String::new(),
@@ -2494,7 +2518,10 @@ impl Application for Furtherance {
                             .spacing(10)
                             .align_items(Alignment::Center),
                             row![
-                                text(self.localization.get_message("extended-break-interval", None)),
+                                text(
+                                    self.localization
+                                        .get_message("extended-break-interval", None)
+                                ),
                                 number_input(
                                     self.fur_settings.pomodoro_extended_break_interval,
                                     999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
@@ -2539,27 +2566,36 @@ impl Application for Furtherance {
                                 self.fur_settings.show_chart_total_earnings_box
                             )
                             .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled),
-                            checkbox(self.localization.get_message("time-recorded", None), self.fur_settings.show_chart_time_recorded)
-                                .on_toggle(Message::SettingsShowChartTimeRecordedToggled),
-                            checkbox(self.localization.get_message("earnings", None), self.fur_settings.show_chart_earnings)
-                                .on_toggle(Message::SettingsShowChartEarningsToggled),
+                            checkbox(
+                                self.localization.get_message("time-recorded", None),
+                                self.fur_settings.show_chart_time_recorded
+                            )
+                            .on_toggle(Message::SettingsShowChartTimeRecordedToggled),
+                            checkbox(
+                                self.localization.get_message("earnings", None),
+                                self.fur_settings.show_chart_earnings
+                            )
+                            .on_toggle(Message::SettingsShowChartEarningsToggled),
                             checkbox(
                                 self.localization.get_message("average-time-per-task", None),
                                 self.fur_settings.show_chart_average_time
                             )
                             .on_toggle(Message::SettingsShowChartAverageTimeToggled),
                             checkbox(
-                                self.localization.get_message("average-earnings-per-task", None),
+                                self.localization
+                                    .get_message("average-earnings-per-task", None),
                                 self.fur_settings.show_chart_average_earnings
                             )
                             .on_toggle(Message::SettingsShowChartAverageEarningsToggled),
                             checkbox(
-                                self.localization.get_message("breakdown-by-selection-section", None),
+                                self.localization
+                                    .get_message("breakdown-by-selection-section", None),
                                 self.fur_settings.show_chart_breakdown_by_selection
                             )
                             .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled),
                             checkbox(
-                                self.localization.get_message("time-recorded-for-selection", None),
+                                self.localization
+                                    .get_message("time-recorded-for-selection", None),
                                 self.fur_settings.show_chart_selection_time
                             )
                             .on_toggle_maybe(
@@ -2570,7 +2606,8 @@ impl Application for Furtherance {
                                 }
                             ),
                             checkbox(
-                                self.localization.get_message("earnings-for-selection", None),
+                                self.localization
+                                    .get_message("earnings-for-selection", None),
                                 self.fur_settings.show_chart_seleciton_earnings
                             )
                             .on_toggle_maybe(
@@ -2613,12 +2650,21 @@ impl Application for Furtherance {
             // MARK: Add Task To Group
             Some(FurInspectorView::AddNewTask) => match &self.task_to_add {
                 Some(task_to_add) => column![
-                    text_input(&self.localization.get_message("task-name", None), &task_to_add.name)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
-                    text_input(&self.localization.get_message("project", None), &task_to_add.project)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
-                    text_input(&self.localization.get_message("hashtag-tags", None), &task_to_add.tags)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
+                    text_input(
+                        &self.localization.get_message("task-name", None),
+                        &task_to_add.name
+                    )
+                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
+                    text_input(
+                        &self.localization.get_message("project", None),
+                        &task_to_add.project
+                    )
+                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
+                    text_input(
+                        &self.localization.get_message("hashtag-tags", None),
+                        &task_to_add.tags
+                    )
+                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
                     text_input("0.00", &task_to_add.new_rate)
                         .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Rate)),
                     row![
@@ -2672,18 +2718,24 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Secondary)
-                            .on_press(Message::CancelTaskEdit)
-                            .width(Length::Fill),
-                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Primary)
-                            .on_press_maybe(if task_to_add.name.trim().is_empty() {
-                                None
-                            } else {
-                                Some(Message::SaveTaskEdit)
-                            })
-                            .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Secondary)
+                        .on_press(Message::CancelTaskEdit)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Primary)
+                        .on_press_maybe(if task_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveTaskEdit)
+                        })
+                        .width(Length::Fill),
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
@@ -2702,13 +2754,23 @@ impl Application for Furtherance {
             Some(FurInspectorView::AddShortcut) => match &self.shortcut_to_add {
                 Some(shortcut_to_add) => column![
                     text(self.localization.get_message("new-shortcut", None)).size(24),
-                    text_input(&self.localization.get_message("task-name", None), &shortcut_to_add.name)
-                        .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
-                    text_input(&self.localization.get_message("project", None), &shortcut_to_add.project).on_input(|s| {
+                    text_input(
+                        &self.localization.get_message("task-name", None),
+                        &shortcut_to_add.name
+                    )
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
+                    text_input(
+                        &self.localization.get_message("project", None),
+                        &shortcut_to_add.project
+                    )
+                    .on_input(|s| {
                         Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
                     }),
-                    text_input(&self.localization.get_message("hashtag-tags", None), &shortcut_to_add.tags)
-                        .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
+                    text_input(
+                        &self.localization.get_message("hashtag-tags", None),
+                        &shortcut_to_add.tags
+                    )
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
                     row![
                         text("$"),
                         text_input("0.00", &shortcut_to_add.new_rate).on_input(|s| {
@@ -2738,18 +2800,24 @@ impl Application for Furtherance {
                         Message::SubmitShortcutColor,
                     ),
                     row![
-                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Secondary)
-                            .on_press(Message::CancelShortcut)
-                            .width(Length::Fill),
-                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Primary)
-                            .on_press_maybe(if shortcut_to_add.name.trim().is_empty() {
-                                None
-                            } else {
-                                Some(Message::SaveShortcut)
-                            })
-                            .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Secondary)
+                        .on_press(Message::CancelShortcut)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Primary)
+                        .on_press_maybe(if shortcut_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        })
+                        .width(Length::Fill),
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
@@ -2815,14 +2883,20 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Secondary)
-                            .on_press(Message::CancelTaskEdit)
-                            .width(Length::Fill),
-                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Primary)
-                            .on_press(Message::SaveTaskEdit)
-                            .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Secondary)
+                        .on_press(Message::CancelTaskEdit)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Primary)
+                        .on_press(Message::SaveTaskEdit)
+                        .width(Length::Fill),
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
@@ -2841,13 +2915,23 @@ impl Application for Furtherance {
             Some(FurInspectorView::EditShortcut) => match &self.shortcut_to_edit {
                 Some(shortcut_to_edit) => column![
                     text(self.localization.get_message("edit-shortcut", None)).size(24),
-                    text_input(&self.localization.get_message("task-name", None), &shortcut_to_edit.new_name)
-                        .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
-                    text_input(&self.localization.get_message("project", None), &shortcut_to_edit.new_project).on_input(|s| {
+                    text_input(
+                        &self.localization.get_message("task-name", None),
+                        &shortcut_to_edit.new_name
+                    )
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
+                    text_input(
+                        &self.localization.get_message("project", None),
+                        &shortcut_to_edit.new_project
+                    )
+                    .on_input(|s| {
                         Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
                     }),
-                    text_input(&self.localization.get_message("hashtag-tags", None), &shortcut_to_edit.new_tags)
-                        .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
+                    text_input(
+                        &self.localization.get_message("hashtag-tags", None),
+                        &shortcut_to_edit.new_tags
+                    )
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
                     row![
                         text("$"),
                         text_input("0.00", &shortcut_to_edit.new_rate).on_input(|s| {
@@ -2879,22 +2963,28 @@ impl Application for Furtherance {
                         Message::SubmitShortcutColor,
                     ),
                     row![
-                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Secondary)
-                            .on_press(Message::CancelShortcut)
-                            .width(Length::Fill),
-                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Primary)
-                            .on_press_maybe(
-                                if shortcut_to_edit.new_name.trim().is_empty()
-                                    || !shortcut_to_edit.is_changed()
-                                {
-                                    None
-                                } else {
-                                    Some(Message::SaveShortcut)
-                                }
-                            )
-                            .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Secondary)
+                        .on_press(Message::CancelShortcut)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Primary)
+                        .on_press_maybe(
+                            if shortcut_to_edit.new_name.trim().is_empty()
+                                || !shortcut_to_edit.is_changed()
+                            {
+                                None
+                            } else {
+                                Some(Message::SaveShortcut)
+                            }
+                        )
+                        .width(Length::Fill),
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
@@ -2991,22 +3081,27 @@ impl Application for Furtherance {
                     .align_items(Alignment::Center)
                     .spacing(5),
                     row![
-                        button(text(self.localization.get_message("cancel", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Secondary)
-                            .on_press(Message::CancelTaskEdit)
-                            .width(Length::Fill),
-                        button(text(self.localization.get_message("save", None)).horizontal_alignment(alignment::Horizontal::Center))
-                            .style(theme::Button::Primary)
-                            .on_press_maybe(
-                                if task_to_edit.is_changed()
-                                    && !task_to_edit.new_name.trim().is_empty()
-                                {
-                                    Some(Message::SaveTaskEdit)
-                                } else {
-                                    None
-                                }
-                            )
-                            .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Secondary)
+                        .on_press(Message::CancelTaskEdit)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .horizontal_alignment(alignment::Horizontal::Center)
+                        )
+                        .style(theme::Button::Primary)
+                        .on_press_maybe(
+                            if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
+                            {
+                                Some(Message::SaveTaskEdit)
+                            } else {
+                                None
+                            }
+                        )
+                        .width(Length::Fill),
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
@@ -3053,31 +3148,36 @@ impl Application for Furtherance {
                                                 text(
                                                     self.localization.get_message(
                                                         "start-to-stop",
-                                                        Some(&HashMap::from([(
-                                                            "start",
-                                                            task.start_time.format("%H:%M").to_string()
-                                                        ), (
-                                                            "stop",
-                                                            task.stop_time.format("%H:%M").to_string()
-                                                        )]))
+                                                        Some(&HashMap::from([
+                                                            (
+                                                                "start",
+                                                                task.start_time
+                                                                    .format("%H:%M")
+                                                                    .to_string()
+                                                            ),
+                                                            (
+                                                                "stop",
+                                                                task.stop_time
+                                                                    .format("%H:%M")
+                                                                    .to_string()
+                                                            )
+                                                        ]))
                                                     )
                                                 )
                                                 .font(font::Font {
                                                     weight: iced::font::Weight::Bold,
                                                     ..Default::default()
                                                 }),
-                                                text(
-                                                    self.localization.get_message(
-                                                        "total-time-dynamic",
-                                                        Some(&HashMap::from([(
-                                                            "time",
-                                                            seconds_to_formatted_duration(
-                                                                task.total_time_in_seconds(),
-                                                                self.fur_settings.show_seconds
-                                                            )
-                                                        )]))
-                                                    )
-                                                )
+                                                text(self.localization.get_message(
+                                                    "total-time-dynamic",
+                                                    Some(&HashMap::from([(
+                                                        "time",
+                                                        seconds_to_formatted_duration(
+                                                            task.total_time_in_seconds(),
+                                                            self.fur_settings.show_seconds
+                                                        )
+                                                    )]))
+                                                ))
                                             ])
                                             .width(Length::Fill)
                                             .padding([5, 8])
@@ -3183,10 +3283,12 @@ impl Application for Furtherance {
                     .spacing(5)
                     .align_items(Alignment::Start)
                 }
-                None => column![text(self.localization.get_message("nothing-selected", None))]
-                    .spacing(12)
-                    .padding(20)
-                    .align_items(Alignment::Start),
+                None => column![text(
+                    self.localization.get_message("nothing-selected", None)
+                )]
+                .spacing(12)
+                .padding(20)
+                .align_items(Alignment::Start),
             },
             _ => column![],
         };
@@ -3219,8 +3321,9 @@ impl Application for Furtherance {
             match self.displayed_alert.as_ref().unwrap() {
                 FurAlert::DeleteGroupConfirmation => {
                     alert_text = self.localization.get_message("delete-all-question", None);
-                    alert_description =
-                        self.localization.get_message("delete-all-description", None);
+                    alert_description = self
+                        .localization
+                        .get_message("delete-all-description", None);
                     close_button = Some(
                         button(
                             text(self.localization.get_message("cancel", None))
@@ -3241,8 +3344,12 @@ impl Application for Furtherance {
                     );
                 }
                 FurAlert::DeleteShortcutConfirmation => {
-                    alert_text = self.localization.get_message("delete-shortcut-question", None);
-                    alert_description = self.localization.get_message("delete-shortcut-description", None);
+                    alert_text = self
+                        .localization
+                        .get_message("delete-shortcut-question", None);
+                    alert_description = self
+                        .localization
+                        .get_message("delete-shortcut-description", None);
                     close_button = Some(
                         button(
                             text(self.localization.get_message("cancel", None))
@@ -3264,7 +3371,9 @@ impl Application for Furtherance {
                 }
                 FurAlert::DeleteTaskConfirmation => {
                     alert_text = self.localization.get_message("delete-task-question", None);
-                    alert_description = self.localization.get_message("delete-task-description", None);
+                    alert_description = self
+                        .localization
+                        .get_message("delete-task-description", None);
                     close_button = Some(
                         button(
                             text(self.localization.get_message("cancel", None))
@@ -3286,14 +3395,12 @@ impl Application for Furtherance {
                 }
                 FurAlert::Idle => {
                     alert_text = self.localization.get_message(
-                                                    "idle-alert-title",
-                                                    Some(&HashMap::from([(
-                                                        "duration",
-                                                        self.idle.duration()
-                                                    )]))
-                                                );
-                    alert_description =
-                        self.localization.get_message("idle-alert-description", None);
+                        "idle-alert-title",
+                        Some(&HashMap::from([("duration", self.idle.duration())])),
+                    );
+                    alert_description = self
+                        .localization
+                        .get_message("idle-alert-description", None);
                     close_button = Some(
                         button(
                             text(self.localization.get_message("continue", None))
@@ -3315,7 +3422,9 @@ impl Application for Furtherance {
                 }
                 FurAlert::PomodoroBreakOver => {
                     alert_text = self.localization.get_message("break-over-title", None);
-                    alert_description = self.localization.get_message("break-over-description", None);
+                    alert_description = self
+                        .localization
+                        .get_message("break-over-description", None);
                     close_button = Some(
                         button(
                             text(self.localization.get_message("stop", None))
@@ -3337,16 +3446,17 @@ impl Application for Furtherance {
                 }
                 FurAlert::PomodoroOver => {
                     alert_text = self.localization.get_message("pomodoro-over-title", None);
-                    alert_description = self.localization.get_message("pomodoro-over-description", None);
+                    alert_description = self
+                        .localization
+                        .get_message("pomodoro-over-description", None);
                     snooze_button = Some(
                         button(
-                            text(
-                                self.localization.get_message(
-                                    "snooze-button",
-                                    Some(&HashMap::from([(
-                                        "duration",
-                                        self.fur_settings.pomodoro_snooze_length.to_string()
-                                    )]))
+                            text(self.localization.get_message(
+                                "snooze-button",
+                                Some(&HashMap::from([(
+                                    "duration",
+                                    self.fur_settings.pomodoro_snooze_length.to_string(),
+                                )])),
                             ))
                             .horizontal_alignment(alignment::Horizontal::Center)
                             .width(Length::Shrink),
@@ -3385,7 +3495,9 @@ impl Application for Furtherance {
                 }
                 FurAlert::ShortcutExists => {
                     alert_text = self.localization.get_message("shortcut-exists", None);
-                    alert_description = self.localization.get_message("shortcut-exists-description", None);
+                    alert_description = self
+                        .localization
+                        .get_message("shortcut-exists-description", None);
                     close_button = Some(
                         button(
                             text(self.localization.get_message("ok", None))
@@ -3834,14 +3946,10 @@ fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localizat
 
     if let Some(hours) = split.next() {
         if hours != "0" {
-
-            sidebar_timer_text.push_str(&localization.get_message(
-                "x-h",
-                Some(&HashMap::from([(
-                    "hours",
-                    hours.to_string()
-                )]))
-            ));
+            sidebar_timer_text.push_str(
+                &localization
+                    .get_message("x-h", Some(&HashMap::from([("hours", hours.to_string())]))),
+            );
             sidebar_timer_text.push_str("\n");
         }
     }
@@ -3852,8 +3960,8 @@ fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localizat
                 "x-m",
                 Some(&HashMap::from([(
                     "minutes",
-                    mins.trim_start_matches('0').to_string()
-                )]))
+                    mins.trim_start_matches('0').to_string(),
+                )])),
             ));
             sidebar_timer_text.push_str("\n");
         }
@@ -3865,17 +3973,14 @@ fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localizat
                 "x-s",
                 Some(&HashMap::from([(
                     "seconds",
-                    secs.trim_start_matches('0').to_string()
-                )]))
+                    secs.trim_start_matches('0').to_string(),
+                )])),
             ));
         } else {
-            sidebar_timer_text.push_str(&localization.get_message(
-                "x-s",
-                Some(&HashMap::from([(
-                    "seconds",
-                    "0".to_string()
-                )]))
-            ));
+            sidebar_timer_text.push_str(
+                &localization
+                    .get_message("x-s", Some(&HashMap::from([("seconds", "0".to_string())]))),
+            );
         }
     }
 
@@ -4107,7 +4212,10 @@ fn get_system_theme() -> Theme {
     }
 }
 
-pub fn write_furtasks_to_csv(path: PathBuf, localization: &Localization) -> Result<(), Box<dyn std::error::Error>> {
+pub fn write_furtasks_to_csv(
+    path: PathBuf,
+    localization: &Localization,
+) -> Result<(), Box<dyn std::error::Error>> {
     if let Ok(file) = std::fs::File::create(path) {
         if let Ok(tasks) = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Descending) {
             let mut csv_writer = Writer::from_writer(file);
@@ -4140,16 +4248,22 @@ pub fn write_furtasks_to_csv(path: PathBuf, localization: &Localization) -> Resu
             csv_writer.flush()?;
             Ok(())
         } else {
-            Err(localization.get_message("error-retrieving-tasks", None).into())
+            Err(localization
+                .get_message("error-retrieving-tasks", None)
+                .into())
         }
     } else {
         Err(localization.get_message("error-creating-file", None).into())
     }
 }
 
-pub fn verify_csv(file: &std::fs::File, localization: &Localization) -> Result<(), Box<dyn std::error::Error>> {
+pub fn verify_csv(
+    file: &std::fs::File,
+    localization: &Localization,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut rdr = Reader::from_reader(file);
 
+    // v3 - Iced
     let v3_headers = vec![
         "Name",
         "Start Time",
@@ -4161,6 +4275,7 @@ pub fn verify_csv(file: &std::fs::File, localization: &Localization) -> Result<(
         "Total Time",
         "Total Earnings",
     ];
+    // v2 - macOS/SwiftUI
     let v2_headers = vec![
         "Name",
         "Project",
@@ -4170,6 +4285,7 @@ pub fn verify_csv(file: &std::fs::File, localization: &Localization) -> Result<(
         "Stop Time",
         "Total Seconds",
     ];
+    // v1 - GTK
     let v1_headers = vec![
         "id",
         "task_name",
@@ -4186,7 +4302,9 @@ pub fn verify_csv(file: &std::fs::File, localization: &Localization) -> Result<(
             }
         }
     } else {
-        return Err(localization.get_message("error-reading-headers", None).into());
+        return Err(localization
+            .get_message("error-reading-headers", None)
+            .into());
     }
 
     Ok(())
@@ -4211,7 +4329,10 @@ fn verify_headers(
     Ok(())
 }
 
-pub fn read_csv(file: &File, localization: &Localization) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
+pub fn read_csv(
+    file: &File,
+    localization: &Localization,
+) -> Result<Vec<FurTask>, Box<dyn std::error::Error>> {
     let mut rdr = ReaderBuilder::new().flexible(true).from_reader(file);
     let mut tasks = Vec::new();
 
