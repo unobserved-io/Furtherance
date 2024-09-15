@@ -95,7 +95,6 @@ async fn get_wayland_idle_seconds() -> zbus::Result<u64> {
     // Try GNOME Mutter IdleMonitor
     if let Ok(proxy) = GnomeIdleMonitorProxy::new(&connection).await {
         if let Ok(idle_time) = proxy.get_idletime().await {
-            println!("{}", idle_time / 1000);
             return Ok(idle_time / 1000);
         }
     }
