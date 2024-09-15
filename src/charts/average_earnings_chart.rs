@@ -137,10 +137,3 @@ fn light_dark_color() -> RGBColor {
         dark_light::Mode::Dark => WHITE,
     }
 }
-
-fn seconds_to_hms(total_seconds: &i64) -> String {
-    let h = total_seconds / 3600;
-    let m = total_seconds % 3600 / 60;
-    let s = total_seconds % 60;
-    format!("{}:{:02}:{:02}", h, m, s)
-}
