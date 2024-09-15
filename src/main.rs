@@ -28,10 +28,7 @@ mod database;
 mod helpers {
     pub mod color_utils;
     pub mod flow_row;
-    pub mod idle {
-        pub mod linux_idle;
-        pub mod mac_win_idle;
-    }
+    pub mod idle;
 }
 mod localization;
 mod models {
