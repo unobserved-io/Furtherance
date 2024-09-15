@@ -42,7 +42,7 @@ use crate::{
     style,
     view_enums::*,
 };
-use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveTime};
+use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::{
@@ -1028,6 +1028,8 @@ impl Application for Furtherance {
                                 import_csv_to_database(&mut file, &self.localization);
                                 self.settings_csv_message =
                                     Ok(self.localization.get_message("csv-imported", None).into());
+                                self.task_history =
+                                    get_task_history(self.fur_settings.days_to_show);
                             }
                             Err(e) => {
                                 eprintln!("Invalid CSV file: {}", e);
@@ -4351,17 +4353,38 @@ pub fn read_csv(
                 rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
                 currency: record.get(6).unwrap_or("").trim().to_string(),
             },
-            7 => FurTask {
+            7 => {
                 // v2 - macOS SwiftUI
-                id: 0,
-                name: record.get(0).unwrap_or("").to_string(),
-                start_time: record.get(4).unwrap_or("").parse().unwrap_or_default(),
-                stop_time: record.get(5).unwrap_or("").parse().unwrap_or_default(),
-                tags: record.get(2).unwrap_or("").trim().to_string(),
-                project: record.get(1).unwrap_or("").trim().to_string(),
-                rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
-                currency: String::new(),
-            },
+                let date_format = "%Y-%m-%d %H:%M:%S";
+                FurTask {
+                    id: 0,
+                    name: record.get(0).unwrap_or("").to_string(),
+                    start_time: Local
+                        .from_local_datetime(
+                            &NaiveDateTime::parse_from_str(
+                                record.get(4).unwrap_or(""),
+                                date_format,
+                            )
+                            .unwrap_or_default(),
+                        )
+                        .single()
+                        .unwrap_or_default(),
+                    stop_time: Local
+                        .from_local_datetime(
+                            &NaiveDateTime::parse_from_str(
+                                record.get(5).unwrap_or(""),
+                                date_format,
+                            )
+                            .unwrap_or_default(),
+                        )
+                        .single()
+                        .unwrap_or_default(),
+                    tags: record.get(2).unwrap_or("").trim().to_string(),
+                    project: record.get(1).unwrap_or("").trim().to_string(),
+                    rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
+                    currency: String::new(),
+                }
+            }
             6 => FurTask {
                 // v1 - GTK
                 id: record.get(0).unwrap_or("0").parse().unwrap_or(0),
