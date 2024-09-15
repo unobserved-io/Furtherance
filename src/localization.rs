@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::{borrow::Cow, collections::HashMap, fs};
+use std::{borrow::Cow, collections::HashMap};
 
 use fluent::{FluentArgs, FluentBundle, FluentResource, FluentValue};
+use rust_embed::RustEmbed;
 use sys_locale::get_locale;
-use rust_embed::{RustEmbed};
 
 // Embed the files in the app package
 #[derive(RustEmbed)]
@@ -30,10 +30,8 @@ fn load_fluent_resource(lang: &str) -> FluentResource {
     let source = Locales::get(&file_path)
         .expect("Failed to load embedded file")
         .data;
-    let source_str = std::str::from_utf8(&source)
-        .expect("Failed to convert to UTF-8");
-    FluentResource::try_new(source_str.to_string())
-        .expect("Failed to parse an FTL string")
+    let source_str = std::str::from_utf8(&source).expect("Failed to convert to UTF-8");
+    FluentResource::try_new(source_str.to_string()).expect("Failed to parse an FTL string")
 }
 
 fn create_bundle(lang: &str) -> FluentBundle<FluentResource> {
@@ -96,7 +94,8 @@ impl Localization {
 
         // Prevent odd symbols in iced
         // TODO: Try to remove when iced has rtl text formatting
-        formatted.to_string()
+        formatted
+            .to_string()
             .replace('\u{2068}', "")
             .replace('\u{2069}', "")
     }

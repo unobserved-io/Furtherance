@@ -15,8 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use iced::widget::{button, container};
-use iced::{gradient, theme, Background, Border, Color, Gradient, Radians, Theme};
-use palette::color_difference::Wcag21RelativeContrast;
+use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
 use palette::{Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;

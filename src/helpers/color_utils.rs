@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use iced::Color;
-use palette::{FromColor, Srgb};
+use palette::Srgb;
 use rand::Rng;
 use std::num::ParseIntError;
 

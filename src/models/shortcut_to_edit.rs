@@ -18,7 +18,7 @@ use iced::Color;
 
 use crate::{
     constants::FURTHERANCE_PURPLE,
-    helpers::color_utils::{FromHex, RandomColor, ToIcedColor},
+    helpers::color_utils::{FromHex, ToIcedColor},
 };
 
 use super::fur_shortcut::FurShortcut;
