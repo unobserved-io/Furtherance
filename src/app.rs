@@ -65,7 +65,7 @@ use iced_aw::{
     date_picker, modal, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel,
     Tabs, TimePicker,
 };
-use notify_rust::{Notification, Timeout};
+use notify_rust::{set_application, Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
@@ -228,6 +228,14 @@ impl Application for Furtherance {
         // Update old furtherance databases with new properties
         if let Err(e) = db_upgrade_old() {
             eprintln!("Error encountered while upgrading legacy database: {}", e);
+        }
+
+        // Set application identifier for notifications
+        if let Err(e) = set_application("io.unobserved.furtherance") {
+            eprintln!(
+                "Failed to set application identifier for notifications: {}",
+                e
+            );
         }
 
         let mut furtherance = Furtherance {
@@ -4162,14 +4170,14 @@ fn show_notification(notification_type: NotificationType, localization: &Localiz
             details = localization.get_message("idle-notification-body", None);
         }
     }
-    // TODO: Enable later
-    // Notification::new()
-    //     .summary(heading)
-    //     .body(details)
-    //     .appname("furtherance")
-    //     .timeout(Timeout::Milliseconds(6000))
-    //     .show()
-    //     .unwrap();
+
+    Notification::new()
+        .summary(&heading)
+        .body(&details)
+        .appname("Furtherance")
+        .timeout(Timeout::Milliseconds(6000))
+        .show()
+        .unwrap();
 }
 
 fn settings_heading<'a>(heading: String) -> Column<'a, Message, Theme, Renderer> {
