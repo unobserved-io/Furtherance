@@ -100,11 +100,11 @@ impl Localization {
             .replace('\u{2069}', "")
     }
 
-    fn set_language(&mut self, lang: &str) {
-        if self.bundles.contains_key(lang) {
-            self.current_lang = lang.to_string();
-        } else {
-            println!("Language not available: {}", lang);
-        }
-    }
+    // fn set_language(&mut self, lang: &str) {
+    //     if self.bundles.contains_key(lang) {
+    //         self.current_lang = lang.to_string();
+    //     } else {
+    //         println!("Language not available: {}", lang);
+    //     }
+    // }
 }
