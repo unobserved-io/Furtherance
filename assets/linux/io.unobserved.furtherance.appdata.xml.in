@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.lakoliu.Furtherance</id>
-  <launchable type="desktop-id">com.lakoliu.Furtherance.desktop</launchable>
+  <id>io.unobserved.furtherance</id>
+  <launchable type="desktop-id">io.unobserved.furtherance.desktop</launchable>
   <name translate="no">Furtherance</name>
   <summary>Track your time without being tracked</summary>
   <developer_name translate="no">Ricky Kresslein</developer_name>
   <developer id="in.kressle">
     <name translate="no">Ricky Kresslein</name>
   </developer>
-  <update_contact>rk@lakoliu.com</update_contact>
-  <translation type="gettext">furtherance</translation>
+  <update_contact>furtherance@unobserved.io</update_contact>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <description>
     <p>
-      Furtherance is a time tracking app built for GNOME with Rust
-      and GTK4. In addition to tracking time spent on tasks, you can edit that
-      time, delete entries, and change settings. It even has idle detection.
+      Furtherance is a time tracking application that respects your privacy.
+      It allows you to track time spent on different activities without worrying about your data being captured and sold.
     </p>
   </description>
 
