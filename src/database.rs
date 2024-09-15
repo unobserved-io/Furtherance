@@ -45,6 +45,7 @@ impl SortOrder {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum SortBy {
     StartTime,
