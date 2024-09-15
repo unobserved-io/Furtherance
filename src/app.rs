@@ -30,7 +30,7 @@ use crate::{
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         flow_row::FlowRow,
-        idle::mac_win_idle::get_idle_time,
+        idle::get_idle_time,
     },
     localization::Localization,
     models::{
@@ -65,12 +65,15 @@ use iced_aw::{
     date_picker, modal, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel,
     Tabs, TimePicker,
 };
-use notify_rust::{set_application, Notification, Timeout};
+use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
 use rfd::FileDialog;
 use tokio::time::{self, interval_at};
+
+#[cfg(target_os = "macos")]
+use notify_rust::set_application;
 
 pub struct Furtherance {
     current_view: FurView,
@@ -231,6 +234,7 @@ impl Application for Furtherance {
         }
 
         // Set application identifier for notifications
+        #[cfg(target_os = "macos")]
         if let Err(e) = set_application("io.unobserved.furtherance") {
             eprintln!(
                 "Failed to set application identifier for notifications: {}",
