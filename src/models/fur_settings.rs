@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::view_enums::FurView;
+use crate::{view_enums::FurView, constants::DEBUG_MODE};
 
 use config::{Config, ConfigError, File};
 use directories::ProjectDirs;
@@ -284,10 +284,15 @@ impl FurSettings {
 }
 
 pub fn get_data_path() -> PathBuf {
-    if let Some(proj_dirs) = ProjectDirs::from("io", "unobserved", "furtherance") {
-        let path = PathBuf::from(proj_dirs.data_dir());
-        create_dir_all(&path).expect("Unable to create data directory");
+    let project_dirs = if DEBUG_MODE {
+        ProjectDirs::from("io", "unobserved", "furtherance-dev")
+    } else {
+        ProjectDirs::from("io", "unobserved", "furtherance")
+    };
 
+    if let Some(proj_dir) = project_dirs {
+        let path = PathBuf::from(proj_dir.data_dir());
+        create_dir_all(&path).expect("Unable to create data directory");
         path
     } else {
         PathBuf::new()
