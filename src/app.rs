@@ -301,7 +301,7 @@ impl Application for Furtherance {
         // Live dark-light theme switching does not currently work on macOS
         #[cfg(not(target_os = "macos"))]
         let theme_watcher =
-            iced::time::every(time::Duration::from_secs(1)).map(|_| Message::ChangeTheme);
+            iced::time::every(time::Duration::from_secs(60)).map(|_| Message::ChangeTheme);
 
         // Watch for midnight to update the history
         struct MidnightSub;
