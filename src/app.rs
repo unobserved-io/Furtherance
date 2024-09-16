@@ -2005,7 +2005,8 @@ impl Application for Furtherance {
                                 self.displayed_task_start_time.to_string()
                             )]))
                         )))
-                        .on_press(Message::ChooseCurrentTaskStartTime),
+                        .on_press(Message::ChooseCurrentTaskStartTime)
+                        .style(style::primary_button_style()),
                         Message::CancelCurrentTaskStartTime,
                         Message::SubmitCurrentTaskStartTime,
                     )
