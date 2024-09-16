@@ -2809,7 +2809,9 @@ impl Application for Furtherance {
                         )
                         .on_press(Message::ChooseShortcutColor)
                         .width(Length::Fill)
-                        .style(style::custom_button_style(shortcut_to_add.color.to_srgb(),)),
+                        .style(style::shortcut_button_style(
+                            shortcut_to_add.color.to_srgb(),
+                        )),
                         Message::CancelShortcutColor,
                         Message::SubmitShortcutColor,
                     ),
@@ -2970,7 +2972,7 @@ impl Application for Furtherance {
                         )
                         .on_press(Message::ChooseShortcutColor)
                         .width(Length::Fill)
-                        .style(style::custom_button_style(
+                        .style(style::shortcut_button_style(
                             shortcut_to_edit.new_color.to_srgb(),
                         )),
                         Message::CancelShortcutColor,
@@ -3824,7 +3826,7 @@ fn shortcut_button<'a, 'loc>(
         } else {
             Some(Message::ShortcutPressed(shortcut.to_string()))
         })
-        .style(style::custom_button_style(shortcut_color));
+        .style(style::shortcut_button_style(shortcut_color));
 
     let shortcut_clone = shortcut.clone();
 

@@ -123,7 +123,7 @@ impl button::StyleSheet for ShortcutButtonStyle {
     }
 }
 
-pub fn custom_button_style(primary_color: Srgb) -> iced::theme::Button {
+pub fn shortcut_button_style(primary_color: Srgb) -> iced::theme::Button {
     let light_color = primary_color.lighten(0.3);
     iced::theme::Button::Custom(Box::new(ShortcutButtonStyle {
         primary_color,
