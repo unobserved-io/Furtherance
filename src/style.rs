@@ -16,7 +16,7 @@
 
 use iced::widget::{button, container};
 use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
-use palette::{Lighten, Srgb};
+use palette::{Darken, Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
 use crate::helpers::color_utils::ToIcedColor;
@@ -69,6 +69,50 @@ pub fn group_count_circle(theme: &Theme) -> container::Appearance {
         },
         ..Default::default()
     }
+}
+
+struct PrimaryButtonStyle {
+    primary_color: Color,
+    light_color: Color,
+}
+
+impl button::StyleSheet for PrimaryButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.primary_color)),
+            text_color: FURTHERANCE_PURPLE.darken(0.6).to_iced_color(),
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 3.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        button::Appearance {
+            background: Some(Background::Color(self.light_color)),
+            text_color: FURTHERANCE_PURPLE.darken(0.6).to_iced_color(),
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 3.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+}
+
+pub fn primary_button_style() -> iced::theme::Button {
+    let primary_color = FURTHERANCE_PURPLE.to_iced_color();
+    let light_color = FURTHERANCE_PURPLE.lighten(0.3).to_iced_color();
+    iced::theme::Button::Custom(Box::new(PrimaryButtonStyle {
+        primary_color,
+        light_color,
+    }))
 }
 
 struct ShortcutButtonStyle {
