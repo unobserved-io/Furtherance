@@ -32,7 +32,7 @@
       "build-commands": [
         "cargo --offline fetch --manifest-path Cargo.toml --verbose",
         "cargo --offline build --release --verbose",
-        "install -Dm755 ./target/debug/furtherance -t /app/bin/",
+        "install -Dm755 ./target/release/furtherance -t /app/bin/",
         "install -Dm644 ./assets/linux/${FLATPAK_ID}.appdata.xml -t /app/share/metainfo/",
         "install -Dm644 ./assets/linux/${FLATPAK_ID}.desktop -t /app/share/applications/",
         "install -Dm644 ./assets/icon/${FLATPAK_ID}.svg -t /app/share/icons/hicolor/scalable/apps/"
