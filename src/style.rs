@@ -344,7 +344,7 @@ impl toggler::StyleSheet for FurTogglerStyle {
         let palette = Theme::extended_palette(style);
         toggler::Appearance {
             background: if is_active {
-                palette.primary.strong.color
+                palette.primary.base.color
             } else {
                 palette.background.strong.color
             },
@@ -360,7 +360,7 @@ impl toggler::StyleSheet for FurTogglerStyle {
         let palette = Theme::extended_palette(style);
         toggler::Appearance {
             background: if is_active {
-                palette.primary.strong.color
+                palette.primary.base.color
             } else {
                 palette.background.strong.color
             },
@@ -386,7 +386,7 @@ impl checkbox::StyleSheet for FurCheckboxStyle {
         let palette = Theme::extended_palette(style);
         checkbox::Appearance {
             background: Background::Color(if is_checked {
-                palette.primary.strong.color
+                palette.primary.base.color
             } else {
                 palette.background.strong.color
             }),
@@ -394,7 +394,7 @@ impl checkbox::StyleSheet for FurCheckboxStyle {
             border: Border {
                 radius: 2.0.into(),
                 width: 1.0,
-                color: palette.primary.strong.color,
+                color: palette.primary.base.color,
             },
             text_color: None,
         }
@@ -492,16 +492,18 @@ pub struct FurNumberInputStyle;
 impl number_input::StyleSheet for FurNumberInputStyle {
     type Style = iced::Theme;
 
-    fn active(&self, _style: &Self::Style) -> number_input::Appearance {
+    fn active(&self, style: &Self::Style) -> number_input::Appearance {
+        let palette = Theme::extended_palette(style);
         number_input::Appearance {
-            button_background: Some(FURTHERANCE_PURPLE.to_iced_color().into()),
+            button_background: Some(palette.primary.base.color.into()),
             icon_color: Color::WHITE,
         }
     }
 
-    fn pressed(&self, _style: &Self::Style) -> number_input::Appearance {
+    fn pressed(&self, style: &Self::Style) -> number_input::Appearance {
+        let palette = Theme::extended_palette(style);
         number_input::Appearance {
-            button_background: Some(FURTHERANCE_PURPLE.darken(0.3).to_iced_color().into()),
+            button_background: Some(palette.primary.base.color.into()),
             icon_color: Color::WHITE,
         }
     }
