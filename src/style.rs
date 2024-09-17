@@ -40,24 +40,75 @@ impl FurPalette {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum FurTheme {
     Light,
     Dark,
 }
 
+struct FurButtonStyle;
+
+impl button::StyleSheet for FurButtonStyle {
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style) -> button::Appearance {
+        let palette = style.extended_palette();
+
+        button::Appearance {
+            background: Some(iced::Background::Color(palette.primary.base.color)),
+            text_color: iced::Color::WHITE,
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 2.0.into(),
+            },
+            shadow_offset: iced::Vector::new(0.0, 0.0),
+            ..button::Appearance::default()
+        }
+    }
+
+    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
+        let light_color = FURTHERANCE_PURPLE.lighten(0.6).to_iced_color();
+        button::Appearance {
+            background: Some(Background::Color(light_color)),
+            text_color: iced::Color::WHITE,
+            border: Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 2.0.into(),
+            },
+            ..button::Appearance::default()
+        }
+    }
+}
+
 impl From<FurTheme> for Theme {
     fn from(theme: FurTheme) -> Theme {
-        match theme {
-            FurTheme::Light => Theme::Custom(Arc::new(Custom::new(
-                String::from("FurThemeLight"),
-                FurPalette::light(),
-            ))),
-            FurTheme::Dark => Theme::Custom(Arc::new(Custom::new(
-                String::from("FurThemeDark"),
-                FurPalette::dark(),
-            ))),
-        }
+        let palette = match theme {
+            FurTheme::Light => FurPalette::light(),
+            FurTheme::Dark => FurPalette::dark(),
+        };
+
+        Theme::Custom(Arc::new(Custom::new(
+            format!("FurTheme{:?}", theme),
+            palette,
+        )))
+    }
+}
+
+impl button::StyleSheet for FurTheme {
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style) -> button::Appearance {
+        FurButtonStyle.active(style)
+    }
+
+    fn hovered(&self, style: &Self::Style) -> button::Appearance {
+        FurButtonStyle.hovered(style)
+    }
+
+    fn pressed(&self, style: &Self::Style) -> button::Appearance {
+        FurButtonStyle.active(style)
     }
 }
 
@@ -126,7 +177,7 @@ impl button::StyleSheet for PrimaryButtonStyle {
             border: Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: 3.0.into(),
+                radius: 2.0.into(),
             },
             ..button::Appearance::default()
         }
@@ -139,7 +190,7 @@ impl button::StyleSheet for PrimaryButtonStyle {
             border: Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
-                radius: 3.0.into(),
+                radius: 2.0.into(),
             },
             ..button::Appearance::default()
         }

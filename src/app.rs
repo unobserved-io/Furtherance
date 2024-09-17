@@ -1991,7 +1991,6 @@ impl Application for Furtherance {
                     } else {
                         Some(Message::StartStopPressed)
                     })
-                    .style(style::primary_button_style()),
                 ]
                 .spacing(10),
                 if self.timer_is_running {
