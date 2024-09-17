@@ -14,12 +14,52 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::sync::Arc;
+
+use iced::theme::{Custom, Palette};
 use iced::widget::{button, container};
 use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
 use palette::{Darken, Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
 use crate::helpers::color_utils::ToIcedColor;
+
+pub struct FurPalette;
+
+impl FurPalette {
+    pub fn light() -> Palette {
+        let mut palette = Palette::LIGHT;
+        palette.primary = FURTHERANCE_PURPLE.to_iced_color();
+        palette
+    }
+
+    pub fn dark() -> Palette {
+        let mut palette = Palette::DARK;
+        palette.primary = FURTHERANCE_PURPLE.to_iced_color();
+        palette
+    }
+}
+
+#[derive(Clone)]
+pub enum FurTheme {
+    Light,
+    Dark,
+}
+
+impl From<FurTheme> for Theme {
+    fn from(theme: FurTheme) -> Theme {
+        match theme {
+            FurTheme::Light => Theme::Custom(Arc::new(Custom::new(
+                String::from("FurThemeLight"),
+                FurPalette::light(),
+            ))),
+            FurTheme::Dark => Theme::Custom(Arc::new(Custom::new(
+                String::from("FurThemeDark"),
+                FurPalette::dark(),
+            ))),
+        }
+    }
+}
 
 pub fn gray_background(theme: &Theme) -> container::Appearance {
     let palette = theme.extended_palette();

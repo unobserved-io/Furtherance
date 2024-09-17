@@ -39,7 +39,7 @@ use crate::{
         fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd,
         shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
     },
-    style,
+    style::{self, FurTheme},
     view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
@@ -98,7 +98,7 @@ pub struct Furtherance {
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
-    theme: Theme,
+    theme: FurTheme,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
     timer_stop_time: DateTime<Local>,
@@ -294,7 +294,7 @@ impl Application for Furtherance {
     }
 
     fn theme(&self, _window_id: window::Id) -> Theme {
-        self.theme.clone()
+        self.theme.clone().into()
     }
 
     fn subscription(&self) -> Subscription<Message> {
@@ -4254,10 +4254,10 @@ fn parse_timer_text_to_seconds(timer_text: &str) -> i64 {
     }
 }
 
-fn get_system_theme() -> Theme {
+fn get_system_theme() -> FurTheme {
     match dark_light::detect() {
-        dark_light::Mode::Light | dark_light::Mode::Default => Theme::Light,
-        dark_light::Mode::Dark => Theme::Dark,
+        dark_light::Mode::Light | dark_light::Mode::Default => FurTheme::Light,
+        dark_light::Mode::Dark => FurTheme::Dark,
     }
 }
 
