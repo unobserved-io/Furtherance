@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use palette::Srgb;
-use plotters::{self, style::RGBColor};
+use plotters::style::RGBColor;
 
 pub const ALLOWED_DB_EXTENSIONS: &[&str] =
     &["db", "sqlite", "sqlite3", "db3", "database", "data", "s3db"];
@@ -25,5 +25,5 @@ pub const SETTINGS_SPACING: f32 = 15.0;
 
 // Charts
 pub const CHART_HEIGHT: f32 = 400.0;
-pub const CHART_COLOR: RGBColor = plotters::style::colors::BLUE;
+pub const CHART_COLOR: RGBColor = RGBColor(177, 121, 241);
 pub const MAX_X_VALUES: usize = 9;
