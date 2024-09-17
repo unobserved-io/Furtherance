@@ -19,7 +19,8 @@ use std::sync::Arc;
 use iced::theme::{self, Checkbox, Custom, Palette};
 use iced::widget::{button, checkbox, container, toggler};
 use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
-use palette::{Lighten, Srgb};
+use iced_aw::style::number_input;
+use palette::{Darken, Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
 use crate::helpers::color_utils::ToIcedColor;
@@ -484,4 +485,32 @@ impl checkbox::StyleSheet for FurDisabledCheckboxStyle {
 
 pub fn fur_disabled_checkbox_style() -> iced::theme::Checkbox {
     iced::theme::Checkbox::Custom(Box::new(FurDisabledCheckboxStyle {}))
+}
+
+pub struct FurNumberInputStyle;
+
+impl number_input::StyleSheet for FurNumberInputStyle {
+    type Style = iced::Theme;
+
+    fn active(&self, _style: &Self::Style) -> number_input::Appearance {
+        number_input::Appearance {
+            button_background: Some(FURTHERANCE_PURPLE.to_iced_color().into()),
+            icon_color: Color::WHITE,
+        }
+    }
+
+    fn pressed(&self, _style: &Self::Style) -> number_input::Appearance {
+        number_input::Appearance {
+            button_background: Some(FURTHERANCE_PURPLE.darken(0.3).to_iced_color().into()),
+            icon_color: Color::WHITE,
+        }
+    }
+
+    fn disabled(&self, style: &Self::Style) -> number_input::Appearance {
+        let palette = Theme::extended_palette(style);
+        number_input::Appearance {
+            button_background: Some(palette.background.strong.color.into()),
+            icon_color: Color::WHITE,
+        }
+    }
 }

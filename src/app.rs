@@ -62,8 +62,8 @@ use iced::{
 use iced_aw::{
     color_picker,
     core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker, modal, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel,
-    Tabs, TimePicker,
+    date_picker, modal, number_input, time_picker, Card, ContextMenu, NumberInputStyles,
+    TabBarPosition, TabLabel, Tabs, TimePicker,
 };
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
@@ -2446,6 +2446,9 @@ impl Application for Furtherance {
                                     Message::SettingsIdleTimeChanged
                                 )
                                 .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                )))
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2476,7 +2479,10 @@ impl Application for Furtherance {
                                     365, // TODO: This will accept a range in a future version of iced_aw (make 1..365)
                                     Message::SettingsDaysToShowChanged
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                ))),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2514,6 +2520,9 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroLengthChanged
                                 )
                                 .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                )))
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2525,6 +2534,9 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroBreakLengthChanged
                                 )
                                 .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                )))
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2536,6 +2548,9 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroSnoozeLengthChanged
                                 )
                                 .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                )))
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2563,6 +2578,9 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroExtendedBreakIntervalChanged
                                 )
                                 .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                )))
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2574,6 +2592,9 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroExtendedBreakLengthChanged
                                 )
                                 .width(Length::Shrink)
+                                .style(NumberInputStyles::Custom(Box::new(
+                                    style::FurNumberInputStyle
+                                )))
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
