@@ -16,10 +16,10 @@
 
 use std::sync::Arc;
 
-use iced::theme::{Custom, Palette};
-use iced::widget::{button, container};
+use iced::theme::{self, Checkbox, Custom, Palette};
+use iced::widget::{button, checkbox, container, toggler};
 use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
-use palette::{Darken, Lighten, Srgb};
+use palette::{Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
 use crate::helpers::color_utils::ToIcedColor;
@@ -332,4 +332,156 @@ impl button::StyleSheet for InactiveNavigationButtonStyle {
 pub fn inactive_nav_menu_button_style() -> iced::theme::Button {
     let primary_color = FURTHERANCE_PURPLE.to_iced_color();
     iced::theme::Button::Custom(Box::new(InactiveNavigationButtonStyle { primary_color }))
+}
+
+struct FurTogglerStyle {}
+
+impl toggler::StyleSheet for FurTogglerStyle {
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style, is_active: bool) -> toggler::Appearance {
+        let palette = Theme::extended_palette(style);
+        toggler::Appearance {
+            background: if is_active {
+                palette.primary.strong.color
+            } else {
+                palette.background.strong.color
+            },
+            background_border_width: 0.0,
+            background_border_color: Color::TRANSPARENT,
+            foreground: Color::WHITE,
+            foreground_border_width: 0.0,
+            foreground_border_color: Color::TRANSPARENT,
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style, is_active: bool) -> toggler::Appearance {
+        let palette = Theme::extended_palette(style);
+        toggler::Appearance {
+            background: if is_active {
+                palette.primary.strong.color
+            } else {
+                palette.background.strong.color
+            },
+            background_border_width: 0.0,
+            background_border_color: Color::TRANSPARENT,
+            foreground: FURTHERANCE_PURPLE.lighten(0.3).to_iced_color(),
+            foreground_border_width: 0.0,
+            foreground_border_color: Color::TRANSPARENT,
+        }
+    }
+}
+
+pub fn fur_toggler_style() -> iced::theme::Toggler {
+    iced::theme::Toggler::Custom(Box::new(FurTogglerStyle {}))
+}
+
+struct FurCheckboxStyle {}
+
+impl checkbox::StyleSheet for FurCheckboxStyle {
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style, is_checked: bool) -> checkbox::Appearance {
+        let palette = Theme::extended_palette(style);
+        checkbox::Appearance {
+            background: Background::Color(if is_checked {
+                palette.primary.strong.color
+            } else {
+                palette.background.strong.color
+            }),
+            icon_color: Color::WHITE,
+            border: Border {
+                radius: 2.0.into(),
+                width: 1.0,
+                color: palette.primary.strong.color,
+            },
+            text_color: None,
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style, is_checked: bool) -> checkbox::Appearance {
+        let palette = Theme::extended_palette(style);
+        checkbox::Appearance {
+            background: Background::Color(if is_checked {
+                palette.primary.base.color
+            } else {
+                palette.background.weak.color
+            }),
+            icon_color: Color::WHITE,
+            border: Border {
+                radius: 2.0.into(),
+                width: 1.0,
+                color: palette.primary.base.color,
+            },
+            text_color: None,
+        }
+    }
+
+    fn disabled(&self, style: &Self::Style, is_checked: bool) -> checkbox::Appearance {
+        let palette = Theme::extended_palette(style);
+        checkbox::Appearance {
+            background: Background::Color(if is_checked {
+                palette.background.strong.color
+            } else {
+                palette.background.weak.color
+            }),
+            icon_color: Color::WHITE,
+            border: Border {
+                radius: 2.0.into(),
+                width: 1.0,
+                color: palette.background.strong.color,
+            },
+            text_color: None,
+        }
+    }
+}
+
+pub fn fur_checkbox_style() -> iced::theme::Checkbox {
+    iced::theme::Checkbox::Custom(Box::new(FurCheckboxStyle {}))
+}
+
+struct FurDisabledCheckboxStyle {}
+
+impl checkbox::StyleSheet for FurDisabledCheckboxStyle {
+    type Style = Theme;
+
+    fn active(&self, style: &Self::Style, is_checked: bool) -> checkbox::Appearance {
+        let palette = Theme::extended_palette(style);
+        checkbox::Appearance {
+            background: Background::Color(if is_checked {
+                palette.background.strong.color
+            } else {
+                palette.background.weak.color
+            }),
+            icon_color: Color::BLACK,
+            border: Border {
+                radius: 2.0.into(),
+                width: 1.0,
+                color: palette.primary.strong.color,
+            },
+            text_color: None,
+        }
+    }
+
+    fn hovered(&self, style: &Self::Style, is_checked: bool) -> checkbox::Appearance {
+        let palette = Theme::extended_palette(style);
+        checkbox::Appearance {
+            background: Background::Color(if is_checked {
+                palette.background.strong.color
+            } else {
+                palette.background.weak.color
+            }),
+            icon_color: Color::BLACK,
+            border: Border {
+                radius: 2.0.into(),
+                width: 1.0,
+                color: palette.primary.strong.color,
+            },
+            text_color: None,
+        }
+    }
+}
+
+pub fn fur_disabled_checkbox_style() -> iced::theme::Checkbox {
+    iced::theme::Checkbox::Custom(Box::new(FurDisabledCheckboxStyle {}))
 }

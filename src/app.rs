@@ -2346,7 +2346,8 @@ impl Application for Furtherance {
                                     self.fur_settings.show_delete_confirmation,
                                     Message::SettingsDeleteConfirmationToggled
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(style::fur_toggler_style()),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2358,7 +2359,8 @@ impl Application for Furtherance {
                                     self.fur_settings.show_project,
                                     Message::SettingsShowProjectToggled
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(style::fur_toggler_style()),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2369,7 +2371,8 @@ impl Application for Furtherance {
                                     self.fur_settings.show_tags,
                                     Message::SettingsShowTagsToggled
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(style::fur_toggler_style()),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2380,7 +2383,8 @@ impl Application for Furtherance {
                                     self.fur_settings.show_earnings,
                                     Message::SettingsShowEarningsToggled
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(style::fur_toggler_style()),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2391,7 +2395,8 @@ impl Application for Furtherance {
                                     self.fur_settings.show_seconds,
                                     Message::SettingsShowSecondsToggled
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(style::fur_toggler_style()),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2402,7 +2407,8 @@ impl Application for Furtherance {
                                     self.fur_settings.show_daily_time_total,
                                     Message::SettingsShowDailyTimeTotalToggled
                                 )
-                                .width(Length::Shrink),
+                                .width(Length::Shrink)
+                                .style(style::fur_toggler_style()),
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2428,6 +2434,7 @@ impl Application for Furtherance {
                                     Message::SettingsIdleToggled
                                 )
                                 .width(Length::Shrink)
+                                .style(style::fur_toggler_style())
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2458,6 +2465,7 @@ impl Application for Furtherance {
                                     Message::SettingsDynamicTotalToggled
                                 )
                                 .width(Length::Shrink)
+                                .style(style::fur_toggler_style())
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2494,6 +2502,7 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroToggled
                                 )
                                 .width(Length::Shrink)
+                                .style(style::fur_toggler_style())
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2539,6 +2548,7 @@ impl Application for Furtherance {
                                     Message::SettingsPomodoroExtendedBreaksToggled
                                 )
                                 .width(Length::Shrink)
+                                .style(style::fur_toggler_style())
                             ]
                             .spacing(10)
                             .align_items(Alignment::Center),
@@ -2585,39 +2595,46 @@ impl Application for Furtherance {
                                 self.localization.get_message("total-time-box", None),
                                 self.fur_settings.show_chart_total_time_box
                             )
-                            .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled),
+                            .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization.get_message("total-earnings-box", None),
                                 self.fur_settings.show_chart_total_earnings_box
                             )
-                            .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled),
+                            .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization.get_message("time-recorded", None),
                                 self.fur_settings.show_chart_time_recorded
                             )
-                            .on_toggle(Message::SettingsShowChartTimeRecordedToggled),
+                            .on_toggle(Message::SettingsShowChartTimeRecordedToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization.get_message("earnings", None),
                                 self.fur_settings.show_chart_earnings
                             )
-                            .on_toggle(Message::SettingsShowChartEarningsToggled),
+                            .on_toggle(Message::SettingsShowChartEarningsToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization.get_message("average-time-per-task", None),
                                 self.fur_settings.show_chart_average_time
                             )
-                            .on_toggle(Message::SettingsShowChartAverageTimeToggled),
+                            .on_toggle(Message::SettingsShowChartAverageTimeToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization
                                     .get_message("average-earnings-per-task", None),
                                 self.fur_settings.show_chart_average_earnings
                             )
-                            .on_toggle(Message::SettingsShowChartAverageEarningsToggled),
+                            .on_toggle(Message::SettingsShowChartAverageEarningsToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization
                                     .get_message("breakdown-by-selection-section", None),
                                 self.fur_settings.show_chart_breakdown_by_selection
                             )
-                            .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled),
+                            .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled)
+                            .style(style::fur_checkbox_style()),
                             checkbox(
                                 self.localization
                                     .get_message("time-recorded-for-selection", None),
@@ -2628,6 +2645,13 @@ impl Application for Furtherance {
                                     Some(Message::SettingsShowChartSelectionTimeToggled)
                                 } else {
                                     None
+                                }
+                            )
+                            .style(
+                                if self.fur_settings.show_chart_breakdown_by_selection {
+                                    style::fur_checkbox_style()
+                                } else {
+                                    style::fur_disabled_checkbox_style()
                                 }
                             ),
                             checkbox(
@@ -2640,6 +2664,13 @@ impl Application for Furtherance {
                                     Some(Message::SettingsShowChartSelectionEarningsToggled)
                                 } else {
                                     None
+                                }
+                            )
+                            .style(
+                                if self.fur_settings.show_chart_breakdown_by_selection {
+                                    style::fur_checkbox_style()
+                                } else {
+                                    style::fur_disabled_checkbox_style()
                                 }
                             ),
                         ]
