@@ -2182,7 +2182,8 @@ impl Application for Furtherance {
                             self.report.show_start_date_picker,
                             self.report.picked_start_date,
                             button(text(self.report.picked_start_date.to_string()))
-                                .on_press(Message::ChooseStartDate),
+                                .on_press(Message::ChooseStartDate)
+                                .style(style::primary_button_style()),
                             Message::CancelStartDate,
                             Message::SubmitStartDate,
                         ),
@@ -2194,7 +2195,8 @@ impl Application for Furtherance {
                             self.report.show_end_date_picker,
                             self.report.picked_end_date,
                             button(text(self.report.picked_end_date.to_string()))
-                                .on_press(Message::ChooseEndDate),
+                                .on_press(Message::ChooseEndDate)
+                                .style(style::primary_button_style()),
                             Message::CancelEndDate,
                             Message::SubmitEndDate,
                         ),
@@ -2247,12 +2249,16 @@ impl Application for Furtherance {
                 &self.fur_settings.database_url,
             ),
             row![
-                button(text(self.localization.get_message("create-new", None))).on_press(
-                    Message::SettingsChangeDatabaseLocationPressed(ChangeDB::New)
-                ),
-                button(text(self.localization.get_message("open-existing", None))).on_press(
-                    Message::SettingsChangeDatabaseLocationPressed(ChangeDB::Open)
-                ),
+                button(text(self.localization.get_message("create-new", None)))
+                    .on_press(Message::SettingsChangeDatabaseLocationPressed(
+                        ChangeDB::New
+                    ))
+                    .style(style::primary_button_style()),
+                button(text(self.localization.get_message("open-existing", None)))
+                    .on_press(Message::SettingsChangeDatabaseLocationPressed(
+                        ChangeDB::Open
+                    ))
+                    .style(style::primary_button_style()),
             ]
             .spacing(10),
         ]
@@ -2271,9 +2277,11 @@ impl Application for Furtherance {
 
         let mut csv_col = column![row![
             button(text(self.localization.get_message("export-csv", None)))
-                .on_press(Message::ExportCsvPressed),
+                .on_press(Message::ExportCsvPressed)
+                .style(style::primary_button_style()),
             button(text(self.localization.get_message("import-csv", None)))
                 .on_press(Message::ImportCsvPressed)
+                .style(style::primary_button_style())
         ]
         .spacing(10),]
         .spacing(10);
@@ -2292,6 +2300,7 @@ impl Application for Furtherance {
             column![
                 button(text(self.localization.get_message("backup-database", None)))
                     .on_press(Message::BackupDatabase)
+                    .style(style::primary_button_style())
             ]
             .spacing(10);
         backup_col = backup_col.push_maybe(match &self.settings_backup_message {
@@ -2688,19 +2697,22 @@ impl Application for Furtherance {
                         date_picker(
                             task_to_add.show_start_date_picker,
                             task_to_add.displayed_start_date,
-                            button(text(task_to_add.displayed_start_date.to_string())).on_press(
-                                Message::ChooseTaskEditDateTime(EditTaskProperty::StartDate)
-                            ),
+                            button(text(task_to_add.displayed_start_date.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
+                                    EditTaskProperty::StartDate
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StartDate),
                         ),
                         time_picker(
                             task_to_add.show_start_time_picker,
                             task_to_add.displayed_start_time,
-                            Button::new(text(task_to_add.displayed_start_time.to_string()))
+                            button(text(task_to_add.displayed_start_time.to_string()))
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
-                                )),
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
@@ -2713,19 +2725,22 @@ impl Application for Furtherance {
                         date_picker(
                             task_to_add.show_stop_date_picker,
                             task_to_add.displayed_stop_date,
-                            button(text(task_to_add.displayed_stop_date.to_string())).on_press(
-                                Message::ChooseTaskEditDateTime(EditTaskProperty::StopDate)
-                            ),
+                            button(text(task_to_add.displayed_stop_date.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
+                                    EditTaskProperty::StopDate
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StopDate),
                         ),
                         time_picker(
                             task_to_add.show_stop_time_picker,
                             task_to_add.displayed_stop_time,
-                            Button::new(text(task_to_add.displayed_stop_time.to_string()))
+                            button(text(task_to_add.displayed_stop_time.to_string()))
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
-                                )),
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
@@ -2751,7 +2766,8 @@ impl Application for Furtherance {
                         } else {
                             Some(Message::SaveTaskEdit)
                         })
-                        .width(Length::Fill),
+                        .width(Length::Fill)
+                        .style(style::primary_button_style()),
                     ]
                     .padding([20, 0, 0, 0])
                     .spacing(10),
@@ -2829,7 +2845,7 @@ impl Application for Furtherance {
                             text(self.localization.get_message("save", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Primary)
+                        .style(style::primary_button_style())
                         .on_press_maybe(if shortcut_to_add.name.trim().is_empty() {
                             None
                         } else {
@@ -2864,14 +2880,16 @@ impl Application for Furtherance {
                             text(&task_to_add.displayed_start_date.to_string())
                                 .horizontal_alignment(alignment::Horizontal::Center)
                         )
-                        .on_press_maybe(None),
+                        .on_press_maybe(None)
+                        .style(style::primary_button_style()),
                         time_picker(
                             task_to_add.show_start_time_picker,
                             task_to_add.displayed_start_time,
-                            Button::new(text(task_to_add.displayed_start_time.to_string()))
+                            button(text(task_to_add.displayed_start_time.to_string()))
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
-                                )),
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
@@ -2885,14 +2903,16 @@ impl Application for Furtherance {
                             text(&task_to_add.displayed_stop_date.to_string())
                                 .horizontal_alignment(alignment::Horizontal::Center)
                         )
-                        .on_press_maybe(None),
+                        .on_press_maybe(None)
+                        .style(style::primary_button_style()),
                         time_picker(
                             task_to_add.show_stop_time_picker,
                             task_to_add.displayed_stop_time,
-                            Button::new(text(task_to_add.displayed_stop_time.to_string()))
+                            button(text(task_to_add.displayed_stop_time.to_string()))
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
-                                )),
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
@@ -2912,7 +2932,7 @@ impl Application for Furtherance {
                             text(self.localization.get_message("save", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Primary)
+                        .style(style::primary_button_style())
                         .on_press(Message::SaveTaskEdit)
                         .width(Length::Fill),
                     ]
@@ -2992,7 +3012,7 @@ impl Application for Furtherance {
                             text(self.localization.get_message("save", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Primary)
+                        .style(style::primary_button_style())
                         .on_press_maybe(
                             if shortcut_to_edit.new_name.trim().is_empty()
                                 || !shortcut_to_edit.is_changed()
@@ -3053,9 +3073,11 @@ impl Application for Furtherance {
                         date_picker(
                             task_to_edit.show_displayed_start_date_picker,
                             task_to_edit.displayed_start_date,
-                            button(text(task_to_edit.displayed_start_date.to_string())).on_press(
-                                Message::ChooseTaskEditDateTime(EditTaskProperty::StartDate)
-                            ),
+                            button(text(task_to_edit.displayed_start_date.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
+                                    EditTaskProperty::StartDate
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StartDate),
                         ),
@@ -3065,7 +3087,8 @@ impl Application for Furtherance {
                             Button::new(text(task_to_edit.displayed_start_time.to_string()))
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
-                                )),
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
@@ -3078,19 +3101,22 @@ impl Application for Furtherance {
                         date_picker(
                             task_to_edit.show_displayed_stop_date_picker,
                             task_to_edit.displayed_stop_date,
-                            button(text(task_to_edit.displayed_stop_date.to_string())).on_press(
-                                Message::ChooseTaskEditDateTime(EditTaskProperty::StopDate)
-                            ),
+                            button(text(task_to_edit.displayed_stop_date.to_string()))
+                                .on_press(Message::ChooseTaskEditDateTime(
+                                    EditTaskProperty::StopDate
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StopDate),
                         ),
                         time_picker(
                             task_to_edit.show_displayed_stop_time_picker,
                             task_to_edit.displayed_stop_time,
-                            Button::new(text(task_to_edit.displayed_stop_time.to_string()))
+                            button(text(task_to_edit.displayed_stop_time.to_string()))
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
-                                )),
+                                ))
+                                .style(style::primary_button_style()),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
@@ -3110,7 +3136,7 @@ impl Application for Furtherance {
                             text(self.localization.get_message("save", None))
                                 .horizontal_alignment(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Primary)
+                        .style(style::primary_button_style())
                         .on_press_maybe(
                             if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
                             {
@@ -3277,7 +3303,7 @@ impl Application for Furtherance {
                                         text(self.localization.get_message("save", None))
                                             .horizontal_alignment(alignment::Horizontal::Center)
                                     )
-                                    .style(theme::Button::Primary)
+                                    .style(style::primary_button_style())
                                     .on_press_maybe(
                                         if group_to_edit.is_changed()
                                             && !group_to_edit.new_name.trim().is_empty()
@@ -3459,7 +3485,7 @@ impl Application for Furtherance {
                                 .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroContinueAfterBreak)
-                        .style(theme::Button::Primary),
+                        .style(style::primary_button_style()),
                     );
                 }
                 FurAlert::PomodoroOver => {
@@ -3508,7 +3534,7 @@ impl Application for Furtherance {
                             .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroStartBreak)
-                        .style(theme::Button::Primary),
+                        .style(style::primary_button_style()),
                     );
                 }
                 FurAlert::ShortcutExists => {
@@ -3523,7 +3549,7 @@ impl Application for Furtherance {
                                 .width(Length::Fill),
                         )
                         .on_press(Message::AlertClose)
-                        .style(theme::Button::Primary),
+                        .style(style::primary_button_style()),
                     );
                 }
             }
