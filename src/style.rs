@@ -46,42 +46,6 @@ pub enum FurTheme {
     Dark,
 }
 
-struct FurButtonStyle;
-
-impl button::StyleSheet for FurButtonStyle {
-    type Style = Theme;
-
-    fn active(&self, style: &Self::Style) -> button::Appearance {
-        let palette = style.extended_palette();
-
-        button::Appearance {
-            background: Some(iced::Background::Color(palette.primary.base.color)),
-            text_color: iced::Color::WHITE,
-            border: Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 2.0.into(),
-            },
-            shadow_offset: iced::Vector::new(0.0, 0.0),
-            ..button::Appearance::default()
-        }
-    }
-
-    fn hovered(&self, _style: &Self::Style) -> button::Appearance {
-        let light_color = FURTHERANCE_PURPLE.lighten(0.6).to_iced_color();
-        button::Appearance {
-            background: Some(Background::Color(light_color)),
-            text_color: iced::Color::WHITE,
-            border: Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 2.0.into(),
-            },
-            ..button::Appearance::default()
-        }
-    }
-}
-
 impl From<FurTheme> for Theme {
     fn from(theme: FurTheme) -> Theme {
         let palette = match theme {
@@ -93,22 +57,6 @@ impl From<FurTheme> for Theme {
             format!("FurTheme{:?}", theme),
             palette,
         )))
-    }
-}
-
-impl button::StyleSheet for FurTheme {
-    type Style = Theme;
-
-    fn active(&self, style: &Self::Style) -> button::Appearance {
-        FurButtonStyle.active(style)
-    }
-
-    fn hovered(&self, style: &Self::Style) -> button::Appearance {
-        FurButtonStyle.hovered(style)
-    }
-
-    fn pressed(&self, style: &Self::Style) -> button::Appearance {
-        FurButtonStyle.active(style)
     }
 }
 
@@ -186,7 +134,7 @@ impl button::StyleSheet for PrimaryButtonStyle {
     fn hovered(&self, _style: &Self::Style) -> button::Appearance {
         button::Appearance {
             background: Some(Background::Color(self.light_color)),
-            text_color: FURTHERANCE_PURPLE.darken(0.6).to_iced_color(),
+            text_color: Color::WHITE,
             border: Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
