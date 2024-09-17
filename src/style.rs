@@ -16,11 +16,11 @@
 
 use std::sync::Arc;
 
-use iced::theme::{self, Checkbox, Custom, Palette};
+use iced::theme::{Custom, Palette};
 use iced::widget::{button, checkbox, container, toggler};
 use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
 use iced_aw::style::number_input;
-use palette::{Darken, Lighten, Srgb};
+use palette::{Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
 use crate::helpers::color_utils::ToIcedColor;
