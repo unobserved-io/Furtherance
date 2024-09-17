@@ -82,7 +82,7 @@ impl button::StyleSheet for PrimaryButtonStyle {
     fn active(&self, _style: &Self::Style) -> button::Appearance {
         button::Appearance {
             background: Some(Background::Color(self.primary_color)),
-            text_color: FURTHERANCE_PURPLE.darken(0.6).to_iced_color(),
+            text_color: Color::WHITE,
             border: Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
