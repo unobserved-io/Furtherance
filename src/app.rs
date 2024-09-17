@@ -2002,7 +2002,7 @@ impl Application for Furtherance {
                             "started-at",
                             Some(&HashMap::from([(
                                 "time",
-                                self.displayed_task_start_time.to_string()
+                                self.timer_start_time.format("%H:%M").to_string()
                             )]))
                         )))
                         .on_press(Message::ChooseCurrentTaskStartTime)
@@ -3859,6 +3859,7 @@ fn is_dark_color(color: Srgb) -> bool {
 
 fn start_timer(state: &mut Furtherance) {
     state.timer_start_time = Local::now();
+    state.displayed_task_start_time = convert_datetime_to_iced_time(state.timer_start_time);
     state.timer_is_running = true;
     if state.fur_settings.pomodoro && !state.pomodoro.on_break {
         state.pomodoro.sessions += 1;
@@ -4020,6 +4021,10 @@ fn convert_iced_time_to_chrono_local(iced_time: time_picker::Time) -> LocalResul
     } else {
         LocalResult::None
     }
+}
+
+fn convert_datetime_to_iced_time(dt: DateTime<Local>) -> time_picker::Time {
+    time_picker::Time::from(dt.time())
 }
 
 async fn get_timer_duration() {
