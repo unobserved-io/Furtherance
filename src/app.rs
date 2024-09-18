@@ -52,7 +52,7 @@ use iced::{
         opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
         Button, Column, Container, Row, Scrollable,
     },
-    window, Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
+    Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
 use iced_aw::{
     color_picker,
@@ -2844,7 +2844,7 @@ impl Furtherance {
                         shortcut_to_add.color,
                         button(
                             text(self.localization.get_message("color", None))
-                                .style(|theme| if is_dark_color(shortcut_to_add.color.to_srgb()) {
+                                .style(|_| if is_dark_color(shortcut_to_add.color.to_srgb()) {
                                     text::Style {
                                         color: Some(Color::WHITE),
                                     }

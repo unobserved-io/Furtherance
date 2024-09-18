@@ -150,14 +150,14 @@ pub fn primary_button_style(theme: &Theme, status: button::Status) -> button::St
     }
 }
 
-pub fn red_text(theme: &Theme) -> text::Style {
+pub fn red_text(_theme: &Theme) -> text::Style {
     text::Style {
         color: Some(Color::from_rgb(255.0, 0.0, 0.0)),
     }
 }
 
 pub fn shortcut_button_style(
-    theme: &Theme,
+    _theme: &Theme,
     status: button::Status,
     primary_color: Srgb,
 ) -> button::Style {
