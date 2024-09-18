@@ -52,7 +52,6 @@ mod tests {
 mod view_enums;
 
 use app::Furtherance;
-// use iced::{window, Settings, Size};
 
 fn main() -> iced::Result {
     iced::application(Furtherance::title, Furtherance::update, Furtherance::view)
