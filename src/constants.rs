@@ -26,4 +26,4 @@ pub const SETTINGS_SPACING: f32 = 15.0;
 // Charts
 pub const CHART_HEIGHT: f32 = 400.0;
 pub const CHART_COLOR: RGBColor = RGBColor(177, 121, 241);
-pub const MAX_X_VALUES: usize = 9;
+pub const MAX_X_VALUES: usize = 7;
