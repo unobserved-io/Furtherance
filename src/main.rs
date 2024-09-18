@@ -58,6 +58,6 @@ fn main() -> iced::Result {
         .subscription(Furtherance::subscription)
         .theme(Furtherance::theme)
         .font(iced_aw::core::icons::BOOTSTRAP_FONT_BYTES)
-        .window_size((500.0, 800.0))
+        .window_size((1024.0, 600.0))
         .run()
 }
