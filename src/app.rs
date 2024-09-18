@@ -16,7 +16,7 @@
 
 use core::f32;
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::{BTreeMap, HashMap, HashSet},
     fs::File,
     io::Seek,
     path::{Path, PathBuf},
@@ -1585,7 +1585,7 @@ impl Application for Furtherance {
             }
             Message::StartStopPressed => {
                 if self.timer_is_running {
-                    // Do not more declarations to after if else
+                    // Do not move declarations to after if else
                     // They are needed in this position to properly initiate timer on reset
                     if self.pomodoro.on_break {
                         self.timer_is_running = false;
@@ -4143,11 +4143,14 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
         .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
         .unwrap_or(String::new());
 
-    let separated_tags: Vec<String> = re_tags
+    let mut separated_tags: Vec<String> = re_tags
         .captures_iter(input)
-        .map(|cap| cap.get(1).unwrap().as_str().trim().to_string())
-        .filter(|s| !s.trim().is_empty())
+        .map(|cap| cap.get(1).unwrap().as_str().trim().to_lowercase())
+        .filter(|s| !s.is_empty())
+        .collect::<HashSet<String>>() // Remove duplicates
+        .into_iter()
         .collect();
+    separated_tags.sort();
     let tags = if separated_tags.is_empty() {
         String::new()
     } else {
