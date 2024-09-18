@@ -4478,7 +4478,12 @@ pub fn read_csv(
                         )
                         .single()
                         .unwrap_or_default(),
-                    tags: record.get(2).unwrap_or("").trim().to_string(),
+                    tags: record
+                        .get(2)
+                        .unwrap_or("")
+                        .trim()
+                        .trim_start_matches('#')
+                        .to_string(),
                     project: record.get(1).unwrap_or("").trim().to_string(),
                     rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     currency: String::new(),
