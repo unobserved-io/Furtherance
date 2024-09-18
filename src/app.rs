@@ -47,23 +47,18 @@ use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::{
     alignment, font,
-    multi_window::Application,
     widget::{
-        button, column, horizontal_space, pick_list, row, text, text_input, theme, vertical_space,
-        Button, Column, Container, Scrollable,
+        button, center, checkbox, column, container, horizontal_rule, horizontal_space, mouse_area,
+        opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
+        Button, Column, Container, Row, Scrollable,
     },
-    window, Alignment, Command, Element, Length, Renderer, Theme,
-};
-use iced::{widget::vertical_rule, Color};
-use iced::{
-    widget::{checkbox, horizontal_rule, toggler, Row},
-    Subscription,
+    window, Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
 use iced_aw::{
     color_picker,
-    core::icons::{bootstrap, Bootstrap, BOOTSTRAP_FONT_BYTES},
-    date_picker, modal, number_input, time_picker, Card, ContextMenu, NumberInputStyles,
-    TabBarPosition, TabLabel, Tabs, TimePicker,
+    core::icons::{bootstrap, Bootstrap},
+    date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel, Tabs,
+    TimePicker,
 };
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
@@ -203,13 +198,19 @@ pub enum Message {
     ToggleGroupEditor,
 }
 
-impl Application for Furtherance {
-    type Message = Message;
-    type Executor = iced::executor::Default;
-    type Flags = ();
-    type Theme = Theme;
+impl Default for Furtherance {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
-    fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
+impl Furtherance {
+    // type Message = Message;
+    // type Executor = iced::executor::Default;
+    // type Flags = ();
+    // type Theme = Theme;
+
+    pub fn new() -> Self {
         // Load settings
         let mut settings = match FurSettings::new() {
             Ok(loaded_settings) => loaded_settings,
@@ -283,55 +284,57 @@ impl Application for Furtherance {
         furtherance.timer_text = get_timer_text(&furtherance, 0);
         furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
 
-        (
-            furtherance,
-            font::load(BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
-        )
+        furtherance
+        // (
+        //     furtherance,
+        //     font::load(BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
+        // )
     }
 
-    fn title(&self, _window_id: window::Id) -> String {
+    pub fn title(&self) -> String {
         "Furtherance".to_owned()
     }
 
-    fn theme(&self, _window_id: window::Id) -> Theme {
+    pub fn theme(&self) -> Theme {
         self.theme.clone().into()
     }
 
-    fn subscription(&self) -> Subscription<Message> {
+    pub fn subscription(&self) -> Subscription<Message> {
         // Live dark-light theme switching does not currently work on macOS
         #[cfg(not(target_os = "macos"))]
         let theme_watcher =
             iced::time::every(time::Duration::from_secs(60)).map(|_| Message::ChangeTheme);
 
+        // TODO: Subscription::unfold replacement for Iced 0.13
         // Watch for midnight to update the history
-        struct MidnightSub;
-        let midnight_subscription =
-            iced::subscription::unfold(std::any::TypeId::of::<MidnightSub>(), (), |_| async {
-                let now = Local::now();
-                let next_midnight = (now + chrono::Duration::days(1))
-                    .date_naive()
-                    .and_hms_opt(0, 0, 0)
-                    .unwrap()
-                    .and_local_timezone(Local)
-                    .unwrap();
-                let duration_until_midnight = next_midnight - now;
-                let tokio_instant = tokio::time::Instant::now()
-                    + Duration::from_secs(duration_until_midnight.num_seconds() as u64);
+        // struct MidnightSub;
+        // let midnight_subscription =
+        //     Subscription::unfold(std::any::TypeId::of::<MidnightSub>(), (), |_| async {
+        //         let now = Local::now();
+        //         let next_midnight = (now + chrono::Duration::days(1))
+        //             .date_naive()
+        //             .and_hms_opt(0, 0, 0)
+        //             .unwrap()
+        //             .and_local_timezone(Local)
+        //             .unwrap();
+        //         let duration_until_midnight = next_midnight - now;
+        //         let tokio_instant = tokio::time::Instant::now()
+        //             + Duration::from_secs(duration_until_midnight.num_seconds() as u64);
 
-                let mut interval = interval_at(tokio_instant, Duration::from_secs(24 * 60 * 60));
-                interval.tick().await; // Wait for the first tick (midnight)
+        //         let mut interval = interval_at(tokio_instant, Duration::from_secs(24 * 60 * 60));
+        //         interval.tick().await; // Wait for the first tick (midnight)
 
-                (Message::MidnightReached, ())
-            });
+        //         (Message::MidnightReached, ())
+        //     });
 
         Subscription::batch([
-            midnight_subscription,
+            // midnight_subscription,
             #[cfg(not(target_os = "macos"))]
             theme_watcher,
         ])
     }
 
-    fn update(&mut self, message: Message) -> Command<Message> {
+    pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::AddNewShortcutPressed => {
                 self.shortcut_to_add = Some(ShortcutToAdd::new());
@@ -546,7 +549,7 @@ impl Application for Furtherance {
             Message::DeleteShortcutFromContext(id) => {
                 self.delete_shortcut_from_context = Some(id);
                 let delete_confirmation = self.fur_settings.show_delete_confirmation;
-                return Command::perform(
+                return Task::perform(
                     async move {
                         if delete_confirmation {
                             Message::ShowAlert(FurAlert::DeleteShortcutConfirmation)
@@ -591,7 +594,7 @@ impl Application for Furtherance {
                 self.delete_ids_from_context = Some(task_group_ids);
                 let delete_confirmation = self.fur_settings.show_delete_confirmation;
 
-                return Command::perform(
+                return Task::perform(
                     async move {
                         if delete_confirmation {
                             if number_of_tasks > 1 {
@@ -985,7 +988,7 @@ impl Application for Furtherance {
             Message::EnterPressedInTaskInput => {
                 if !self.task_input.is_empty() {
                     if !self.timer_is_running {
-                        return Command::perform(async { Message::StartStopPressed }, |msg| msg);
+                        return Task::perform(async { Message::StartStopPressed }, |msg| msg);
                     }
                 }
             }
@@ -1075,7 +1078,7 @@ impl Application for Furtherance {
                 self.task_input = original_task_input;
                 self.displayed_alert = None;
                 start_timer(self);
-                return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
             }
             Message::PomodoroSnooze => {
                 self.pomodoro.snoozed = true;
@@ -1083,7 +1086,7 @@ impl Application for Furtherance {
                 // Timer is still running but we want to first show the snooze time total
                 self.timer_text = get_stopped_timer_text(self);
                 self.displayed_alert = None;
-                return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
             }
             Message::PomodoroStartBreak => {
                 let original_task_input = self.task_input.clone();
@@ -1095,7 +1098,7 @@ impl Application for Furtherance {
                 self.task_input = original_task_input;
                 self.displayed_alert = None;
                 start_timer(self);
-                return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
             }
             Message::PomodoroStop => {
                 self.pomodoro.snoozed = false;
@@ -1117,7 +1120,7 @@ impl Application for Furtherance {
                 self.task_to_add = None;
                 self.task_to_edit = None;
                 self.current_view = FurView::Timer;
-                return Command::perform(async { Message::StartStopPressed }, |msg| msg);
+                return Task::perform(async { Message::StartStopPressed }, |msg| msg);
             }
             Message::ReportTabSelected(new_tab) => self.report.active_tab = new_tab,
             Message::SaveGroupEdit => {
@@ -1310,7 +1313,7 @@ impl Application for Furtherance {
                                                     .localization
                                                     .get_message("error-upgrading-database", None)
                                                     .into());
-                                                return Command::none();
+                                                return Task::none();
                                             }
                                         }
                                         self.task_history =
@@ -1555,7 +1558,7 @@ impl Application for Furtherance {
                 self.shortcut_to_add = None;
                 self.shortcut_to_edit = None;
                 self.current_view = FurView::Timer;
-                return Command::perform(async { Message::StartStopPressed }, |msg| msg);
+                return Task::perform(async { Message::StartStopPressed }, |msg| msg);
             }
             Message::ShowAlert(alert_to_show) => self.displayed_alert = Some(alert_to_show),
             Message::SettingsShowProjectToggled(new_value) => {
@@ -1599,10 +1602,10 @@ impl Application for Furtherance {
                         self.pomodoro.sessions = 0;
                         stop_timer(self, Local::now());
                     }
-                    return Command::none();
+                    return Task::none();
                 } else {
                     start_timer(self);
-                    return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                    return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
                 }
             }
             Message::StopwatchTick => {
@@ -1627,7 +1630,7 @@ impl Application for Furtherance {
                                 self.displayed_alert = Some(FurAlert::PomodoroOver);
                             }
                         }
-                        return Command::none();
+                        return Task::none();
                     }
 
                     if self.fur_settings.notify_on_idle
@@ -1652,9 +1655,9 @@ impl Application for Furtherance {
                         }
                     }
 
-                    return Command::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                    return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
                 } else {
-                    return Command::none();
+                    return Task::none();
                 }
             }
             Message::SubmitCurrentTaskStartTime(new_time) => {
@@ -1813,7 +1816,7 @@ impl Application for Furtherance {
                 // If timer is running, task can never be empty
                 if self.timer_is_running {
                     if new_value.trim().is_empty() {
-                        return Command::none();
+                        return Task::none();
                     }
                 }
                 let new_value_trimmed = new_value.trim_start();
@@ -1870,10 +1873,10 @@ impl Application for Furtherance {
                     .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
             }
         }
-        Command::none()
+        Task::none()
     }
 
-    fn view(&self, _window_id: window::Id) -> Element<Message> {
+    pub fn view(&self) -> Element<Message> {
         // MARK: SIDEBAR
         let sidebar = Container::new(
             column![
@@ -1904,10 +1907,12 @@ impl Application for Furtherance {
                         &self.localization,
                     ))
                     .size(50)
-                    .style(if self.pomodoro.on_break {
-                        theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
-                    } else {
-                        theme::Text::Default
+                    .style(|theme| {
+                        if self.pomodoro.on_break {
+                            style::red_text(theme)
+                        } else {
+                            text::Style::default()
+                        }
                     })
                 } else {
                     text("")
@@ -1919,7 +1924,7 @@ impl Application for Furtherance {
                 ),
             ]
             .spacing(12)
-            .align_items(Alignment::Start),
+            .align_x(Alignment::Start),
         )
         .width(175)
         .padding(10)
@@ -1940,7 +1945,7 @@ impl Application for Furtherance {
                 horizontal_space(),
                 button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
                     .on_press(Message::AddNewShortcutPressed)
-                    .style(theme::Button::Text),
+                    .style(button::text),
             ]
             .padding([10, 20]),
             Scrollable::new(column![shortcuts_row].padding(20))
@@ -1951,7 +1956,7 @@ impl Application for Furtherance {
             row![
                 button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
                     .on_press_maybe(get_last_task_input(&self))
-                    .style(theme::Button::Text),
+                    .style(button::text),
                 horizontal_space().width(Length::Fill),
                 text(self.localization.get_message(
                     "recorded-today",
@@ -1959,13 +1964,13 @@ impl Application for Furtherance {
                 )),
             ],
             vertical_space().height(Length::Fill),
-            text(&self.timer_text)
-                .size(80)
-                .style(if self.pomodoro.on_break {
-                    theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))
+            text(&self.timer_text).size(80).style(|theme| {
+                if self.pomodoro.on_break {
+                    style::red_text(theme)
                 } else {
-                    theme::Text::Default
-                }),
+                    text::Style::default()
+                }
+            }),
             column![
                 row![
                     text_input(
@@ -1991,7 +1996,7 @@ impl Application for Furtherance {
                     } else {
                         Some(Message::StartStopPressed)
                     })
-                    .style(style::primary_button_style()),
+                    .style(style::primary_button_style),
                 ]
                 .spacing(10),
                 if self.timer_is_running {
@@ -2006,22 +2011,22 @@ impl Application for Furtherance {
                             )]))
                         )))
                         .on_press(Message::ChooseCurrentTaskStartTime)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                         Message::CancelCurrentTaskStartTime,
                         Message::SubmitCurrentTaskStartTime,
                     )
                     .use_24h(),]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(10)
                 } else {
-                    row![button("").style(theme::Button::Text)] // Button to match height
+                    row![button("").style(button::text)] // Button to match height
                 },
             ]
-            .align_items(Alignment::Center)
+            .align_x(Alignment::Center)
             .spacing(15),
             vertical_space().height(Length::Fill),
         ]
-        .align_items(Alignment::Center)
+        .align_x(Alignment::Center)
         .padding(20);
 
         // MARK: HISTORY
@@ -2032,7 +2037,7 @@ impl Application for Furtherance {
                 horizontal_space(),
                 button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
                     .on_press(Message::AddNewTaskPressed)
-                    .style(theme::Button::Text),
+                    .style(button::text),
             ]);
         }
         for (i, (date, task_groups)) in self.task_history.iter().rev().enumerate() {
@@ -2074,7 +2079,7 @@ impl Application for Furtherance {
             .height(Length::Fill)];
 
         // MARK: REPORT
-        let mut charts_column = Column::new().align_items(Alignment::Center);
+        let mut charts_column = Column::new().align_x(Alignment::Center);
 
         let mut timer_earnings_boxes_widgets: Vec<Element<'_, Message, Theme, Renderer>> =
             Vec::new();
@@ -2084,7 +2089,7 @@ impl Application for Furtherance {
                     text(seconds_to_formatted_duration(self.report.total_time, true)).size(50),
                     text(self.localization.get_message("total-time", None)),
                 ]
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .into(),
             );
         }
@@ -2094,7 +2099,7 @@ impl Application for Furtherance {
                     text(format!("${:.2}", self.report.total_earned)).size(50),
                     text(self.localization.get_message("earned", None)),
                 ]
-                .align_items(Alignment::Center)
+                .align_x(Alignment::Center)
                 .into(),
             );
         }
@@ -2108,8 +2113,14 @@ impl Application for Furtherance {
             timer_earnings_boxes_widgets.insert(0, horizontal_space().width(Length::Fill).into());
             timer_earnings_boxes_widgets.push(horizontal_space().width(Length::Fill).into());
 
-            charts_column = charts_column
-                .push(Row::with_children(timer_earnings_boxes_widgets).padding([0, 0, 10, 0]));
+            charts_column = charts_column.push(
+                Row::with_children(timer_earnings_boxes_widgets).padding(Padding {
+                    top: 0.0,
+                    right: 0.0,
+                    bottom: 10.0,
+                    left: 0.0,
+                }),
+            );
         }
 
         if self.fur_settings.show_chart_time_recorded {
@@ -2126,7 +2137,7 @@ impl Application for Furtherance {
         }
 
         // Breakdown by Selection Picker & Charts
-        let mut charts_breakdown_by_selection_column = Column::new().align_items(Alignment::Center);
+        let mut charts_breakdown_by_selection_column = Column::new().align_x(Alignment::Center);
         if !self.report.tasks_in_range.is_empty()
             && self.fur_settings.show_chart_breakdown_by_selection
         {
@@ -2183,12 +2194,12 @@ impl Application for Furtherance {
                             self.report.picked_start_date,
                             button(text(self.report.picked_start_date.to_string()))
                                 .on_press(Message::ChooseStartDate)
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelStartDate,
                             Message::SubmitStartDate,
                         ),
                         column![text("to")
-                            .vertical_alignment(alignment::Vertical::Center)
+                            .align_y(alignment::Vertical::Center)
                             .height(Length::Fill),]
                         .height(30),
                         date_picker(
@@ -2196,25 +2207,40 @@ impl Application for Furtherance {
                             self.report.picked_end_date,
                             button(text(self.report.picked_end_date.to_string()))
                                 .on_press(Message::ChooseEndDate)
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelEndDate,
                             Message::SubmitEndDate,
                         ),
                         horizontal_space().width(Length::Fill),
                     ]
                     .spacing(30)
-                    .padding([20, 0, 0, 0])
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
                 } else {
                     row![]
                 },
                 vertical_space().height(Length::Fixed(20.0)),
                 horizontal_rule(1),
             ]
-            .padding([20, 20, 10, 20]),
+            .padding(Padding {
+                top: 20.0,
+                right: 20.0,
+                bottom: 10.0,
+                left: 20.0,
+            }),
             Scrollable::new(
                 column![charts_column, charts_breakdown_by_selection_column]
-                    .align_items(Alignment::Center)
-                    .padding([0, 20, 20, 20])
+                    .align_x(Alignment::Center)
+                    .padding(Padding {
+                        top: 0.0,
+                        right: 20.0,
+                        bottom: 20.0,
+                        left: 20.0,
+                    })
             ),
         ];
 
@@ -2253,12 +2279,12 @@ impl Application for Furtherance {
                     .on_press(Message::SettingsChangeDatabaseLocationPressed(
                         ChangeDB::New
                     ))
-                    .style(style::primary_button_style()),
+                    .style(style::primary_button_style),
                 button(text(self.localization.get_message("open-existing", None)))
                     .on_press(Message::SettingsChangeDatabaseLocationPressed(
                         ChangeDB::Open
                     ))
-                    .style(style::primary_button_style()),
+                    .style(style::primary_button_style),
             ]
             .spacing(10),
         ]
@@ -2269,19 +2295,19 @@ impl Application for Furtherance {
                     if msg.is_empty() {
                         None
                     } else {
-                        Some(text(msg).style(theme::Text::Color(Color::from_rgb(0.0, 255.0, 0.0))))
+                        Some(text(msg).style(style::red_text))
                     }
                 }
-                Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
+                Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
             });
 
         let mut csv_col = column![row![
             button(text(self.localization.get_message("export-csv", None)))
                 .on_press(Message::ExportCsvPressed)
-                .style(style::primary_button_style()),
+                .style(style::primary_button_style),
             button(text(self.localization.get_message("import-csv", None)))
                 .on_press(Message::ImportCsvPressed)
-                .style(style::primary_button_style())
+                .style(style::primary_button_style)
         ]
         .spacing(10),]
         .spacing(10);
@@ -2290,17 +2316,17 @@ impl Application for Furtherance {
                 if msg.is_empty() {
                     None
                 } else {
-                    Some(text(msg).style(theme::Text::Color(Color::from_rgb(0.0, 255.0, 0.0))))
+                    Some(text(msg).style(style::red_text))
                 }
             }
-            Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
+            Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
         });
 
         let mut backup_col =
             column![
                 button(text(self.localization.get_message("backup-database", None)))
                     .on_press(Message::BackupDatabase)
-                    .style(style::primary_button_style())
+                    .style(style::primary_button_style)
             ]
             .spacing(10);
         backup_col = backup_col.push_maybe(match &self.settings_backup_message {
@@ -2308,10 +2334,10 @@ impl Application for Furtherance {
                 if msg.is_empty() {
                     None
                 } else {
-                    Some(text(msg).style(theme::Text::Color(Color::from_rgb(0.0, 255.0, 0.0))))
+                    Some(text(msg).style(style::red_text))
                 }
             }
-            Err(e) => Some(text(e).style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0)))),
+            Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
         });
 
         let settings_view: Column<'_, Message, Theme, Renderer> =
@@ -2335,83 +2361,65 @@ impl Application for Furtherance {
                                 ),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(
                                     self.localization
                                         .get_message("show-delete-confirmation", None)
                                 ),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.show_delete_confirmation,
-                                    Message::SettingsDeleteConfirmationToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style()),
+                                toggler(self.fur_settings.show_delete_confirmation)
+                                    .on_toggle(Message::SettingsDeleteConfirmationToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             settings_heading(self.localization.get_message("task-history", None)),
                             row![
                                 text(self.localization.get_message("show-project", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.show_project,
-                                    Message::SettingsShowProjectToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style()),
+                                toggler(self.fur_settings.show_project)
+                                    .on_toggle(Message::SettingsShowProjectToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("show-tags", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.show_tags,
-                                    Message::SettingsShowTagsToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style()),
+                                toggler(self.fur_settings.show_tags)
+                                    .on_toggle(Message::SettingsShowTagsToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("show-earnings", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.show_earnings,
-                                    Message::SettingsShowEarningsToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style()),
+                                toggler(self.fur_settings.show_earnings)
+                                    .on_toggle(Message::SettingsShowEarningsToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("show-seconds", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.show_seconds,
-                                    Message::SettingsShowSecondsToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style()),
+                                toggler(self.fur_settings.show_seconds)
+                                    .on_toggle(Message::SettingsShowSecondsToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("show-daily-time-total", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.show_daily_time_total,
-                                    Message::SettingsShowDailyTimeTotalToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style()),
+                                toggler(self.fur_settings.show_daily_time_total)
+                                    .on_toggle(Message::SettingsShowDailyTimeTotalToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10)
@@ -2428,30 +2436,25 @@ impl Application for Furtherance {
                             settings_heading(self.localization.get_message("idle", None)),
                             row![
                                 text(self.localization.get_message("idle-detection", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.notify_on_idle,
-                                    Message::SettingsIdleToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style())
+                                toggler(self.fur_settings.notify_on_idle)
+                                    .on_toggle(Message::SettingsIdleToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("minutes-until-idle", None)),
                                 number_input(
                                     self.fur_settings.chosen_idle_time,
-                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    1..999,
                                     Message::SettingsIdleTimeChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                )))
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             settings_heading(self.localization.get_message("task-history", None)),
                             row![
                                 column![
@@ -2462,30 +2465,25 @@ impl Application for Furtherance {
                                     )
                                     .size(12),
                                 ],
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.dynamic_total,
-                                    Message::SettingsDynamicTotalToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style())
+                                toggler(self.fur_settings.dynamic_total)
+                                    .on_toggle(Message::SettingsDynamicTotalToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("days-to-show", None)),
                                 number_input(
                                     self.fur_settings.days_to_show,
-                                    365, // TODO: This will accept a range in a future version of iced_aw (make 1..365)
+                                    1..365,
                                     Message::SettingsDaysToShowChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                ))),
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10)
@@ -2502,71 +2500,59 @@ impl Application for Furtherance {
                             settings_heading(self.localization.get_message("pomodoro-timer", None)),
                             row![
                                 text(self.localization.get_message("countdown-timer", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.pomodoro,
-                                    Message::SettingsPomodoroToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style())
+                                toggler(self.fur_settings.pomodoro)
+                                    .on_toggle(Message::SettingsPomodoroToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("timer-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_length,
-                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    1..999,
                                     Message::SettingsPomodoroLengthChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                )))
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("break-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_break_length,
-                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    1..999,
                                     Message::SettingsPomodoroBreakLengthChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                )))
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("snooze-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_snooze_length,
-                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    1..999,
                                     Message::SettingsPomodoroSnoozeLengthChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                )))
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             settings_heading(self.localization.get_message("extended-break", None)),
                             row![
                                 text(self.localization.get_message("extended-breaks", None)),
-                                toggler(
-                                    String::new(),
-                                    self.fur_settings.pomodoro_extended_breaks,
-                                    Message::SettingsPomodoroExtendedBreaksToggled
-                                )
-                                .width(Length::Shrink)
-                                .style(style::fur_toggler_style())
+                                toggler(self.fur_settings.pomodoro_extended_breaks)
+                                    .on_toggle(Message::SettingsPomodoroExtendedBreaksToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(
                                     self.localization
@@ -2574,30 +2560,26 @@ impl Application for Furtherance {
                                 ),
                                 number_input(
                                     self.fur_settings.pomodoro_extended_break_interval,
-                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    1..999,
                                     Message::SettingsPomodoroExtendedBreakIntervalChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                )))
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("extended-break-length", None)),
                                 number_input(
                                     self.fur_settings.pomodoro_extended_break_length,
-                                    999, // TODO: This will accept a range in a future version of iced_aw (make 1..999)
+                                    1..999,
                                     Message::SettingsPomodoroExtendedBreakLengthChanged
                                 )
                                 .width(Length::Shrink)
-                                .style(NumberInputStyles::Custom(Box::new(
-                                    style::FurNumberInputStyle
-                                )))
+                                .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
-                            .align_items(Alignment::Center),
+                            .align_y(Alignment::Center),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),
@@ -2617,45 +2599,45 @@ impl Application for Furtherance {
                                 self.fur_settings.show_chart_total_time_box
                             )
                             .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization.get_message("total-earnings-box", None),
                                 self.fur_settings.show_chart_total_earnings_box
                             )
                             .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization.get_message("time-recorded", None),
                                 self.fur_settings.show_chart_time_recorded
                             )
                             .on_toggle(Message::SettingsShowChartTimeRecordedToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization.get_message("earnings", None),
                                 self.fur_settings.show_chart_earnings
                             )
                             .on_toggle(Message::SettingsShowChartEarningsToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization.get_message("average-time-per-task", None),
                                 self.fur_settings.show_chart_average_time
                             )
                             .on_toggle(Message::SettingsShowChartAverageTimeToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization
                                     .get_message("average-earnings-per-task", None),
                                 self.fur_settings.show_chart_average_earnings
                             )
                             .on_toggle(Message::SettingsShowChartAverageEarningsToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization
                                     .get_message("breakdown-by-selection-section", None),
                                 self.fur_settings.show_chart_breakdown_by_selection
                             )
                             .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled)
-                            .style(style::fur_checkbox_style()),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization
                                     .get_message("time-recorded-for-selection", None),
@@ -2668,13 +2650,7 @@ impl Application for Furtherance {
                                     None
                                 }
                             )
-                            .style(
-                                if self.fur_settings.show_chart_breakdown_by_selection {
-                                    style::fur_checkbox_style()
-                                } else {
-                                    style::fur_disabled_checkbox_style()
-                                }
-                            ),
+                            .style(style::fur_checkbox_style),
                             checkbox(
                                 self.localization
                                     .get_message("earnings-for-selection", None),
@@ -2687,13 +2663,7 @@ impl Application for Furtherance {
                                     None
                                 }
                             )
-                            .style(
-                                if self.fur_settings.show_chart_breakdown_by_selection {
-                                    style::fur_checkbox_style()
-                                } else {
-                                    style::fur_disabled_checkbox_style()
-                                }
-                            ),
+                            .style(style::fur_checkbox_style),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),
@@ -2753,7 +2723,7 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartDate
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StartDate),
                         ),
@@ -2764,13 +2734,13 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
                         .use_24h(),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         text(self.localization.get_message("stop-colon", None)),
@@ -2781,7 +2751,7 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopDate
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StopDate),
                         ),
@@ -2792,47 +2762,52 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
                         .use_24h(),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Secondary)
+                        .style(button::secondary)
                         .on_press(Message::CancelTaskEdit)
                         .width(Length::Fill),
                         button(
                             text(self.localization.get_message("save", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Primary)
+                        .style(button::primary)
                         .on_press_maybe(if task_to_add.name.trim().is_empty() {
                             None
                         } else {
                             Some(Message::SaveTaskEdit)
                         })
                         .width(Length::Fill)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                     ]
-                    .padding([20, 0, 0, 0])
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
                     .spacing(10),
                 ]
                 .spacing(12)
                 .padding(20)
                 .width(250)
-                .align_items(Alignment::Start),
+                .align_x(Alignment::Start),
                 None => column![]
                     .spacing(12)
                     .padding(20)
                     .width(250)
-                    .align_items(Alignment::Start),
+                    .align_x(Alignment::Start),
             },
             // Add shortcut
             Some(FurInspectorView::AddShortcut) => match &self.shortcut_to_add {
@@ -2863,41 +2838,49 @@ impl Application for Furtherance {
                         text(self.localization.get_message("per-hour", None)),
                     ]
                     .spacing(3)
-                    .align_items(Alignment::Center),
+                    .align_y(Alignment::Center),
                     color_picker(
                         shortcut_to_add.show_color_picker,
                         shortcut_to_add.color,
                         button(
                             text(self.localization.get_message("color", None))
-                                .style(if is_dark_color(shortcut_to_add.color.to_srgb()) {
-                                    Color::WHITE
+                                .style(|theme| if is_dark_color(shortcut_to_add.color.to_srgb()) {
+                                    text::Style {
+                                        color: Some(Color::WHITE),
+                                    }
                                 } else {
-                                    Color::BLACK
+                                    text::Style {
+                                        color: Some(Color::BLACK),
+                                    }
                                 })
                                 .width(Length::Fill)
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
                         .on_press(Message::ChooseShortcutColor)
                         .width(Length::Fill)
-                        .style(style::shortcut_button_style(
-                            shortcut_to_add.color.to_srgb(),
-                        )),
+                        .style(|theme, status| {
+                            style::shortcut_button_style(
+                                theme,
+                                status,
+                                shortcut_to_add.color.to_srgb(),
+                            )
+                        }),
                         Message::CancelShortcutColor,
                         Message::SubmitShortcutColor,
                     ),
                     row![
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Secondary)
+                        .style(button::secondary)
                         .on_press(Message::CancelShortcut)
                         .width(Length::Fill),
                         button(
                             text(self.localization.get_message("save", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(style::primary_button_style())
+                        .style(style::primary_button_style)
                         .on_press_maybe(if shortcut_to_add.name.trim().is_empty() {
                             None
                         } else {
@@ -2905,20 +2888,24 @@ impl Application for Furtherance {
                         })
                         .width(Length::Fill),
                     ]
-                    .padding([20, 0, 0, 0])
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
                     .spacing(10),
-                    text(&shortcut_to_add.invalid_input_error_message)
-                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
+                    text(&shortcut_to_add.invalid_input_error_message).style(style::red_text),
                 ]
                 .spacing(12)
                 .padding(20)
                 .width(250)
-                .align_items(Alignment::Start),
+                .align_x(Alignment::Start),
                 None => column![]
                     .spacing(12)
                     .padding(20)
                     .width(250)
-                    .align_items(Alignment::Start),
+                    .align_x(Alignment::Start),
             },
             Some(FurInspectorView::AddTaskToGroup) => match &self.task_to_add {
                 Some(task_to_add) => column![
@@ -2929,11 +2916,11 @@ impl Application for Furtherance {
                     row![
                         text(self.localization.get_message("start-colon", None)),
                         button(
-                            text(&task_to_add.displayed_start_date.to_string())
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                            text(task_to_add.displayed_start_date.to_string())
+                                .align_x(alignment::Horizontal::Center)
                         )
                         .on_press_maybe(None)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                         time_picker(
                             task_to_add.show_start_time_picker,
                             task_to_add.displayed_start_time,
@@ -2941,22 +2928,22 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
                         .use_24h(),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         text(self.localization.get_message("stop-colon", None)),
                         button(
-                            text(&task_to_add.displayed_stop_date.to_string())
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                            text(task_to_add.displayed_stop_date.to_string())
+                                .align_x(alignment::Horizontal::Center)
                         )
                         .on_press_maybe(None)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                         time_picker(
                             task_to_add.show_stop_time_picker,
                             task_to_add.displayed_stop_time,
@@ -2964,42 +2951,47 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
                         .use_24h(),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Secondary)
+                        .style(button::secondary)
                         .on_press(Message::CancelTaskEdit)
                         .width(Length::Fill),
                         button(
                             text(self.localization.get_message("save", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(style::primary_button_style())
+                        .style(style::primary_button_style)
                         .on_press(Message::SaveTaskEdit)
                         .width(Length::Fill),
                     ]
-                    .padding([20, 0, 0, 0])
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
                     .spacing(10),
                 ]
                 .spacing(12)
                 .padding(20)
                 .width(250)
-                .align_items(Alignment::Start),
+                .align_x(Alignment::Start),
                 None => column![]
                     .spacing(12)
                     .padding(20)
                     .width(250)
-                    .align_items(Alignment::Start),
+                    .align_x(Alignment::Start),
             },
             // MARK: Edit Shortcut
             Some(FurInspectorView::EditShortcut) => match &self.shortcut_to_edit {
@@ -3030,41 +3022,49 @@ impl Application for Furtherance {
                         text(self.localization.get_message("per-hour", None)),
                     ]
                     .spacing(3)
-                    .align_items(Alignment::Center),
+                    .align_y(Alignment::Center),
                     color_picker(
                         shortcut_to_edit.show_color_picker,
                         shortcut_to_edit.new_color,
                         button(
                             text(self.localization.get_message("color", None))
-                                .style(if is_dark_color(shortcut_to_edit.new_color.to_srgb()) {
-                                    Color::WHITE
+                                .style(|_| if is_dark_color(shortcut_to_edit.new_color.to_srgb()) {
+                                    text::Style {
+                                        color: Some(Color::WHITE),
+                                    }
                                 } else {
-                                    Color::BLACK
+                                    text::Style {
+                                        color: Some(Color::BLACK),
+                                    }
                                 })
                                 .width(Length::Fill)
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
                         .on_press(Message::ChooseShortcutColor)
                         .width(Length::Fill)
-                        .style(style::shortcut_button_style(
-                            shortcut_to_edit.new_color.to_srgb(),
-                        )),
+                        .style(|theme, status| {
+                            style::shortcut_button_style(
+                                theme,
+                                status,
+                                shortcut_to_edit.new_color.to_srgb(),
+                            )
+                        }),
                         Message::CancelShortcutColor,
                         Message::SubmitShortcutColor,
                     ),
                     row![
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Secondary)
+                        .style(button::secondary)
                         .on_press(Message::CancelShortcut)
                         .width(Length::Fill),
                         button(
                             text(self.localization.get_message("save", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(style::primary_button_style())
+                        .style(style::primary_button_style)
                         .on_press_maybe(
                             if shortcut_to_edit.new_name.trim().is_empty()
                                 || !shortcut_to_edit.is_changed()
@@ -3076,20 +3076,24 @@ impl Application for Furtherance {
                         )
                         .width(Length::Fill),
                     ]
-                    .padding([20, 0, 0, 0])
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
                     .spacing(10),
-                    text(&shortcut_to_edit.invalid_input_error_message)
-                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
+                    text(&shortcut_to_edit.invalid_input_error_message).style(style::red_text),
                 ]
                 .spacing(12)
                 .padding(20)
                 .width(250)
-                .align_items(Alignment::Start),
+                .align_x(Alignment::Start),
                 None => column![]
                     .spacing(12)
                     .padding(20)
                     .width(250)
-                    .align_items(Alignment::Start),
+                    .align_x(Alignment::Start),
             },
             // MARK: Edit Single Task
             Some(FurInspectorView::EditTask) => match &self.task_to_edit {
@@ -3102,7 +3106,7 @@ impl Application for Furtherance {
                             } else {
                                 Message::DeleteTasks
                             })
-                            .style(theme::Button::Text),
+                            .style(button::text),
                     ],
                     text_input(&task_to_edit.name, &task_to_edit.new_name)
                         .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
@@ -3118,7 +3122,7 @@ impl Application for Furtherance {
                         )
                         .on_input(|s| { Message::EditTaskTextChanged(s, EditTaskProperty::Rate) }),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         text(self.localization.get_message("start-colon", None)),
@@ -3129,7 +3133,7 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartDate
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StartDate),
                         ),
@@ -3140,13 +3144,13 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StartTime
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
                         .use_24h(),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         text(self.localization.get_message("stop-colon", None)),
@@ -3157,7 +3161,7 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopDate
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopDate),
                             |date| Message::SubmitTaskEditDate(date, EditTaskProperty::StopDate),
                         ),
@@ -3168,27 +3172,27 @@ impl Application for Furtherance {
                                 .on_press(Message::ChooseTaskEditDateTime(
                                     EditTaskProperty::StopTime
                                 ))
-                                .style(style::primary_button_style()),
+                                .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
                         .use_24h(),
                     ]
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                     .spacing(5),
                     row![
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(theme::Button::Secondary)
+                        .style(button::secondary)
                         .on_press(Message::CancelTaskEdit)
                         .width(Length::Fill),
                         button(
                             text(self.localization.get_message("save", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                         )
-                        .style(style::primary_button_style())
+                        .style(style::primary_button_style)
                         .on_press_maybe(
                             if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
                             {
@@ -3199,15 +3203,19 @@ impl Application for Furtherance {
                         )
                         .width(Length::Fill),
                     ]
-                    .padding([20, 0, 0, 0])
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
                     .spacing(10),
-                    text(&task_to_edit.invalid_input_error_message)
-                        .style(theme::Text::Color(Color::from_rgb(255.0, 0.0, 0.0))),
+                    text(&task_to_edit.invalid_input_error_message).style(style::red_text),
                 ]
                 .spacing(12)
                 .padding(20)
                 .width(250)
-                .align_items(Alignment::Start),
+                .align_x(Alignment::Start),
                 None => column![],
             },
             // MARK:: Edit Group
@@ -3219,7 +3227,7 @@ impl Application for Furtherance {
                             ..Default::default()
                         }),]
                         .width(Length::Fill)
-                        .align_items(Alignment::Center)
+                        .align_x(Alignment::Center)
                         .spacing(5)
                         .padding(20);
                     if !group_to_edit.project.is_empty() {
@@ -3280,16 +3288,21 @@ impl Application for Furtherance {
                                             .style(style::group_edit_task_row),
                                         )
                                         .on_press(Message::EditTask(task.clone()))
-                                        .style(theme::Button::Text),
+                                        .style(button::text),
                                     )
-                                    .padding([0, 10, 10, 10])
+                                    .padding(Padding {
+                                        top: 0.0,
+                                        right: 10.0,
+                                        bottom: 10.0,
+                                        left: 10.0,
+                                    })
                             },
                         ));
                     column![
                         row![
                             button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
                                 .on_press(Message::CancelGroupEdit)
-                                .style(theme::Button::Text),
+                                .style(button::text),
                             horizontal_space(),
                             button(if group_to_edit.is_in_edit_mode {
                                 bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
@@ -3301,21 +3314,21 @@ impl Application for Furtherance {
                             } else {
                                 Some(Message::ToggleGroupEditor)
                             })
-                            .style(theme::Button::Text),
+                            .style(button::text),
                             button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
                                 .on_press_maybe(if group_to_edit.is_in_edit_mode {
                                     None
                                 } else {
                                     Some(Message::AddTaskToGroup(group_to_edit.clone()))
                                 })
-                                .style(theme::Button::Text),
+                                .style(button::text),
                             button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
                                 .on_press(if self.fur_settings.show_delete_confirmation {
                                     Message::ShowAlert(FurAlert::DeleteGroupConfirmation)
                                 } else {
                                     Message::DeleteTasks
                                 })
-                                .style(theme::Button::Text),
+                                .style(button::text),
                         ]
                         .spacing(5),
                         match group_to_edit.is_in_edit_mode {
@@ -3341,21 +3354,21 @@ impl Application for Furtherance {
                                         Message::EditTaskTextChanged(s, EditTaskProperty::Rate)
                                     }),
                                 ]
-                                .align_items(Alignment::Center)
+                                .align_y(Alignment::Center)
                                 .spacing(5),
                                 row![
                                     button(
                                         text(self.localization.get_message("cancel", None))
-                                            .horizontal_alignment(alignment::Horizontal::Center)
+                                            .align_x(alignment::Horizontal::Center)
                                     )
-                                    .style(theme::Button::Secondary)
+                                    .style(button::secondary)
                                     .on_press(Message::ToggleGroupEditor)
                                     .width(Length::Fill),
                                     button(
                                         text(self.localization.get_message("save", None))
-                                            .horizontal_alignment(alignment::Horizontal::Center)
+                                            .align_x(alignment::Horizontal::Center)
                                     )
-                                    .style(style::primary_button_style())
+                                    .style(style::primary_button_style)
                                     .on_press_maybe(
                                         if group_to_edit.is_changed()
                                             && !group_to_edit.new_name.trim().is_empty()
@@ -3367,7 +3380,12 @@ impl Application for Furtherance {
                                     )
                                     .width(Length::Fill),
                                 ]
-                                .padding([20, 0, 0, 0])
+                                .padding(Padding {
+                                    top: 20.0,
+                                    right: 0.0,
+                                    bottom: 0.0,
+                                    left: 0.0,
+                                })
                                 .spacing(10),
                             ]
                             .padding(20)
@@ -3377,14 +3395,14 @@ impl Application for Furtherance {
                         tasks_column,
                     ]
                     .spacing(5)
-                    .align_items(Alignment::Start)
+                    .align_x(Alignment::Start)
                 }
                 None => column![text(
                     self.localization.get_message("nothing-selected", None)
                 )]
                 .spacing(12)
                 .padding(20)
-                .align_items(Alignment::Start),
+                .align_x(Alignment::Start),
             },
             _ => column![],
         };
@@ -3423,20 +3441,20 @@ impl Application for Furtherance {
                     close_button = Some(
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::AlertClose)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     confirmation_button = Some(
                         button(
                             text(self.localization.get_message("delete-all", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::DeleteTasks)
-                        .style(theme::Button::Destructive),
+                        .style(button::danger),
                     );
                 }
                 FurAlert::DeleteShortcutConfirmation => {
@@ -3449,20 +3467,20 @@ impl Application for Furtherance {
                     close_button = Some(
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::AlertClose)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     confirmation_button = Some(
                         button(
                             text(self.localization.get_message("delete", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::DeleteShortcut)
-                        .style(theme::Button::Destructive),
+                        .style(button::danger),
                     );
                 }
                 FurAlert::DeleteTaskConfirmation => {
@@ -3473,20 +3491,20 @@ impl Application for Furtherance {
                     close_button = Some(
                         button(
                             text(self.localization.get_message("cancel", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::AlertClose)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     confirmation_button = Some(
                         button(
                             text(self.localization.get_message("delete", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::DeleteTasks)
-                        .style(theme::Button::Destructive),
+                        .style(button::danger),
                     );
                 }
                 FurAlert::Idle => {
@@ -3500,20 +3518,20 @@ impl Application for Furtherance {
                     close_button = Some(
                         button(
                             text(self.localization.get_message("continue", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::IdleReset)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     confirmation_button = Some(
                         button(
                             text(self.localization.get_message("discard", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::IdleDiscard)
-                        .style(theme::Button::Destructive),
+                        .style(button::danger),
                     );
                 }
                 FurAlert::PomodoroBreakOver => {
@@ -3524,20 +3542,20 @@ impl Application for Furtherance {
                     close_button = Some(
                         button(
                             text(self.localization.get_message("stop", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroStopAfterBreak)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     confirmation_button = Some(
                         button(
                             text(self.localization.get_message("continue", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroContinueAfterBreak)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                     );
                 }
                 FurAlert::PomodoroOver => {
@@ -3554,20 +3572,20 @@ impl Application for Furtherance {
                                     self.fur_settings.pomodoro_snooze_length.to_string(),
                                 )])),
                             ))
-                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .align_x(alignment::Horizontal::Center)
                             .width(Length::Shrink),
                         )
                         .on_press(Message::PomodoroSnooze)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     close_button = Some(
                         button(
                             text(self.localization.get_message("stop", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroStop)
-                        .style(theme::Button::Secondary),
+                        .style(button::secondary),
                     );
                     confirmation_button = Some(
                         button(
@@ -3582,11 +3600,11 @@ impl Application for Furtherance {
                                     self.localization.get_message("break", None)
                                 },
                             )
-                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .align_x(alignment::Horizontal::Center)
                             .width(Length::Fill),
                         )
                         .on_press(Message::PomodoroStartBreak)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                     );
                 }
                 FurAlert::ShortcutExists => {
@@ -3597,11 +3615,11 @@ impl Application for Furtherance {
                     close_button = Some(
                         button(
                             text(self.localization.get_message("ok", None))
-                                .horizontal_alignment(alignment::Horizontal::Center)
+                                .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
                         .on_press(Message::AlertClose)
-                        .style(style::primary_button_style()),
+                        .style(style::primary_button_style),
                     );
                 }
             }
@@ -3631,7 +3649,11 @@ impl Application for Furtherance {
             None
         };
 
-        modal(content, overlay).into()
+        if let Some(alert) = overlay {
+            modal(container(content), container(alert), Message::AlertClose).into()
+        } else {
+            container(content).into()
+        }
     }
 }
 
@@ -3641,9 +3663,9 @@ fn nav_button<'a>(nav_text: String, destination: FurView, active: bool) -> Butto
         .on_press(Message::NavigateTo(destination))
         .width(Length::Fill)
         .style(if active {
-            style::active_nav_menu_button_style()
+            style::active_nav_menu_button_style
         } else {
-            style::inactive_nav_menu_button_style()
+            style::inactive_nav_menu_button_style
         })
 }
 
@@ -3654,7 +3676,7 @@ fn history_group_row<'a, 'loc>(
     localization: &'loc Localization,
 ) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
-        column![text(&task_group.name).font(font::Font {
+        column![text(task_group.name.clone()).font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
         }),]
@@ -3667,7 +3689,7 @@ fn history_group_row<'a, 'loc>(
     }
 
     let mut task_row: Row<'_, Message, Theme, Renderer> =
-        row![].align_items(Alignment::Center).spacing(5);
+        row![].align_y(Alignment::Center).spacing(5);
     if task_group.tasks.len() > 1 {
         task_row = task_row.push(
             Container::new(text(task_group.tasks.len()))
@@ -3684,11 +3706,11 @@ fn history_group_row<'a, 'loc>(
             weight: iced::font::Weight::Bold,
             ..Default::default()
         })]
-    .align_items(Alignment::End);
+    .align_x(Alignment::End);
 
     if settings.show_earnings && task_group.rate > 0.0 {
         let total_earnings = task_group.rate * (task_group.total_time as f32 / 3600.0);
-        totals_column = totals_column.push(text(&format!("${:.2}", total_earnings)));
+        totals_column = totals_column.push(text(format!("${:.2}", total_earnings)));
     }
 
     let task_group_string = task_group.to_string();
@@ -3703,17 +3725,17 @@ fn history_group_row<'a, 'loc>(
             } else {
                 Some(Message::RepeatLastTaskPressed(task_group_string.clone()))
             })
-            .style(theme::Button::Text),
+            .style(button::text),
     );
 
     let history_row_button = button(
         Container::new(task_row)
-            .padding([10, 15, 10, 15])
+            .padding([10, 15])
             .width(Length::Fill)
             .style(style::task_row),
     )
     .on_press(Message::EditGroup(task_group.clone()))
-    .style(theme::Button::Text);
+    .style(button::text);
 
     let task_group_ids = task_group.all_task_ids();
     let task_group_clone = task_group.clone();
@@ -3724,21 +3746,21 @@ fn history_group_row<'a, 'loc>(
             Container::new(column![
                 iced::widget::button(text(localization.get_message("repeat", None)))
                     .on_press(Message::RepeatLastTaskPressed(task_group_string.clone()))
-                    .style(style::context_menu_button_style())
+                    .style(style::context_menu_button_style)
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("edit", None)))
                     .on_press(Message::EditGroup(task_group_clone.clone()))
-                    .style(style::context_menu_button_style())
+                    .style(style::context_menu_button_style)
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("create-shortcut", None)))
                     .on_press(Message::CreateShortcutFromTaskGroup(
                         task_group_clone.clone(),
                     ))
-                    .style(style::context_menu_button_style())
+                    .style(style::context_menu_button_style)
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteTasksFromContext(task_group_ids.clone()))
-                    .style(style::context_menu_button_style())
+                    .style(style::context_menu_button_style)
                     .width(Length::Fill),
             ])
             .max_width(150)
@@ -3755,7 +3777,7 @@ fn history_title_row<'a>(
     running_timer: Option<(bool, &str)>,
     localization: &Localization,
 ) -> Row<'a, Message> {
-    let mut total_time_column = column![].align_items(Alignment::End);
+    let mut total_time_column = column![].align_x(Alignment::End);
 
     if settings.show_daily_time_total {
         if settings.dynamic_total {
@@ -3808,7 +3830,7 @@ fn history_title_row<'a>(
         horizontal_space().width(Length::Fill),
         total_time_column,
     ]
-    .align_items(Alignment::Center)
+    .align_y(Alignment::Center)
 }
 
 fn format_history_date(date: &NaiveDate, localization: &Localization) -> String {
@@ -3878,22 +3900,31 @@ fn shortcut_button_content<'a>(
             weight: iced::font::Weight::Bold,
             ..Default::default()
         })
-        .style(text_color)]
+        .style(move |_| text::Style {
+            color: Some(text_color)
+        })]
     .spacing(5);
 
     if !shortcut.project.is_empty() {
-        shortcut_text_column = shortcut_text_column
-            .push(text(format!("@{}", shortcut.project.clone())).style(text_color));
+        shortcut_text_column = shortcut_text_column.push(
+            text(format!("@{}", shortcut.project.clone())).style(move |_| text::Style {
+                color: Some(text_color),
+            }),
+        );
     }
     if !shortcut.tags.is_empty() {
         shortcut_text_column =
-            shortcut_text_column.push(text(shortcut.tags.clone()).style(text_color));
+            shortcut_text_column.push(text(shortcut.tags.clone()).style(move |_| text::Style {
+                color: Some(text_color),
+            }));
     }
     if shortcut.rate > 0.0 {
         shortcut_text_column = shortcut_text_column.push(vertical_space());
         shortcut_text_column = shortcut_text_column.push(row![
             horizontal_space(),
-            text(format!("${:.2}", shortcut.rate)).style(text_color)
+            text(format!("${:.2}", shortcut.rate)).style(move |_| text::Style {
+                color: Some(text_color)
+            })
         ]);
     }
 
@@ -3924,7 +3955,7 @@ fn shortcut_button<'a, 'loc>(
         } else {
             Some(Message::ShortcutPressed(shortcut.to_string()))
         })
-        .style(style::shortcut_button_style(shortcut_color));
+        .style(move |theme, status| style::shortcut_button_style(theme, status, shortcut_color));
 
     let shortcut_clone = shortcut.clone();
 
@@ -3934,13 +3965,13 @@ fn shortcut_button<'a, 'loc>(
             Container::new(column![
                 iced::widget::button(text(localization.get_message("edit", None)))
                     .on_press(Message::EditShortcutPressed(shortcut_clone.clone()))
-                    .style(style::context_menu_button_style())
+                    .style(style::context_menu_button_style)
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteShortcutFromContext(
                         shortcut_clone.id.clone()
                     ))
-                    .style(style::context_menu_button_style())
+                    .style(style::context_menu_button_style)
                     .width(Length::Fill),
             ])
             .max_width(150)
@@ -4300,7 +4331,12 @@ fn settings_heading<'a>(heading: String) -> Column<'a, Message, Theme, Renderer>
         }),
         Container::new(horizontal_rule(1)).max_width(200.0)
     ]
-    .padding([15, 0, 5, 0])
+    .padding(Padding {
+        top: 15.0,
+        right: 0.0,
+        bottom: 5.0,
+        left: 0.0,
+    })
 }
 
 fn combine_timer_with_seconds(timer: &str, seconds: i64) -> i64 {
@@ -4550,4 +4586,33 @@ pub fn import_csv_to_database(file: &mut File, localization: &Localization) {
         }
         Err(e) => eprintln!("Failed to read the CSV file: {}", e),
     }
+}
+
+fn modal<'a, Message>(
+    base: impl Into<Element<'a, Message>>,
+    content: impl Into<Element<'a, Message>>,
+    on_blur: Message,
+) -> Element<'a, Message>
+where
+    Message: Clone + 'a,
+{
+    stack![
+        base.into(),
+        opaque(
+            mouse_area(center(opaque(content)).style(|_theme| {
+                container::Style {
+                    background: Some(
+                        Color {
+                            a: 0.8,
+                            ..Color::BLACK
+                        }
+                        .into(),
+                    ),
+                    ..container::Style::default()
+                }
+            }))
+            .on_press(on_blur)
+        )
+    ]
+    .into()
 }

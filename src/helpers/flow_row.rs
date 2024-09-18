@@ -114,7 +114,7 @@ impl<'a, Message: 'a> Widget<Message, Theme, Renderer> for FlowRow<'a, Message, 
         state: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
-        operation: &mut dyn Operation<Message>,
+        operation: &mut dyn Operation,
     ) {
         operation.container(None, layout.bounds(), &mut |operation| {
             for ((child, state), layout) in self

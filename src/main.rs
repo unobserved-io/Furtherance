@@ -52,17 +52,23 @@ mod tests {
 mod view_enums;
 
 use app::Furtherance;
-use iced::{multi_window::Application, window, Settings, Size};
+// use iced::{window, Settings, Size};
 
 fn main() -> iced::Result {
-    Furtherance::run(Settings {
-        window: window::Settings {
-            size: Size {
-                height: 600.0,
-                width: 1024.0,
-            },
-            ..window::Settings::default()
-        },
-        ..Settings::default()
-    })
+    iced::application(Furtherance::title, Furtherance::update, Furtherance::view)
+        .subscription(Furtherance::subscription)
+        .theme(Furtherance::theme)
+        .font(iced_aw::core::icons::BOOTSTRAP_FONT_BYTES)
+        .window_size((500.0, 800.0))
+        .run()
+    // Furtherance::run(Settings {
+    //     window: window::Settings {
+    //         size: Size {
+    //             height: 600.0,
+    //             width: 1024.0,
+    //         },
+    //         ..window::Settings::default()
+    //     },
+    //     ..Settings::default()
+    // })
 }
