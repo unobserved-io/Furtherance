@@ -61,14 +61,4 @@ fn main() -> iced::Result {
         .font(iced_aw::core::icons::BOOTSTRAP_FONT_BYTES)
         .window_size((500.0, 800.0))
         .run()
-    // Furtherance::run(Settings {
-    //     window: window::Settings {
-    //         size: Size {
-    //             height: 600.0,
-    //             width: 1024.0,
-    //         },
-    //         ..window::Settings::default()
-    //     },
-    //     ..Settings::default()
-    // })
 }
