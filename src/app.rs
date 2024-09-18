@@ -3758,12 +3758,30 @@ fn history_title_row<'a>(
     let mut total_time_column = column![].align_items(Alignment::End);
 
     if settings.show_daily_time_total {
-        if let Some((running, timer_text)) = running_timer {
-            if running {
-                let total_time_str = seconds_to_formatted_duration(
-                    combine_timer_with_seconds(timer_text, total_time),
-                    settings.show_seconds,
-                );
+        if settings.dynamic_total {
+            if let Some((running, timer_text)) = running_timer {
+                if running {
+                    let total_time_str = seconds_to_formatted_duration(
+                        combine_timer_with_seconds(timer_text, total_time),
+                        settings.show_seconds,
+                    );
+                    total_time_column =
+                        total_time_column.push(text(total_time_str).font(font::Font {
+                            weight: iced::font::Weight::Bold,
+                            ..Default::default()
+                        }));
+                } else {
+                    let total_time_str =
+                        seconds_to_formatted_duration(total_time, settings.show_seconds);
+                    total_time_column =
+                        total_time_column.push(text(total_time_str).font(font::Font {
+                            weight: iced::font::Weight::Bold,
+                            ..Default::default()
+                        }));
+                }
+            } else {
+                let total_time_str =
+                    seconds_to_formatted_duration(total_time, settings.show_seconds);
                 total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
                     weight: iced::font::Weight::Bold,
                     ..Default::default()
