@@ -37,7 +37,7 @@ dark-light = "1.1.1"
 directories = "5.0"
 fluent = "0.16"
 futures-core = "0.3.30"
-iced = { version = "0.13.0", features = [
+iced = { version = "0.13.1", features = [
     "advanced",
     "canvas",
     "multi-window",
