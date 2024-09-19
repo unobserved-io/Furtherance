@@ -245,7 +245,7 @@ impl Furtherance {
             current_view: settings.default_view,
             delete_ids_from_context: None,
             delete_shortcut_from_context: None,
-            displayed_alert: Some(FurAlert::ShortcutExists),
+            displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
             group_to_edit: None,
