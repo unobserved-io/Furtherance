@@ -48,7 +48,8 @@ use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::{
     advanced::subscription,
-    alignment, font,
+    alignment::{self, Horizontal},
+    font,
     widget::{
         button, center, checkbox, column, container, horizontal_rule, horizontal_space, mouse_area,
         opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
@@ -244,7 +245,7 @@ impl Furtherance {
             current_view: settings.default_view,
             delete_ids_from_context: None,
             delete_shortcut_from_context: None,
-            displayed_alert: None,
+            displayed_alert: Some(FurAlert::ShortcutExists),
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
             group_to_edit: None,
@@ -3621,9 +3622,9 @@ impl Furtherance {
         };
 
         if let Some(alert) = overlay {
-            modal(container(content), container(alert), Message::AlertClose).into()
+            modal(content, container(alert), Message::AlertClose).into()
         } else {
-            container(content).into()
+            content.into()
         }
     }
 }
@@ -4561,7 +4562,7 @@ pub fn import_csv_to_database(file: &mut File, localization: &Localization) {
 
 fn modal<'a, Message>(
     base: impl Into<Element<'a, Message>>,
-    content: impl Into<Element<'a, Message>>,
+    alert: Container<'a, Message>,
     on_blur: Message,
 ) -> Element<'a, Message>
 where
@@ -4570,18 +4571,22 @@ where
     stack![
         base.into(),
         opaque(
-            mouse_area(center(opaque(content)).style(|_theme| {
-                container::Style {
-                    background: Some(
-                        Color {
-                            a: 0.8,
-                            ..Color::BLACK
+            mouse_area(
+                center(opaque(row![horizontal_space(), alert, horizontal_space()])).style(
+                    |_theme| {
+                        container::Style {
+                            background: Some(
+                                Color {
+                                    a: 0.8,
+                                    ..Color::BLACK
+                                }
+                                .into(),
+                            ),
+                            ..container::Style::default()
                         }
-                        .into(),
-                    ),
-                    ..container::Style::default()
-                }
-            }))
+                    }
+                )
+            )
             .on_press(on_blur)
         )
     ]
