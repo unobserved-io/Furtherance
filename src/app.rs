@@ -47,8 +47,7 @@ use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::{
     advanced::subscription,
-    alignment::{self, Horizontal},
-    font,
+    alignment, font,
     widget::{
         button, center, checkbox, column, container, horizontal_rule, horizontal_space, mouse_area,
         opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
