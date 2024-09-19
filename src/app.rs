@@ -31,6 +31,7 @@ use crate::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         flow_row::FlowRow,
         idle::get_idle_time,
+        midnight_subscription::MidnightSubscription,
     },
     localization::Localization,
     models::{
@@ -46,6 +47,7 @@ use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDat
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::{
+    advanced::subscription,
     alignment, font,
     widget::{
         button, center, checkbox, column, container, horizontal_rule, horizontal_space, mouse_area,
@@ -65,7 +67,7 @@ use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
 use rfd::FileDialog;
-use tokio::time::{self, interval_at};
+use tokio::time;
 
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
@@ -205,11 +207,6 @@ impl Default for Furtherance {
 }
 
 impl Furtherance {
-    // type Message = Message;
-    // type Executor = iced::executor::Default;
-    // type Flags = ();
-    // type Theme = Theme;
-
     pub fn new() -> Self {
         // Load settings
         let mut settings = match FurSettings::new() {
@@ -285,10 +282,6 @@ impl Furtherance {
         furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
 
         furtherance
-        // (
-        //     furtherance,
-        //     font::load(BOOTSTRAP_FONT_BYTES).map(Message::FontLoaded),
-        // )
     }
 
     pub fn title(&self) -> String {
@@ -305,30 +298,8 @@ impl Furtherance {
         let theme_watcher =
             iced::time::every(time::Duration::from_secs(60)).map(|_| Message::ChangeTheme);
 
-        // TODO: Subscription::unfold replacement for Iced 0.13
-        // Watch for midnight to update the history
-        // struct MidnightSub;
-        // let midnight_subscription =
-        //     Subscription::unfold(std::any::TypeId::of::<MidnightSub>(), (), |_| async {
-        //         let now = Local::now();
-        //         let next_midnight = (now + chrono::Duration::days(1))
-        //             .date_naive()
-        //             .and_hms_opt(0, 0, 0)
-        //             .unwrap()
-        //             .and_local_timezone(Local)
-        //             .unwrap();
-        //         let duration_until_midnight = next_midnight - now;
-        //         let tokio_instant = tokio::time::Instant::now()
-        //             + Duration::from_secs(duration_until_midnight.num_seconds() as u64);
-
-        //         let mut interval = interval_at(tokio_instant, Duration::from_secs(24 * 60 * 60));
-        //         interval.tick().await; // Wait for the first tick (midnight)
-
-        //         (Message::MidnightReached, ())
-        //     });
-
         Subscription::batch([
-            // midnight_subscription,
+            subscription::from_recipe(MidnightSubscription),
             #[cfg(not(target_os = "macos"))]
             theme_watcher,
         ])
@@ -4155,7 +4126,7 @@ fn convert_datetime_to_iced_time(dt: DateTime<Local>) -> time_picker::Time {
 }
 
 async fn get_timer_duration() {
-    time::sleep(time::Duration::from_secs(1)).await;
+    time::sleep(Duration::from_secs(1)).await;
 }
 
 pub fn split_task_input(input: &str) -> (String, String, String, f32) {

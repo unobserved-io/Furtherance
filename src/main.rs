@@ -29,6 +29,7 @@ mod helpers {
     pub mod color_utils;
     pub mod flow_row;
     pub mod idle;
+    pub mod midnight_subscription;
 }
 mod localization;
 mod models {
