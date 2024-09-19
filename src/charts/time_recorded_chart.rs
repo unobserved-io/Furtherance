@@ -17,11 +17,14 @@
 use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
-    models::fur_task::FurTask,
     localization::Localization,
+    models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
-use iced::{widget::Text, Element, Length};
+use iced::{
+    widget::{horizontal_space, row, Text},
+    Element, Length,
+};
 use plotters::prelude::*;
 use plotters_backend::DrawingBackend;
 use plotters_iced::{plotters_backend, Chart, ChartWidget};
@@ -41,7 +44,13 @@ impl TimeRecordedChart {
 
     pub fn view(&self) -> Element<Message> {
         if self.date_time.len() <= 1 {
-            Text::new("Not enough data to show charts.").into()
+            let localization = Localization::new();
+            row![
+                horizontal_space(),
+                Text::new(localization.get_message("cant-show-charts", None)),
+                horizontal_space()
+            ]
+            .into()
         } else {
             let chart = ChartWidget::new(self)
                 .width(Length::Fill)

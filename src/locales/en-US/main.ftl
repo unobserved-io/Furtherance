@@ -142,6 +142,7 @@ average-time-per-task-title = Average Time Per Task
 time-recorded-title = Time Recorded
 time-recorded-for-selection-title = Time Recorded For Selection
 earnings-for-selection-title = Earnings For Selection
+cant-show-charts = Not enough data to show charts.
 
 ## Alerts
 delete-all = Delete All
