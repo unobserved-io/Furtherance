@@ -23,7 +23,7 @@ use {
     std::path::Path,
     std::sync::Arc,
     tokio::runtime::Runtime,
-    users::get_current_uid,
+    uzers::get_current_uid,
     zbus::{proxy, Connection},
 };
 
