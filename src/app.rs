@@ -29,7 +29,6 @@ use crate::{
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
-        flow_row::FlowRow,
         idle::get_idle_time,
         midnight_subscription::MidnightSubscription,
     },
@@ -1904,7 +1903,7 @@ impl Furtherance {
         .style(style::gray_background);
 
         // MARK: Shortcuts
-        let mut shortcuts_row = FlowRow::new().spacing(20.0);
+        let mut shortcuts_row = Row::new().spacing(20.0);
         for shortcut in &self.shortcuts {
             shortcuts_row = shortcuts_row.push(shortcut_button(
                 shortcut,
@@ -1920,7 +1919,7 @@ impl Furtherance {
                     .style(button::text),
             ]
             .padding([10, 20]),
-            Scrollable::new(column![shortcuts_row].padding(20))
+            Scrollable::new(column![shortcuts_row.width(Length::Fill).wrap()].padding(20))
         ];
 
         // MARK: TIMER
