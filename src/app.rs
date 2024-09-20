@@ -85,9 +85,9 @@ pub struct Furtherance {
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
-    settings_backup_message: Result<String, Box<dyn std::error::Error>>,
     settings_csv_message: Result<String, Box<dyn std::error::Error>>,
-    settings_database_error: Result<String, Box<dyn std::error::Error>>,
+    settings_database_message: Result<String, Box<dyn std::error::Error>>,
+    settings_more_message: Result<String, Box<dyn std::error::Error>>,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
     shortcut_to_edit: Option<ShortcutToEdit>,
@@ -127,6 +127,7 @@ pub enum Message {
     ChooseStartDate,
     ChooseTaskEditDateTime(EditTaskProperty),
     CreateShortcutFromTaskGroup(FurTaskGroup),
+    DeleteEverything,
     DateRangeSelected(FurDateRange),
     DeleteShortcut,
     DeleteShortcutFromContext(u32),
@@ -253,9 +254,9 @@ impl Furtherance {
             inspector_view: None,
             report: FurReport::new(),
             settings_active_tab: TabId::General,
-            settings_backup_message: Ok(String::new()),
             settings_csv_message: Ok(String::new()),
-            settings_database_error: Ok(String::new()),
+            settings_database_message: Ok(String::new()),
+            settings_more_message: Ok(String::new()),
             shortcuts: match db_retrieve_shortcuts() {
                 Ok(shortcuts) => shortcuts,
                 Err(e) => {
@@ -325,7 +326,7 @@ impl Furtherance {
             }
             Message::BackupDatabase => {
                 self.settings_csv_message = Ok(String::new());
-                self.settings_database_error = Ok(String::new());
+                self.settings_database_message = Ok(String::new());
                 let file_name = format!("furtherance-bkup-{}.db", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
                     .set_title(self.localization.get_message("save-backup-title", None))
@@ -340,11 +341,11 @@ impl Furtherance {
                 if let Some(file) = selected_file {
                     match db_backup(file) {
                         Ok(_) => {
-                            self.settings_backup_message =
+                            self.settings_database_message =
                                 Ok(self.localization.get_message("backup-successful", None));
                         }
                         Err(_) => {
-                            self.settings_backup_message = Err(self
+                            self.settings_database_message = Err(self
                                 .localization
                                 .get_message("backup-database-failed", None)
                                 .into());
@@ -502,6 +503,26 @@ impl Furtherance {
                     Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
                 }
             }
+            Message::DeleteEverything => match db_delete_everything() {
+                Ok(_) => {
+                    self.displayed_alert = None;
+                    self.settings_more_message =
+                        Ok(self.localization.get_message("deleted-everything", None));
+                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    match db_retrieve_shortcuts() {
+                        Ok(shortcuts) => self.shortcuts = shortcuts,
+                        Err(e) => {
+                            eprintln!("Failed to retrieve shortcuts from database: {}", e)
+                        }
+                    };
+                }
+                Err(_) => {
+                    self.settings_more_message = Err(self
+                        .localization
+                        .get_message("error-deleting-everything", None)
+                        .into());
+                }
+            },
             Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
             Message::DeleteShortcut => {
                 if let Some(id) = self.delete_shortcut_from_context {
@@ -964,7 +985,7 @@ impl Furtherance {
             }
             Message::ExportCsvPressed => {
                 self.settings_csv_message = Ok(String::new());
-                self.settings_database_error = Ok(String::new());
+                self.settings_database_message = Ok(String::new());
                 let file_name = format!("furtherance-{}.csv", Local::now().format("%Y-%m-%d"));
                 let selected_file = FileDialog::new()
                     .set_title(self.localization.get_message("save-csv-title", None))
@@ -1000,7 +1021,7 @@ impl Furtherance {
             }
             Message::ImportCsvPressed => {
                 self.settings_csv_message = Ok(String::new());
-                self.settings_database_error = Ok(String::new());
+                self.settings_database_message = Ok(String::new());
                 let selected_file = FileDialog::new()
                     .set_title(self.localization.get_message("open-csv-title", None))
                     .add_filter("CSV", &["csv"])
@@ -1210,7 +1231,7 @@ impl Furtherance {
             }
             Message::SettingsChangeDatabaseLocationPressed(new_or_open) => {
                 self.settings_csv_message = Ok(String::new());
-                self.settings_database_error = Ok(String::new());
+                self.settings_database_message = Ok(String::new());
                 let path = Path::new(&self.fur_settings.database_url);
                 let starting_dialog = FileDialog::new()
                     .set_directory(&path)
@@ -1233,13 +1254,13 @@ impl Furtherance {
                 let mut is_old_db = false;
 
                 if let Some(file) = selected_file {
-                    self.settings_database_error = Ok(String::new());
+                    self.settings_database_message = Ok(String::new());
 
                     if file.exists() {
                         match db_is_valid_v3(file.as_path()) {
                             Err(e) => {
                                 eprintln!("Invalid database: {}", e);
-                                self.settings_database_error = Err(self
+                                self.settings_database_message = Err(self
                                     .localization
                                     .get_message("invalid-database", None)
                                     .into());
@@ -1251,7 +1272,7 @@ impl Furtherance {
                                             if is_valid_v2 {
                                                 is_old_db = true
                                             } else {
-                                                self.settings_database_error = Err(self
+                                                self.settings_database_message = Err(self
                                                     .localization
                                                     .get_message("invalid-database", None)
                                                     .into());
@@ -1259,7 +1280,7 @@ impl Furtherance {
                                         }
                                         Err(e) => {
                                             eprintln!("Invalid v1 database: {}", e);
-                                            self.settings_database_error = Err(self
+                                            self.settings_database_message = Err(self
                                                 .localization
                                                 .get_message("invalid-database", None)
                                                 .into());
@@ -1270,7 +1291,7 @@ impl Furtherance {
                         }
                     }
 
-                    if self.settings_database_error.is_ok() {
+                    if self.settings_database_message.is_ok() {
                         // Valid file or not yet a file
                         if let Some(file_str) = file.to_str() {
                             if let Ok(_) = self.fur_settings.change_db_url(file_str) {
@@ -1279,7 +1300,7 @@ impl Furtherance {
                                         if is_old_db {
                                             if let Err(e) = db_upgrade_old() {
                                                 eprintln!("Error upgrading legacy database: {}", e);
-                                                self.settings_database_error = Err(self
+                                                self.settings_database_message = Err(self
                                                     .localization
                                                     .get_message("error-upgrading-database", None)
                                                     .into());
@@ -1288,7 +1309,7 @@ impl Furtherance {
                                         }
                                         self.task_history =
                                             get_task_history(self.fur_settings.days_to_show);
-                                        self.settings_database_error = Ok(match new_or_open {
+                                        self.settings_database_message = Ok(match new_or_open {
                                             ChangeDB::Open => self
                                                 .localization
                                                 .get_message("database-loaded", None),
@@ -1300,7 +1321,7 @@ impl Furtherance {
                                     }
                                     Err(e) => {
                                         eprintln!("Error accessing new database: {}", e);
-                                        self.settings_database_error = Err(self
+                                        self.settings_database_message = Err(self
                                             .localization
                                             .get_message("error-accessing-database", None)
                                             .into());
@@ -2255,12 +2276,16 @@ impl Furtherance {
                         ChangeDB::Open
                     ))
                     .style(style::primary_button_style),
+                button(text(self.localization.get_message("backup-database", None)))
+                    .on_press(Message::BackupDatabase)
+                    .style(style::primary_button_style)
             ]
-            .spacing(10),
+            .spacing(10)
+            .wrap(),
         ]
         .spacing(10);
         database_location_col =
-            database_location_col.push_maybe(match &self.settings_database_error {
+            database_location_col.push_maybe(match &self.settings_database_message {
                 Ok(msg) => {
                     if msg.is_empty() {
                         None
@@ -2292,14 +2317,13 @@ impl Furtherance {
             Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
         });
 
-        let mut backup_col =
-            column![
-                button(text(self.localization.get_message("backup-database", None)))
-                    .on_press(Message::BackupDatabase)
-                    .style(style::primary_button_style)
-            ]
-            .spacing(10);
-        backup_col = backup_col.push_maybe(match &self.settings_backup_message {
+        let mut backup_col = column![button(text(
+            self.localization.get_message("delete-everything", None)
+        ))
+        .on_press(Message::ShowAlert(FurAlert::DeleteEverythingConfirmation))
+        .style(button::danger)]
+        .spacing(10);
+        backup_col = backup_col.push_maybe(match &self.settings_more_message {
             Ok(msg) => {
                 if msg.is_empty() {
                     None
@@ -2652,7 +2676,7 @@ impl Furtherance {
                             database_location_col,
                             settings_heading("CSV".to_string()),
                             csv_col,
-                            settings_heading(self.localization.get_message("backup", None)),
+                            settings_heading(self.localization.get_message("more", None)),
                             backup_col,
                         ]
                         .spacing(SETTINGS_SPACING)
@@ -3403,6 +3427,32 @@ impl Furtherance {
             let mut snooze_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
+                FurAlert::DeleteEverythingConfirmation => {
+                    alert_text = self
+                        .localization
+                        .get_message("delete-everything-question", None);
+                    alert_description = self
+                        .localization
+                        .get_message("delete-everything-description", None);
+                    close_button = Some(
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(button::secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text(self.localization.get_message("delete-everything", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::DeleteEverything)
+                        .style(button::danger),
+                    );
+                }
                 FurAlert::DeleteGroupConfirmation => {
                     alert_text = self.localization.get_message("delete-all-question", None);
                     alert_description = self

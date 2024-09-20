@@ -123,6 +123,9 @@ export-csv = Export CSV
 import-csv = Import CSV
 backup = Backup
 backup-database = Backup Database
+more = More
+delete-everything = Delete Everything
+deleted-everything = Deleted everything
 
 ## Inspector
 task-name = Task name
@@ -148,6 +151,8 @@ cant-show-charts = Not enough data to show charts.
 delete-all = Delete All
 delete-all-question = Delete all?
 delete-all-description = Are you sure you want to permanently delete all tasks in this group?
+delete-everything-question = Delete everything?
+delete-everything-description = Are you sure you want to permanently delete everything in the database?
 delete-shortcut-question = Delete shortcut?
 delete-shortcut-description = Are you sure you want to delete this shortcut?
 delete-task-question = Delete task?
@@ -190,6 +195,7 @@ csv-imported = CSV imported successfully
 invalid-csv-file = Invalid CSV file
 error-retrieving-tasks = Failed to retrieve tasks from the database
 error-creating-file = Failed to create the file
+error-deleting-everything = Failed to delete everything
 error-reading-headers = Failed to read the headers
 wrong-column-order = Wrong column order.
 missing-column = Missing column

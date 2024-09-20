@@ -516,11 +516,12 @@ pub fn db_delete_shortcut_by_id(id: u32) -> Result<()> {
     Ok(())
 }
 
-pub fn delete_all() -> Result<()> {
+pub fn db_delete_everything() -> Result<()> {
     // Delete everything from the database
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute("delete from tasks", [])?;
+    conn.execute("delete from shortcuts", [])?;
 
     Ok(())
 }
