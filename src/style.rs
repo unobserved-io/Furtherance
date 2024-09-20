@@ -23,7 +23,7 @@ use iced_aw::style::number_input;
 use palette::{Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
-use crate::helpers::color_utils::{ToIcedColor, ToSrgb};
+use crate::helpers::color_utils::{FromHex, ToIcedColor, ToSrgb};
 
 pub struct FurPalette;
 
@@ -155,13 +155,13 @@ pub fn primary_button_style(theme: &Theme, status: button::Status) -> button::St
 
 pub fn red_text(_theme: &Theme) -> text::Style {
     text::Style {
-        color: Some(Color::from_rgb(255.0, 0.0, 0.0)),
+        color: Some(Color::from_rgb8(190, 0, 0)),
     }
 }
 
 pub fn green_text(_theme: &Theme) -> text::Style {
     text::Style {
-        color: Some(Color::from_rgb(0.0, 255.0, 0.0)),
+        color: Some(Color::from_rgb8(0, 180, 0)),
     }
 }
 
