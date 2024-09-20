@@ -156,6 +156,12 @@ pub fn red_text(_theme: &Theme) -> text::Style {
     }
 }
 
+pub fn green_text(_theme: &Theme) -> text::Style {
+    text::Style {
+        color: Some(Color::from_rgb(0.0, 255.0, 0.0)),
+    }
+}
+
 pub fn shortcut_button_style(
     _theme: &Theme,
     status: button::Status,

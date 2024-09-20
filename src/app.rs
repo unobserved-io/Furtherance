@@ -2265,7 +2265,7 @@ impl Furtherance {
                     if msg.is_empty() {
                         None
                     } else {
-                        Some(text(msg).style(style::red_text))
+                        Some(text(msg).style(style::green_text))
                     }
                 }
                 Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
@@ -2286,7 +2286,7 @@ impl Furtherance {
                 if msg.is_empty() {
                     None
                 } else {
-                    Some(text(msg).style(style::red_text))
+                    Some(text(msg).style(style::green_text))
                 }
             }
             Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
@@ -2304,7 +2304,7 @@ impl Furtherance {
                 if msg.is_empty() {
                     None
                 } else {
-                    Some(text(msg).style(style::red_text))
+                    Some(text(msg).style(style::green_text))
                 }
             }
             Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
