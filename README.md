@@ -1,32 +1,39 @@
 # Furtherance
-Furtherance is a time tracking app, with a native interface on Gnome, Windows, and Mac.
+Furtherance is a time tracking app.
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 
-**UPDATE: Furtherance is underging a complete rewrite using [Iced](https://github.com/iced-rs/iced). It will be better in many ways and contain more features, but most importantly there will be a single, cross-platform version,
+**UPDATE: Furtherance has undergone a complete rewrite using [Iced](https://github.com/iced-rs/iced). It is better in many ways and contains more features. Most importantly, there is now a single, cross-platform version,
 so updates will be far more frequent and everyone will have the same features, regardless of OS. You can read more about the change [here](https://unobserved.io/blog/twau-1).**
 
 <p align="center">
-    <img width="750px" src="https://unobserved.io/assets/blog/twau/1/furtherance-2024-08-18.png" alt="Furtherance with Iced screenshot"/>
+    <img width="750px" src="https://unobserved.io/assets/screenshots/furtherance/mac/Timer.png" alt="Furtherance timer"/>
 </p>
 
 ## Features
-* Tasks are saved in a database with an unlimited capacity. It can be backed up for security and portability.
-* Tasks are grouped by name and date.
-* Tasks can be edited after they are created (name, time, and date).
+* Track your time spent on tasks with an associated project, rate, and tags.
+* Pomodoro timer with breaks and periodic larger breaks.
+* Cross-platform! Use it on Linux, Mac, and Windows.
+* Tasks can be edited after they are created.
 * Settings to customize the view and defaults to your liking.
 * Features can be added! Just open an issue.
 
 ## Getting Started
 
 ### Install
+_**Furtherance has been re-written and is currently in beta. Back up your old database (to either .db or .csv) before converting the database with the new app**_
+
 **Linux**
 
-<a href="https://flathub.org/apps/details/com.lakoliu.Furtherance"><img width='240' alt="Download on Flathub" src="https://flathub.org/assets/badges/flathub-badge-en.png"/></a>
-* The easiest way to install Furtherance is from [Flathub](https://flathub.org/apps/details/com.lakoliu.Furtherance). Make sure you have Flatpak [setup](https://flatpak.org/setup/).
-* Furtherance is also available on Arch in the AUR, btw ([stable](https://aur.archlinux.org/packages/furtherance) or [nightly](https://aur.archlinux.org/packages/furtherance-git))
+* A .deb is available in the current release. If you aren't on a Debian-based system, it is currenlty best to build from source, either with `flatpak builder` or `cargo install`
 
-### Build
-To run from sourcce, download the source code or clone this repo and run `cargo run`. To create an application bundle for your OS, use `cargo bundle`.
+**Mac**
+
+* For Apple Silicon Macs, download from the current release.
+* For Intel Macs, currently you will need to build from source. Use `cargo bundle --release` and then move the .app file produced (in `furtherance/target/release/bundle/osx`) to your Applications folder.
+
+**Windows**
+
+* Use the .msi installer provided in the current release.
 
 ### Use
 Type in the `name` of the task you are working on, add a `@Project`, some `#tags`, and a `$rate`, and press start. That's really all there is to it.
@@ -34,21 +41,19 @@ Type in the `name` of the task you are working on, add a `@Project`, some `#tags
 ## Contribute
 
 ### Translations
-If you speak another language, it would be greatly appreciated if you could help translate Furtherance to make it available to more people!
-You can get started easily using [Weblate](https://hosted.weblate.org/projects/furtherance/translations/).
+If you speak another language, it would be greatly appreciated if you could help translate Furtherance to make it available to more people! You can edit the current translations in the `src/locales` directory, or create a new translation there and submit a pull request.
 
 ### Tips
-Besides helping to pay the bills, tips show me people want me to continue spending time on Furtherance. If you've gotten value from Furtherance, you can tip me via:
+Besides helping to pay the bills, tips show me people want me to continue spending time on Furtherance. I truly appreciate these, and I am humbled by what I've received so far. If you've gotten value from Furtherance, you can tip me via:
 * [Ko-fi](https://ko-fi.com/unobserved)
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
-* **Bitcoin**: bc1q70czd5evhsxnjcd45cj2n4s3dr6qmhvrlljjlk
 
 Thank you so much!
 
 ## Project Details
 
 ### Built With
-Rust & Iced
+Rust & [Iced](https://github.com/iced-rs/iced)
 
 ### License
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
