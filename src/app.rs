@@ -16,7 +16,7 @@
 
 use core::f32;
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, HashMap},
     fs::File,
     io::Seek,
     path::{Path, PathBuf},
