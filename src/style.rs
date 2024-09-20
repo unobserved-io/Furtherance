@@ -113,7 +113,6 @@ pub fn group_count_circle(theme: &Theme) -> container::Style {
 
 pub fn primary_button_style(theme: &Theme, status: button::Status) -> button::Style {
     let palette = theme.extended_palette();
-    // let base = button_styled(palette.primary.base);
 
     match status {
         button::Status::Active | button::Status::Pressed => button::Style {
@@ -126,16 +125,20 @@ pub fn primary_button_style(theme: &Theme, status: button::Status) -> button::St
             },
             ..button::Style::default()
         },
-        button::Status::Hovered => button::Style {
-            background: Some(Background::Color(palette.primary.base.color)),
-            text_color: Color::WHITE,
-            border: Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 2.0.into(),
-            },
-            ..button::Style::default()
-        },
+        button::Status::Hovered => {
+            let primary_color: Color = palette.primary.base.color;
+            let light_color = primary_color.to_srgb().lighten(0.3).to_iced_color();
+            button::Style {
+                background: Some(light_color.into()),
+                text_color: Color::WHITE,
+                border: Border {
+                    color: Color::TRANSPARENT,
+                    width: 0.0,
+                    radius: 2.0.into(),
+                },
+                ..button::Style::default()
+            }
+        }
         button::Status::Disabled => button::Style {
             background: Some(Background::Color(palette.primary.base.color))
                 .map(|background| background.scale_alpha(0.5)),
@@ -168,7 +171,6 @@ pub fn shortcut_button_style(
     primary_color: Srgb,
 ) -> button::Style {
     let light_color = primary_color.lighten(0.3);
-    // let base = button_styled(palette.primary.base);
     let primary_style = button::Style {
         background: Some(Background::Gradient(Gradient::Linear(
             gradient::Linear::new(Radians(std::f32::consts::PI))
@@ -216,7 +218,6 @@ pub fn shortcut_button_style(
 
 pub fn context_menu_button_style(theme: &Theme, status: button::Status) -> button::Style {
     let palette = theme.extended_palette();
-    // let base = button_styled(palette.primary.base.color);
     let primary_color: Color = palette.primary.base.color;
     let light_color = primary_color.to_srgb().lighten(0.6).to_iced_color();
 
