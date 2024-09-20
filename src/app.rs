@@ -61,6 +61,7 @@ use iced_aw::{
     date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel, Tabs,
     TimePicker,
 };
+use itertools::Itertools;
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
@@ -4198,19 +4199,14 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
         .and_then(|cap| cap.get(1).map(|m| m.as_str().trim().to_string()))
         .unwrap_or(String::new());
 
-    let mut separated_tags: Vec<String> = re_tags
+    let tags = re_tags
         .captures_iter(input)
         .map(|cap| cap.get(1).unwrap().as_str().trim().to_lowercase())
         .filter(|s| !s.is_empty())
-        .collect::<HashSet<String>>() // Remove duplicates
-        .into_iter()
-        .collect();
-    separated_tags.sort();
-    let tags = if separated_tags.is_empty() {
-        String::new()
-    } else {
-        separated_tags.join(" #")
-    };
+        .sorted()
+        .unique()
+        .intersperse(" #".to_string())
+        .collect::<String>();
 
     let rate_string = re_rate
         .captures(input)
@@ -4562,9 +4558,13 @@ pub fn read_csv(
                     tags: record
                         .get(2)
                         .unwrap_or("")
-                        .trim()
-                        .trim_start_matches('#')
-                        .to_string(),
+                        .split('#')
+                        .map(|t| t.trim().to_lowercase())
+                        .filter(|t| !t.is_empty())
+                        .sorted()
+                        .unique()
+                        .intersperse(" #".to_string())
+                        .collect::<String>(),
                     project: record.get(1).unwrap_or("").trim().to_string(),
                     rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     currency: String::new(),
@@ -4576,7 +4576,16 @@ pub fn read_csv(
                 name: record.get(1).unwrap_or("").to_string(),
                 start_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
                 stop_time: record.get(3).unwrap_or("").parse().unwrap_or_default(),
-                tags: record.get(4).unwrap_or("").trim().to_string(),
+                tags: record
+                    .get(4)
+                    .unwrap_or("")
+                    .split('#')
+                    .map(|t| t.trim().to_lowercase())
+                    .filter(|t| !t.is_empty())
+                    .sorted()
+                    .unique()
+                    .intersperse(" #".to_string())
+                    .collect::<String>(),
                 project: String::new(),
                 rate: 0.0,
                 currency: String::new(),

@@ -53,6 +53,7 @@ iced_aw = { version = "0.10.0", default-features = false, features = [
     "tabs",
     "time_picker",
 ] }
+itertools = "0.13"
 notify-rust = "4.11"
 palette = "0.7.6"
 plotters = "0.3"
