@@ -2495,7 +2495,11 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("countdown-timer", None)),
                                 toggler(self.fur_settings.pomodoro)
-                                    .on_toggle(Message::SettingsPomodoroToggled)
+                                    .on_toggle_maybe(if self.timer_is_running {
+                                        None
+                                    } else {
+                                        Some(Message::SettingsPomodoroToggled)
+                                    })
                                     .width(Length::Shrink)
                                     .style(style::fur_toggler_style)
                             ]
