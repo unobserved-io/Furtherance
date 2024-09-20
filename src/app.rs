@@ -3668,7 +3668,8 @@ impl Furtherance {
                         400.0
                     } else {
                         300.0
-                    }),
+                    })
+                    .style(style::fur_card),
             )
         } else {
             None

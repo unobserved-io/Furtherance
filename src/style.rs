@@ -19,11 +19,12 @@ use std::sync::Arc;
 use iced::theme::{Custom, Palette};
 use iced::widget::{button, checkbox, container, text, toggler};
 use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
+use iced_aw::card;
 use iced_aw::style::number_input;
 use palette::{Lighten, Srgb};
 
 use crate::constants::FURTHERANCE_PURPLE;
-use crate::helpers::color_utils::{FromHex, ToIcedColor, ToSrgb};
+use crate::helpers::color_utils::{ToIcedColor, ToSrgb};
 
 pub struct FurPalette;
 
@@ -66,6 +67,17 @@ pub fn gray_background(theme: &Theme) -> container::Style {
 
     container::Style {
         background: Some(palette.background.weak.color.into()),
+        ..Default::default()
+    }
+}
+
+pub fn fur_card(theme: &Theme, _status: card::Status) -> card::Style {
+    let palette = theme.extended_palette();
+
+    card::Style {
+        border_color: palette.primary.weak.color.into(),
+        border_width: 3.0,
+        head_background: palette.primary.weak.color.into(),
         ..Default::default()
     }
 }
