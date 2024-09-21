@@ -56,11 +56,10 @@ use iced::{
     Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
 use iced_aw::{
-    color_picker,
-    core::icons::{bootstrap, Bootstrap},
-    date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition, TabLabel, Tabs,
-    TimePicker,
+    color_picker, date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition,
+    TabLabel, Tabs, TimePicker,
 };
+use iced_fonts::{bootstrap::icon_to_char, Bootstrap, BOOTSTRAP_FONT};
 use itertools::Itertools;
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
@@ -1935,7 +1934,7 @@ impl Furtherance {
         let shortcuts_view = column![
             row![
                 horizontal_space(),
-                button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
+                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
                     .on_press(Message::AddNewShortcutPressed)
                     .style(button::text),
             ]
@@ -1946,7 +1945,7 @@ impl Furtherance {
         // MARK: TIMER
         let timer_view = column![
             row![
-                button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+                button(text(icon_to_char(Bootstrap::ArrowRepeat)).font(BOOTSTRAP_FONT))
                     .on_press_maybe(get_last_task_input(&self))
                     .style(button::text),
                 horizontal_space().width(Length::Fill),
@@ -1977,9 +1976,13 @@ impl Furtherance {
                     button(row![
                         horizontal_space().width(Length::Fixed(5.0)),
                         if self.timer_is_running {
-                            bootstrap::icon_to_text(bootstrap::Bootstrap::StopFill).size(20)
+                            text(icon_to_char(Bootstrap::StopFill))
+                                .font(BOOTSTRAP_FONT)
+                                .size(20)
                         } else {
-                            bootstrap::icon_to_text(bootstrap::Bootstrap::PlayFill).size(20)
+                            text(icon_to_char(Bootstrap::PlayFill))
+                                .font(BOOTSTRAP_FONT)
+                                .size(20)
                         },
                         horizontal_space().width(Length::Fixed(5.0)),
                     ])
@@ -2027,7 +2030,7 @@ impl Furtherance {
         if self.inspector_view.is_none() {
             all_history_rows = all_history_rows.push(row![
                 horizontal_space(),
-                button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
+                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
                     .on_press(Message::AddNewTaskPressed)
                     .style(button::text),
             ]);
@@ -2243,7 +2246,7 @@ impl Furtherance {
         //         .push(
         //             TabId::Charts,
         //             TabLabel::IconText(
-        //                 bootstrap::icon_to_char(Bootstrap::GraphUp),
+        //                 icon_to_char(Bootstrap::GraphUp),
         //                 "Charts".to_string()
         //             ),
         //             charts_view,
@@ -2251,7 +2254,7 @@ impl Furtherance {
         //         .push(
         //             TabId::List,
         //             TabLabel::IconText(
-        //                 bootstrap::icon_to_char(Bootstrap::ListNested),
+        //                 icon_to_char(Bootstrap::ListNested),
         //                 "List".to_string()
         //             ),
         //             Scrollable::new(column![].padding(10)),
@@ -2341,7 +2344,7 @@ impl Furtherance {
                 .push(
                     TabId::General,
                     TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::GearFill),
+                        icon_to_char(Bootstrap::GearFill),
                         self.localization.get_message("general", None)
                     ),
                     Scrollable::new(
@@ -2423,7 +2426,7 @@ impl Furtherance {
                 .push(
                     TabId::Advanced,
                     TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::GearWideConnected),
+                        icon_to_char(Bootstrap::GearWideConnected),
                         self.localization.get_message("advanced", None)
                     ),
                     Scrollable::new(
@@ -2487,7 +2490,7 @@ impl Furtherance {
                 .push(
                     TabId::Pomodoro,
                     TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::StopwatchFill),
+                        icon_to_char(Bootstrap::StopwatchFill),
                         self.localization.get_message("pomodoro", None)
                     ),
                     Scrollable::new(
@@ -2587,7 +2590,7 @@ impl Furtherance {
                 .push(
                     TabId::Report,
                     TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::GraphUp),
+                        icon_to_char(Bootstrap::GraphUp),
                         self.localization.get_message("report", None)
                     ),
                     Scrollable::new(
@@ -2672,7 +2675,7 @@ impl Furtherance {
                 .push(
                     TabId::Data,
                     TabLabel::IconText(
-                        bootstrap::icon_to_char(Bootstrap::FloppyFill),
+                        icon_to_char(Bootstrap::FloppyFill),
                         self.localization.get_message("data", None)
                     ),
                     Scrollable::new(
@@ -3099,7 +3102,7 @@ impl Furtherance {
                 Some(task_to_edit) => column![
                     row![
                         horizontal_space(),
-                        button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                        button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
                             .on_press(if self.fur_settings.show_delete_confirmation {
                                 Message::ShowAlert(FurAlert::DeleteTaskConfirmation)
                             } else {
@@ -3299,14 +3302,14 @@ impl Furtherance {
                         ));
                     column![
                         row![
-                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::XLg))
+                            button(text(icon_to_char(Bootstrap::XLg)).font(BOOTSTRAP_FONT))
                                 .on_press(Message::CancelGroupEdit)
                                 .style(button::text),
                             horizontal_space(),
                             button(if group_to_edit.is_in_edit_mode {
-                                bootstrap::icon_to_text(bootstrap::Bootstrap::Pencil)
+                                text(icon_to_char(Bootstrap::Pencil)).font(BOOTSTRAP_FONT)
                             } else {
-                                bootstrap::icon_to_text(bootstrap::Bootstrap::PencilFill)
+                                text(icon_to_char(Bootstrap::PencilFill)).font(BOOTSTRAP_FONT)
                             })
                             .on_press_maybe(if group_to_edit.is_in_edit_mode {
                                 None
@@ -3314,14 +3317,14 @@ impl Furtherance {
                                 Some(Message::ToggleGroupEditor)
                             })
                             .style(button::text),
-                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::PlusLg))
+                            button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
                                 .on_press_maybe(if group_to_edit.is_in_edit_mode {
                                     None
                                 } else {
                                     Some(Message::AddTaskToGroup(group_to_edit.clone()))
                                 })
                                 .style(button::text),
-                            button(bootstrap::icon_to_text(bootstrap::Bootstrap::TrashFill))
+                            button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
                                 .on_press(if self.fur_settings.show_delete_confirmation {
                                     Message::ShowAlert(FurAlert::DeleteGroupConfirmation)
                                 } else {
@@ -3745,7 +3748,7 @@ fn history_group_row<'a, 'loc>(
     task_row = task_row.push(horizontal_space().width(Length::Fill));
     task_row = task_row.push(totals_column);
     task_row = task_row.push(
-        button(bootstrap::icon_to_text(bootstrap::Bootstrap::ArrowRepeat))
+        button(text(icon_to_char(Bootstrap::ArrowRepeat)).font(BOOTSTRAP_FONT))
             .on_press_maybe(if timer_is_running {
                 None
             } else {

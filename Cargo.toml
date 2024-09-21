@@ -43,16 +43,16 @@ iced = { version = "0.13.1", features = [
     "multi-window",
     "tokio",
 ] }
-iced_aw = { version = "0.10.0", default-features = false, features = [
+iced_aw = { version = "0.11.0", default-features = false, features = [
     "card",
     "color_picker",
     "context_menu",
     "date_picker",
-    "icons",
     "number_input",
     "tabs",
     "time_picker",
 ] }
+iced_fonts = { version = "0.1.1", features = ["bootstrap"] }
 itertools = "0.13"
 notify-rust = "4.11"
 palette = "0.7.6"
