@@ -3,6 +3,7 @@
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
     cargo
+    cargo-bundle
     rustc
     fontconfig
     pkg-config
