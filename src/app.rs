@@ -2091,7 +2091,7 @@ impl Furtherance {
         if self.fur_settings.show_chart_total_earnings_box && self.report.total_earned > 0.0 {
             timer_earnings_boxes_widgets.push(
                 column![
-                    text(format!("${:.2}", self.report.total_earned)).size(50),
+                    text!("${:.2}", self.report.total_earned).size(50),
                     text(self.localization.get_message("earned", None)),
                 ]
                 .align_x(Alignment::Center)
@@ -2297,7 +2297,7 @@ impl Furtherance {
                         Some(text(msg).style(style::green_text))
                     }
                 }
-                Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
+                Err(e) => Some(text!("{}", e).style(style::red_text)),
             });
 
         let mut csv_col = column![row![
@@ -2318,7 +2318,7 @@ impl Furtherance {
                     Some(text(msg).style(style::green_text))
                 }
             }
-            Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
+            Err(e) => Some(text!("{}", e).style(style::red_text)),
         });
 
         let mut backup_col = column![button(text(
@@ -2335,7 +2335,7 @@ impl Furtherance {
                     Some(text(msg).style(style::green_text))
                 }
             }
-            Err(e) => Some(text(format!("{}", e)).style(style::red_text)),
+            Err(e) => Some(text!("{}", e).style(style::red_text)),
         });
 
         let settings_view: Column<'_, Message, Theme, Renderer> =
@@ -3237,11 +3237,11 @@ impl Furtherance {
                     }
                     if !group_to_edit.tags.is_empty() {
                         group_info_column =
-                            group_info_column.push(text(format!("#{}", group_to_edit.tags)));
+                            group_info_column.push(text!("#{}", group_to_edit.tags));
                     }
                     if group_to_edit.rate != 0.0 {
                         group_info_column =
-                            group_info_column.push(text(format!("${}", &group_to_edit.rate)));
+                            group_info_column.push(text!("${}", &group_to_edit.rate));
                     }
                     let tasks_column: Scrollable<'_, Message, Theme, Renderer> =
                         Scrollable::new(group_to_edit.tasks.iter().fold(
@@ -3711,10 +3711,10 @@ fn history_group_row<'a, 'loc>(
         }),]
         .width(Length::FillPortion(6));
     if settings.show_project && !task_group.project.is_empty() {
-        task_details_column = task_details_column.push(text(format!("@{}", task_group.project)));
+        task_details_column = task_details_column.push(text!("@{}", task_group.project));
     }
     if settings.show_tags && !task_group.tags.is_empty() {
-        task_details_column = task_details_column.push(text(format!("#{}", task_group.tags)));
+        task_details_column = task_details_column.push(text!("#{}", task_group.tags));
     }
 
     let mut task_row: Row<'_, Message, Theme, Renderer> =
@@ -3739,7 +3739,7 @@ fn history_group_row<'a, 'loc>(
 
     if settings.show_earnings && task_group.rate > 0.0 {
         let total_earnings = task_group.rate * (task_group.total_time as f32 / 3600.0);
-        totals_column = totals_column.push(text(format!("${:.2}", total_earnings)));
+        totals_column = totals_column.push(text!("${:.2}", total_earnings));
     }
 
     let task_group_string = task_group.to_string();
@@ -3848,7 +3848,7 @@ fn history_title_row<'a>(
     }
 
     if settings.show_earnings && total_earnings > 0.0 {
-        total_time_column = total_time_column.push(text(format!("${:.2}", total_earnings)));
+        total_time_column = total_time_column.push(text!("${:.2}", total_earnings));
     }
 
     row![
@@ -3935,11 +3935,12 @@ fn shortcut_button_content<'a>(
     .spacing(5);
 
     if !shortcut.project.is_empty() {
-        shortcut_text_column = shortcut_text_column.push(
-            text(format!("@{}", shortcut.project.clone())).style(move |_| text::Style {
-                color: Some(text_color),
-            }),
-        );
+        shortcut_text_column =
+            shortcut_text_column.push(text!("@{}", shortcut.project.clone()).style(move |_| {
+                text::Style {
+                    color: Some(text_color),
+                }
+            }));
     }
     if !shortcut.tags.is_empty() {
         shortcut_text_column =
@@ -3951,7 +3952,7 @@ fn shortcut_button_content<'a>(
         shortcut_text_column = shortcut_text_column.push(vertical_space());
         shortcut_text_column = shortcut_text_column.push(row![
             horizontal_space(),
-            text(format!("${:.2}", shortcut.rate)).style(move |_| text::Style {
+            text!("${:.2}", shortcut.rate).style(move |_| text::Style {
                 color: Some(text_color)
             })
         ]);
