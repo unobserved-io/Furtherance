@@ -4210,8 +4210,8 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
         .filter(|s| !s.is_empty())
         .sorted()
         .unique()
-        .intersperse(" #".to_string())
-        .collect::<String>();
+        .collect::<Vec<String>>()
+        .join(" #");
 
     let rate_string = re_rate
         .captures(input)
@@ -4568,8 +4568,8 @@ pub fn read_csv(
                         .filter(|t| !t.is_empty())
                         .sorted()
                         .unique()
-                        .intersperse(" #".to_string())
-                        .collect::<String>(),
+                        .collect::<Vec<String>>()
+                        .join(" #"),
                     project: record.get(1).unwrap_or("").trim().to_string(),
                     rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     currency: String::new(),
@@ -4589,8 +4589,8 @@ pub fn read_csv(
                     .filter(|t| !t.is_empty())
                     .sorted()
                     .unique()
-                    .intersperse(" #".to_string())
-                    .collect::<String>(),
+                    .collect::<Vec<String>>()
+                    .join(" #"),
                 project: String::new(),
                 rate: 0.0,
                 currency: String::new(),
