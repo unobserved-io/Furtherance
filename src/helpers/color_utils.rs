@@ -41,22 +41,6 @@ impl FromHex for Srgb {
     }
 }
 
-impl FromHex for Color {
-    fn from_hex(hex: &str) -> Result<Self, ParseIntError> {
-        let hex = hex.trim_start_matches('#');
-
-        let r = u8::from_str_radix(&hex[0..2], 16)?;
-        let g = u8::from_str_radix(&hex[2..4], 16)?;
-        let b = u8::from_str_radix(&hex[4..6], 16)?;
-
-        Ok(Color::from_rgb(
-            r as f32 / 255.0,
-            g as f32 / 255.0,
-            b as f32 / 255.0,
-        ))
-    }
-}
-
 pub trait ToHex {
     fn to_hex(&self) -> String;
 }

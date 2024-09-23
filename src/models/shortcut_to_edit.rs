@@ -42,8 +42,8 @@ pub struct ShortcutToEdit {
 
 impl ShortcutToEdit {
     pub fn new_from(shortcut: &FurShortcut) -> Self {
-        let color = Color::from_hex(shortcut.color_hex.as_str())
-            .unwrap_or(FURTHERANCE_PURPLE.to_iced_color());
+        let color =
+            Color::parse(shortcut.color_hex.as_str()).unwrap_or(FURTHERANCE_PURPLE.to_iced_color());
         ShortcutToEdit {
             id: shortcut.id,
             name: shortcut.name.clone(),
