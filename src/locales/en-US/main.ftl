@@ -171,6 +171,10 @@ long-break = Long break
 break = Break
 shortcut-exists = Shortcut exists
 shortcut-exists-description = A shortcut for that task already exists.
+import-old-database = Import old database?
+import-old-database-description = It looks like you were using a previous version of Furtherance. Would you like to import the old database?
+dont-import = Don't import
+import = Import
 
 ## Sidebar
 # Number of hours, mins, secs with only one letter formatter

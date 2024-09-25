@@ -61,6 +61,7 @@ pub enum FurAlert {
     DeleteShortcutConfirmation,
     DeleteTaskConfirmation,
     Idle,
+    ImportMacDatabase,
     PomodoroBreakOver,
     PomodoroOver,
     ShortcutExists,

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{view_enums::FurView, constants::DEBUG_MODE};
+use crate::{constants::DEBUG_MODE, view_enums::FurView};
 
 use config::{Config, ConfigError, File};
 use directories::ProjectDirs;
@@ -29,6 +29,8 @@ pub struct FurSettings {
     pub days_to_show: i64,
     pub default_view: FurView,
     pub dynamic_total: bool,
+    #[serde(default)]
+    pub first_run: bool,
     pub notify_on_idle: bool,
     pub pomodoro: bool,
     pub pomodoro_break_length: i64,
@@ -64,6 +66,7 @@ impl Default for FurSettings {
             days_to_show: 365,
             default_view: FurView::Timer,
             dynamic_total: false,
+            first_run: true,
             notify_on_idle: true,
             pomodoro: false,
             pomodoro_break_length: 5,
@@ -105,13 +108,25 @@ impl FurSettings {
             let default_settings = FurSettings::default();
             let toml =
                 toml::to_string(&default_settings).expect("Failed to serialize default settings");
-            fs::write(config_path, &toml).expect("Failed to write default config file");
+            fs::write(&config_path, &toml).expect("Failed to write default config file");
 
             builder = builder.add_source(File::from_str(&toml, config::FileFormat::Toml));
         }
 
+        // Add new settings
+        builder = builder.set_default("first_run", "true")?;
+
         let config = builder.build()?;
-        config.try_deserialize()
+        let settings: FurSettings = config.try_deserialize()?;
+
+        // If the configuration file existed and we added a new setting, save it
+        if config_path.exists() {
+            if let Err(e) = settings.save() {
+                eprintln!("Error saving updated settings: {e}");
+            }
+        }
+
+        Ok(settings)
     }
 
     pub fn save(&self) -> Result<(), std::io::Error> {
@@ -136,6 +151,11 @@ impl FurSettings {
 
     pub fn change_default_view(&mut self, value: &FurView) -> Result<(), std::io::Error> {
         self.default_view = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_first_run(&mut self, value: bool) -> Result<(), std::io::Error> {
+        self.first_run = value;
         self.save()
     }
 

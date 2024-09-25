@@ -14,6 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::offset::LocalResult;
+use chrono::DateTime;
+use chrono::Local;
+use chrono::TimeDelta;
+use chrono::TimeZone;
 use rusqlite::{backup, params, Connection, Result};
 use std::path::Path;
 use std::path::PathBuf;
@@ -23,6 +28,7 @@ use crate::models::{
     fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
     group_to_edit::GroupToEdit,
 };
+use crate::view_enums::FurAlert;
 
 #[derive(Debug)]
 pub enum SortOrder {
@@ -194,7 +200,7 @@ pub fn db_write_tasks(tasks: &[FurTask]) -> Result<()> {
                 task.currency,
             ])?;
         }
-    } // stmt is dropped here, releasing the borrow on tx
+    }
 
     tx.commit()?;
 
@@ -652,4 +658,161 @@ pub fn db_is_valid_v1(path: &Path) -> Result<bool> {
     }
 
     Ok(true)
+}
+
+pub fn db_check_for_existing_mac_db() -> Option<FurAlert> {
+    if let Some(user_dirs) = directories::UserDirs::new() {
+        let mut path = user_dirs.home_dir().to_path_buf();
+        path.extend(&[
+            "Library",
+            "Containers",
+            "com.lakoliu.furtherance",
+            "Data",
+            "Library",
+            "Application Support",
+            "Furtherance",
+            "Furtherance.sqlite",
+        ]);
+        if path.exists() {
+            match mac_core_data_db_is_valid(&path) {
+                Ok(is_valid) => {
+                    if is_valid {
+                        return Some(FurAlert::ImportMacDatabase);
+                    }
+                }
+                Err(_) => return None,
+            }
+        }
+    }
+    None
+}
+
+pub fn mac_core_data_db_is_valid(path: &PathBuf) -> Result<bool> {
+    let conn = match Connection::open(path) {
+        Ok(conn) => conn,
+        Err(e) => {
+            eprintln!("ERROR: {e}");
+            return Ok(false);
+        }
+    };
+
+    let mut stmt = match conn
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ZFURTASK'")
+    {
+        Ok(stmt) => stmt,
+        Err(_) => return Ok(false),
+    };
+
+    let table_exists = match stmt.exists([]) {
+        Ok(exists) => exists,
+        Err(_) => return Ok(false),
+    };
+    if !table_exists {
+        return Ok(false);
+    }
+
+    let expected_columns = [
+        "Z_PK integer",
+        "Z_ENT integer",
+        "Z_OPT integer",
+        "ZSTARTTIME timestamp",
+        "ZSTOPTIME timestamp",
+        "ZNAME varchar",
+        "ZTAGS varchar",
+        "ZID blob",
+        "ZRATE float",
+        "ZPROJECT varchar",
+    ];
+    let mut stmt = match conn.prepare("PRAGMA table_info(ZFURTASK)") {
+        Ok(stmt) => stmt,
+        Err(_) => return Ok(false),
+    };
+    let column_info = match stmt.query_map([], |row| {
+        Ok(format!(
+            "{} {}",
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?.to_lowercase()
+        ))
+    }) {
+        Ok(iter) => iter,
+        Err(_) => return Ok(false),
+    };
+
+    let mut columns: Vec<String> = Vec::new();
+    for column in column_info {
+        match column {
+            Ok(col) => columns.push(col),
+            Err(_) => return Ok(false),
+        }
+    }
+    for expected_col in expected_columns.iter() {
+        if !columns.contains(&expected_col.to_string()) {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
+pub fn db_import_old_mac_db() -> Result<()> {
+    if let Some(user_dirs) = directories::UserDirs::new() {
+        let mut path = user_dirs.home_dir().to_path_buf();
+        path.extend(&[
+            "Library",
+            "Containers",
+            "com.lakoliu.furtherance",
+            "Data",
+            "Library",
+            "Application Support",
+            "Furtherance",
+            "Furtherance.sqlite",
+        ]);
+        if path.exists() {
+            let source_db = Connection::open(path)?;
+            let mut stmt = source_db.prepare(
+                "SELECT ZNAME, ZSTARTTIME, ZSTOPTIME, ZTAGS, ZPROJECT, ZRATE FROM ZFURTASK",
+            )?;
+
+            let mut rows = stmt.query(params![])?;
+
+            let mut tasks_vec: Vec<FurTask> = Vec::new();
+
+            while let Some(row) = rows.next()? {
+                let fur_task = FurTask {
+                    id: 0,
+                    name: row.get(0)?,
+                    start_time: core_data_timestamp_to_datetime(row.get(1)?)?,
+                    stop_time: core_data_timestamp_to_datetime(row.get(2)?)?,
+                    tags: row.get(3)?,
+                    project: row.get(4)?,
+                    rate: row.get(5)?,
+                    currency: String::new(),
+                };
+
+                // Don't import duplicate tasks
+                if let Ok(exists) = db_task_exists(&fur_task) {
+                    if !exists {
+                        tasks_vec.push(fur_task);
+                    }
+                }
+            }
+
+            db_write_tasks(&tasks_vec)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn core_data_timestamp_to_datetime(timestamp: f64) -> Result<DateTime<Local>> {
+    let seconds = timestamp.trunc() as i64;
+    // Core Data reference date is January 1, 2001
+    if let LocalResult::Single(core_data_epoch) = Local.with_ymd_and_hms(2001, 1, 1, 0, 0, 0) {
+        let duration = TimeDelta::seconds(seconds);
+        return Ok(core_data_epoch + duration);
+    }
+    return Err(rusqlite::Error::SqliteFailure(
+        rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
+        Some("Could not convert Core Data timestamp".to_string()),
+    ));
 }

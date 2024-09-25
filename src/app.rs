@@ -144,6 +144,7 @@ pub enum Message {
     IdleDiscard,
     IdleReset,
     ImportCsvPressed,
+    ImportOldMacDatabase,
     MidnightReached,
     NavigateTo(FurView),
     PomodoroContinueAfterBreak,
@@ -280,6 +281,16 @@ impl Furtherance {
 
         furtherance.timer_text = get_timer_text(&furtherance, 0);
         furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
+
+        // Ask user to import old Furtherance database on first run
+        if furtherance.fur_settings.first_run {
+            #[cfg(target_os = "macos")]
+            {
+                furtherance.displayed_alert = db_check_for_existing_mac_db();
+            }
+
+            let _ = furtherance.fur_settings.change_first_run(false);
+        }
 
         furtherance
     }
@@ -1047,6 +1058,13 @@ impl Furtherance {
                         }
                     }
                 }
+            }
+            Message::ImportOldMacDatabase => {
+                match db_import_old_mac_db() {
+                    Ok(_) => self.task_history = get_task_history(self.fur_settings.days_to_show),
+                    Err(e) => eprintln!("Error importing existing Core Data database: {e}"),
+                }
+                self.displayed_alert = None;
             }
             Message::MidnightReached => {
                 self.task_history = get_task_history(self.fur_settings.days_to_show);
@@ -3560,6 +3578,30 @@ impl Furtherance {
                         )
                         .on_press(Message::IdleDiscard)
                         .style(button::danger),
+                    );
+                }
+                FurAlert::ImportMacDatabase => {
+                    alert_text = self.localization.get_message("import-old-database", None);
+                    alert_description = self
+                        .localization
+                        .get_message("import-old-database-description", None);
+                    close_button = Some(
+                        button(
+                            text(self.localization.get_message("dont-import", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(button::secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text(self.localization.get_message("import", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::ImportOldMacDatabase)
+                        .style(style::primary_button_style),
                     );
                 }
                 FurAlert::PomodoroBreakOver => {
