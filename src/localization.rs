@@ -89,7 +89,7 @@ impl Localization {
         };
 
         if !errors.is_empty() {
-            println!("Errors occurred during formatting: {:?}", errors);
+            eprintln!("Errors occurred during formatting: {:?}", errors);
         }
 
         // Prevent odd symbols in iced
@@ -104,7 +104,7 @@ impl Localization {
     //     if self.bundles.contains_key(lang) {
     //         self.current_lang = lang.to_string();
     //     } else {
-    //         println!("Language not available: {}", lang);
+    //         eprintln!("Language not available: {}", lang);
     //     }
     // }
 }
