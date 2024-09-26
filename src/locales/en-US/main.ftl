@@ -175,6 +175,8 @@ import-old-database = Import old database?
 import-old-database-description = It looks like you were using a previous version of Furtherance. Would you like to import the old database?
 dont-import = Don't import
 import = Import
+autosave-restored = Autosave restored
+autosave-restored-description = Furtherance shut down improperly. An autosave was restored.
 
 ## Sidebar
 # Number of hours, mins, secs with only one letter formatter

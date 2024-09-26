@@ -304,14 +304,12 @@ impl FurSettings {
 }
 
 pub fn get_data_path() -> PathBuf {
-    let project_dirs = if DEBUG_MODE {
+    if let Some(project_dir) = if DEBUG_MODE {
         ProjectDirs::from("io", "unobserved", "furtherance-dev")
     } else {
         ProjectDirs::from("io", "unobserved", "furtherance")
-    };
-
-    if let Some(proj_dir) = project_dirs {
-        let path = PathBuf::from(proj_dir.data_dir());
+    } {
+        let path = PathBuf::from(project_dir.data_dir());
         create_dir_all(&path).expect("Unable to create data directory");
         path
     } else {

@@ -25,6 +25,7 @@ use std::{
 };
 
 use crate::{
+    autosave::{autosave_exists, restore_autosave, write_autosave},
     constants::{
         ALLOWED_DB_EXTENSIONS, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING, INSPECTOR_SPACING,
         INSPECTOR_WIDTH, SETTINGS_SPACING,
@@ -283,7 +284,6 @@ impl Furtherance {
         };
 
         furtherance.timer_text = get_timer_text(&furtherance, 0);
-        furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
 
         // Ask user to import old Furtherance database on first run
         if furtherance.fur_settings.first_run {
@@ -294,6 +294,15 @@ impl Furtherance {
 
             let _ = furtherance.fur_settings.change_first_run(false);
         }
+
+        if autosave_exists() {
+            restore_autosave();
+            if furtherance.displayed_alert == None {
+                furtherance.displayed_alert = Some(FurAlert::AutosaveRestored);
+            }
+        }
+
+        furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
 
         furtherance
     }
@@ -1664,6 +1673,13 @@ impl Furtherance {
                             self.idle.notified = true;
                             show_notification(NotificationType::Idle, &self.localization);
                             self.displayed_alert = Some(FurAlert::Idle);
+                        }
+                    }
+
+                    // Write autosave every minute
+                    if seconds_elapsed > 1 && seconds_elapsed % 60 == 0 {
+                        if let Err(e) = write_autosave(&self.task_input, self.timer_start_time) {
+                            eprintln!("Error writing autosave: {e}");
                         }
                     }
 
@@ -3468,6 +3484,21 @@ impl Furtherance {
             let mut snooze_button: Option<Button<'_, Message, Theme, Renderer>> = None;
 
             match self.displayed_alert.as_ref().unwrap() {
+                FurAlert::AutosaveRestored => {
+                    alert_text = self.localization.get_message("autosave-restored", None);
+                    alert_description = self
+                        .localization
+                        .get_message("autosave-restored-description", None);
+                    close_button = Some(
+                        button(
+                            text(self.localization.get_message("ok", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(button::primary),
+                    );
+                }
                 FurAlert::DeleteEverythingConfirmation => {
                     alert_text = self
                         .localization

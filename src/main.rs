@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub mod app;
+mod autosave;
 mod charts {
     pub mod average_earnings_chart;
     pub mod average_time_chart;
