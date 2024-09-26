@@ -402,7 +402,7 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
     Ok(exists)
 }
 
-pub fn db_delete_tasks_by_ids(id_list: Vec<u32>) -> Result<()> {
+pub fn db_delete_tasks_by_ids(id_list: &[u32]) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {

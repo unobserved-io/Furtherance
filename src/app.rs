@@ -576,7 +576,7 @@ impl Furtherance {
             }
             Message::DeleteTasks => {
                 if let Some(tasks_to_delete) = &self.delete_ids_from_context {
-                    if let Err(e) = db_delete_tasks_by_ids(tasks_to_delete.clone()) {
+                    if let Err(e) = db_delete_tasks_by_ids(tasks_to_delete) {
                         eprintln!("Failed to delete tasks: {}", e);
                     }
                     self.delete_ids_from_context = None;
@@ -587,7 +587,7 @@ impl Furtherance {
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
-                    if let Err(e) = db_delete_tasks_by_ids(vec![task_to_edit.id]) {
+                    if let Err(e) = db_delete_tasks_by_ids(&[task_to_edit.id]) {
                         eprintln!("Failed to delete task: {}", e);
                     }
                     self.task_to_edit = None;
@@ -595,7 +595,7 @@ impl Furtherance {
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
-                    if let Err(e) = db_delete_tasks_by_ids(group_to_edit.task_ids()) {
+                    if let Err(e) = db_delete_tasks_by_ids(&group_to_edit.task_ids()) {
                         eprintln!("Failed to delete tasks: {}", e);
                     }
                     self.group_to_edit = None;
