@@ -25,7 +25,10 @@ use std::{
 };
 
 use crate::{
-    constants::{ALLOWED_DB_EXTENSIONS, SETTINGS_SPACING},
+    constants::{
+        ALLOWED_DB_EXTENSIONS, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING, INSPECTOR_SPACING,
+        INSPECTOR_WIDTH, SETTINGS_SPACING,
+    },
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
@@ -2750,11 +2753,13 @@ impl Furtherance {
                         time_picker(
                             task_to_add.show_start_time_picker,
                             task_to_add.displayed_start_time,
-                            button(text(task_to_add.displayed_start_time.to_string()))
-                                .on_press(Message::ChooseTaskEditDateTime(
-                                    EditTaskProperty::StartTime
-                                ))
-                                .style(style::primary_button_style),
+                            button(
+                                text(format_iced_time_as_hm(task_to_add.displayed_start_time))
+                                    .center()
+                            )
+                            .on_press(Message::ChooseTaskEditDateTime(EditTaskProperty::StartTime))
+                            .width(Length::Fill)
+                            .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
@@ -2778,11 +2783,13 @@ impl Furtherance {
                         time_picker(
                             task_to_add.show_stop_time_picker,
                             task_to_add.displayed_stop_time,
-                            button(text(task_to_add.displayed_stop_time.to_string()))
-                                .on_press(Message::ChooseTaskEditDateTime(
-                                    EditTaskProperty::StopTime
-                                ))
-                                .style(style::primary_button_style),
+                            button(
+                                text(format_iced_time_as_hm(task_to_add.displayed_stop_time))
+                                    .center()
+                            )
+                            .on_press(Message::ChooseTaskEditDateTime(EditTaskProperty::StopTime))
+                            .width(Length::Fill)
+                            .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
@@ -2819,10 +2826,10 @@ impl Furtherance {
                     })
                     .spacing(10),
                 ]
-                .spacing(12)
-                .padding(20)
-                .width(250)
-                .align_x(Alignment::Start),
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
                 None => column![]
                     .spacing(12)
                     .padding(20)
@@ -2917,10 +2924,10 @@ impl Furtherance {
                     .spacing(10),
                     text(&shortcut_to_add.invalid_input_error_message).style(style::red_text),
                 ]
-                .spacing(12)
-                .padding(20)
-                .width(250)
-                .align_x(Alignment::Start),
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
                 None => column![]
                     .spacing(12)
                     .padding(20)
@@ -2944,11 +2951,13 @@ impl Furtherance {
                         time_picker(
                             task_to_add.show_start_time_picker,
                             task_to_add.displayed_start_time,
-                            button(text(task_to_add.displayed_start_time.to_string()))
-                                .on_press(Message::ChooseTaskEditDateTime(
-                                    EditTaskProperty::StartTime
-                                ))
-                                .style(style::primary_button_style),
+                            button(
+                                text(format_iced_time_as_hm(task_to_add.displayed_start_time))
+                                    .center()
+                            )
+                            .on_press(Message::ChooseTaskEditDateTime(EditTaskProperty::StartTime))
+                            .width(Length::Fill)
+                            .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
@@ -2967,11 +2976,13 @@ impl Furtherance {
                         time_picker(
                             task_to_add.show_stop_time_picker,
                             task_to_add.displayed_stop_time,
-                            button(text(task_to_add.displayed_stop_time.to_string()))
-                                .on_press(Message::ChooseTaskEditDateTime(
-                                    EditTaskProperty::StopTime
-                                ))
-                                .style(style::primary_button_style),
+                            button(
+                                text(format_iced_time_as_hm(task_to_add.displayed_stop_time))
+                                    .center()
+                            )
+                            .on_press(Message::ChooseTaskEditDateTime(EditTaskProperty::StopTime))
+                            .width(Length::Fill)
+                            .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
@@ -3003,10 +3014,10 @@ impl Furtherance {
                     })
                     .spacing(10),
                 ]
-                .spacing(12)
-                .padding(20)
-                .width(250)
-                .align_x(Alignment::Start),
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
                 None => column![]
                     .spacing(12)
                     .padding(20)
@@ -3105,15 +3116,15 @@ impl Furtherance {
                     .spacing(10),
                     text(&shortcut_to_edit.invalid_input_error_message).style(style::red_text),
                 ]
-                .spacing(12)
-                .padding(20)
-                .width(250)
-                .align_x(Alignment::Start),
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
                 None => column![]
-                    .spacing(12)
-                    .padding(20)
-                    .width(250)
-                    .align_x(Alignment::Start),
+                    .spacing(INSPECTOR_SPACING)
+                    .padding(INSPECTOR_PADDING)
+                    .width(INSPECTOR_WIDTH)
+                    .align_x(INSPECTOR_ALIGNMENT),
             },
             // MARK: Edit Single Task
             Some(FurInspectorView::EditTask) => match &self.task_to_edit {
@@ -3160,11 +3171,13 @@ impl Furtherance {
                         time_picker(
                             task_to_edit.show_displayed_start_time_picker,
                             task_to_edit.displayed_start_time,
-                            Button::new(text(task_to_edit.displayed_start_time.to_string()))
-                                .on_press(Message::ChooseTaskEditDateTime(
-                                    EditTaskProperty::StartTime
-                                ))
-                                .style(style::primary_button_style),
+                            Button::new(
+                                text(format_iced_time_as_hm(task_to_edit.displayed_start_time))
+                                    .center()
+                            )
+                            .on_press(Message::ChooseTaskEditDateTime(EditTaskProperty::StartTime))
+                            .width(Length::Fill)
+                            .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StartTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StartTime),
                         )
@@ -3188,11 +3201,13 @@ impl Furtherance {
                         time_picker(
                             task_to_edit.show_displayed_stop_time_picker,
                             task_to_edit.displayed_stop_time,
-                            button(text(task_to_edit.displayed_stop_time.to_string()))
-                                .on_press(Message::ChooseTaskEditDateTime(
-                                    EditTaskProperty::StopTime
-                                ))
-                                .style(style::primary_button_style),
+                            button(
+                                text(format_iced_time_as_hm(task_to_edit.displayed_stop_time))
+                                    .center()
+                            )
+                            .on_press(Message::ChooseTaskEditDateTime(EditTaskProperty::StopTime))
+                            .width(Length::Fill)
+                            .style(style::primary_button_style),
                             Message::CancelTaskEditDateTime(EditTaskProperty::StopTime),
                             |time| Message::SubmitTaskEditTime(time, EditTaskProperty::StopTime),
                         )
@@ -3232,11 +3247,11 @@ impl Furtherance {
                     .spacing(10),
                     text(&task_to_edit.invalid_input_error_message).style(style::red_text),
                 ]
-                .spacing(12)
-                .padding(20)
-                .width(250)
-                .align_x(Alignment::Start),
-                None => column![],
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
+                None => column![].width(INSPECTOR_WIDTH),
             },
             // MARK:: Edit Group
             Some(FurInspectorView::EditGroup) => match &self.group_to_edit {
@@ -4699,4 +4714,9 @@ where
         )
     ]
     .into()
+}
+
+fn format_iced_time_as_hm(time: iced_aw::time_picker::Time) -> String {
+    let naive_time = NaiveTime::from(time);
+    naive_time.format("%H:%M").to_string()
 }

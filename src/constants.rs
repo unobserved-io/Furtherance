@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use iced::Alignment;
 use palette::Srgb;
 use plotters::style::RGBColor;
 
@@ -27,3 +28,9 @@ pub const SETTINGS_SPACING: f32 = 15.0;
 pub const CHART_HEIGHT: f32 = 400.0;
 pub const CHART_COLOR: RGBColor = RGBColor(177, 121, 241);
 pub const MAX_X_VALUES: usize = 7;
+
+// Inspector
+pub const INSPECTOR_PADDING: u16 = 10;
+pub const INSPECTOR_SPACING: u16 = 12;
+pub const INSPECTOR_WIDTH: u16 = 250;
+pub const INSPECTOR_ALIGNMENT: Alignment = Alignment::Start;
