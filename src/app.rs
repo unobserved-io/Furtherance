@@ -2184,7 +2184,7 @@ impl Furtherance {
                 row![
                     pick_list(
                         &FurTaskProperty::ALL[..],
-                        self.report.picked_task_property_key.clone(),
+                        self.report.picked_task_property_key,
                         Message::ChartTaskPropertyKeySelected,
                     )
                     .width(Length::Fill),
@@ -2214,7 +2214,7 @@ impl Furtherance {
             column![
                 pick_list(
                     &FurDateRange::ALL[..],
-                    self.report.picked_date_range.clone(),
+                    self.report.picked_date_range,
                     Message::DateRangeSelected,
                 )
                 .width(Length::Fill),
