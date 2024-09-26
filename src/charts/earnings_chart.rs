@@ -17,8 +17,8 @@
 use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
-    models::fur_task::FurTask,
     localization::Localization,
+    models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
 use iced::{widget::Text, Element, Length};
@@ -33,9 +33,9 @@ pub struct EarningsChart {
 }
 
 impl EarningsChart {
-    pub fn new(tasks: Vec<FurTask>) -> Self {
+    pub fn new(tasks: &[FurTask]) -> Self {
         Self {
-            date_earned: earnings_per_day(&tasks),
+            date_earned: earnings_per_day(tasks),
         }
     }
 
@@ -123,7 +123,7 @@ fn light_dark_color() -> RGBColor {
     }
 }
 
-fn earnings_per_day(tasks: &Vec<FurTask>) -> BTreeMap<NaiveDate, f32> {
+fn earnings_per_day(tasks: &[FurTask]) -> BTreeMap<NaiveDate, f32> {
     let mut earnings_by_day = BTreeMap::new();
     for task in tasks {
         *earnings_by_day

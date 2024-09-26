@@ -17,8 +17,8 @@
 use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
-    models::fur_task::FurTask,
     localization::Localization,
+    models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
 use iced::{widget::Text, Element, Length};
@@ -33,7 +33,7 @@ pub struct AverageTimeChart {
 }
 
 impl AverageTimeChart {
-    pub fn new(tasks: Vec<FurTask>) -> Self {
+    pub fn new(tasks: &[FurTask]) -> Self {
         Self {
             date_time: time_per_day(tasks),
         }
@@ -106,7 +106,7 @@ impl Chart<Message> for AverageTimeChart {
     }
 }
 
-fn time_per_day(tasks: Vec<FurTask>) -> BTreeMap<NaiveDate, i64> {
+fn time_per_day(tasks: &[FurTask]) -> BTreeMap<NaiveDate, i64> {
     tasks
         .iter()
         .fold(BTreeMap::new(), |mut accumulator, task| {

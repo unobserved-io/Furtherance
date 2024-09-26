@@ -17,8 +17,8 @@
 use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
-    models::fur_task::FurTask,
     localization::Localization,
+    models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
 use iced::{widget::Row, Element, Length};
@@ -29,19 +29,20 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 pub struct SelectionEarningsRecordedChart {
-    tasks: Vec<FurTask>,
+    date_earned: BTreeMap<NaiveDate, f32>,
 }
 
 impl SelectionEarningsRecordedChart {
-    pub fn new(tasks: Vec<FurTask>) -> Self {
-        Self { tasks }
+    pub fn new(tasks: &[&FurTask]) -> Self {
+        Self {
+            date_earned: earnings_per_day(tasks),
+        }
     }
 
     pub fn view(&self) -> Element<Message> {
-        let date_earned = self.earnings_per_day();
-        let total_earnings: f32 = date_earned.values().sum();
+        let total_earnings: f32 = self.date_earned.values().sum();
 
-        if date_earned.len() <= 1 || total_earnings == 0.0 {
+        if self.date_earned.len() <= 1 || total_earnings == 0.0 {
             Row::new().into()
         } else {
             let chart = ChartWidget::new(self)
@@ -51,37 +52,28 @@ impl SelectionEarningsRecordedChart {
             chart.into()
         }
     }
-
-    pub fn earnings_per_day(&self) -> BTreeMap<NaiveDate, f32> {
-        let mut earnings_by_day = BTreeMap::new();
-        for task in &self.tasks {
-            *earnings_by_day
-                .entry(task.start_time.date_naive())
-                .or_insert(0.0) += task.total_earnings();
-        }
-        earnings_by_day
-    }
 }
 
 impl Chart<Message> for SelectionEarningsRecordedChart {
     type State = ();
     fn build_chart<DB: DrawingBackend>(&self, _state: &Self::State, mut chart: ChartBuilder<DB>) {
-        let date_earned: BTreeMap<NaiveDate, f32> = self.earnings_per_day();
-        let min_earned = date_earned
+        let min_earned = self
+            .date_earned
             .values()
             .copied()
             .max_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(0.0);
         let min_minus_five_percent = min_earned - (min_earned * 0.05);
-        let max_earned = date_earned
+        let max_earned = self
+            .date_earned
             .values()
             .copied()
             .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
             .unwrap_or(0.0);
 
-        if date_earned.len() > 1 {
-            if let Some(first_date) = date_earned.first_key_value() {
-                if let Some(last_date) = date_earned.last_key_value() {
+        if self.date_earned.len() > 1 {
+            if let Some(first_date) = self.date_earned.first_key_value() {
+                if let Some(last_date) = self.date_earned.last_key_value() {
                     let localization = Localization::new();
 
                     let mut chart = chart
@@ -116,7 +108,7 @@ impl Chart<Message> for SelectionEarningsRecordedChart {
 
                     chart
                         .draw_series(LineSeries::new(
-                            date_earned.iter().map(|(d, t)| (*d, *t)),
+                            self.date_earned.iter().map(|(d, t)| (*d, *t)),
                             CHART_COLOR.filled(),
                         ))
                         .unwrap();
@@ -124,6 +116,16 @@ impl Chart<Message> for SelectionEarningsRecordedChart {
             }
         }
     }
+}
+
+fn earnings_per_day(tasks: &[&FurTask]) -> BTreeMap<NaiveDate, f32> {
+    let mut earnings_by_day = BTreeMap::new();
+    for task in tasks {
+        *earnings_by_day
+            .entry(task.start_time.date_naive())
+            .or_insert(0.0) += task.total_earnings();
+    }
+    earnings_by_day
 }
 
 fn light_dark_color() -> RGBColor {

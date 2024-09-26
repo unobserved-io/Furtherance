@@ -17,8 +17,8 @@
 use crate::{
     app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
-    models::fur_task::FurTask,
     localization::Localization,
+    models::fur_task::FurTask,
 };
 use chrono::NaiveDate;
 use iced::{widget::Text, Element, Length};
@@ -29,18 +29,18 @@ use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
 pub struct SelectionTimeRecordedChart {
-    tasks: Vec<FurTask>,
+    date_time: BTreeMap<NaiveDate, i64>,
 }
 
 impl SelectionTimeRecordedChart {
-    pub fn new(tasks: Vec<FurTask>) -> Self {
-        Self { tasks }
+    pub fn new(tasks: &[&FurTask]) -> Self {
+        Self {
+            date_time: time_per_day(tasks),
+        }
     }
 
     pub fn view(&self) -> Element<Message> {
-        let date_time = self.time_per_day();
-
-        if date_time.len() <= 1 {
+        if self.date_time.len() <= 1 {
             Text::new("Not enough data to show Time Recorded For Selection chart.").into()
         } else {
             let chart = ChartWidget::new(self)
@@ -50,28 +50,18 @@ impl SelectionTimeRecordedChart {
             chart.into()
         }
     }
-
-    pub fn time_per_day(&self) -> BTreeMap<NaiveDate, i64> {
-        let mut time_by_day = BTreeMap::new();
-        for task in &self.tasks {
-            *time_by_day.entry(task.start_time.date_naive()).or_insert(0) +=
-                task.total_time_in_seconds();
-        }
-        time_by_day
-    }
 }
 
 impl Chart<Message> for SelectionTimeRecordedChart {
     type State = ();
     fn build_chart<DB: DrawingBackend>(&self, _state: &Self::State, mut chart: ChartBuilder<DB>) {
-        let date_time: BTreeMap<NaiveDate, i64> = self.time_per_day();
-        let min_time = date_time.values().copied().min().unwrap_or(0);
+        let min_time = self.date_time.values().copied().min().unwrap_or(0);
         let min_minus_five_percent = min_time as f32 - (min_time as f32 * 0.05);
-        let max_time = date_time.values().copied().max().unwrap_or(0);
+        let max_time = self.date_time.values().copied().max().unwrap_or(0);
 
-        if date_time.len() > 1 {
-            if let Some(first_date) = date_time.first_key_value() {
-                if let Some(last_date) = date_time.last_key_value() {
+        if self.date_time.len() > 1 {
+            if let Some(first_date) = self.date_time.first_key_value() {
+                if let Some(last_date) = self.date_time.last_key_value() {
                     let localization = Localization::new();
 
                     let mut chart = chart
@@ -106,7 +96,7 @@ impl Chart<Message> for SelectionTimeRecordedChart {
 
                     chart
                         .draw_series(LineSeries::new(
-                            date_time.iter().map(|(d, t)| (*d, *t)),
+                            self.date_time.iter().map(|(d, t)| (*d, *t)),
                             CHART_COLOR.filled(),
                         ))
                         .unwrap();
@@ -114,6 +104,15 @@ impl Chart<Message> for SelectionTimeRecordedChart {
             }
         }
     }
+}
+
+fn time_per_day(tasks: &[&FurTask]) -> BTreeMap<NaiveDate, i64> {
+    let mut time_by_day = BTreeMap::new();
+    for task in tasks {
+        *time_by_day.entry(task.start_time.date_naive()).or_insert(0) +=
+            task.total_time_in_seconds();
+    }
+    time_by_day
 }
 
 fn light_dark_color() -> RGBColor {

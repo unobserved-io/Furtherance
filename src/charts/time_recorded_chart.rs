@@ -36,9 +36,9 @@ pub struct TimeRecordedChart {
 }
 
 impl TimeRecordedChart {
-    pub fn new(tasks: Vec<FurTask>) -> Self {
+    pub fn new(tasks: &[FurTask]) -> Self {
         Self {
-            date_time: time_per_day(&tasks),
+            date_time: time_per_day(tasks),
         }
     }
 
@@ -115,7 +115,7 @@ impl Chart<Message> for TimeRecordedChart {
     }
 }
 
-fn time_per_day(tasks: &Vec<FurTask>) -> BTreeMap<NaiveDate, i64> {
+fn time_per_day(tasks: &[FurTask]) -> BTreeMap<NaiveDate, i64> {
     let mut time_by_day = BTreeMap::new();
     for task in tasks {
         *time_by_day.entry(task.start_time.date_naive()).or_insert(0) +=

@@ -54,7 +54,7 @@ pub struct FurReport {
     pub total_earned: f32,
     pub tasks_in_range: Vec<FurTask>,
     pub task_property_value_keys: Vec<String>,
-    pub task_property_values: HashMap<String, Vec<FurTask>>,
+    pub task_property_values: HashMap<String, Vec<usize>>,
     pub time_recorded_chart: TimeRecordedChart,
     pub earnings_chart: EarningsChart,
 }
@@ -66,11 +66,11 @@ impl FurReport {
             .unwrap_or(Utc::now());
         let mut fur_report = FurReport {
             active_tab: TabId::Charts,
-            average_earnings_chart: AverageEarningsChart::new(vec![]),
-            average_time_chart: AverageTimeChart::new(vec![]),
+            average_earnings_chart: AverageEarningsChart::new(&[]),
+            average_time_chart: AverageTimeChart::new(&[]),
             date_range_end: Local::now().date_naive(),
             date_range_start: (Local::now() - Duration::days(30)).date_naive(),
-            earnings_chart: EarningsChart::new(vec![]),
+            earnings_chart: EarningsChart::new(&[]),
             picked_date_range: Some(FurDateRange::ThirtyDays),
             picked_end_date: Date::today(),
             picked_start_date: Date::from_ymd(
@@ -80,8 +80,8 @@ impl FurReport {
             ),
             picked_task_property_key: Some(FurTaskProperty::Title),
             picked_task_property_value: None,
-            selection_earnings_recorded_chart: SelectionEarningsRecordedChart::new(vec![]),
-            selection_time_recorded_chart: SelectionTimeRecordedChart::new(vec![]),
+            selection_earnings_recorded_chart: SelectionEarningsRecordedChart::new(&[]),
+            selection_time_recorded_chart: SelectionTimeRecordedChart::new(&[]),
             show_end_date_picker: false,
             show_start_date_picker: false,
             total_time: 0,
@@ -89,7 +89,7 @@ impl FurReport {
             tasks_in_range: vec![],
             task_property_value_keys: vec![],
             task_property_values: HashMap::new(),
-            time_recorded_chart: TimeRecordedChart::new(vec![]),
+            time_recorded_chart: TimeRecordedChart::new(&[]),
         };
 
         fur_report.update_tasks_in_range();
@@ -151,7 +151,7 @@ impl FurReport {
     }
 
     pub fn set_picked_task_property_value(&mut self, new_value: String) {
-        if self.picked_task_property_value != Some(new_value.clone()) {
+        if self.picked_task_property_value.as_ref() != Some(&new_value) {
             self.picked_task_property_value = Some(new_value);
             self.update_selection_charts();
         }
@@ -210,19 +210,21 @@ impl FurReport {
             },
         );
 
-        self.time_recorded_chart = TimeRecordedChart::new(self.tasks_in_range.clone());
-        self.earnings_chart = EarningsChart::new(self.tasks_in_range.clone());
-        self.average_time_chart = AverageTimeChart::new(self.tasks_in_range.clone());
-        self.average_earnings_chart = AverageEarningsChart::new(self.tasks_in_range.clone());
+        self.time_recorded_chart = TimeRecordedChart::new(&self.tasks_in_range);
+        self.earnings_chart = EarningsChart::new(&self.tasks_in_range);
+        self.average_time_chart = AverageTimeChart::new(&self.tasks_in_range);
+        self.average_earnings_chart = AverageEarningsChart::new(&self.tasks_in_range);
         self.update_selection_charts();
     }
 
     fn update_selection_charts(&mut self) {
         if let Some(value) = &self.picked_task_property_value {
-            if let Some(tasks) = self.task_property_values.get(value) {
-                self.selection_time_recorded_chart = SelectionTimeRecordedChart::new(tasks.clone());
+            if let Some(indices) = self.task_property_values.get(value) {
+                let tasks: Vec<&FurTask> =
+                    indices.iter().map(|&i| &self.tasks_in_range[i]).collect();
+                self.selection_time_recorded_chart = SelectionTimeRecordedChart::new(&tasks);
                 self.selection_earnings_recorded_chart =
-                    SelectionEarningsRecordedChart::new(tasks.clone())
+                    SelectionEarningsRecordedChart::new(&tasks);
             }
         }
     }
@@ -271,45 +273,43 @@ impl FurReport {
     fn populate_task_property_values(&mut self) {
         let localization = Localization::new();
         if let Some(property_key) = self.picked_task_property_key {
-            self.task_property_values =
-                self.tasks_in_range
-                    .iter()
-                    .fold(HashMap::new(), |mut accumulated, task| {
-                        let keys = match property_key {
-                            FurTaskProperty::Title => vec![task.name.to_string()],
-                            FurTaskProperty::Project => vec![if task.project.trim().is_empty() {
-                                localization.get_message("none", None)
-                            } else {
-                                task.project.to_string()
-                            }],
-                            FurTaskProperty::Tags => {
-                                let tags = task
-                                    .tags
-                                    .split('#')
-                                    .map(|s| s.trim().to_string())
-                                    .filter(|s| !s.is_empty())
-                                    .collect::<Vec<String>>();
-                                if tags.is_empty() {
-                                    vec![localization.get_message("no-tags", None)]
-                                } else {
-                                    tags
-                                }
-                            }
-                            FurTaskProperty::Rate => vec![if task.rate == 0.0 {
-                                localization.get_message("none", None)
-                            } else {
-                                format!("${:.2}", task.rate)
-                            }],
-                        };
+            self.task_property_values = HashMap::new();
 
-                        for key in keys {
-                            accumulated
-                                .entry(key)
-                                .or_insert_with(Vec::new)
-                                .push(task.clone());
+            for (index, task) in self.tasks_in_range.iter().enumerate() {
+                let keys = match property_key {
+                    FurTaskProperty::Title => vec![task.name.to_string()],
+                    FurTaskProperty::Project => vec![if task.project.trim().is_empty() {
+                        localization.get_message("none", None)
+                    } else {
+                        task.project.to_string()
+                    }],
+                    FurTaskProperty::Tags => {
+                        let tags = task
+                            .tags
+                            .split('#')
+                            .map(|s| s.trim().to_string())
+                            .filter(|s| !s.is_empty())
+                            .collect::<Vec<String>>();
+                        if tags.is_empty() {
+                            vec![localization.get_message("no-tags", None)]
+                        } else {
+                            tags
                         }
-                        accumulated
-                    });
+                    }
+                    FurTaskProperty::Rate => vec![if task.rate == 0.0 {
+                        localization.get_message("none", None)
+                    } else {
+                        format!("${:.2}", task.rate)
+                    }],
+                };
+
+                for key in keys {
+                    self.task_property_values
+                        .entry(key)
+                        .or_insert_with(Vec::new)
+                        .push(index);
+                }
+            }
 
             self.task_property_value_keys = self.task_property_values.keys().cloned().collect();
 

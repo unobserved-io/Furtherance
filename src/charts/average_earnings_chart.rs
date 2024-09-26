@@ -33,7 +33,7 @@ pub struct AverageEarningsChart {
 }
 
 impl AverageEarningsChart {
-    pub fn new(tasks: Vec<FurTask>) -> Self {
+    pub fn new(tasks: &[FurTask]) -> Self {
         Self {
             date_earned: earnings_per_day(tasks),
         }
@@ -116,7 +116,7 @@ impl Chart<Message> for AverageEarningsChart {
     }
 }
 
-fn earnings_per_day(tasks: Vec<FurTask>) -> BTreeMap<NaiveDate, f32> {
+fn earnings_per_day(tasks: &[FurTask]) -> BTreeMap<NaiveDate, f32> {
     tasks
         .iter()
         .fold(BTreeMap::new(), |mut accumulator, task| {
