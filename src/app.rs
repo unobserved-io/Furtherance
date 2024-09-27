@@ -3793,7 +3793,7 @@ fn history_group_row<'a, 'loc>(
     localization: &'loc Localization,
 ) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
     let mut task_details_column: Column<'_, Message, Theme, Renderer> =
-        column![text(task_group.name.clone()).font(font::Font {
+        column![text(&task_group.name).font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
         }),]
@@ -4009,10 +4009,10 @@ fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<F
 }
 
 fn shortcut_button_content<'a>(
-    shortcut: &FurShortcut,
+    shortcut: &'a FurShortcut,
     text_color: Color,
 ) -> Column<'a, Message, Theme, Renderer> {
-    let mut shortcut_text_column = column![text(shortcut.name.clone())
+    let mut shortcut_text_column = column![text(&shortcut.name)
         .font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
@@ -4024,15 +4024,13 @@ fn shortcut_button_content<'a>(
 
     if !shortcut.project.is_empty() {
         shortcut_text_column =
-            shortcut_text_column.push(text!("@{}", shortcut.project.clone()).style(move |_| {
-                text::Style {
-                    color: Some(text_color),
-                }
+            shortcut_text_column.push(text!("@{}", shortcut.project).style(move |_| text::Style {
+                color: Some(text_color),
             }));
     }
     if !shortcut.tags.is_empty() {
         shortcut_text_column =
-            shortcut_text_column.push(text(shortcut.tags.clone()).style(move |_| text::Style {
+            shortcut_text_column.push(text(&shortcut.tags).style(move |_| text::Style {
                 color: Some(text_color),
             }));
     }
@@ -4050,7 +4048,7 @@ fn shortcut_button_content<'a>(
 }
 
 fn shortcut_button<'a, 'loc>(
-    shortcut: &FurShortcut,
+    shortcut: &'a FurShortcut,
     timer_is_running: bool,
     localization: &'loc Localization,
 ) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
