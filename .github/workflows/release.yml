@@ -1,0 +1,143 @@
+name: "Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Specify version tag"
+        required: true
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      matrix:
+        target:
+          - target: macos
+            os: macos-latest
+            make: bash scripts/build-macos.sh
+            artifact_path: |
+              echo "ARTIFACT_PATH=target/release/macos/furtherance.dmg" >> "$GITHUB_ENV"
+          - target: windows
+            os: windows-latest
+            make: bash scripts/build-windows-installer.sh
+            artifact_path: |
+              echo "ARTIFACT_PATH=target/release/furtherance-installer.msi" >> $env:GITHUB_ENV
+          - target: linux
+            os: ubuntu-latest
+            make: bash scripts/package-linux.sh package
+            artifact_path: |
+              echo "ARTIFACT_PATH=$(bash scripts/package-linux.sh archive_path)" >> "$GITHUB_ENV"
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install linux deps
+        if: matrix.target.target == 'linux'
+        run: |
+          sudo apt update
+          sudo apt install \
+            build-essential \
+            git \
+            pkg-config \
+            libdbus-1-dev \
+            libudev-dev \
+            libxkbcommon-dev \
+            libfontconfig1-dev \
+            libasound2-dev
+
+      - name: Build
+        run: ${{ matrix.target.make }}
+
+      - name: Sign macOS
+        if: matrix.target.target == 'macos'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+          MACOS_CI_KEYCHAIN_PWD: ${{ secrets.MACOS_CI_KEYCHAIN_PWD }}
+          MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}
+          MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}
+          MACOS_NOTARIZATION_PWD: ${{ secrets.MACOS_NOTARIZATION_PWD }}
+        run: bash scripts/sign-macos.sh
+
+      - name: Package macOS
+        if: matrix.target.target == 'macos'
+        run: bash scripts/package-macos.sh
+
+      - name: Set artifact path
+        run: ${{ matrix.target.artifact_path }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.target }}
+          path: ${{ env.ARTIFACT_PATH }}
+
+  create-release:
+    needs: build
+    name: Create Release
+    outputs:
+      upload_url: ${{ steps.create-release.outputs.upload_url }}
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          release_name: ${{ github.event.inputs.tag }}
+          draft: true
+          prerelease: false
+
+  add-assets:
+    needs: create-release
+    name: Add Assets
+
+    strategy:
+      matrix:
+        target:
+          - artifact: macos
+            artifact_name: |
+              echo "ARTIFACT_NAME=furtherance.dmg" >> "$GITHUB_ENV"
+            asset_type: application/octet-stream
+          - artifact: windows
+            artifact_name: |
+              echo "ARTIFACT_NAME=furtherance-installer.msi" >> "$GITHUB_ENV"
+            asset_type: application/x-dosexec
+          - artifact: linux
+            artifact_name: |
+              echo "ARTIFACT_NAME=$(bash scripts/package-linux.sh archive_name)" >> "$GITHUB_ENV"
+            asset_type: application/gzip
+
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target.artifact }}
+          path: ${{ matrix.target.artifact }}
+
+      - name: Set artifact name
+        run: ${{ matrix.target.artifact_name }}
+
+      - name: Upload asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./${{ matrix.target.artifact }}/${{ env.ARTIFACT_NAME }}
+          asset_name: ${{ env.ARTIFACT_NAME }}
+          asset_content_type: ${{ matrix.target.asset_type }}
