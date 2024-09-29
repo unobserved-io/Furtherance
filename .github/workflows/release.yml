@@ -22,7 +22,12 @@ jobs:
             os: windows-latest
             make: bash scripts/build-windows-installer.sh
             artifact_path: |
-              echo "ARTIFACT_PATH=target/release/furtherance-installer.msi" >> $env:GITHUB_ENV
+              echo "ARTIFACT_PATH=target/release/furtherance-installer-x64.msi" >> $env:GITHUB_ENV
+          - target: windows-arm64
+            os: windows-latest
+            make: bash scripts/build-windows-installer.sh arm64
+            artifact_path: |
+              echo "ARTIFACT_PATH=target/release/furtherance-installer-arm64.msi" >> $env:GITHUB_ENV
           - target: linux
             os: ubuntu-latest
             make: bash scripts/package-linux.sh package
@@ -109,7 +114,11 @@ jobs:
             asset_type: application/octet-stream
           - artifact: windows
             artifact_name: |
-              echo "ARTIFACT_NAME=furtherance-installer.msi" >> "$GITHUB_ENV"
+              echo "ARTIFACT_NAME=furtherance-installer-x64.msi" >> "$GITHUB_ENV"
+            asset_type: application/x-dosexec
+          - artifact: windows-arm64
+            artifact_name: |
+              echo "ARTIFACT_NAME=furtherance-installer-arm64.msi" >> "$GITHUB_ENV"
             asset_type: application/x-dosexec
           - artifact: linux
             artifact_name: |

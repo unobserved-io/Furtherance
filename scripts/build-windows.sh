@@ -1,6 +1,7 @@
 #!/bin/bash
+ARCH=${1:-x86_64}
 EXE_NAME="furtherance.exe"
-TARGET="x86_64-pc-windows-msvc"
+TARGET="$ARCH-pc-windows-msvc"
 FURTHERANCE_VERSION=$(cat VERSION).0
 
 # update package version on Cargo.toml

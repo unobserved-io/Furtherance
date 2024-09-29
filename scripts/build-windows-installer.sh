@@ -1,9 +1,10 @@
 #!/bin/bash
+ARCH=${1:-x64}
 WXS_FILE="wix/main.wxs"
 FURTHERANCE_VERSION=$(cat VERSION)
 
 # build the binary
-scripts/build-windows.sh
+scripts/build-windows.sh $([[ "$ARCH" == "arm64" ]] && echo "aarch64" || echo "x86_64")
 
 # install latest wix
 dotnet tool install --global wix
@@ -12,4 +13,4 @@ dotnet tool install --global wix
 wix extension add WixToolset.UI.wixext
 
 # build the installer
-wix build -pdbtype none -arch x64 -d PackageVersion=$FURTHERANCE_VERSION $WXS_FILE -o target/release/furtherance-installer.msi -ext WixToolset.UI.wixext
+wix build -pdbtype none -arch $ARCH -d PackageVersion=$FURTHERANCE_VERSION $WXS_FILE -o target/release/furtherance-installer-$ARCH.msi -ext WixToolset.UI.wixext

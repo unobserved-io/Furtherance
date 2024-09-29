@@ -63,12 +63,6 @@
         <Property Id="ARPPRODUCTICON" Value="FurtheranceIcon.exe"/>
         <Property Id="APPHELPLINK" Value="https://furtherance.app/"/>
 
-        <CustomAction Id="LaunchApp" Impersonate="yes" Execute="deferred" FileRef="Application" ExeCommand="" Return="asyncNoWait" />
-
-        <InstallExecuteSequence>
-          <Custom Action="LaunchApp" Before="InstallFinalize"/>
-        </InstallExecuteSequence>
-
         <WixVariable Id="WixUILicenseRtf" Value="wix/license.rtf"/>
         <WixVariable Id="WixUIDialogBmp" Value="wix/dialog.png"/>
         <WixVariable Id="WixUIBannerBmp" Value="wix/banner.png"/>
