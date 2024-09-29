@@ -25,7 +25,7 @@ use std::{
 };
 
 use crate::{
-    autosave::{autosave_exists, restore_autosave, write_autosave},
+    autosave::{autosave_exists, delete_autosave, restore_autosave, write_autosave},
     constants::{
         ALLOWED_DB_EXTENSIONS, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING, INSPECTOR_SPACING,
         INSPECTOR_WIDTH, SETTINGS_SPACING,
@@ -4126,6 +4126,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
     })
     .expect("Couldn't write task to database.");
 
+    delete_autosave();
     reset_timer(state);
 }
 

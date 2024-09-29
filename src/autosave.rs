@@ -66,6 +66,15 @@ pub fn write_autosave(task_input: &str, start_time: DateTime<Local>) -> Result<(
     Ok(())
 }
 
+pub fn delete_autosave() {
+    let path = get_autosave_path();
+    if path.exists() {
+        if let Err(e) = remove_file(path) {
+            eprintln!("Error deleting autosave: {e}");
+        }
+    }
+}
+
 fn get_autosave_path() -> PathBuf {
     let mut path = get_data_path();
     path.extend(&["autosave.txt"]);
@@ -110,14 +119,5 @@ fn task_from_autosave(path: &PathBuf) -> Option<FurTask> {
         return None;
     } else {
         return None;
-    }
-}
-
-fn delete_autosave() {
-    let path = get_autosave_path();
-    if path.exists() {
-        if let Err(e) = remove_file(path) {
-            eprintln!("Error deleting autosave: {e}");
-        }
     }
 }
