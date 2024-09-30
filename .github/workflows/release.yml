@@ -17,22 +17,22 @@ jobs:
             os: macos-latest
             make: bash scripts/build-macos.sh
             artifact_path: |
-              echo "ARTIFACT_PATH=target/release/macos/furtherance.dmg" >> "$GITHUB_ENV"
+              target/release/macos/furtherance.dmg
           - target: windows
             os: windows-latest
             make: bash scripts/build-windows-installer.sh
             artifact_path: |
-              echo "ARTIFACT_PATH=target/release/furtherance-installer-x64.msi" >> $env:GITHUB_ENV
-          - target: windows-arm64
-            os: windows-latest
-            make: bash scripts/build-windows-installer.sh arm64
-            artifact_path: |
-              echo "ARTIFACT_PATH=target/release/furtherance-installer-arm64.msi" >> $env:GITHUB_ENV
+              target/release/furtherance-installer-x64.msi
           - target: linux
             os: ubuntu-latest
             make: bash scripts/package-linux.sh package
             artifact_path: |
-              echo "ARTIFACT_PATH=$(bash scripts/package-linux.sh archive_path)" >> "$GITHUB_ENV"
+              $(bash scripts/package-linux.sh archive_path)
+          - target: linux
+            os: ubuntu-latest
+            make: bash scripts/package-deb.sh
+            artifact_path: |
+              target/release/furtherance-${{ github.event.inputs.tag }}-amd64.deb
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
           override: true
 
       - name: Install linux deps
-        if: matrix.target.target == 'linux'
+        if: matrix.target.target == 'linux' || matrix.target.target == 'linux-arm64'
         run: |
           sudo apt update
           sudo apt install \
@@ -74,7 +74,7 @@ jobs:
         run: bash scripts/package-macos.sh
 
       - name: Set artifact path
-        run: ${{ matrix.target.artifact_path }}
+        run: echo "ARTIFACT_PATH=${{ matrix.target.artifact_path }}" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -110,20 +110,20 @@ jobs:
         target:
           - artifact: macos
             artifact_name: |
-              echo "ARTIFACT_NAME=furtherance.dmg" >> "$GITHUB_ENV"
+              furtherance.dmg
             asset_type: application/octet-stream
           - artifact: windows
             artifact_name: |
-              echo "ARTIFACT_NAME=furtherance-installer-x64.msi" >> "$GITHUB_ENV"
-            asset_type: application/x-dosexec
-          - artifact: windows-arm64
-            artifact_name: |
-              echo "ARTIFACT_NAME=furtherance-installer-arm64.msi" >> "$GITHUB_ENV"
+              furtherance-installer-x64.msi
             asset_type: application/x-dosexec
           - artifact: linux
             artifact_name: |
-              echo "ARTIFACT_NAME=$(bash scripts/package-linux.sh archive_name)" >> "$GITHUB_ENV"
+              $(bash scripts/package-linux.sh archive_name)
             asset_type: application/gzip
+          - artifact: linux
+            artifact_name: |
+              furtherance-${{ github.event.inputs.tag }}-amd64.deb
+            asset_type: application/octet-stream
 
     runs-on: ubuntu-latest
     env:
@@ -139,7 +139,7 @@ jobs:
           path: ${{ matrix.target.artifact }}
 
       - name: Set artifact name
-        run: ${{ matrix.target.artifact_name }}
+        run: echo "ARTIFACT_NAME=${{ matrix.target.artifact_name }}" >> $GITHUB_ENV
 
       - name: Upload asset
         uses: actions/upload-release-asset@v1
