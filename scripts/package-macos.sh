@@ -3,7 +3,8 @@
 RELEASE_DIR="target/release"
 APP_DIR="$RELEASE_DIR/macos"
 APP_NAME="Furtherance.app"
-DMG_NAME="furtherance.dmg"
+VERSION=$(cat VERSION)
+DMG_NAME="furtherance-$VERSION.dmg"
 DMG_DIR="$RELEASE_DIR/macos"
 
 # package dmg
