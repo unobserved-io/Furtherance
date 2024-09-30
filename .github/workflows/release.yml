@@ -28,7 +28,7 @@ jobs:
             make: bash scripts/package-linux.sh package
             artifact_path: |
               $(bash scripts/package-linux.sh archive_path)
-          - target: linux
+          - target: debian
             os: ubuntu-latest
             make: bash scripts/package-deb.sh
             artifact_path: |
@@ -43,7 +43,7 @@ jobs:
           override: true
 
       - name: Install linux deps
-        if: matrix.target.target == 'linux' || matrix.target.target == 'linux-arm64'
+        if: matrix.target.os == 'ubuntu-latest'
         run: |
           sudo apt update
           sudo apt install \
