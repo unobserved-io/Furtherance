@@ -17,22 +17,22 @@ jobs:
             os: macos-latest
             make: bash scripts/build-macos.sh
             artifact_path: |
-              target/release/macos/furtherance.dmg
+              echo "ARTIFACT_PATH=target/release/macos/furtherance.dmg" >> "$GITHUB_ENV"
           - target: windows
             os: windows-latest
             make: bash scripts/build-windows-installer.sh
             artifact_path: |
-              target/release/furtherance-installer-x64.msi
+              echo "ARTIFACT_PATH=target/release/furtherance-installer-x64.msi" >> $env:GITHUB_ENV
           - target: linux
             os: ubuntu-latest
             make: bash scripts/package-linux.sh package
             artifact_path: |
-              $(bash scripts/package-linux.sh archive_path)
+              echo "ARTIFACT_PATH=$(bash scripts/package-linux.sh archive_path)" >> "$GITHUB_ENV"
           - target: debian
             os: ubuntu-latest
             make: bash scripts/package-deb.sh
             artifact_path: |
-              target/release/furtherance-${{ github.event.inputs.tag }}-amd64.deb
+              echo "ARTIFACT_PATH=target/release/furtherance-${{ github.event.inputs.tag }}-amd64.deb" >> "$GITHUB_ENV"
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v3
@@ -74,7 +74,7 @@ jobs:
         run: bash scripts/package-macos.sh
 
       - name: Set artifact path
-        run: echo "ARTIFACT_PATH=${{ matrix.target.artifact_path }}" >> $GITHUB_ENV
+        run: ${{ matrix.target.artifact_path }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -110,19 +110,19 @@ jobs:
         target:
           - artifact: macos
             artifact_name: |
-              furtherance.dmg
+              echo "ARTIFACT_NAME=furtherance.dmg" >> "$GITHUB_ENV"
             asset_type: application/octet-stream
           - artifact: windows
             artifact_name: |
-              furtherance-installer-x64.msi
+              echo "ARTIFACT_NAME=furtherance-installer-x64.msi" >> "$GITHUB_ENV"
             asset_type: application/x-dosexec
           - artifact: linux
             artifact_name: |
-              $(bash scripts/package-linux.sh archive_name)
+              echo "ARTIFACT_NAME=$(bash scripts/package-linux.sh archive_name)" >> "$GITHUB_ENV"
             asset_type: application/gzip
-          - artifact: linux
+          - artifact: debian
             artifact_name: |
-              furtherance-${{ github.event.inputs.tag }}-amd64.deb
+              echo "ARTIFACT_NAME=furtherance-${{ github.event.inputs.tag }}-amd64.deb" >> "$GITHUB_ENV"
             asset_type: application/octet-stream
 
     runs-on: ubuntu-latest
@@ -139,7 +139,7 @@ jobs:
           path: ${{ matrix.target.artifact }}
 
       - name: Set artifact name
-        run: echo "ARTIFACT_NAME=${{ matrix.target.artifact_name }}" >> $GITHUB_ENV
+        run: ${{ matrix.target.artifact_name }}
 
       - name: Upload asset
         uses: actions/upload-release-asset@v1
