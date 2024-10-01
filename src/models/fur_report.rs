@@ -46,6 +46,8 @@ pub struct FurReport {
     pub picked_start_date: Date,
     pub picked_task_property_key: Option<FurTaskProperty>,
     pub picked_task_property_value: Option<String>,
+    pub selection_total_time: i64,
+    pub selection_total_earned: f32,
     pub selection_earnings_recorded_chart: SelectionEarningsRecordedChart,
     pub selection_time_recorded_chart: SelectionTimeRecordedChart,
     pub show_end_date_picker: bool,
@@ -80,6 +82,8 @@ impl FurReport {
             ),
             picked_task_property_key: Some(FurTaskProperty::Title),
             picked_task_property_value: None,
+            selection_total_time: 0,
+            selection_total_earned: 0.0,
             selection_earnings_recorded_chart: SelectionEarningsRecordedChart::new(&[]),
             selection_time_recorded_chart: SelectionTimeRecordedChart::new(&[]),
             show_end_date_picker: false,
@@ -222,6 +226,17 @@ impl FurReport {
             if let Some(indices) = self.task_property_values.get(value) {
                 let tasks: Vec<&FurTask> =
                     indices.iter().map(|&i| &self.tasks_in_range[i]).collect();
+
+                (self.selection_total_time, self.selection_total_earned) =
+                    tasks
+                        .iter()
+                        .fold((0, 0.0), |(time_accumulated, earned_accumulated), task| {
+                            (
+                                time_accumulated + task.total_time_in_seconds(),
+                                earned_accumulated + task.total_earnings(),
+                            )
+                        });
+
                 self.selection_time_recorded_chart = SelectionTimeRecordedChart::new(&tasks);
                 self.selection_earnings_recorded_chart =
                     SelectionEarningsRecordedChart::new(&tasks);

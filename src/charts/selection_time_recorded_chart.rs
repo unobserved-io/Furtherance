@@ -40,8 +40,9 @@ impl SelectionTimeRecordedChart {
     }
 
     pub fn view(&self) -> Element<Message> {
+        let localization = Localization::new();
         if self.date_time.len() <= 1 {
-            Text::new("Not enough data to show Time Recorded For Selection chart.").into()
+            Text::new(localization.get_message("cant-show-charts", None)).into()
         } else {
             let chart = ChartWidget::new(self)
                 .width(Length::Fill)

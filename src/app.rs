@@ -2181,6 +2181,35 @@ impl Furtherance {
         }
 
         // Breakdown by Selection Picker & Charts
+        let mut selection_timer_earnings_boxes_widgets: Vec<Element<'_, Message, Theme, Renderer>> =
+            Vec::new();
+        if self.fur_settings.show_chart_total_time_box && self.report.selection_total_time > 0 {
+            selection_timer_earnings_boxes_widgets.push(
+                column![
+                    text(seconds_to_formatted_duration(
+                        self.report.selection_total_time,
+                        true
+                    ))
+                    .size(50),
+                    text(self.localization.get_message("total-time", None)),
+                ]
+                .align_x(Alignment::Center)
+                .into(),
+            );
+        }
+        if self.fur_settings.show_chart_total_earnings_box
+            && self.report.selection_total_earned > 0.0
+        {
+            selection_timer_earnings_boxes_widgets.push(
+                column![
+                    text!("${:.2}", self.report.selection_total_earned).size(50),
+                    text(self.localization.get_message("earned", None)),
+                ]
+                .align_x(Alignment::Center)
+                .into(),
+            );
+        }
+
         let mut charts_breakdown_by_selection_column = Column::new().align_x(Alignment::Center);
         if !self.report.tasks_in_range.is_empty()
             && self.fur_settings.show_chart_breakdown_by_selection
@@ -2212,6 +2241,29 @@ impl Furtherance {
             );
             charts_breakdown_by_selection_column =
                 charts_breakdown_by_selection_column.push(horizontal_rule(20));
+
+            if !selection_timer_earnings_boxes_widgets.is_empty() {
+                // If both boxes are present, place a spacer between them
+                if selection_timer_earnings_boxes_widgets.len() == 2 {
+                    selection_timer_earnings_boxes_widgets
+                        .insert(1, horizontal_space().width(Length::Fill).into());
+                }
+                // Then place the bookend spacers
+                selection_timer_earnings_boxes_widgets
+                    .insert(0, horizontal_space().width(Length::Fill).into());
+                selection_timer_earnings_boxes_widgets
+                    .push(horizontal_space().width(Length::Fill).into());
+
+                charts_breakdown_by_selection_column = charts_breakdown_by_selection_column.push(
+                    Row::with_children(selection_timer_earnings_boxes_widgets).padding(Padding {
+                        top: 0.0,
+                        right: 0.0,
+                        bottom: 10.0,
+                        left: 0.0,
+                    }),
+                );
+            }
+
             if self.fur_settings.show_chart_selection_time {
                 charts_breakdown_by_selection_column = charts_breakdown_by_selection_column
                     .push(self.report.selection_time_recorded_chart.view());
