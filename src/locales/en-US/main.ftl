@@ -82,6 +82,11 @@ show-tags = Show tags
 show-earnings = Show earnings
 show-seconds = Show seconds
 show-daily-time-total = Show daily time total
+theme = Theme
+light = Light
+dark = Dark
+auto = Auto
+mac-theme-warning = On macOS, when the system theme changes, you must restart Furtherance to see the change.
 
 ### Advanced Settings
 idle = Idle

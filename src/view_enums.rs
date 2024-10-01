@@ -182,3 +182,30 @@ impl std::fmt::Display for FurTaskProperty {
         )
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum FurDarkLight {
+    Light,
+    Dark,
+    Auto,
+}
+
+impl FurDarkLight {
+    pub const ALL: [FurDarkLight; 3] =
+        [FurDarkLight::Light, FurDarkLight::Dark, FurDarkLight::Auto];
+}
+
+impl std::fmt::Display for FurDarkLight {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let localization = Localization::new();
+        write!(
+            f,
+            "{}",
+            match self {
+                FurDarkLight::Light => localization.get_message("light", None),
+                FurDarkLight::Dark => localization.get_message("dark", None),
+                FurDarkLight::Auto => localization.get_message("auto", None),
+            }
+        )
+    }
+}
