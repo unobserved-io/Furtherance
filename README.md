@@ -20,7 +20,7 @@ so updates will be far more frequent and everyone will have the same features, r
 ## Getting Started
 
 ### Install
-_**Furtherance has been re-written and is currently in beta. Back up your old database (to either .db or .csv) before converting the database with the new app**_
+_**Furtherance has been re-written and uses a new database structure. Back up your old database (to either .db or .csv) before converting the database with the new app**_
 
 **Linux**
 
