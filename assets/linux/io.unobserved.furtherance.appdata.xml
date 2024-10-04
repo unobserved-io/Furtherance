@@ -3,7 +3,7 @@
   <id>io.unobserved.furtherance</id>
   <launchable type="desktop-id">io.unobserved.furtherance.desktop</launchable>
   <name translate="no">Furtherance</name>
-  <summary>Track your time without being tracked</summary>
+  <summary>Time tracker</summary>
   <developer_name translate="no">Ricky Kresslein</developer_name>
   <developer id="in.kressle">
     <name translate="no">Ricky Kresslein</name>
