@@ -50,6 +50,19 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+  <release version="24.10.1" date="2024-10-04">
+      <description translate="no">
+      This is a complete re-write of Furtherance! It has a lot more features and is cross-platform. Import your old database in settings (make a backup first) to transfer your data, or import a CSV. New features include:
+        <ul>
+          <li>Projects and hourly rates can be assigned to tasks</li>
+          <li>Pomodoro timer has breaks and periodic larger breaks</li>
+          <li>Graphs for time and earnings reports</li>
+          <li>Shortcuts to quickly start a common task</li>
+          <li>Much, much more. Try it out!</li>
+        </ul>
+        This minor update fixes a bug with localization causing a crash for some users and improves display properties on Flathub.
+      </description>
+    </release>
     <release version="24.10.0" date="2024-10-02">
       <description translate="no">
       This is a complete re-write of Furtherance! It has a lot more features and is cross-platform. Import your old database in settings (make a backup first) to transfer your data, or import a CSV. New features include:
