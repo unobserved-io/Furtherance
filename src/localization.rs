@@ -64,9 +64,14 @@ impl Localization {
         bundles.insert("sk".to_string(), create_bundle("sk"));
         bundles.insert("tr".to_string(), create_bundle("tr"));
 
+        let mut current_lang = get_locale().unwrap_or_else(|| String::from("en-US"));
+        if !bundles.contains_key(&current_lang) {
+            current_lang = "en-US".to_string();
+        }
+
         Localization {
             bundles,
-            current_lang: get_locale().unwrap_or_else(|| String::from("en-US")),
+            current_lang,
         }
     }
 
