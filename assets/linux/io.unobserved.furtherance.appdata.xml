@@ -18,6 +18,11 @@
     </p>
   </description>
 
+  <branding>
+    <color type="primary" scheme_preference="light">#FFDBFF</color>
+    <color type="primary" scheme_preference="dark">#532F7D</color>
+  </branding>
+
   <screenshots>
     <screenshot type="default">
       <image>https://unobserved.io/assets/screenshots/furtherance/linux/Timer.png</image>
