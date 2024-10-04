@@ -24,16 +24,17 @@ _**Furtherance has been re-written and uses a new database structure. Back up yo
 
 **Linux**
 
-* A .deb is available in the current release. If you aren't on a Debian-based system, it is currenlty best to build from source, either with `flatpak builder` or `cargo install`
+* Install from [Flathub](https://flathub.org/apps/io.unobserved.furtherance)
+* Download the .deb from the latest release
 
 **Mac**
 
-* For Apple Silicon Macs, download from the current release.
-* For Intel Macs, currently you will need to build from source. Use `cargo bundle --release` and then move the .app file produced (in `furtherance/target/release/bundle/osx`) to your Applications folder.
+* Using [Homebrew](https://formulae.brew.sh/cask/furtherance): `brew install --cask furtherance`
+* Download the .dmg from the lastest release
 
 **Windows**
 
-* Use the .msi installer provided in the current release.
+* Use the .msi installer provided in the latest release.
 
 ### Use
 Type in the `name` of the task you are working on, add a `@Project`, some `#tags`, and a `$rate`, and press start. That's really all there is to it.
