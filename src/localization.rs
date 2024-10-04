@@ -67,10 +67,11 @@ impl Localization {
         let mut current_lang = get_locale().unwrap_or_else(|| String::from("en-US"));
         if !bundles.contains_key(&current_lang) {
             let truncated_lang = current_lang.chars().take(2).collect::<String>();
-            if !bundles.contains_key(&truncated_lang) {
-                current_lang = "en-US".to_string();
-            } else {
+            // TODO: Append country to locale if locale only exists with specified country
+            if bundles.contains_key(&truncated_lang) {
                 current_lang = truncated_lang;
+            } else {
+                current_lang = "en-US".to_string();
             }
         }
 
