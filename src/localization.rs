@@ -82,7 +82,16 @@ impl Localization {
 
     pub fn get_message(&self, key: &str, args: Option<&HashMap<&str, String>>) -> String {
         let bundle = self.bundles.get(&self.current_lang).unwrap();
-        let msg = bundle.get_message(key).expect("Message doesn't exist");
+        let msg = match bundle.get_message(key) {
+            Some(message) => message,
+            None => {
+                // Fallback to English if the message doesn't exist in the current language
+                let en_bundle = self.bundles.get("en-US").expect("English bundle not found");
+                en_bundle
+                    .get_message(key)
+                    .expect("Message doesn't exist in English either")
+            }
+        };
         let pattern = msg.value().expect("Message has no value");
 
         let mut errors = vec![];
