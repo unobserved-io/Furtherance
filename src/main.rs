@@ -57,11 +57,24 @@ mod view_enums;
 use app::Furtherance;
 
 fn main() -> iced::Result {
+    let window_icon = iced::window::icon::from_file("assets/icon/64x64.png");
+    let window_settings = iced::window::Settings {
+        size: iced::Size {
+            width: 1024.0,
+            height: 600.0,
+        },
+        icon: match window_icon {
+            Ok(icon) => Some(icon),
+            Err(_) => None,
+        },
+        ..Default::default()
+    };
+
     iced::application(Furtherance::title, Furtherance::update, Furtherance::view)
         .subscription(Furtherance::subscription)
         .theme(Furtherance::theme)
         .font(iced_fonts::REQUIRED_FONT_BYTES)
         .font(iced_fonts::BOOTSTRAP_FONT_BYTES)
-        .window_size((1024.0, 600.0))
+        .window(window_settings)
         .run()
 }
