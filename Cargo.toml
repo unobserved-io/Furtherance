@@ -33,10 +33,10 @@ async-stream = "0.3.5"
 config = "0.14"
 chrono = { version = "0.4", features = ["alloc", "serde"] }
 csv = "1.3.0"
-dark-light = "1.1.1"
+dark-light = { git = "https://github.com/frewsxcv/rust-dark-light" }
 directories = "5.0"
 fluent = "0.16"
-futures-core = "0.3.30"
+futures = "0.3.31"
 iced = { version = "0.13.1", features = [
     "advanced",
     "canvas",

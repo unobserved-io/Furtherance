@@ -33,6 +33,7 @@ use crate::{
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
+        dark_light_subscription::DarkLightSubscription,
         idle::get_idle_time,
         midnight_subscription::MidnightSubscription,
     },
@@ -318,20 +319,16 @@ impl Furtherance {
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        // Live dark-light theme switching does not currently work on macOS
-        #[cfg(not(target_os = "macos"))]
-        let theme_watcher =
-            iced::time::every(time::Duration::from_secs(10)).map(|_| Message::ChangeTheme);
+        let midnight_subscription = subscription::from_recipe(MidnightSubscription);
 
-        if self.fur_settings.theme == FurDarkLight::Auto {
-            Subscription::batch([
-                subscription::from_recipe(MidnightSubscription),
-                #[cfg(not(target_os = "macos"))]
-                theme_watcher,
-            ])
+        // Live dark-light theme switching does not currently work on macOS
+        let theme_watcher = if self.fur_settings.theme == FurDarkLight::Auto {
+            subscription::from_recipe(DarkLightSubscription).map(|_| Message::ChangeTheme)
         } else {
-            Subscription::batch([subscription::from_recipe(MidnightSubscription)])
-        }
+            Subscription::none()
+        };
+
+        Subscription::batch([midnight_subscription, theme_watcher])
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {

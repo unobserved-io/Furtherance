@@ -30,6 +30,7 @@ mod constants;
 mod database;
 mod helpers {
     pub mod color_utils;
+    pub mod dark_light_subscription;
     pub mod idle;
     pub mod midnight_subscription;
 }
