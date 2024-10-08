@@ -660,6 +660,7 @@ pub fn db_is_valid_v1(path: &Path) -> Result<bool> {
     Ok(true)
 }
 
+#[cfg(target_os = "macos")]
 pub fn db_check_for_existing_mac_db() -> Option<FurAlert> {
     if let Some(user_dirs) = directories::UserDirs::new() {
         let mut path = user_dirs.home_dir().to_path_buf();
@@ -674,7 +675,7 @@ pub fn db_check_for_existing_mac_db() -> Option<FurAlert> {
             "Furtherance.sqlite",
         ]);
         if path.exists() {
-            match mac_core_data_db_is_valid(&path) {
+            match db_mac_core_data_db_is_valid(&path) {
                 Ok(is_valid) => {
                     if is_valid {
                         return Some(FurAlert::ImportMacDatabase);
@@ -687,7 +688,8 @@ pub fn db_check_for_existing_mac_db() -> Option<FurAlert> {
     None
 }
 
-pub fn mac_core_data_db_is_valid(path: &PathBuf) -> Result<bool> {
+#[cfg(target_os = "macos")]
+pub fn db_mac_core_data_db_is_valid(path: &PathBuf) -> Result<bool> {
     let conn = match Connection::open(path) {
         Ok(conn) => conn,
         Err(e) => {
