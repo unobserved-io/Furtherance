@@ -34,7 +34,7 @@ impl subscription::Recipe for MidnightSubscription {
     fn stream(
         self: Box<Self>,
         _input: subscription::EventStream,
-    ) -> futures::stream::BoxStream<'static, Self::Output> {
+    ) -> futures_core::stream::BoxStream<'static, Self::Output> {
         Box::pin(async_stream::stream! {
             loop {
                 let now = Local::now();
