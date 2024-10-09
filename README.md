@@ -34,6 +34,7 @@ _**Furtherance has been re-written and uses a new database structure. Back up yo
 
 **Windows**
 
+* Install from the [Microsoft Store](https://apps.microsoft.com/detail/9nhg98s3vr3w)
 * Use the .msi installer provided in the latest release.
 
 ### Use
