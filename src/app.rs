@@ -176,6 +176,9 @@ pub enum Message {
     SettingsPomodoroLengthChanged(i64),
     SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
+    SettingsReminderIntervalChanged(u16),
+    SettingsRemindersToggled(bool),
+    ShowReminderNotification,
     SettingsShowChartAverageEarningsToggled(bool),
     SettingsShowChartAverageTimeToggled(bool),
     SettingsShowChartBreakdownBySelectionToggled(bool),
@@ -320,18 +323,29 @@ impl Furtherance {
     pub fn subscription(&self) -> Subscription<Message> {
         // Live dark-light theme switching does not currently work on macOS
         #[cfg(not(target_os = "macos"))]
-        let theme_watcher =
-            iced::time::every(time::Duration::from_secs(10)).map(|_| Message::ChangeTheme);
-
-        if self.fur_settings.theme == FurDarkLight::Auto {
-            Subscription::batch([
-                subscription::from_recipe(MidnightSubscription),
-                #[cfg(not(target_os = "macos"))]
-                theme_watcher,
-            ])
+        let theme_watcher = if self.fur_settings.theme == FurDarkLight::Auto {
+            iced::time::every(time::Duration::from_secs(10)).map(|_| Message::ChangeTheme)
         } else {
-            Subscription::batch([subscription::from_recipe(MidnightSubscription)])
-        }
+            None
+        };
+
+        let show_reminder_notification = if self.fur_settings.notify_reminder {
+            Some(
+                iced::time::every(time::Duration::from_secs(
+                    (self.fur_settings.notify_reminder_interval * 60) as u64,
+                ))
+                .map(|_| Message::ShowReminderNotification),
+            )
+        } else {
+            None
+        };
+
+        Subscription::batch([
+            subscription::from_recipe(MidnightSubscription),
+            show_reminder_notification.unwrap_or(Subscription::none()),
+            #[cfg(not(target_os = "macos"))]
+            theme_watcher.unwrap_or(Subscription::none()),
+        ])
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
@@ -1488,6 +1502,27 @@ impl Furtherance {
                         .num_seconds(),
                 );
             }
+            Message::SettingsReminderIntervalChanged(new_value) => {
+                if let Err(e) = self
+                    .fur_settings
+                    .change_notify_reminder_interval(&new_value)
+                {
+                    eprintln!(
+                        "Failed to change notify_reminder_interval in settings: {}",
+                        e
+                    );
+                }
+            }
+            Message::SettingsRemindersToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_notify_reminder(&new_value) {
+                    eprintln!("Failed to change notify_reminder in settings: {}", e);
+                }
+            }
+            Message::ShowReminderNotification => {
+                if !self.timer_is_running {
+                    show_notification(NotificationType::Reminder, &self.localization);
+                }
+            }
             Message::SettingsShowChartAverageEarningsToggled(new_value) => {
                 if let Err(e) = self
                     .fur_settings
@@ -2597,6 +2632,42 @@ impl Furtherance {
                                     self.fur_settings.days_to_show,
                                     1..365,
                                     Message::SettingsDaysToShowChanged
+                                )
+                                .width(Length::Shrink)
+                                .style(style::fur_number_input_style)
+                            ]
+                            .spacing(10)
+                            .align_y(Alignment::Center),
+                            settings_heading(
+                                self.localization.get_message("reminder-notification", None)
+                            ),
+                            row![
+                                column![
+                                    text(
+                                        self.localization
+                                            .get_message("reminder-notifications", None)
+                                    ),
+                                    text(
+                                        self.localization.get_message(
+                                            "reminder-notifications-description",
+                                            None
+                                        )
+                                    )
+                                    .size(12),
+                                ],
+                                toggler(self.fur_settings.notify_reminder)
+                                    .on_toggle(Message::SettingsRemindersToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style)
+                            ]
+                            .spacing(10)
+                            .align_y(Alignment::Center),
+                            row![
+                                text(self.localization.get_message("reminder-interval", None)),
+                                number_input(
+                                    self.fur_settings.notify_reminder_interval,
+                                    1..999,
+                                    Message::SettingsReminderIntervalChanged
                                 )
                                 .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
@@ -4507,6 +4578,10 @@ fn show_notification(notification_type: NotificationType, localization: &Localiz
         NotificationType::Idle => {
             heading = localization.get_message("idle-notification-title", None);
             details = localization.get_message("idle-notification-body", None);
+        }
+        NotificationType::Reminder => {
+            heading = localization.get_message("track-your-time", None);
+            details = localization.get_message("did-you-forget", None);
         }
     }
 

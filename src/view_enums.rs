@@ -106,6 +106,7 @@ pub enum NotificationType {
     PomodoroOver,
     BreakOver,
     Idle,
+    Reminder,
 }
 
 #[derive(Debug, Clone)]

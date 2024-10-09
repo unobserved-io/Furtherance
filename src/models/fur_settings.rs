@@ -35,6 +35,8 @@ pub struct FurSettings {
     #[serde(default)]
     pub first_run: bool,
     pub notify_on_idle: bool,
+    pub notify_reminder: bool,
+    pub notify_reminder_interval: u16,
     pub pomodoro: bool,
     pub pomodoro_break_length: i64,
     pub pomodoro_extended_breaks: bool,
@@ -72,6 +74,8 @@ impl Default for FurSettings {
             dynamic_total: false,
             first_run: true,
             notify_on_idle: true,
+            notify_reminder: false,
+            notify_reminder_interval: 10,
             pomodoro: false,
             pomodoro_break_length: 5,
             pomodoro_extended_breaks: false,
@@ -121,6 +125,8 @@ impl FurSettings {
         // Add new settings
         builder = builder.set_default("first_run", "true")?;
         builder = builder.set_default("theme", "Auto")?;
+        builder = builder.set_default("notify_reminder", "false")?;
+        builder = builder.set_default("notify_reminder_interval", "10")?;
 
         let config = builder.build()?;
         let settings: FurSettings = config.try_deserialize()?;
@@ -167,6 +173,16 @@ impl FurSettings {
 
     pub fn change_notify_on_idle(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.notify_on_idle = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_notify_reminder(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.notify_reminder = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_notify_reminder_interval(&mut self, value: &u16) -> Result<(), std::io::Error> {
+        self.notify_reminder_interval = value.to_owned();
         self.save()
     }
 

@@ -95,6 +95,10 @@ minutes-until-idle = Minutes until idle
 dynamic-total = Dynamic total
 dynamic-total-description = Today's total time ticks up with the timer
 days-to-show = Days to show
+reminder-notification = Reminder notification
+reminder-notifications = Reminder notifications
+reminder-notifications-description = Shows a notification every X minutes to start a timer
+reminder-interval = Minutes between reminders
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro timer
@@ -182,6 +186,8 @@ dont-import = Don't import
 import = Import
 autosave-restored = Autosave restored
 autosave-restored-description = Furtherance shut down improperly. An autosave was restored.
+track-your-time = Track your time!
+did-you-forget = Did you forget to start a timer?
 
 ## Sidebar
 # Number of hours, mins, secs with only one letter formatter
