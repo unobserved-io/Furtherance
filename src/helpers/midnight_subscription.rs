@@ -46,7 +46,7 @@ impl subscription::Recipe for MidnightSubscription {
                     .unwrap();
                 let duration_until_midnight = next_midnight - now;
 
-                tokio::time::sleep(Duration::from_secs(duration_until_midnight.num_seconds() as u64)).await;
+                tokio::time::sleep(Duration::from_secs(duration_until_midnight.num_seconds() as u64 + 1)).await;
 
                 yield Message::MidnightReached;
             }
