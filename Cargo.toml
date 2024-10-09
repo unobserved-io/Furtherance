@@ -28,6 +28,9 @@ Furtherance is a time tracking application that respects your privacy.
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 """
 
+[profile.release]
+lto = true
+
 [dependencies]
 async-stream = "0.3.5"
 config = "0.14"
