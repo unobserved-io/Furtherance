@@ -29,7 +29,7 @@ _**Furtherance has been re-written and uses a new database structure. Back up yo
 
 **Mac**
 
-* Using [Homebrew](https://formulae.brew.sh/cask/furtherance): `brew install --cask furtherance`
+* Use [Homebrew](https://formulae.brew.sh/cask/furtherance): `brew install --cask furtherance`
 * Download the .dmg from the lastest release
 
 **Windows**
