@@ -324,7 +324,7 @@ impl Furtherance {
         // Live dark-light theme switching does not currently work on macOS
         #[cfg(not(target_os = "macos"))]
         let theme_watcher = if self.fur_settings.theme == FurDarkLight::Auto {
-            iced::time::every(time::Duration::from_secs(10)).map(|_| Message::ChangeTheme)
+            Some(iced::time::every(time::Duration::from_secs(10)).map(|_| Message::ChangeTheme))
         } else {
             None
         };
