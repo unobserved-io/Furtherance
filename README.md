@@ -47,8 +47,11 @@ If you speak another language, it would be greatly appreciated if you could help
 
 ### Tips
 Besides helping to pay the bills, tips show me people want me to continue spending time on Furtherance. I truly appreciate these, and I am humbled by what I've received so far. If you've gotten value from Furtherance, you can tip me via:
-* [Ko-fi](https://ko-fi.com/unobserved)
 * [PayPal](https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL)
+* [GitHub](https://github.com/sponsors/rickykresslein)
+* [Patreon](https://www.patreon.com/unobserved)
+* [Ko-fi](https://ko-fi.com/unobserved)
+* Lightning: unobserved [at] getalby [dot com]
 
 Thank you so much!
 
