@@ -1,7 +1,7 @@
 # These are supported funding model platforms
 
-github: lakoliu
-patreon: # lakoliu
+github: rickykresslein
+patreon: unobserved
 open_collective: # Replace with a single Open Collective username
 ko_fi: unobserved
 tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
@@ -10,5 +10,4 @@ liberapay: # lakoliu
 issuehunt: # Replace with a single IssueHunt username
 otechie: # Replace with a single Otechie username
 lfx_crowdfunding: # Replace with a single LFX Crowdfunding project-name e.g., cloud-foundry
-custom: ['https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL']
-
+custom: ["https://www.paypal.com/donate/?hosted_button_id=TLYY8YZ424VRL"]
