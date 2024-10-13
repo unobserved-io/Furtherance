@@ -317,7 +317,7 @@ impl Furtherance {
     }
 
     pub fn theme(&self) -> Theme {
-        self.theme.clone().into()
+        self.theme.clone().to_theme()
     }
 
     pub fn subscription(&self) -> Subscription<Message> {

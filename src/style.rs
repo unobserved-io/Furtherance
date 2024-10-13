@@ -48,17 +48,35 @@ pub enum FurTheme {
     Dark,
 }
 
-impl From<FurTheme> for Theme {
-    fn from(theme: FurTheme) -> Theme {
-        let palette = match theme {
-            FurTheme::Light => FurPalette::light(),
-            FurTheme::Dark => FurPalette::dark(),
-        };
+impl FurTheme {
+    pub fn to_theme(&self) -> Theme {
+        match self {
+            FurTheme::Light => Theme::Custom(Arc::new(Custom::new(
+                "FurThemeLight".to_string(),
+                FurPalette::light(),
+            ))),
+            FurTheme::Dark => Theme::Custom(Arc::new(Custom::new(
+                "FurThemeDark".to_string(),
+                FurPalette::dark(),
+            ))),
+        }
+    }
+}
 
-        Theme::Custom(Arc::new(Custom::new(
-            format!("FurTheme{:?}", theme),
-            palette,
-        )))
+#[allow(dead_code)]
+trait ThemeExt {
+    fn is_fur_theme_dark(&self) -> bool;
+    fn is_fur_theme_light(&self) -> bool;
+}
+
+#[allow(dead_code)]
+impl ThemeExt for Theme {
+    fn is_fur_theme_dark(&self) -> bool {
+        *self == FurTheme::Dark.to_theme()
+    }
+
+    fn is_fur_theme_light(&self) -> bool {
+        *self == FurTheme::Light.to_theme()
     }
 }
 
@@ -300,7 +318,11 @@ pub fn inactive_nav_menu_button_style(theme: &Theme, status: button::Status) -> 
     let palette = theme.extended_palette();
     let inactive_nav_button_style = button::Style {
         background: Some(Background::Color(Color::TRANSPARENT)),
-        text_color: Color::BLACK,
+        text_color: if theme.is_fur_theme_dark() {
+            Color::WHITE
+        } else {
+            Color::BLACK
+        },
         border: Border {
             color: Color::TRANSPARENT,
             width: 0.0,
