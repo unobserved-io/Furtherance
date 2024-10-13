@@ -44,6 +44,7 @@ use crate::{
         shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
     },
     style::{self, FurTheme},
+    sync::{sync_with_server, SyncResponse},
     view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
@@ -85,6 +86,7 @@ pub struct Furtherance {
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
+    last_sync: i64,
     localization: Arc<Localization>,
     pomodoro: FurPomodoro,
     report: FurReport,
@@ -205,6 +207,8 @@ pub enum Message {
     SubmitStartDate(date_picker::Date),
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
+    SyncWithServer,
+    SyncComplete(Result<SyncResponse, Arc<reqwest::Error>>),
     TaskInputChanged(String),
     ToggleGroupEditor,
 }
@@ -258,6 +262,7 @@ impl Furtherance {
             fur_settings: settings,
             group_to_edit: None,
             idle: FurIdle::new(),
+            last_sync: 0,
             localization: Arc::new(Localization::new()),
             pomodoro: FurPomodoro::new(),
             inspector_view: None,
@@ -1886,6 +1891,41 @@ impl Furtherance {
                     }
                 }
             }
+            Message::SyncWithServer => {
+                let client_id = "unique_client_id".to_string(); // Generate or store a unique client ID
+                let last_sync = self.last_sync;
+
+                return Task::perform(
+                    async move {
+                        let tasks = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Ascending)
+                            .unwrap_or_default();
+                        let shortcuts = db_retrieve_shortcuts().unwrap_or_default();
+
+                        sync_with_server(&client_id, last_sync, tasks, shortcuts)
+                            .await
+                            .map_err(Arc::new)
+                    },
+                    Message::SyncComplete,
+                );
+            }
+            Message::SyncComplete(sync_result) => {
+                match sync_result {
+                    // Process the received data
+                    Ok(response) => {
+                        for task in response.tasks {
+                            db_write_task(task)
+                                .unwrap_or_else(|e| eprintln!("Error writing task: {}", e));
+                        }
+                        for shortcut in response.shortcuts {
+                            db_write_shortcut(shortcut)
+                                .unwrap_or_else(|e| eprintln!("Error writing shortcut: {}", e));
+                        }
+                        self.last_sync = response.server_timestamp;
+                        self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    }
+                    Err(e) => eprintln!("Sync error: {}", e),
+                }
+            }
             Message::TaskInputChanged(new_value) => {
                 // Handle all possible task input checks here rather than on start/stop press
                 // If timer is running, task can never be empty
@@ -2485,6 +2525,7 @@ impl Furtherance {
                     ),
                     Scrollable::new(
                         column![
+                            button("Sync").on_press(Message::SyncWithServer).padding(10),
                             settings_heading(self.localization.get_message("interface", None)),
                             row![
                                 text(self.localization.get_message("default-view", None)),

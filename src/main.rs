@@ -49,6 +49,7 @@ mod models {
     pub mod task_to_edit;
 }
 mod style;
+mod sync;
 mod tests {
     mod timer_tests;
 }
