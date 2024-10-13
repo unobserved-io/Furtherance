@@ -2303,7 +2303,7 @@ impl Furtherance {
                 charts_breakdown_by_selection_column = charts_breakdown_by_selection_column
                     .push(self.report.selection_time_recorded_chart.view());
             }
-            if self.fur_settings.show_chart_seleciton_earnings {
+            if self.fur_settings.show_chart_selection_earnings {
                 charts_breakdown_by_selection_column = charts_breakdown_by_selection_column
                     .push(self.report.selection_earnings_recorded_chart.view());
             }
@@ -2848,7 +2848,7 @@ impl Furtherance {
                             checkbox(
                                 self.localization
                                     .get_message("earnings-for-selection", None),
-                                self.fur_settings.show_chart_seleciton_earnings
+                                self.fur_settings.show_chart_selection_earnings
                             )
                             .on_toggle_maybe(
                                 if self.fur_settings.show_chart_breakdown_by_selection {
