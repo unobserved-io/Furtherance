@@ -48,7 +48,7 @@ pub struct FurSettings {
     pub show_chart_average_time: bool,
     pub show_chart_breakdown_by_selection: bool,
     pub show_chart_earnings: bool,
-    pub show_chart_seleciton_earnings: bool,
+    pub show_chart_selection_earnings: bool,
     pub show_chart_selection_time: bool,
     pub show_chart_time_recorded: bool,
     pub show_chart_total_earnings_box: bool,
