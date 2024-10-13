@@ -87,7 +87,7 @@ impl Default for FurSettings {
             show_chart_average_time: true,
             show_chart_breakdown_by_selection: true,
             show_chart_earnings: true,
-            show_chart_seleciton_earnings: true,
+            show_chart_selection_earnings: true,
             show_chart_selection_time: true,
             show_chart_time_recorded: true,
             show_chart_total_earnings_box: true,
@@ -272,7 +272,7 @@ impl FurSettings {
         &mut self,
         value: &bool,
     ) -> Result<(), std::io::Error> {
-        self.show_chart_seleciton_earnings = value.to_owned();
+        self.show_chart_selection_earnings = value.to_owned();
         self.save()
     }
 
