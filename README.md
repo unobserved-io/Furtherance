@@ -24,7 +24,7 @@ _**Furtherance has been re-written and uses a new database structure. Back up yo
 
 **Linux**
 
-* Install from [Flathub](https://flathub.org/apps/io.unobserved.furtherance)
+* Install from [Flathub](https://flathub.org/apps/io.unobserved.furtherance): `flatpak install flathub io.unobserved.furtherance`
 * Download the .deb from the latest release
 
 **Mac**
