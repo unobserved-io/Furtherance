@@ -4585,13 +4585,16 @@ fn show_notification(notification_type: NotificationType, localization: &Localiz
         }
     }
 
-    Notification::new()
+    match Notification::new()
         .summary(&heading)
         .body(&details)
         .appname("Furtherance")
         .timeout(Timeout::Milliseconds(6000))
         .show()
-        .unwrap();
+    {
+        Ok(_) => {}
+        Err(e) => eprintln!("Failed to show notification: {e}"),
+    }
 }
 
 fn settings_heading<'a>(heading: String) -> Column<'a, Message, Theme, Renderer> {
