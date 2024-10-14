@@ -28,6 +28,7 @@ use crate::models::{
     fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
     group_to_edit::GroupToEdit,
 };
+#[cfg(target_os = "macos")]
 use crate::view_enums::FurAlert;
 
 #[derive(Debug)]
