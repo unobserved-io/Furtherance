@@ -1010,7 +1010,7 @@ dependencies = [
 [[package]]
 name = "dark-light"
 version = "1.1.1"
-source = "git+https://github.com/frewsxcv/rust-dark-light#3eb3e93dd0fa30733c3e93082dd9517fb580ae95"
+source = "git+https://github.com/frewsxcv/rust-dark-light?rev=3eb3e93dd0fa30733c3e93082dd9517fb580ae95#3eb3e93dd0fa30733c3e93082dd9517fb580ae95"
 dependencies = [
  "ashpd 0.9.2",
  "futures",
@@ -1560,7 +1560,7 @@ dependencies = [
  "chrono",
  "config",
  "csv",
- "dark-light 1.1.1 (git+https://github.com/frewsxcv/rust-dark-light)",
+ "dark-light 1.1.1 (git+https://github.com/frewsxcv/rust-dark-light?rev=3eb3e93dd0fa30733c3e93082dd9517fb580ae95)",
  "directories",
  "fluent",
  "futures-core",
