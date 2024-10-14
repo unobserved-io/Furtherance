@@ -55,9 +55,13 @@ mod tests {
 mod view_enums;
 
 use app::Furtherance;
+use iced::advanced::graphics::image::image_rs::ImageFormat;
 
 fn main() -> iced::Result {
-    let window_icon = iced::window::icon::from_file("assets/icon/64x64.png");
+    let window_icon = iced::window::icon::from_file_data(
+        include_bytes!("../assets/icon/64x64.png"),
+        Some(ImageFormat::Png),
+    );
     let window_settings = iced::window::Settings {
         size: iced::Size {
             width: 1024.0,
