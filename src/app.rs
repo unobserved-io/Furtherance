@@ -2630,7 +2630,7 @@ impl Furtherance {
                                 text(self.localization.get_message("days-to-show", None)),
                                 number_input(
                                     self.fur_settings.days_to_show,
-                                    1..365,
+                                    1..=365,
                                     Message::SettingsDaysToShowChanged
                                 )
                                 .width(Length::Shrink)
