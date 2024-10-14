@@ -127,6 +127,7 @@ impl FurSettings {
         builder = builder.set_default("theme", "Auto")?;
         builder = builder.set_default("notify_reminder", "false")?;
         builder = builder.set_default("notify_reminder_interval", "10")?;
+        builder = builder.set_default("show_chart_selection_earnings", "true")?;
 
         let config = builder.build()?;
         let settings: FurSettings = config.try_deserialize()?;
