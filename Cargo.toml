@@ -79,3 +79,6 @@ user-idle = "0.6"
 x11rb = "0.13.1"
 zbus = "4.4"
 uzers = "0.12"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+winresource = "0.1.17"
