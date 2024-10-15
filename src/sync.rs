@@ -21,7 +21,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 struct SyncRequest {
-    client_id: String,
     last_updated: i64,
     tasks: Vec<FurTask>,
     shortcuts: Vec<FurShortcut>,
@@ -37,14 +36,12 @@ pub struct SyncResponse {
 }
 
 pub async fn sync_with_server(
-    client_id: &str,
     last_updated: i64,
     tasks: Vec<FurTask>,
     shortcuts: Vec<FurShortcut>,
 ) -> Result<SyncResponse, reqwest::Error> {
     let client = reqwest::Client::new();
     let sync_request = SyncRequest {
-        client_id: client_id.to_string(),
         last_updated,
         tasks,
         shortcuts,

@@ -1895,7 +1895,6 @@ impl Furtherance {
                 }
             }
             Message::SyncWithServer => {
-                let client_id = "unique_client_id".to_string(); // TODO: Generate or store a unique client ID
                 let last_sync = self.fur_settings.last_sync;
                 return Task::perform(
                     async move {
@@ -1904,7 +1903,7 @@ impl Furtherance {
                             .unwrap_or_default();
                         let shortcuts = db_retrieve_shortcuts().unwrap_or_default();
 
-                        sync_with_server(&client_id, last_sync, tasks, shortcuts)
+                        sync_with_server(last_sync, tasks, shortcuts)
                             .await
                             .map_err(Arc::new)
                     },
