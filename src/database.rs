@@ -94,26 +94,59 @@ pub fn db_init() -> Result<()> {
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS tasks (
-                        id INTEGER PRIMARY KEY,
-                        task_name TEXT,
-                        start_time TIMESTAMP,
-                        stop_time TIMESTAMP,
-                        tags TEXT,
-                        project TEXT,
-                        rate REAL,
-                        currency TEXT);",
+            id INTEGER PRIMARY KEY,
+            task_name TEXT,
+            start_time TIMESTAMP,
+            stop_time TIMESTAMP,
+            tags TEXT,
+            project TEXT,
+            rate REAL,
+            currency TEXT,
+            last_updated INTEGER DEFAULT 0
+        );",
         [],
     )?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS shortcuts (
-                        id INTEGER PRIMARY KEY,
-                        name TEXT,
-                        tags TEXT,
-                        project TEXT,
-                        rate REAL,
-                        currency TEXT,
-                        color_hex TEXT);",
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            tags TEXT,
+            project TEXT,
+            rate REAL,
+            currency TEXT,
+            color_hex TEXT,
+            last_updated INTEGER DEFAULT 0
+        );",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS deleted_tasks (
+            id INTEGER PRIMARY KEY,
+            task_name TEXT,
+            start_time TIMESTAMP,
+            stop_time TIMESTAMP,
+            tags TEXT,
+            project TEXT,
+            rate REAL,
+            currency TEXT,
+            last_updated INTEGER DEFAULT 0
+        );",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS deleted_shortcuts (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            tags TEXT,
+            project TEXT,
+            rate REAL,
+            currency TEXT,
+            color_hex TEXT,
+            last_updated INTEGER DEFAULT 0
+        );",
         [],
     )?;
 
@@ -128,6 +161,7 @@ pub fn db_upgrade_old() -> Result<()> {
     let _ = db_add_project_column(&conn);
     let _ = db_add_rate_column(&conn);
     let _ = db_add_currency_column(&conn);
+    let _ = db_add_last_updated_column(&conn);
 
     Ok(())
 }
@@ -149,6 +183,16 @@ pub fn db_add_rate_column(conn: &Connection) -> Result<()> {
 
 pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
     conn.execute("ALTER TABLE tasks ADD COLUMN currency Text DEFAULT ''", [])?;
+    Ok(())
+}
+
+pub fn db_add_last_updated_column(conn: &Connection) -> Result<()> {
+    conn.execute_batch(
+        "BEGIN;
+        ALTER TABLE tasks ADD COLUMN last_updated INTEGER DEFAULT 0;
+        ALTER TABLE shortcuts ADD COLUMN last_updated INTEGER DEFAULT 0;
+        COMMIT;",
+    )?;
     Ok(())
 }
 
@@ -236,7 +280,8 @@ pub fn db_retrieve_all_tasks(
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: String::new(),
+            currency: row.get(7)?,
+            last_updated: row.get(8)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -265,7 +310,8 @@ pub fn db_retrieve_tasks_by_date_range(
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: String::new(),
+            currency: row.get(7)?,
+            last_updated: row.get(8)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -302,7 +348,8 @@ pub fn db_retrieve_tasks_with_day_limit(
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: String::new(),
+            currency: row.get(7)?,
+            last_updated: row.get(8)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -456,6 +503,7 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
+            last_updated: row.get(7)?,
         };
         shortcuts.push(fur_shortcut);
     }
@@ -539,6 +587,15 @@ pub fn db_backup(backup_file: PathBuf) -> Result<()> {
     let backup = backup::Backup::new(&conn, &mut bkup_conn)?;
     backup.run_to_completion(5, Duration::from_millis(250), None)
 }
+
+// pub fn db_update_task_sync_time(task_id: u32, sync_time: i64) -> Result<()> {
+//     let conn = Connection::open(db_get_directory())?;
+//     conn.execute(
+//         "UPDATE tasks SET last_updated = ?1 WHERE id = ?2",
+//         params![sync_time, task_id],
+//     )?;
+//     Ok(())
+// }
 
 pub fn db_is_valid_v3(path: &Path) -> Result<bool> {
     let conn = match Connection::open(path) {
@@ -790,6 +847,7 @@ pub fn db_import_old_mac_db() -> Result<()> {
                     project: row.get(4)?,
                     rate: row.get(5)?,
                     currency: String::new(),
+                    last_updated: chrono::Utc::now().timestamp(),
                 };
 
                 // Don't import duplicate tasks

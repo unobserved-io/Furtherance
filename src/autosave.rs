@@ -112,6 +112,7 @@ fn task_from_autosave(path: &PathBuf) -> Option<FurTask> {
                     project: autosave_lines[4].clone(),
                     rate: autosave_lines[5].parse().unwrap_or(0.0),
                     currency,
+                    last_updated: chrono::Utc::now().timestamp(),
                 });
             }
         }

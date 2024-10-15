@@ -27,6 +27,7 @@ pub struct FurTask {
     pub project: String,
     pub rate: f32,
     pub currency: String,
+    pub last_updated: i64,
 }
 
 impl ToString for FurTask {

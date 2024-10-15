@@ -86,7 +86,6 @@ pub struct Furtherance {
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
-    last_sync: i64,
     localization: Arc<Localization>,
     pomodoro: FurPomodoro,
     report: FurReport,
@@ -262,7 +261,6 @@ impl Furtherance {
             fur_settings: settings,
             group_to_edit: None,
             idle: FurIdle::new(),
-            last_sync: 0,
             localization: Arc::new(Localization::new()),
             pomodoro: FurPomodoro::new(),
             inspector_view: None,
@@ -529,6 +527,7 @@ impl Furtherance {
                     rate: task_group.rate,
                     currency: String::new(),
                     color_hex: Srgb::random().to_hex(),
+                    last_updated: chrono::Utc::now().timestamp(),
                 };
 
                 match db_shortcut_exists(&new_shortcut) {
@@ -1191,6 +1190,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_add.color.to_hex(),
+                        last_updated: chrono::Utc::now().timestamp(),
                     };
                     match db_shortcut_exists(&new_shortcut) {
                         Ok(exists) => {
@@ -1226,6 +1226,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_edit.new_color.to_hex(),
+                        last_updated: chrono::Utc::now().timestamp(),
                     }) {
                         eprintln!("Failed to update shortcut in database: {}", e);
                     }
@@ -1255,6 +1256,7 @@ impl Furtherance {
                         project: task_to_edit.new_project.trim().to_string(),
                         rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
+                        last_updated: chrono::Utc::now().timestamp(),
                     });
                     self.inspector_view = None;
                     self.task_to_edit = None;
@@ -1277,6 +1279,7 @@ impl Furtherance {
                         project: task_to_add.project.trim().to_string(),
                         rate: task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
+                        last_updated: chrono::Utc::now().timestamp(),
                     });
                     self.inspector_view = None;
                     self.task_to_add = None;
@@ -1892,11 +1895,11 @@ impl Furtherance {
                 }
             }
             Message::SyncWithServer => {
-                let client_id = "unique_client_id".to_string(); // Generate or store a unique client ID
-                let last_sync = self.last_sync;
-
+                let client_id = "unique_client_id".to_string(); // TODO: Generate or store a unique client ID
+                let last_sync = self.fur_settings.last_sync;
                 return Task::perform(
                     async move {
+                        // TODO: Only send the changed tasks here, no need to retrieve all
                         let tasks = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Ascending)
                             .unwrap_or_default();
                         let shortcuts = db_retrieve_shortcuts().unwrap_or_default();
@@ -1910,17 +1913,25 @@ impl Furtherance {
             }
             Message::SyncComplete(sync_result) => {
                 match sync_result {
-                    // Process the received data
                     Ok(response) => {
+                        // TODO: This should either write or update
                         for task in response.tasks {
                             db_write_task(task)
                                 .unwrap_or_else(|e| eprintln!("Error writing task: {}", e));
                         }
+
                         for shortcut in response.shortcuts {
                             db_write_shortcut(shortcut)
                                 .unwrap_or_else(|e| eprintln!("Error writing shortcut: {}", e));
                         }
-                        self.last_sync = response.server_timestamp;
+
+                        if let Err(e) = self
+                            .fur_settings
+                            .change_last_sync(&response.server_timestamp)
+                        {
+                            eprintln!("Failed to change last_sync in settings: {}", e);
+                        }
+
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
                     }
                     Err(e) => eprintln!("Sync error: {}", e),
@@ -4319,6 +4330,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
         project,
         rate,
         currency: String::new(),
+        last_updated: chrono::Utc::now().timestamp(),
     })
     .expect("Couldn't write task to database.");
 
@@ -4821,6 +4833,7 @@ pub fn read_csv(
         let record = result?;
 
         let task = match record.len() {
+            // TODO: prob need to ad a 10 for v3.1
             9 => FurTask {
                 // v3 - Iced
                 id: 0,
@@ -4831,6 +4844,7 @@ pub fn read_csv(
                 project: record.get(4).unwrap_or("").trim().to_string(),
                 rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
                 currency: record.get(6).unwrap_or("").trim().to_string(),
+                last_updated: record.get(7).unwrap_or("0").parse().unwrap_or(0),
             },
             7 => {
                 // v2 - macOS SwiftUI
@@ -4871,6 +4885,7 @@ pub fn read_csv(
                     project: record.get(1).unwrap_or("").trim().to_string(),
                     rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     currency: String::new(),
+                    last_updated: 0,
                 }
             }
             6 => FurTask {
@@ -4892,6 +4907,7 @@ pub fn read_csv(
                 project: String::new(),
                 rate: 0.0,
                 currency: String::new(),
+                last_updated: 0,
             },
 
             _ => return Err(localization.get_message("invalid-csv", None).into()),
