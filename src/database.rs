@@ -102,6 +102,7 @@ pub fn db_init() -> Result<()> {
             project TEXT,
             rate REAL,
             currency TEXT,
+            is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
         [],
@@ -116,35 +117,7 @@ pub fn db_init() -> Result<()> {
             rate REAL,
             currency TEXT,
             color_hex TEXT,
-            last_updated INTEGER DEFAULT 0
-        );",
-        [],
-    )?;
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS deleted_tasks (
-            id INTEGER PRIMARY KEY,
-            task_name TEXT,
-            start_time TIMESTAMP,
-            stop_time TIMESTAMP,
-            tags TEXT,
-            project TEXT,
-            rate REAL,
-            currency TEXT,
-            last_updated INTEGER DEFAULT 0
-        );",
-        [],
-    )?;
-
-    conn.execute(
-        "CREATE TABLE IF NOT EXISTS deleted_shortcuts (
-            id INTEGER PRIMARY KEY,
-            name TEXT,
-            tags TEXT,
-            project TEXT,
-            rate REAL,
-            currency TEXT,
-            color_hex TEXT,
+            is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
         [],
@@ -161,7 +134,7 @@ pub fn db_upgrade_old() -> Result<()> {
     let _ = db_add_project_column(&conn);
     let _ = db_add_rate_column(&conn);
     let _ = db_add_currency_column(&conn);
-    let _ = db_add_last_updated_column(&conn);
+    let _ = db_add_sync_columns(&conn);
 
     Ok(())
 }
@@ -186,9 +159,11 @@ pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-pub fn db_add_last_updated_column(conn: &Connection) -> Result<()> {
+pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
     conn.execute_batch(
         "BEGIN;
+        ALTER TABLE tasks ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
+        ALTER TABLE shortcuts ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
         ALTER TABLE tasks ADD COLUMN last_updated INTEGER DEFAULT 0;
         ALTER TABLE shortcuts ADD COLUMN last_updated INTEGER DEFAULT 0;
         COMMIT;",
@@ -196,7 +171,7 @@ pub fn db_add_last_updated_column(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-pub fn db_write_task(fur_task: FurTask) -> Result<()> {
+pub fn db_write_task(task: FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
@@ -206,15 +181,21 @@ pub fn db_write_task(fur_task: FurTask) -> Result<()> {
             stop_time,
             tags,
             project,
-            rate
-        ) values (?1, ?2, ?3, ?4, ?5, ?6)",
+            rate,
+            currency,
+            is_deleted,
+            last_updated
+        ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
         params![
-            fur_task.name,
-            fur_task.start_time.to_rfc3339(),
-            fur_task.stop_time.to_rfc3339(),
-            fur_task.tags,
-            fur_task.project,
-            fur_task.rate,
+            task.name,
+            task.start_time.to_rfc3339(),
+            task.stop_time.to_rfc3339(),
+            task.tags,
+            task.project,
+            task.rate,
+            task.currency,
+            task.is_deleted,
+            task.last_updated
         ],
     )?;
 
@@ -228,10 +209,17 @@ pub fn db_write_tasks(tasks: &[FurTask]) -> Result<()> {
 
     {
         let mut stmt = tx.prepare(
-            "
-            INSERT INTO tasks (task_name, start_time, stop_time, tags, project, rate, currency)
-            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-        ",
+            "INSERT INTO tasks (
+                task_name,
+                start_time,
+                stop_time,
+                tags,
+                project,
+                rate,
+                currency,
+                is_deleted,
+                last_updated
+            ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
         )?;
 
         for task in tasks {
@@ -243,6 +231,8 @@ pub fn db_write_tasks(tasks: &[FurTask]) -> Result<()> {
                 task.project,
                 task.rate,
                 task.currency,
+                task.is_deleted,
+                task.last_updated
             ])?;
         }
     }
@@ -261,7 +251,7 @@ pub fn db_retrieve_all_tasks(
 
     let mut stmt = conn.prepare(
         format!(
-            "SELECT * FROM tasks ORDER BY {0} {1}",
+            "SELECT * FROM tasks WHERE is_deleted = 0 ORDER BY {0} {1}",
             sort.to_sqlite(),
             order.to_sqlite()
         )
@@ -280,8 +270,9 @@ pub fn db_retrieve_all_tasks(
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: row.get(7)?,
-            last_updated: row.get(8)?,
+            currency: row.get(7).unwrap_or(String::new()),
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -295,7 +286,7 @@ pub fn db_retrieve_tasks_by_date_range(
 ) -> Result<Vec<FurTask>> {
     let conn = Connection::open(db_get_directory())?;
     let mut stmt = conn.prepare(
-        "SELECT * FROM tasks WHERE start_time BETWEEN ?1 AND ?2 ORDER BY start_time ASC",
+        "SELECT * FROM tasks WHERE start_time BETWEEN ?1 AND ?2 AND is_deleted = 0 ORDER BY start_time ASC",
     )?;
     let mut rows = stmt.query(params![start_date, end_date])?;
 
@@ -310,8 +301,9 @@ pub fn db_retrieve_tasks_by_date_range(
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: row.get(7)?,
-            last_updated: row.get(8)?,
+            currency: row.get(7).unwrap_or(String::new()),
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -329,7 +321,7 @@ pub fn db_retrieve_tasks_with_day_limit(
 
     // Construct the query string dynamically
     let query = format!(
-        "SELECT * FROM tasks WHERE start_time >= date('now', ?) ORDER BY {} {}",
+        "SELECT * FROM tasks WHERE start_time >= date('now', ?) AND is_deleted = 0 ORDER BY {} {}",
         sort.to_sqlite(),
         order.to_sqlite()
     );
@@ -348,8 +340,9 @@ pub fn db_retrieve_tasks_with_day_limit(
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: row.get(7)?,
-            last_updated: row.get(8)?,
+            currency: row.get(7).unwrap_or(String::new()),
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -357,7 +350,7 @@ pub fn db_retrieve_tasks_with_day_limit(
     Ok(tasks_vec)
 }
 
-pub fn db_update_task(fur_task: FurTask) -> Result<()> {
+pub fn db_update_task(task: FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
@@ -367,16 +360,22 @@ pub fn db_update_task(fur_task: FurTask) -> Result<()> {
             stop_time = ?3,
             tags = ?4,
             project = ?5,
-            rate = ?6
-        WHERE id = ?7",
+            rate = ?6,
+            currency = ?7,
+            is_deleted = ?8,
+            last_updated = ?9,
+        WHERE id = ?10",
         params![
-            fur_task.name,
-            fur_task.start_time.to_rfc3339(),
-            fur_task.stop_time.to_rfc3339(),
-            fur_task.tags,
-            fur_task.project,
-            fur_task.rate,
-            fur_task.id,
+            task.name,
+            task.start_time.to_rfc3339(),
+            task.stop_time.to_rfc3339(),
+            task.tags,
+            task.project,
+            task.rate,
+            task.currency,
+            task.is_deleted,
+            task.last_updated,
+            task.id,
         ],
     )?;
 
@@ -393,8 +392,9 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
             task_name = ?1,
             tags = ?2,
             project = ?3,
-            rate = ?4
-        WHERE id = ?5",
+            rate = ?4,
+            last_updated = ?5,
+        WHERE id = ?6",
         )?;
 
         for id in group.task_ids().iter() {
@@ -409,6 +409,7 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
                     .to_string(),
                 group.new_project.trim(),
                 group.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                chrono::Utc::now().timestamp(),
                 id,
             ])?;
         }
@@ -432,6 +433,7 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
         AND project = ?5
         AND rate = ?6
         AND currency = ?7
+        AND is_deleted = ?8
         LIMIT 1
     ";
 
@@ -445,6 +447,7 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
         task.project,
         task.rate,
         task.currency,
+        task.is_deleted,
     ])?;
 
     Ok(exists)
@@ -454,14 +457,17 @@ pub fn db_delete_tasks_by_ids(id_list: &[u32]) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {
-        conn.execute("delete FROM tasks WHERE id = (?1)", &[&id.to_string()])?;
+        conn.execute(
+            "UPDATE tasks SET is_deleted = 1 WHERE id = (?1)",
+            &[&id.to_string()],
+        )?;
     }
 
     Ok(())
 }
 
 /// Write a shortcut to the database
-pub fn db_write_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
+pub fn db_write_shortcut(shortcut: FurShortcut) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
     conn.execute(
         "INSERT INTO shortcuts (
@@ -470,15 +476,19 @@ pub fn db_write_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
             project,
             rate,
             currency,
-            color_hex
-        ) values (?1, ?2, ?3, ?4, ?5, ?6)",
+            color_hex,
+            is_deleted,
+            last_updated
+        ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![
-            fur_shortcut.name,
-            fur_shortcut.tags,
-            fur_shortcut.project,
-            fur_shortcut.rate,
-            fur_shortcut.currency,
-            fur_shortcut.color_hex,
+            shortcut.name,
+            shortcut.tags,
+            shortcut.project,
+            shortcut.rate,
+            shortcut.currency,
+            shortcut.color_hex,
+            shortcut.is_deleted,
+            shortcut.last_updated,
         ],
     )?;
 
@@ -489,7 +499,7 @@ pub fn db_write_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
 pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 
-    let mut stmt = conn.prepare("SELECT * FROM shortcuts ORDER BY name")?;
+    let mut stmt = conn.prepare("SELECT * FROM shortcuts WHERE is_deleted = 0 ORDER BY name")?;
     let mut rows = stmt.query(params![])?;
 
     let mut shortcuts: Vec<FurShortcut> = Vec::new();
@@ -503,7 +513,8 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            last_updated: row.get(7)?,
+            is_deleted: row.get(7)?,
+            last_updated: row.get(8)?,
         };
         shortcuts.push(fur_shortcut);
     }
@@ -511,7 +522,7 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
     Ok(shortcuts)
 }
 
-pub fn db_update_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
+pub fn db_update_shortcut(shortcut: FurShortcut) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
@@ -521,16 +532,20 @@ pub fn db_update_shortcut(fur_shortcut: FurShortcut) -> Result<()> {
             project = (?3),
             rate = (?4),
             currency = (?5),
-            color_hex = (?6)
-        WHERE id = (?7)",
+            color_hex = (?6),
+            is_deleted = (?7),
+            last_updated = (?8)
+        WHERE id = (?9)",
         params![
-            fur_shortcut.name,
-            fur_shortcut.tags,
-            fur_shortcut.project,
-            fur_shortcut.rate,
-            fur_shortcut.currency,
-            fur_shortcut.color_hex,
-            fur_shortcut.id,
+            shortcut.name,
+            shortcut.tags,
+            shortcut.project,
+            shortcut.rate,
+            shortcut.currency,
+            shortcut.color_hex,
+            shortcut.is_deleted,
+            shortcut.last_updated,
+            shortcut.id,
         ],
     )?;
 
@@ -547,6 +562,7 @@ pub fn db_shortcut_exists(shortcut: &FurShortcut) -> Result<bool> {
         AND project = ?3
         AND rate = ?4
         AND currency = ?5
+        AND is_deleted = 0
         LIMIT 1
     ";
 
@@ -566,17 +582,25 @@ pub fn db_shortcut_exists(shortcut: &FurShortcut) -> Result<bool> {
 pub fn db_delete_shortcut_by_id(id: u32) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
-    conn.execute("delete FROM shortcuts WHERE id = (?1)", &[&id.to_string()])?;
+    conn.execute(
+        "UPDATE shortcuts SET is_deleted = 1 WHERE id = (?1)",
+        &[&id.to_string()],
+    )?;
 
     Ok(())
 }
 
 pub fn db_delete_everything() -> Result<()> {
-    // Delete everything from the database
     let conn = Connection::open(db_get_directory())?;
 
-    conn.execute("delete from tasks", [])?;
-    conn.execute("delete from shortcuts", [])?;
+    conn.execute_batch(
+        "
+            BEGIN TRANSACTION;
+            UPDATE tasks SET is_deleted = 1;
+            UPDATE shortcuts SET is_deleted = 1;
+            COMMIT;
+        ",
+    )?;
 
     Ok(())
 }
@@ -615,8 +639,9 @@ pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>,
             tags: row.get(4)?,
             project: row.get(5)?,
             rate: row.get(6)?,
-            currency: row.get(7)?,
-            last_updated: row.get(8)?,
+            currency: row.get(7).unwrap_or(String::new()),
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -644,70 +669,13 @@ pub fn db_retrieve_shortcuts_since_timestamp(
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            last_updated: row.get(7)?,
+            is_deleted: row.get(7)?,
+            last_updated: row.get(8)?,
         };
         shortcuts_vec.push(fur_shortcut);
     }
 
     Ok(shortcuts_vec)
-}
-
-pub fn db_retrieve_deleted_tasks_since_timestamp(
-    timestamp: i64,
-) -> Result<Vec<FurTask>, rusqlite::Error> {
-    let conn = Connection::open(db_get_directory())?;
-
-    let mut stmt = conn
-        .prepare("SELECT * FROM deleted_tasks WHERE last_updated > ? ORDER BY last_updated ASC")?;
-    let mut rows = stmt.query(params![timestamp])?;
-
-    let mut deleted_tasks_vec: Vec<FurTask> = Vec::new();
-
-    while let Some(row) = rows.next()? {
-        let fur_task = FurTask {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            start_time: row.get(2)?,
-            stop_time: row.get(3)?,
-            tags: row.get(4)?,
-            project: row.get(5)?,
-            rate: row.get(6)?,
-            currency: row.get(7)?,
-            last_updated: row.get(8)?,
-        };
-        deleted_tasks_vec.push(fur_task);
-    }
-
-    Ok(deleted_tasks_vec)
-}
-
-pub fn db_retrieve_deleted_shortcuts_since_timestamp(
-    timestamp: i64,
-) -> Result<Vec<FurShortcut>, rusqlite::Error> {
-    let conn = Connection::open(db_get_directory())?;
-
-    let mut stmt = conn.prepare(
-        "SELECT * FROM deleted_shortcuts WHERE last_updated > ? ORDER BY last_updated ASC",
-    )?;
-    let mut rows = stmt.query(params![timestamp])?;
-
-    let mut deleted_shortcuts_vec: Vec<FurShortcut> = Vec::new();
-
-    while let Some(row) = rows.next()? {
-        let fur_shortcut = FurShortcut {
-            id: row.get(0)?,
-            name: row.get(1)?,
-            tags: row.get(2)?,
-            project: row.get(3)?,
-            rate: row.get(4)?,
-            currency: row.get(5)?,
-            color_hex: row.get(6)?,
-            last_updated: row.get(7)?,
-        };
-        deleted_shortcuts_vec.push(fur_shortcut);
-    }
-
-    Ok(deleted_shortcuts_vec)
 }
 
 pub fn db_is_valid_v3(path: &Path) -> Result<bool> {
@@ -960,6 +928,7 @@ pub fn db_import_old_mac_db() -> Result<()> {
                     project: row.get(4)?,
                     rate: row.get(5)?,
                     currency: String::new(),
+                    is_deleted: false,
                     last_updated: chrono::Utc::now().timestamp(),
                 };
 

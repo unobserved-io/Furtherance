@@ -527,6 +527,7 @@ impl Furtherance {
                     rate: task_group.rate,
                     currency: String::new(),
                     color_hex: Srgb::random().to_hex(),
+                    is_deleted: false,
                     last_updated: chrono::Utc::now().timestamp(),
                 };
 
@@ -1190,6 +1191,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_add.color.to_hex(),
+                        is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     };
                     match db_shortcut_exists(&new_shortcut) {
@@ -1226,6 +1228,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_edit.new_color.to_hex(),
+                        is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     }) {
                         eprintln!("Failed to update shortcut in database: {}", e);
@@ -1256,6 +1259,7 @@ impl Furtherance {
                         project: task_to_edit.new_project.trim().to_string(),
                         rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
+                        is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     });
                     self.inspector_view = None;
@@ -1279,6 +1283,7 @@ impl Furtherance {
                         project: task_to_add.project.trim().to_string(),
                         rate: task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
+                        is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     });
                     self.inspector_view = None;
@@ -1903,21 +1908,10 @@ impl Furtherance {
                             db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
                         let shortcuts =
                             db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
-                        let deleted_tasks = db_retrieve_deleted_tasks_since_timestamp(last_sync)
-                            .unwrap_or_default();
-                        let deleted_shortcuts =
-                            db_retrieve_deleted_shortcuts_since_timestamp(last_sync)
-                                .unwrap_or_default();
 
-                        sync_with_server(
-                            last_sync,
-                            tasks,
-                            deleted_tasks,
-                            shortcuts,
-                            deleted_shortcuts,
-                        )
-                        .await
-                        .map_err(Arc::new)
+                        sync_with_server(last_sync, tasks, shortcuts)
+                            .await
+                            .map_err(Arc::new)
                     },
                     Message::SyncComplete,
                 );
@@ -4341,6 +4335,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
         project,
         rate,
         currency: String::new(),
+        is_deleted: false,
         last_updated: chrono::Utc::now().timestamp(),
     })
     .expect("Couldn't write task to database.");
@@ -4855,6 +4850,7 @@ pub fn read_csv(
                 project: record.get(4).unwrap_or("").trim().to_string(),
                 rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
                 currency: record.get(6).unwrap_or("").trim().to_string(),
+                is_deleted: false,
                 last_updated: record.get(7).unwrap_or("0").parse().unwrap_or(0),
             },
             7 => {
@@ -4896,6 +4892,7 @@ pub fn read_csv(
                     project: record.get(1).unwrap_or("").trim().to_string(),
                     rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     currency: String::new(),
+                    is_deleted: false,
                     last_updated: 0,
                 }
             }
@@ -4918,6 +4915,7 @@ pub fn read_csv(
                 project: String::new(),
                 rate: 0.0,
                 currency: String::new(),
+                is_deleted: false,
                 last_updated: 0,
             },
 

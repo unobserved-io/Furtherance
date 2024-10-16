@@ -26,6 +26,7 @@ pub struct FurShortcut {
     pub rate: f32,
     pub currency: String,
     pub color_hex: String,
+    pub is_deleted: bool,
     pub last_updated: i64,
 }
 

@@ -23,34 +23,26 @@ use serde::{Deserialize, Serialize};
 struct SyncRequest {
     last_sync: i64,
     tasks: Vec<FurTask>,
-    deleted_tasks: Vec<FurTask>,
     shortcuts: Vec<FurShortcut>,
-    deleted_shortcuts: Vec<FurShortcut>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SyncResponse {
     pub server_timestamp: i64,
     pub tasks: Vec<FurTask>,
-    pub deleted_tasks: Vec<FurTask>,
     pub shortcuts: Vec<FurShortcut>,
-    pub deleted_shortcuts: Vec<FurShortcut>,
 }
 
 pub async fn sync_with_server(
     last_sync: i64,
     tasks: Vec<FurTask>,
-    deleted_tasks: Vec<FurTask>,
     shortcuts: Vec<FurShortcut>,
-    deleted_shortcuts: Vec<FurShortcut>,
 ) -> Result<SyncResponse, reqwest::Error> {
     let client = reqwest::Client::new();
     let sync_request = SyncRequest {
         last_sync,
         tasks,
-        deleted_tasks,
         shortcuts,
-        deleted_shortcuts,
     };
 
     let response = client
