@@ -95,7 +95,7 @@ fn add_uuid_function(conn: &Connection) -> Result<()> {
         "generate_uuid",
         0,
         FunctionFlags::SQLITE_DETERMINISTIC,
-        |_| Ok(Uuid::new_v4().to_string()),
+        |_| Ok(Uuid::new_v4().as_bytes().to_vec()),
     )?;
     Ok(())
 }
@@ -115,7 +115,7 @@ pub fn db_init() -> Result<()> {
             project TEXT,
             rate REAL,
             currency TEXT,
-            uuid TEXT DEFAULT (generate_uuid()),
+            uuid BLOB DEFAULT (generate_uuid()),
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
@@ -131,7 +131,7 @@ pub fn db_init() -> Result<()> {
             rate REAL,
             currency TEXT,
             color_hex TEXT,
-            uuid TEXT DEFAULT (generate_uuid()),
+            uuid BLOB DEFAULT (generate_uuid()),
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
@@ -182,7 +182,7 @@ pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
 pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
     conn.execute_batch(
         "BEGIN;
-        ALTER TABLE tasks ADD COLUMN uuid TEXT DEFAULT (generate_uuid());
+        ALTER TABLE tasks ADD COLUMN uuid BLOB DEFAULT (generate_uuid());
         UPDATE tasks SET uuid = generate_uuid() WHERE uuid IS NULL;
         ALTER TABLE shortcuts ADD COLUMN uuid TEXT DEFAULT (generate_uuid());
         UPDATE shortcuts SET uuid = generate_uuid() WHERE uuid IS NULL;
