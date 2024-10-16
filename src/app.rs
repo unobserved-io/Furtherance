@@ -1899,13 +1899,25 @@ impl Furtherance {
                 return Task::perform(
                     async move {
                         // TODO: Only send the changed tasks here, no need to retrieve all
-                        let tasks = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Ascending)
+                        let tasks =
+                            db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
+                        let shortcuts =
+                            db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
+                        let deleted_tasks = db_retrieve_deleted_tasks_since_timestamp(last_sync)
                             .unwrap_or_default();
-                        let shortcuts = db_retrieve_shortcuts().unwrap_or_default();
+                        let deleted_shortcuts =
+                            db_retrieve_deleted_shortcuts_since_timestamp(last_sync)
+                                .unwrap_or_default();
 
-                        sync_with_server(last_sync, tasks, shortcuts)
-                            .await
-                            .map_err(Arc::new)
+                        sync_with_server(
+                            last_sync,
+                            tasks,
+                            deleted_tasks,
+                            shortcuts,
+                            deleted_shortcuts,
+                        )
+                        .await
+                        .map_err(Arc::new)
                     },
                     Message::SyncComplete,
                 );

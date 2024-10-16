@@ -597,6 +597,119 @@ pub fn db_backup(backup_file: PathBuf) -> Result<()> {
 //     Ok(())
 // }
 
+pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt =
+        conn.prepare("SELECT * FROM tasks WHERE last_updated > ? ORDER BY last_updated ASC")?;
+    let mut rows = stmt.query(params![timestamp])?;
+
+    let mut tasks_vec: Vec<FurTask> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTask {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            start_time: row.get(2)?,
+            stop_time: row.get(3)?,
+            tags: row.get(4)?,
+            project: row.get(5)?,
+            rate: row.get(6)?,
+            currency: row.get(7)?,
+            last_updated: row.get(8)?,
+        };
+        tasks_vec.push(fur_task);
+    }
+
+    Ok(tasks_vec)
+}
+
+pub fn db_retrieve_shortcuts_since_timestamp(
+    timestamp: i64,
+) -> Result<Vec<FurShortcut>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt =
+        conn.prepare("SELECT * FROM shortcuts WHERE last_updated > ? ORDER BY last_updated ASC")?;
+    let mut rows = stmt.query(params![timestamp])?;
+
+    let mut shortcuts_vec: Vec<FurShortcut> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_shortcut = FurShortcut {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            tags: row.get(2)?,
+            project: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5)?,
+            color_hex: row.get(6)?,
+            last_updated: row.get(7)?,
+        };
+        shortcuts_vec.push(fur_shortcut);
+    }
+
+    Ok(shortcuts_vec)
+}
+
+pub fn db_retrieve_deleted_tasks_since_timestamp(
+    timestamp: i64,
+) -> Result<Vec<FurTask>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn
+        .prepare("SELECT * FROM deleted_tasks WHERE last_updated > ? ORDER BY last_updated ASC")?;
+    let mut rows = stmt.query(params![timestamp])?;
+
+    let mut deleted_tasks_vec: Vec<FurTask> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTask {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            start_time: row.get(2)?,
+            stop_time: row.get(3)?,
+            tags: row.get(4)?,
+            project: row.get(5)?,
+            rate: row.get(6)?,
+            currency: row.get(7)?,
+            last_updated: row.get(8)?,
+        };
+        deleted_tasks_vec.push(fur_task);
+    }
+
+    Ok(deleted_tasks_vec)
+}
+
+pub fn db_retrieve_deleted_shortcuts_since_timestamp(
+    timestamp: i64,
+) -> Result<Vec<FurShortcut>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn.prepare(
+        "SELECT * FROM deleted_shortcuts WHERE last_updated > ? ORDER BY last_updated ASC",
+    )?;
+    let mut rows = stmt.query(params![timestamp])?;
+
+    let mut deleted_shortcuts_vec: Vec<FurShortcut> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_shortcut = FurShortcut {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            tags: row.get(2)?,
+            project: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5)?,
+            color_hex: row.get(6)?,
+            last_updated: row.get(7)?,
+        };
+        deleted_shortcuts_vec.push(fur_shortcut);
+    }
+
+    Ok(deleted_shortcuts_vec)
+}
+
 pub fn db_is_valid_v3(path: &Path) -> Result<bool> {
     let conn = match Connection::open(path) {
         Ok(conn) => conn,
