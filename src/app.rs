@@ -536,7 +536,7 @@ impl Furtherance {
                         if exists {
                             self.displayed_alert = Some(FurAlert::ShortcutExists);
                         } else {
-                            if let Err(e) = db_write_shortcut(new_shortcut) {
+                            if let Err(e) = db_write_shortcut(&new_shortcut) {
                                 eprintln!("Failed to write shortcut to database: {}", e);
                             }
                             match db_retrieve_shortcuts() {
@@ -1199,7 +1199,7 @@ impl Furtherance {
                             if exists {
                                 self.displayed_alert = Some(FurAlert::ShortcutExists);
                             } else {
-                                if let Err(e) = db_write_shortcut(new_shortcut) {
+                                if let Err(e) = db_write_shortcut(&new_shortcut) {
                                     eprintln!("Failed to write shortcut to database: {}", e);
                                 }
                                 self.inspector_view = None;
@@ -1216,7 +1216,7 @@ impl Furtherance {
                         Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
                     }
                 } else if let Some(shortcut_to_edit) = &self.shortcut_to_edit {
-                    if let Err(e) = db_update_shortcut(FurShortcut {
+                    if let Err(e) = db_update_shortcut(&FurShortcut {
                         id: shortcut_to_edit.id,
                         name: shortcut_to_edit.new_name.trim().to_string(),
                         tags: shortcut_to_edit.new_tags.trim().to_string(),
@@ -1250,7 +1250,7 @@ impl Furtherance {
                         .unwrap_or(&task_to_edit.new_tags)
                         .trim()
                         .to_string();
-                    let _ = db_update_task(FurTask {
+                    let _ = db_update_task(&FurTask {
                         id: task_to_edit.id,
                         name: task_to_edit.new_name.trim().to_string(),
                         start_time: task_to_edit.new_start_time,
@@ -1274,7 +1274,7 @@ impl Furtherance {
                         .unwrap_or(&task_to_add.tags)
                         .trim()
                         .to_string();
-                    let _ = db_write_task(FurTask {
+                    let _ = db_write_task(&FurTask {
                         id: 0,
                         name: task_to_add.name.trim().to_string(),
                         start_time: task_to_add.start_time,
@@ -1903,7 +1903,6 @@ impl Furtherance {
                 let last_sync = self.fur_settings.last_sync;
                 return Task::perform(
                     async move {
-                        // TODO: Only send the changed tasks here, no need to retrieve all
                         let tasks =
                             db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
                         let shortcuts =
@@ -1919,15 +1918,51 @@ impl Furtherance {
             Message::SyncComplete(sync_result) => {
                 match sync_result {
                     Ok(response) => {
-                        // TODO: This should either write or update
-                        for task in response.tasks {
-                            db_write_task(task)
-                                .unwrap_or_else(|e| eprintln!("Error writing task: {}", e));
+                        for server_task in response.tasks {
+                            match db_retrieve_task_by_id(&server_task.id) {
+                                Ok(Some(client_task)) => {
+                                    // Task exists - update it if it changed
+                                    if server_task.last_updated > client_task.last_updated {
+                                        if let Err(e) = db_update_task(&server_task) {
+                                            eprintln!("Error updating task from server: {}", e);
+                                        }
+                                    }
+                                }
+                                Ok(None) => {
+                                    // Task does not exist - insert it
+                                    if let Err(e) = db_write_task(&server_task) {
+                                        eprintln!("Error writing new task from server: {}", e);
+                                    }
+                                }
+                                Err(e) => {
+                                    eprintln!("Error checking for existing task from server: {}", e)
+                                }
+                            }
                         }
 
-                        for shortcut in response.shortcuts {
-                            db_write_shortcut(shortcut)
-                                .unwrap_or_else(|e| eprintln!("Error writing shortcut: {}", e));
+                        for server_shortcut in response.shortcuts {
+                            match db_retrieve_shortcut_by_id(&server_shortcut.id) {
+                                Ok(Some(client_shortcut)) => {
+                                    // Shortcut exists - update it if it changed
+                                    if server_shortcut.last_updated > client_shortcut.last_updated {
+                                        if let Err(e) = db_update_shortcut(&server_shortcut) {
+                                            eprintln!("Error updating shortcut from server: {}", e);
+                                        }
+                                    }
+                                }
+                                Ok(None) => {
+                                    // Shortcut does not exist - insert it
+                                    if let Err(e) = db_write_shortcut(&server_shortcut) {
+                                        eprintln!("Error writing new shortcut from server: {}", e);
+                                    }
+                                }
+                                Err(e) => {
+                                    eprintln!(
+                                        "Error checking for existing shortcut from server: {}",
+                                        e
+                                    )
+                                }
+                            }
                         }
 
                         if let Err(e) = self
@@ -4326,7 +4361,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
     state.timer_is_running = false;
 
     let (name, project, tags, rate) = split_task_input(&state.task_input);
-    db_write_task(FurTask {
+    db_write_task(&FurTask {
         id: 1, // Not used
         name,
         start_time: state.timer_start_time,
