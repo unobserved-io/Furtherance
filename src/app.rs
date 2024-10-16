@@ -75,6 +75,7 @@ use tokio::time;
 
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
+use uuid::Uuid;
 
 pub struct Furtherance {
     current_view: FurView,
@@ -527,6 +528,7 @@ impl Furtherance {
                     rate: task_group.rate,
                     currency: String::new(),
                     color_hex: Srgb::random().to_hex(),
+                    uuid: Uuid::new_v4(),
                     is_deleted: false,
                     last_updated: chrono::Utc::now().timestamp(),
                 };
@@ -1191,6 +1193,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_add.color.to_hex(),
+                        uuid: Uuid::new_v4(),
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     };
@@ -1228,6 +1231,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_edit.new_color.to_hex(),
+                        uuid: shortcut_to_edit.uuid,
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     }) {
@@ -1259,6 +1263,7 @@ impl Furtherance {
                         project: task_to_edit.new_project.trim().to_string(),
                         rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
+                        uuid: task_to_edit.uuid,
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     });
@@ -1283,6 +1288,7 @@ impl Furtherance {
                         project: task_to_add.project.trim().to_string(),
                         rate: task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
+                        uuid: Uuid::new_v4(),
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     });
@@ -4370,6 +4376,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
         project,
         rate,
         currency: String::new(),
+        uuid: Uuid::new_v4(),
         is_deleted: false,
         last_updated: chrono::Utc::now().timestamp(),
     })
@@ -4885,6 +4892,7 @@ pub fn read_csv(
                 project: record.get(4).unwrap_or("").trim().to_string(),
                 rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
                 currency: record.get(6).unwrap_or("").trim().to_string(),
+                uuid: Uuid::new_v4(),
                 is_deleted: false,
                 last_updated: record.get(7).unwrap_or("0").parse().unwrap_or(0),
             },
@@ -4927,6 +4935,7 @@ pub fn read_csv(
                     project: record.get(1).unwrap_or("").trim().to_string(),
                     rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     currency: String::new(),
+                    uuid: Uuid::new_v4(),
                     is_deleted: false,
                     last_updated: 0,
                 }
@@ -4950,6 +4959,7 @@ pub fn read_csv(
                 project: String::new(),
                 rate: 0.0,
                 currency: String::new(),
+                uuid: Uuid::new_v4(),
                 is_deleted: false,
                 last_updated: 0,
             },

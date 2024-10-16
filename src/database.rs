@@ -19,10 +19,11 @@ use chrono::DateTime;
 use chrono::Local;
 use chrono::TimeDelta;
 use chrono::TimeZone;
-use rusqlite::{backup, params, Connection, Result};
+use rusqlite::{backup, functions::FunctionFlags, params, Connection, Result};
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
+use uuid::Uuid;
 
 use crate::models::{
     fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
@@ -89,8 +90,20 @@ pub fn db_get_directory() -> PathBuf {
     PathBuf::from(&settings_db_dir)
 }
 
+fn add_uuid_function(conn: &Connection) -> Result<()> {
+    conn.create_scalar_function(
+        "generate_uuid",
+        0,
+        FunctionFlags::SQLITE_DETERMINISTIC,
+        |_| Ok(Uuid::new_v4().to_string()),
+    )?;
+    Ok(())
+}
+
 pub fn db_init() -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+
+    add_uuid_function(&conn)?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS tasks (
@@ -102,6 +115,7 @@ pub fn db_init() -> Result<()> {
             project TEXT,
             rate REAL,
             currency TEXT,
+            uuid TEXT DEFAULT (generate_uuid()),
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
@@ -117,6 +131,7 @@ pub fn db_init() -> Result<()> {
             rate REAL,
             currency TEXT,
             color_hex TEXT,
+            uuid TEXT DEFAULT (generate_uuid()),
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
@@ -155,13 +170,22 @@ pub fn db_add_rate_column(conn: &Connection) -> Result<()> {
 }
 
 pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
-    conn.execute("ALTER TABLE tasks ADD COLUMN currency Text DEFAULT ''", [])?;
+    conn.execute_batch(
+        "BEGIN;
+        ALTER TABLE tasks ADD COLUMN currency Text DEFAULT ''
+        UPDATE tasks SET currency = '' WHERE currency IS NULL;
+        COMMIT;",
+    )?;
     Ok(())
 }
 
 pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
     conn.execute_batch(
         "BEGIN;
+        ALTER TABLE tasks ADD COLUMN uuid TEXT DEFAULT (generate_uuid());
+        UPDATE tasks SET uuid = generate_uuid() WHERE uuid IS NULL;
+        ALTER TABLE shortcuts ADD COLUMN uuid TEXT DEFAULT (generate_uuid());
+        UPDATE shortcuts SET uuid = generate_uuid() WHERE uuid IS NULL;
         ALTER TABLE tasks ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
         ALTER TABLE shortcuts ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
         ALTER TABLE tasks ADD COLUMN last_updated INTEGER DEFAULT 0;
@@ -271,8 +295,9 @@ pub fn db_retrieve_all_tasks(
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            is_deleted: row.get(8)?,
-            last_updated: row.get(9)?,
+            uuid: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -302,8 +327,9 @@ pub fn db_retrieve_tasks_by_date_range(
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            is_deleted: row.get(8)?,
-            last_updated: row.get(9)?,
+            uuid: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -341,8 +367,9 @@ pub fn db_retrieve_tasks_with_day_limit(
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            is_deleted: row.get(8)?,
-            last_updated: row.get(9)?,
+            uuid: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -365,8 +392,9 @@ pub fn db_retrieve_task_by_id(id: &u32) -> Result<Option<FurTask>> {
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            is_deleted: row.get(8)?,
-            last_updated: row.get(9)?,
+            uuid: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
         };
         Ok(Some(task))
     } else {
@@ -537,8 +565,9 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            is_deleted: row.get(7)?,
-            last_updated: row.get(8)?,
+            uuid: row.get(7)?,
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         shortcuts.push(fur_shortcut);
     }
@@ -617,8 +646,9 @@ pub fn db_retrieve_shortcut_by_id(id: &u32) -> Result<Option<FurShortcut>> {
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            is_deleted: row.get(7)?,
-            last_updated: row.get(8)?,
+            uuid: row.get(7)?,
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         Ok(Some(shortcut))
     } else {
@@ -687,8 +717,9 @@ pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>,
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            is_deleted: row.get(8)?,
-            last_updated: row.get(9)?,
+            uuid: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
         };
         tasks_vec.push(fur_task);
     }
@@ -716,8 +747,9 @@ pub fn db_retrieve_shortcuts_since_timestamp(
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            is_deleted: row.get(7)?,
-            last_updated: row.get(8)?,
+            uuid: row.get(7)?,
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
         };
         shortcuts_vec.push(fur_shortcut);
     }
@@ -975,6 +1007,7 @@ pub fn db_import_old_mac_db() -> Result<()> {
                     project: row.get(4)?,
                     rate: row.get(5)?,
                     currency: String::new(),
+                    uuid: Uuid::new_v4(),
                     is_deleted: false,
                     last_updated: chrono::Utc::now().timestamp(),
                 };

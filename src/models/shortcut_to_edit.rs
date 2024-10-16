@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use iced::Color;
+use uuid::Uuid;
 
 use crate::{constants::FURTHERANCE_PURPLE, helpers::color_utils::ToIcedColor};
 
@@ -34,6 +35,7 @@ pub struct ShortcutToEdit {
     pub color: Color,
     pub new_color: Color,
     pub show_color_picker: bool,
+    pub uuid: Uuid,
     pub invalid_input_error_message: String,
 }
 
@@ -54,6 +56,7 @@ impl ShortcutToEdit {
             color,
             new_color: color,
             show_color_picker: false,
+            uuid: shortcut.uuid,
             invalid_input_error_message: "".to_string(),
         }
     }

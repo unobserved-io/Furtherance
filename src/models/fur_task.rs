@@ -16,6 +16,7 @@
 
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FurTask {
@@ -27,6 +28,7 @@ pub struct FurTask {
     pub project: String,
     pub rate: f32,
     pub currency: String,
+    pub uuid: Uuid,
     pub is_deleted: bool,
     pub last_updated: i64,
 }

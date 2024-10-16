@@ -16,6 +16,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct FurShortcut {
@@ -26,6 +27,7 @@ pub struct FurShortcut {
     pub rate: f32,
     pub currency: String,
     pub color_hex: String,
+    pub uuid: Uuid,
     pub is_deleted: bool,
     pub last_updated: i64,
 }

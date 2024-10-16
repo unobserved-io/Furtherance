@@ -16,6 +16,7 @@
 
 use chrono::{DateTime, Local};
 use iced_aw::{date_picker::Date, time_picker::Time};
+use uuid::Uuid;
 
 use super::fur_task::FurTask;
 
@@ -42,6 +43,7 @@ pub struct TaskToEdit {
     pub new_project: String,
     pub rate: f32,
     pub new_rate: String,
+    pub uuid: Uuid,
     pub invalid_input_error_message: String,
 }
 
@@ -73,6 +75,7 @@ impl TaskToEdit {
             new_project: task.project.clone(),
             rate: task.rate,
             new_rate: format!("{:.2}", task.rate),
+            uuid: task.uuid,
             invalid_input_error_message: String::new(),
         }
     }

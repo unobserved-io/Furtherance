@@ -66,7 +66,12 @@ rand = "0.8"
 regex = "1.10"
 reqwest = { version = "0.12", features = ["json"] }
 rfd = "0.14.1"
-rusqlite = { version = "0.32", features = ["bundled", "chrono", "backup"] }
+rusqlite = { version = "0.32", features = [
+    "bundled",
+    "chrono",
+    "backup",
+    "functions",
+] }
 rust-embed = "8.5"
 rustc-hash = "2.0.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -75,6 +80,7 @@ sys-locale = "0.3.1"
 toml = "0.8"
 tokio = "1.39"
 user-idle = "0.6"
+uuid = { version = "1.11.0", features = ["v4", "serde", "rusqlite"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 x11rb = "0.13.1"
