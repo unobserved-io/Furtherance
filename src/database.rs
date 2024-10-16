@@ -171,7 +171,7 @@ pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-pub fn db_write_task(task: &FurTask) -> Result<()> {
+pub fn db_insert_task(task: &FurTask) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
@@ -202,7 +202,7 @@ pub fn db_write_task(task: &FurTask) -> Result<()> {
     Ok(())
 }
 
-pub fn db_write_tasks(tasks: &[FurTask]) -> Result<()> {
+pub fn db_insert_tasks(tasks: &[FurTask]) -> Result<()> {
     let mut conn = Connection::open(db_get_directory())?;
 
     let tx = conn.transaction()?;
@@ -490,8 +490,8 @@ pub fn db_delete_tasks_by_ids(id_list: &[u32]) -> Result<()> {
     Ok(())
 }
 
-/// Write a shortcut to the database
-pub fn db_write_shortcut(shortcut: &FurShortcut) -> Result<()> {
+/// Insert a shortcut to the database
+pub fn db_insert_shortcut(shortcut: &FurShortcut) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
     conn.execute(
         "INSERT INTO shortcuts (
@@ -987,7 +987,7 @@ pub fn db_import_old_mac_db() -> Result<()> {
                 }
             }
 
-            db_write_tasks(&tasks_vec)?;
+            db_insert_tasks(&tasks_vec)?;
         }
     }
 

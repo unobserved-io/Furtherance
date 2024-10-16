@@ -536,7 +536,7 @@ impl Furtherance {
                         if exists {
                             self.displayed_alert = Some(FurAlert::ShortcutExists);
                         } else {
-                            if let Err(e) = db_write_shortcut(&new_shortcut) {
+                            if let Err(e) = db_insert_shortcut(&new_shortcut) {
                                 eprintln!("Failed to write shortcut to database: {}", e);
                             }
                             match db_retrieve_shortcuts() {
@@ -1199,7 +1199,7 @@ impl Furtherance {
                             if exists {
                                 self.displayed_alert = Some(FurAlert::ShortcutExists);
                             } else {
-                                if let Err(e) = db_write_shortcut(&new_shortcut) {
+                                if let Err(e) = db_insert_shortcut(&new_shortcut) {
                                     eprintln!("Failed to write shortcut to database: {}", e);
                                 }
                                 self.inspector_view = None;
@@ -1274,7 +1274,7 @@ impl Furtherance {
                         .unwrap_or(&task_to_add.tags)
                         .trim()
                         .to_string();
-                    let _ = db_write_task(&FurTask {
+                    let _ = db_insert_task(&FurTask {
                         id: 0,
                         name: task_to_add.name.trim().to_string(),
                         start_time: task_to_add.start_time,
@@ -1930,7 +1930,7 @@ impl Furtherance {
                                 }
                                 Ok(None) => {
                                     // Task does not exist - insert it
-                                    if let Err(e) = db_write_task(&server_task) {
+                                    if let Err(e) = db_insert_task(&server_task) {
                                         eprintln!("Error writing new task from server: {}", e);
                                     }
                                 }
@@ -1952,7 +1952,7 @@ impl Furtherance {
                                 }
                                 Ok(None) => {
                                     // Shortcut does not exist - insert it
-                                    if let Err(e) = db_write_shortcut(&server_shortcut) {
+                                    if let Err(e) = db_insert_shortcut(&server_shortcut) {
                                         eprintln!("Error writing new shortcut from server: {}", e);
                                     }
                                 }
@@ -4361,7 +4361,7 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
     state.timer_is_running = false;
 
     let (name, project, tags, rate) = split_task_input(&state.task_input);
-    db_write_task(&FurTask {
+    db_insert_task(&FurTask {
         id: 1, // Not used
         name,
         start_time: state.timer_start_time,
@@ -4976,7 +4976,7 @@ pub fn import_csv_to_database(file: &mut File, localization: &Localization) {
 
     match read_csv(file, localization) {
         Ok(tasks_to_import) => {
-            if let Err(e) = db_write_tasks(&tasks_to_import) {
+            if let Err(e) = db_insert_tasks(&tasks_to_import) {
                 eprintln!("Failed to import tasks: {}", e);
             }
         }

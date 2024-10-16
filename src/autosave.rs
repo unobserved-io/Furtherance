@@ -24,7 +24,7 @@ use chrono::{DateTime, Local};
 
 use crate::{
     app::split_task_input,
-    database::db_write_task,
+    database::db_insert_task,
     models::{fur_settings::get_data_path, fur_task::FurTask},
 };
 
@@ -36,7 +36,7 @@ pub fn autosave_exists() -> bool {
 pub fn restore_autosave() {
     let path = get_autosave_path();
     if let Some(task) = task_from_autosave(&path) {
-        if let Err(e) = db_write_task(&task) {
+        if let Err(e) = db_insert_task(&task) {
             eprintln!("Error writing autosave to database: {e}");
         }
 
