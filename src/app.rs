@@ -240,9 +240,9 @@ impl Furtherance {
             );
         }
         // Update old furtherance databases with new properties
-        if let Err(e) = db_upgrade_old() {
-            eprintln!("Error encountered while upgrading legacy database: {}", e);
-        }
+        // if let Err(e) = db_upgrade_old() {
+        //     eprintln!("Error encountered while upgrading legacy database: {}", e);
+        // }
 
         // Set application identifier for notifications
         #[cfg(target_os = "macos")]

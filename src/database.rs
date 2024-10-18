@@ -90,6 +90,15 @@ pub fn db_get_directory() -> PathBuf {
     PathBuf::from(&settings_db_dir)
 }
 
+fn column_exists(conn: &Connection, table: &str, column: &str) -> Result<bool> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT COUNT(*) FROM pragma_table_info('{}') WHERE name = ?",
+        table
+    ))?;
+    let count: i64 = stmt.query_row([column], |row| row.get(0))?;
+    Ok(count > 0)
+}
+
 fn add_uuid_function(conn: &Connection) -> Result<()> {
     conn.create_scalar_function(
         "generate_uuid",
@@ -138,18 +147,29 @@ pub fn db_init() -> Result<()> {
         [],
     )?;
 
+    db_upgrade_old()?;
+
     Ok(())
 }
 
 pub fn db_upgrade_old() -> Result<()> {
-    // Update from old DB w/o tags, project, or rates
     let conn = Connection::open(db_get_directory())?;
 
-    let _ = db_add_tags_column(&conn);
-    let _ = db_add_project_column(&conn);
-    let _ = db_add_rate_column(&conn);
-    let _ = db_add_currency_column(&conn);
-    let _ = db_add_sync_columns(&conn);
+    if !column_exists(&conn, "tasks", "tags")? {
+        db_add_tags_column(&conn)?;
+    }
+    if !column_exists(&conn, "tasks", "project")? {
+        db_add_project_column(&conn)?;
+    }
+    if !column_exists(&conn, "tasks", "rate")? {
+        db_add_rate_column(&conn)?;
+    }
+    if !column_exists(&conn, "tasks", "currency")? {
+        db_add_currency_column(&conn)?;
+    }
+    if !column_exists(&conn, "tasks", "uuid")? {
+        db_add_sync_columns(&conn)?;
+    }
 
     Ok(())
 }
@@ -180,18 +200,46 @@ pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
 }
 
 pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
-    conn.execute_batch(
-        "BEGIN;
-        ALTER TABLE tasks ADD COLUMN uuid BLOB DEFAULT (generate_uuid());
-        UPDATE tasks SET uuid = generate_uuid() WHERE uuid IS NULL;
-        ALTER TABLE shortcuts ADD COLUMN uuid TEXT DEFAULT (generate_uuid());
-        UPDATE shortcuts SET uuid = generate_uuid() WHERE uuid IS NULL;
-        ALTER TABLE tasks ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
-        ALTER TABLE shortcuts ADD COLUMN is_deleted BOOLEAN DEFAULT 0;
-        ALTER TABLE tasks ADD COLUMN last_updated INTEGER DEFAULT 0;
-        ALTER TABLE shortcuts ADD COLUMN last_updated INTEGER DEFAULT 0;
-        COMMIT;",
-    )?;
+    if !column_exists(conn, "tasks", "uuid")? {
+        add_uuid_function(&conn)?;
+        conn.execute("ALTER TABLE tasks ADD COLUMN uuid BLOB", [])?;
+        conn.execute(
+            "UPDATE tasks SET uuid = generate_uuid() WHERE uuid IS NULL",
+            [],
+        )?;
+    }
+    if !column_exists(conn, "shortcuts", "uuid")? {
+        add_uuid_function(&conn)?;
+        conn.execute("ALTER TABLE shortcuts ADD COLUMN uuid BLOB", [])?;
+        conn.execute(
+            "UPDATE shortcuts SET uuid = generate_uuid() WHERE uuid IS NULL",
+            [],
+        )?;
+    }
+    if !column_exists(conn, "tasks", "is_deleted")? {
+        conn.execute(
+            "ALTER TABLE tasks ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
+            [],
+        )?;
+    }
+    if !column_exists(conn, "shortcuts", "is_deleted")? {
+        conn.execute(
+            "ALTER TABLE shortcuts ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
+            [],
+        )?;
+    }
+    if !column_exists(conn, "tasks", "last_updated")? {
+        conn.execute(
+            "ALTER TABLE tasks ADD COLUMN last_updated INTEGER DEFAULT 0",
+            [],
+        )?;
+    }
+    if !column_exists(conn, "shortcuts", "last_updated")? {
+        conn.execute(
+            "ALTER TABLE shortcuts ADD COLUMN last_updated INTEGER DEFAULT 0",
+            [],
+        )?;
+    }
     Ok(())
 }
 
