@@ -4219,9 +4219,6 @@ fn get_task_history(limit: i64) -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>
 
     match db_retrieve_tasks_with_day_limit(limit, SortBy::StopTime, SortOrder::Descending) {
         Ok(all_tasks) => {
-            for task in &all_tasks {
-                println!("{}", task.uuid);
-            }
             let tasks_by_date = group_tasks_by_date(all_tasks);
 
             for (date, tasks) in tasks_by_date {
