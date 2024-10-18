@@ -79,8 +79,8 @@ use uuid::Uuid;
 
 pub struct Furtherance {
     current_view: FurView,
-    delete_ids_from_context: Option<Vec<u32>>,
-    delete_shortcut_from_context: Option<u32>,
+    delete_ids_from_context: Option<Vec<Uuid>>,
+    delete_shortcut_from_context: Option<Uuid>,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
@@ -136,9 +136,9 @@ pub enum Message {
     DeleteEverything,
     DateRangeSelected(FurDateRange),
     DeleteShortcut,
-    DeleteShortcutFromContext(u32),
+    DeleteShortcutFromContext(Uuid),
     DeleteTasks,
-    DeleteTasksFromContext(Vec<u32>),
+    DeleteTasksFromContext(Vec<Uuid>),
     EditGroup(FurTaskGroup),
     EditShortcutPressed(FurShortcut),
     EditShortcutTextChanged(String, EditTaskProperty),
@@ -517,7 +517,6 @@ impl Furtherance {
             }
             Message::CreateShortcutFromTaskGroup(task_group) => {
                 let new_shortcut = FurShortcut {
-                    id: 0,
                     name: task_group.name,
                     tags: if task_group.tags.is_empty() {
                         String::new()
@@ -575,8 +574,8 @@ impl Furtherance {
             },
             Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
             Message::DeleteShortcut => {
-                if let Some(id) = self.delete_shortcut_from_context {
-                    if let Err(e) = db_delete_shortcut_by_id(id) {
+                if let Some(uuid) = self.delete_shortcut_from_context {
+                    if let Err(e) = db_delete_shortcut_by_id(uuid) {
                         eprintln!("Failed to delete shortcut: {}", e);
                     }
                     self.delete_shortcut_from_context = None;
@@ -614,7 +613,7 @@ impl Furtherance {
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
-                    if let Err(e) = db_delete_tasks_by_ids(&[task_to_edit.id]) {
+                    if let Err(e) = db_delete_tasks_by_ids(&[task_to_edit.uuid]) {
                         eprintln!("Failed to delete task: {}", e);
                     }
                     self.task_to_edit = None;
@@ -622,7 +621,7 @@ impl Furtherance {
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
-                    if let Err(e) = db_delete_tasks_by_ids(&group_to_edit.task_ids()) {
+                    if let Err(e) = db_delete_tasks_by_ids(&group_to_edit.all_task_ids()) {
                         eprintln!("Failed to delete tasks: {}", e);
                     }
                     self.group_to_edit = None;
@@ -1182,7 +1181,6 @@ impl Furtherance {
             Message::SaveShortcut => {
                 if let Some(shortcut_to_add) = &self.shortcut_to_add {
                     let new_shortcut = FurShortcut {
-                        id: 0,
                         name: shortcut_to_add.name.trim().to_string(),
                         tags: shortcut_to_add.tags.trim().to_string(),
                         project: shortcut_to_add.project.trim().to_string(),
@@ -1220,7 +1218,6 @@ impl Furtherance {
                     }
                 } else if let Some(shortcut_to_edit) = &self.shortcut_to_edit {
                     if let Err(e) = db_update_shortcut(&FurShortcut {
-                        id: shortcut_to_edit.id,
                         name: shortcut_to_edit.new_name.trim().to_string(),
                         tags: shortcut_to_edit.new_tags.trim().to_string(),
                         project: shortcut_to_edit.new_project.trim().to_string(),
@@ -1255,7 +1252,6 @@ impl Furtherance {
                         .trim()
                         .to_string();
                     let _ = db_update_task(&FurTask {
-                        id: task_to_edit.id,
                         name: task_to_edit.new_name.trim().to_string(),
                         start_time: task_to_edit.new_start_time,
                         stop_time: task_to_edit.new_stop_time,
@@ -1280,7 +1276,6 @@ impl Furtherance {
                         .trim()
                         .to_string();
                     let _ = db_insert_task(&FurTask {
-                        id: 0,
                         name: task_to_add.name.trim().to_string(),
                         start_time: task_to_add.start_time,
                         stop_time: task_to_add.stop_time,
@@ -1925,7 +1920,7 @@ impl Furtherance {
                 match sync_result {
                     Ok(response) => {
                         for server_task in response.tasks {
-                            match db_retrieve_task_by_id(&server_task.id) {
+                            match db_retrieve_task_by_id(&server_task.uuid) {
                                 Ok(Some(client_task)) => {
                                     // Task exists - update it if it changed
                                     if server_task.last_updated > client_task.last_updated {
@@ -1947,7 +1942,7 @@ impl Furtherance {
                         }
 
                         for server_shortcut in response.shortcuts {
-                            match db_retrieve_shortcut_by_id(&server_shortcut.id) {
+                            match db_retrieve_shortcut_by_id(&server_shortcut.uuid) {
                                 Ok(Some(client_shortcut)) => {
                                     // Shortcut exists - update it if it changed
                                     if server_shortcut.last_updated > client_shortcut.last_updated {
@@ -4338,7 +4333,7 @@ fn shortcut_button<'a, 'loc>(
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteShortcutFromContext(
-                        shortcut_clone.id.clone()
+                        shortcut_clone.uuid.clone()
                     ))
                     .style(style::context_menu_button_style)
                     .width(Length::Fill),
@@ -4368,7 +4363,6 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
 
     let (name, project, tags, rate) = split_task_input(&state.task_input);
     db_insert_task(&FurTask {
-        id: 1, // Not used
         name,
         start_time: state.timer_start_time,
         stop_time: state.timer_stop_time,
@@ -4884,7 +4878,6 @@ pub fn read_csv(
             // TODO: prob need to ad a 10 for v3.1
             9 => FurTask {
                 // v3 - Iced
-                id: 0,
                 name: record.get(0).unwrap_or("").to_string(),
                 start_time: record.get(1).unwrap_or("").parse().unwrap_or_default(),
                 stop_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
@@ -4900,7 +4893,6 @@ pub fn read_csv(
                 // v2 - macOS SwiftUI
                 let date_format = "%Y-%m-%d %H:%M:%S";
                 FurTask {
-                    id: 0,
                     name: record.get(0).unwrap_or("").to_string(),
                     start_time: Local
                         .from_local_datetime(
@@ -4942,7 +4934,6 @@ pub fn read_csv(
             }
             6 => FurTask {
                 // v1 - GTK
-                id: record.get(0).unwrap_or("0").parse().unwrap_or(0),
                 name: record.get(1).unwrap_or("").to_string(),
                 start_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
                 stop_time: record.get(3).unwrap_or("").parse().unwrap_or_default(),

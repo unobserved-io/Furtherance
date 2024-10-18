@@ -22,7 +22,6 @@ use super::fur_task::FurTask;
 
 #[derive(Clone, Debug)]
 pub struct TaskToEdit {
-    pub id: u32,
     pub name: String,
     pub new_name: String,
     pub start_time: DateTime<Local>,
@@ -50,7 +49,6 @@ pub struct TaskToEdit {
 impl TaskToEdit {
     pub fn new_from(task: &FurTask) -> Self {
         TaskToEdit {
-            id: task.id,
             name: task.name.clone(),
             new_name: task.name.clone(),
             start_time: task.start_time,

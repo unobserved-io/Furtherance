@@ -20,7 +20,6 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct FurShortcut {
-    pub id: u32,
     pub name: String,
     pub tags: String,
     pub project: String,

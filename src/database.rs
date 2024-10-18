@@ -287,7 +287,6 @@ pub fn db_retrieve_all_tasks(
 
     while let Some(row) = rows.next()? {
         let fur_task = FurTask {
-            id: row.get(0)?,
             name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
@@ -319,7 +318,6 @@ pub fn db_retrieve_tasks_by_date_range(
 
     while let Some(row) = rows.next()? {
         let fur_task = FurTask {
-            id: row.get(0)?,
             name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
@@ -359,7 +357,6 @@ pub fn db_retrieve_tasks_with_day_limit(
 
     while let Some(row) = rows.next()? {
         let fur_task = FurTask {
-            id: row.get(0)?,
             name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
@@ -377,14 +374,13 @@ pub fn db_retrieve_tasks_with_day_limit(
     Ok(tasks_vec)
 }
 
-pub fn db_retrieve_task_by_id(id: &u32) -> Result<Option<FurTask>> {
+pub fn db_retrieve_task_by_id(uuid: &Uuid) -> Result<Option<FurTask>> {
     let conn = Connection::open(db_get_directory())?;
-    let mut stmt = conn.prepare(format!("SELECT 1 FROM tasks WHERE id = {0}", id,).as_str())?;
+    let mut stmt = conn.prepare(format!("SELECT 1 FROM tasks WHERE uuid = {0}", uuid,).as_str())?;
     let mut rows = stmt.query(params![])?;
 
     if let Some(row) = rows.next()? {
         let task = FurTask {
-            id: row.get(0)?,
             name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
@@ -416,7 +412,7 @@ pub fn db_update_task(task: &FurTask) -> Result<()> {
             currency = ?7,
             is_deleted = ?8,
             last_updated = ?9,
-        WHERE id = ?10",
+        WHERE uuid = ?10",
         params![
             task.name,
             task.start_time.to_rfc3339(),
@@ -427,7 +423,7 @@ pub fn db_update_task(task: &FurTask) -> Result<()> {
             task.currency,
             task.is_deleted,
             task.last_updated,
-            task.id,
+            task.uuid,
         ],
     )?;
 
@@ -449,7 +445,7 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
         WHERE id = ?6",
         )?;
 
-        for id in group.task_ids().iter() {
+        for id in group.all_task_ids().iter() {
             stmt.execute(params![
                 group.new_name.trim(),
                 group
@@ -505,12 +501,12 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
     Ok(exists)
 }
 
-pub fn db_delete_tasks_by_ids(id_list: &[u32]) -> Result<()> {
+pub fn db_delete_tasks_by_ids(id_list: &[Uuid]) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {
         conn.execute(
-            "UPDATE tasks SET is_deleted = 1 WHERE id = (?1)",
+            "UPDATE tasks SET is_deleted = 1 WHERE uuid = (?1)",
             &[&id.to_string()],
         )?;
     }
@@ -558,7 +554,6 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
 
     while let Some(row) = rows.next()? {
         let fur_shortcut = FurShortcut {
-            id: row.get(0)?,
             name: row.get(1)?,
             tags: row.get(2)?,
             project: row.get(3)?,
@@ -588,7 +583,7 @@ pub fn db_update_shortcut(shortcut: &FurShortcut) -> Result<()> {
             color_hex = (?6),
             is_deleted = (?7),
             last_updated = (?8)
-        WHERE id = (?9)",
+        WHERE uuid = (?9)",
         params![
             shortcut.name,
             shortcut.tags,
@@ -598,7 +593,7 @@ pub fn db_update_shortcut(shortcut: &FurShortcut) -> Result<()> {
             shortcut.color_hex,
             shortcut.is_deleted,
             shortcut.last_updated,
-            shortcut.id,
+            shortcut.uuid,
         ],
     )?;
 
@@ -632,14 +627,14 @@ pub fn db_shortcut_exists(shortcut: &FurShortcut) -> Result<bool> {
     Ok(exists)
 }
 
-pub fn db_retrieve_shortcut_by_id(id: &u32) -> Result<Option<FurShortcut>> {
+pub fn db_retrieve_shortcut_by_id(uuid: &Uuid) -> Result<Option<FurShortcut>> {
     let conn = Connection::open(db_get_directory())?;
-    let mut stmt = conn.prepare(format!("SELECT 1 FROM shortcuts WHERE id = {0}", id,).as_str())?;
+    let mut stmt =
+        conn.prepare(format!("SELECT 1 FROM shortcuts WHERE uuid = {0}", uuid,).as_str())?;
     let mut rows = stmt.query(params![])?;
 
     if let Some(row) = rows.next()? {
         let shortcut = FurShortcut {
-            id: row.get(0)?,
             name: row.get(1)?,
             tags: row.get(2)?,
             project: row.get(3)?,
@@ -656,12 +651,12 @@ pub fn db_retrieve_shortcut_by_id(id: &u32) -> Result<Option<FurShortcut>> {
     }
 }
 
-pub fn db_delete_shortcut_by_id(id: u32) -> Result<()> {
+pub fn db_delete_shortcut_by_id(uuid: Uuid) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
-        "UPDATE shortcuts SET is_deleted = 1 WHERE id = (?1)",
-        &[&id.to_string()],
+        "UPDATE shortcuts SET is_deleted = 1 WHERE uuid = (?1)",
+        &[&uuid],
     )?;
 
     Ok(())
@@ -709,7 +704,6 @@ pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>,
 
     while let Some(row) = rows.next()? {
         let fur_task = FurTask {
-            id: row.get(0)?,
             name: row.get(1)?,
             start_time: row.get(2)?,
             stop_time: row.get(3)?,
@@ -740,7 +734,6 @@ pub fn db_retrieve_shortcuts_since_timestamp(
 
     while let Some(row) = rows.next()? {
         let fur_shortcut = FurShortcut {
-            id: row.get(0)?,
             name: row.get(1)?,
             tags: row.get(2)?,
             project: row.get(3)?,
@@ -999,7 +992,6 @@ pub fn db_import_old_mac_db() -> Result<()> {
 
             while let Some(row) = rows.next()? {
                 let fur_task = FurTask {
-                    id: 0,
                     name: row.get(0)?,
                     start_time: core_data_timestamp_to_datetime(row.get(1)?)?,
                     stop_time: core_data_timestamp_to_datetime(row.get(2)?)?,

@@ -23,7 +23,6 @@ use super::fur_shortcut::FurShortcut;
 
 #[derive(Clone, Debug)]
 pub struct ShortcutToEdit {
-    pub id: u32,
     pub name: String,
     pub new_name: String,
     pub tags: String,
@@ -44,7 +43,6 @@ impl ShortcutToEdit {
         let color =
             Color::parse(shortcut.color_hex.as_str()).unwrap_or(FURTHERANCE_PURPLE.to_iced_color());
         ShortcutToEdit {
-            id: shortcut.id,
             name: shortcut.name.clone(),
             new_name: shortcut.name.clone(),
             tags: shortcut.tags.clone(),

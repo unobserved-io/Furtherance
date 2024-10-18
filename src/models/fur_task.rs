@@ -20,7 +20,6 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FurTask {
-    pub id: u32,
     pub name: String,
     pub start_time: DateTime<Local>,
     pub stop_time: DateTime<Local>,

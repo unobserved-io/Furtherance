@@ -105,7 +105,6 @@ fn task_from_autosave(path: &PathBuf) -> Option<FurTask> {
                     currency = autosave_lines[6].clone()
                 }
                 return Some(FurTask {
-                    id: 0,
                     name: autosave_lines[0].clone(),
                     start_time: DateTime::from(start_time),
                     stop_time: DateTime::from(stop_time),

@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use uuid::Uuid;
+
 use crate::models::fur_task::FurTask;
 
 use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct FurTaskGroup {
-    pub id: u32,
+    pub uuid: Uuid,
     pub name: String,
     pub tags: String,
     pub project: String,
@@ -32,7 +34,7 @@ pub struct FurTaskGroup {
 impl FurTaskGroup {
     pub fn new_from(task: FurTask) -> Self {
         FurTaskGroup {
-            id: task.id,
+            uuid: task.uuid,
             name: task.name.clone(),
             tags: task.tags.clone(),
             project: task.project.clone(),
@@ -59,8 +61,8 @@ impl FurTaskGroup {
         }
     }
 
-    pub fn all_task_ids(&self) -> Vec<u32> {
-        self.tasks.iter().map(|task| task.id).collect()
+    pub fn all_task_ids(&self) -> Vec<Uuid> {
+        self.tasks.iter().map(|task| task.uuid).collect()
     }
 }
 
