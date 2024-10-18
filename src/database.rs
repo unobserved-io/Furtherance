@@ -201,45 +201,65 @@ pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
 
 pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
     if !column_exists(conn, "tasks", "uuid")? {
-        add_uuid_function(&conn)?;
         conn.execute("ALTER TABLE tasks ADD COLUMN uuid BLOB", [])?;
-        conn.execute(
-            "UPDATE tasks SET uuid = generate_uuid() WHERE uuid IS NULL",
-            [],
-        )?;
+        let mut stmt = conn.prepare("SELECT id FROM tasks WHERE uuid IS NULL")?;
+        let task_ids: Vec<i64> = stmt
+            .query_map([], |row| row.get(0))?
+            .collect::<Result<_, _>>()?;
+
+        for id in task_ids {
+            let uuid = Uuid::new_v4();
+            conn.execute(
+                "UPDATE tasks SET uuid = ?1 WHERE id = ?2",
+                rusqlite::params![uuid.as_bytes().to_vec(), id],
+            )?;
+        }
     }
+
     if !column_exists(conn, "shortcuts", "uuid")? {
-        add_uuid_function(&conn)?;
         conn.execute("ALTER TABLE shortcuts ADD COLUMN uuid BLOB", [])?;
-        conn.execute(
-            "UPDATE shortcuts SET uuid = generate_uuid() WHERE uuid IS NULL",
-            [],
-        )?;
+        let mut stmt = conn.prepare("SELECT id FROM shortcuts WHERE uuid IS NULL")?;
+        let shortcut_ids: Vec<i64> = stmt
+            .query_map([], |row| row.get(0))?
+            .collect::<Result<_, _>>()?;
+
+        for id in shortcut_ids {
+            let uuid = Uuid::new_v4();
+            conn.execute(
+                "UPDATE shortcuts SET uuid = ?1 WHERE id = ?2",
+                rusqlite::params![uuid.as_bytes().to_vec(), id],
+            )?;
+        }
     }
+
     if !column_exists(conn, "tasks", "is_deleted")? {
         conn.execute(
             "ALTER TABLE tasks ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
             [],
         )?;
     }
+
     if !column_exists(conn, "shortcuts", "is_deleted")? {
         conn.execute(
             "ALTER TABLE shortcuts ADD COLUMN is_deleted BOOLEAN DEFAULT 0",
             [],
         )?;
     }
+
     if !column_exists(conn, "tasks", "last_updated")? {
         conn.execute(
             "ALTER TABLE tasks ADD COLUMN last_updated INTEGER DEFAULT 0",
             [],
         )?;
     }
+
     if !column_exists(conn, "shortcuts", "last_updated")? {
         conn.execute(
             "ALTER TABLE shortcuts ADD COLUMN last_updated INTEGER DEFAULT 0",
             [],
         )?;
     }
+
     Ok(())
 }
 
