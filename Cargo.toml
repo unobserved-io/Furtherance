@@ -1,6 +1,6 @@
 [package]
 name = "furtherance"
-version = "24.10.3"
+version = "24.10.4"
 authors = ["Ricky Kresslein <ricky@unobserved.io>"]
 description = "Track your time without being tracked."
 license = "GPL-3.0-or-later"

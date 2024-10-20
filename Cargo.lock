@@ -1489,7 +1489,7 @@ dependencies = [
 
 [[package]]
 name = "furtherance"
-version = "24.10.3"
+version = "24.10.4"
 dependencies = [
  "async-stream",
  "chrono",
