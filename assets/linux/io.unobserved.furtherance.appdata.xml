@@ -50,6 +50,13 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="24.10.5" date="2024-10-21">
+      <description translate="no">
+        <ul>
+          <li>Revert idle fix for GNOME Wayland as it causes crash with Flatpak</li>
+        </ul>
+      </description>
+    </release>
     <release version="24.10.4" date="2024-10-20">
       <description translate="no">
         <ul>
