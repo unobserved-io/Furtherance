@@ -58,12 +58,6 @@ use app::Furtherance;
 use iced::advanced::graphics::image::image_rs::ImageFormat;
 
 fn main() -> iced::Result {
-    #[cfg(target_os = "linux")]
-    if is_gnome_on_wayland() {
-        std::env::set_var("GDK_BACKEND", "x11");
-        std::env::set_var("WAYLAND_DISPLAY", "");
-    }
-
     let window_icon = iced::window::icon::from_file_data(
         include_bytes!("../assets/icon/64x64.png"),
         Some(ImageFormat::Png),
@@ -87,14 +81,4 @@ fn main() -> iced::Result {
         .font(iced_fonts::BOOTSTRAP_FONT_BYTES)
         .window(window_settings)
         .run()
-}
-
-#[cfg(target_os = "linux")]
-fn is_gnome_on_wayland() -> bool {
-    let wayland_display = std::env::var("WAYLAND_DISPLAY").is_ok();
-    let current_desktop = std::env::var("XDG_CURRENT_DESKTOP")
-        .unwrap_or_else(|_| String::new())
-        .to_uppercase();
-
-    wayland_display && current_desktop.contains("GNOME")
 }
