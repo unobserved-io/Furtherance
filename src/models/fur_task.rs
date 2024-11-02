@@ -59,3 +59,11 @@ impl FurTask {
         (self.total_time_in_seconds() as f32 / 3600.0) * self.rate
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EncryptedTask {
+    pub encrypted_data: String,
+    pub nonce: String,
+    pub uuid: Uuid,
+    pub last_updated: i64,
+}

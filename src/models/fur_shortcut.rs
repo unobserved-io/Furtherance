@@ -50,3 +50,11 @@ impl fmt::Display for FurShortcut {
         Ok(())
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EncryptedShortcut {
+    pub encrypted_data: String,
+    pub nonce: String,
+    pub uuid: Uuid,
+    pub last_updated: i64,
+}

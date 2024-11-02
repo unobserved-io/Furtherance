@@ -25,6 +25,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 use uuid::Uuid;
 
+use crate::models::fur_user::FurUser;
 use crate::models::{
     fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
     group_to_edit::GroupToEdit,
@@ -132,6 +133,16 @@ pub fn db_init() -> Result<()> {
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS user (
+            email TEXT PRIMARY KEY,
+            password_hash TEXT NOT NULL,
+            salt BLOB NOT NULL,
+            server TEXT NOT NULL
+        )",
         [],
     )?;
 
@@ -1093,4 +1104,42 @@ fn core_data_timestamp_to_datetime(timestamp: f64) -> Result<DateTime<Local>> {
         rusqlite::ffi::Error::new(rusqlite::ffi::SQLITE_ERROR),
         Some("Could not convert Core Data timestamp".to_string()),
     ));
+}
+
+pub fn db_retrieve_credentials() -> Result<Option<FurUser>> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn.prepare("SELECT * FROM user LIMIT 1")?;
+
+    let result = stmt.query_row([], |row| {
+        Ok(FurUser {
+            email: row.get(0)?,
+            password_hash: row.get(1)?,
+            salt: row.get(2)?,
+            server: row.get(3)?,
+        })
+    });
+
+    match result {
+        Ok(user) => Ok(Some(user)),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(e.into()),
+    }
+}
+
+pub fn db_store_credentials(
+    email: &str,
+    password_hash: &str,
+    salt: &[u8],
+    server: &str,
+) -> Result<(), rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "INSERT OR REPLACE INTO user (email, password_hash, salt, server)
+         VALUES (?1, ?2, ?3, ?4)",
+        params![email, password_hash, salt, server],
+    )?;
+
+    Ok(())
 }

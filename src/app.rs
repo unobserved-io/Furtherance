@@ -31,22 +31,34 @@ use crate::{
         INSPECTOR_WIDTH, SETTINGS_SPACING,
     },
     database::*,
+    encryption,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle::get_idle_time,
         midnight_subscription::MidnightSubscription,
     },
     localization::Localization,
+    login::{login, LoginResponse},
     models::{
-        fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport,
-        fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
-        fur_task_group::FurTaskGroup, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd,
-        shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit,
+        fur_idle::FurIdle,
+        fur_pomodoro::FurPomodoro,
+        fur_report::FurReport,
+        fur_settings::FurSettings,
+        fur_shortcut::{EncryptedShortcut, FurShortcut},
+        fur_task::{EncryptedTask, FurTask},
+        fur_task_group::FurTaskGroup,
+        fur_user::FurUser,
+        group_to_edit::GroupToEdit,
+        shortcut_to_add::ShortcutToAdd,
+        shortcut_to_edit::ShortcutToEdit,
+        task_to_add::TaskToAdd,
+        task_to_edit::TaskToEdit,
     },
     style::{self, FurTheme},
-    sync::{sync_with_server, SyncResponse},
+    sync::{sync_with_server, SyncError, SyncResponse},
     view_enums::*,
 };
+use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
@@ -84,10 +96,12 @@ pub struct Furtherance {
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
+    fur_user: FurUser,
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
     localization: Arc<Localization>,
+    login_message: Result<String, Box<dyn std::error::Error>>,
     pomodoro: FurPomodoro,
     report: FurReport,
     settings_active_tab: TabId,
@@ -100,6 +114,7 @@ pub struct Furtherance {
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
+    temp_fur_user: FurUser,
     theme: FurTheme,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
@@ -208,9 +223,14 @@ pub enum Message {
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     SyncWithServer,
-    SyncComplete(Result<SyncResponse, Arc<reqwest::Error>>),
+    SyncComplete(Result<SyncResponse, Arc<SyncError>>),
     TaskInputChanged(String),
     ToggleGroupEditor,
+    UserEmailChanged(String),
+    UserLoginPressed,
+    UserLoginResponse(Result<LoginResponse, String>),
+    UserPasswordChanged(String),
+    UserServerChanged(String),
 }
 
 impl Default for Furtherance {
@@ -239,10 +259,18 @@ impl Furtherance {
                 e
             );
         }
-        // Update old furtherance databases with new properties
-        // if let Err(e) = db_upgrade_old() {
-        //     eprintln!("Error encountered while upgrading legacy database: {}", e);
-        // }
+
+        // Load user credentials from database
+        let saved_user = match db_retrieve_credentials() {
+            Ok(optional_user) => match optional_user {
+                Some(user) => user,
+                None => FurUser::default(),
+            },
+            Err(e) => {
+                eprintln!("Error retrieving user credentials from database: {}", e);
+                FurUser::default()
+            }
+        };
 
         // Set application identifier for notifications
         #[cfg(target_os = "macos")]
@@ -260,9 +288,11 @@ impl Furtherance {
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
+            fur_user: saved_user.clone(),
             group_to_edit: None,
             idle: FurIdle::new(),
             localization: Arc::new(Localization::new()),
+            login_message: Ok(String::new()),
             pomodoro: FurPomodoro::new(),
             inspector_view: None,
             report: FurReport::new(),
@@ -282,6 +312,7 @@ impl Furtherance {
             show_timer_start_picker: false,
             task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
+            temp_fur_user: saved_user,
             theme: FurTheme::Light,
             timer_is_running: false,
             timer_start_time: Local::now(),
@@ -804,227 +835,215 @@ impl Furtherance {
                 self.task_to_edit = Some(TaskToEdit::new_from(&task));
                 self.inspector_view = Some(FurInspectorView::EditTask);
             }
-            Message::EditTaskTextChanged(new_value, property) => {
-                match self.inspector_view {
-                    Some(FurInspectorView::AddNewTask) => {
-                        if let Some(task_to_add) = self.task_to_add.as_mut() {
-                            match property {
-                                EditTaskProperty::Name => {
-                                    if new_value.contains('#')
-                                        || new_value.contains('@')
-                                        || new_value.contains('$')
-                                    {
-                                        task_to_add.invalid_input_error_message = self
-                                            .localization
-                                            .get_message("name-cannot-contain", None);
-                                    } else {
-                                        task_to_add.name = new_value;
-                                        task_to_add.invalid_input_error_message = String::new();
-                                    }
+            Message::EditTaskTextChanged(new_value, property) => match self.inspector_view {
+                Some(FurInspectorView::AddNewTask) => {
+                    if let Some(task_to_add) = self.task_to_add.as_mut() {
+                        match property {
+                            EditTaskProperty::Name => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    task_to_add.invalid_input_error_message =
+                                        self.localization.get_message("name-cannot-contain", None);
+                                } else {
+                                    task_to_add.name = new_value;
+                                    task_to_add.invalid_input_error_message = String::new();
                                 }
-                                EditTaskProperty::Project => {
-                                    if new_value.contains('#')
-                                        || new_value.contains('@')
-                                        || new_value.contains('$')
-                                    {
-                                        // TODO: Change to .input_error system
-                                        task_to_add.input_error(
-                                            self.localization
-                                                .get_message("project-cannot-contain", None),
-                                        );
-                                    } else {
-                                        task_to_add.project = new_value;
-                                    }
-                                }
-                                EditTaskProperty::Tags => {
-                                    if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_add.input_error(
-                                            self.localization
-                                                .get_message("tags-cannot-contain", None),
-                                        );
-                                    } else if !new_value.is_empty()
-                                        && new_value.chars().next() != Some('#')
-                                    {
-                                        task_to_add.input_error(
-                                            self.localization.get_message("tags-must-start", None),
-                                        );
-                                    } else {
-                                        task_to_add.tags = new_value;
-                                        task_to_add.input_error(String::new());
-                                    }
-                                }
-                                EditTaskProperty::Rate => {
-                                    let new_value_parsed = new_value.parse::<f32>();
-                                    if new_value.is_empty() {
-                                        task_to_add.new_rate = String::new();
-                                    } else if new_value.contains('$') {
-                                        task_to_add.input_error(
-                                            self.localization
-                                                .get_message("no-symbol-in-rate", None),
-                                        );
-                                    } else if new_value_parsed.is_ok()
-                                        && has_max_two_decimals(&new_value)
-                                        && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
-                                    {
-                                        task_to_add.new_rate = new_value;
-                                        task_to_add.input_error(String::new());
-                                    } else {
-                                        task_to_add.input_error(
-                                            self.localization.get_message("rate-invalid", None),
-                                        );
-                                    }
-                                }
-                                _ => {}
                             }
+                            EditTaskProperty::Project => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    task_to_add.input_error(
+                                        self.localization
+                                            .get_message("project-cannot-contain", None),
+                                    );
+                                } else {
+                                    task_to_add.project = new_value;
+                                }
+                            }
+                            EditTaskProperty::Tags => {
+                                if new_value.contains('@') || new_value.contains('$') {
+                                    task_to_add.input_error(
+                                        self.localization.get_message("tags-cannot-contain", None),
+                                    );
+                                } else if !new_value.is_empty()
+                                    && new_value.chars().next() != Some('#')
+                                {
+                                    task_to_add.input_error(
+                                        self.localization.get_message("tags-must-start", None),
+                                    );
+                                } else {
+                                    task_to_add.tags = new_value;
+                                    task_to_add.input_error(String::new());
+                                }
+                            }
+                            EditTaskProperty::Rate => {
+                                let new_value_parsed = new_value.parse::<f32>();
+                                if new_value.is_empty() {
+                                    task_to_add.new_rate = String::new();
+                                } else if new_value.contains('$') {
+                                    task_to_add.input_error(
+                                        self.localization.get_message("no-symbol-in-rate", None),
+                                    );
+                                } else if new_value_parsed.is_ok()
+                                    && has_max_two_decimals(&new_value)
+                                    && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
+                                {
+                                    task_to_add.new_rate = new_value;
+                                    task_to_add.input_error(String::new());
+                                } else {
+                                    task_to_add.input_error(
+                                        self.localization.get_message("rate-invalid", None),
+                                    );
+                                }
+                            }
+                            _ => {}
                         }
                     }
-                    Some(FurInspectorView::EditTask) => {
-                        if let Some(task_to_edit) = self.task_to_edit.as_mut() {
-                            match property {
-                                EditTaskProperty::Name => {
-                                    if new_value.contains('#')
-                                        || new_value.contains('@')
-                                        || new_value.contains('$')
-                                    {
-                                        task_to_edit.input_error(
-                                            self.localization
-                                                .get_message("name-cannot-contain", None),
-                                        );
-                                    } else {
-                                        task_to_edit.new_name = new_value;
-                                        task_to_edit.input_error(String::new());
-                                    }
-                                }
-                                EditTaskProperty::Project => {
-                                    if new_value.contains('#')
-                                        || new_value.contains('@')
-                                        || new_value.contains('$')
-                                    {
-                                        task_to_edit.input_error(
-                                            self.localization
-                                                .get_message("project-cannot-contain", None),
-                                        );
-                                    } else {
-                                        task_to_edit.new_project = new_value;
-                                    }
-                                }
-                                EditTaskProperty::Tags => {
-                                    if new_value.contains('@') || new_value.contains('$') {
-                                        task_to_edit.input_error(
-                                            self.localization
-                                                .get_message("tags-cannot-contain", None),
-                                        );
-                                    } else if !new_value.is_empty()
-                                        && new_value.chars().next() != Some('#')
-                                    {
-                                        task_to_edit.input_error(
-                                            self.localization.get_message("tags-must-start", None),
-                                        );
-                                    } else {
-                                        task_to_edit.new_tags = new_value;
-                                        task_to_edit.input_error(String::new());
-                                    }
-                                }
-                                EditTaskProperty::Rate => {
-                                    let new_value_parsed = new_value.parse::<f32>();
-                                    if new_value.is_empty() {
-                                        task_to_edit.new_rate = String::new();
-                                    } else if new_value.contains('$') {
-                                        task_to_edit.input_error(
-                                            self.localization
-                                                .get_message("no-symbol-in-rate", None),
-                                        );
-                                    } else if new_value_parsed.is_ok()
-                                        && has_max_two_decimals(&new_value)
-                                        && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
-                                    {
-                                        task_to_edit.new_rate = new_value;
-                                        task_to_edit.input_error(String::new());
-                                    } else {
-                                        task_to_edit.input_error(
-                                            self.localization.get_message("rate-invalid", None),
-                                        );
-                                    }
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    Some(FurInspectorView::EditGroup) => {
-                        if let Some(group_to_edit) = self.group_to_edit.as_mut() {
-                            match property {
-                                EditTaskProperty::Name => {
-                                    if new_value.contains('#')
-                                        || new_value.contains('@')
-                                        || new_value.contains('$')
-                                    {
-                                        group_to_edit.input_error(
-                                            self.localization
-                                                .get_message("name-cannot-contain", None),
-                                        );
-                                    } else {
-                                        group_to_edit.new_name = new_value;
-                                        group_to_edit.input_error(String::new());
-                                    }
-                                }
-                                EditTaskProperty::Project => {
-                                    if new_value.contains('#')
-                                        || new_value.contains('@')
-                                        || new_value.contains('$')
-                                    {
-                                        group_to_edit.input_error(
-                                            self.localization
-                                                .get_message("project-cannot-contain", None),
-                                        );
-                                    } else {
-                                        group_to_edit.new_project = new_value;
-                                    }
-                                }
-                                EditTaskProperty::Tags => {
-                                    if new_value.contains('@') || new_value.contains('$') {
-                                        group_to_edit.input_error(
-                                            self.localization
-                                                .get_message("tags-cannot-contain", None),
-                                        );
-                                    } else if !new_value.is_empty()
-                                        && new_value.chars().next() != Some('#')
-                                    {
-                                        group_to_edit.input_error(
-                                            self.localization.get_message("tags-must-start", None),
-                                        );
-                                    } else {
-                                        group_to_edit.new_tags = new_value;
-                                        group_to_edit.input_error(String::new());
-                                    }
-                                }
-                                EditTaskProperty::Rate => {
-                                    let new_value_parsed = new_value.parse::<f32>();
-                                    if new_value.is_empty() {
-                                        group_to_edit.new_rate = String::new();
-                                    } else if new_value.contains('$') {
-                                        group_to_edit.input_error(
-                                            self.localization
-                                                .get_message("no-symbol-in-rate", None),
-                                        );
-                                    } else if new_value_parsed.is_ok()
-                                        && has_max_two_decimals(&new_value)
-                                        && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
-                                    {
-                                        group_to_edit.new_rate = new_value;
-                                        group_to_edit.input_error(String::new());
-                                    } else {
-                                        group_to_edit.input_error(
-                                            self.localization.get_message("rate-invalid", None),
-                                        );
-                                    }
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                    _ => {}
                 }
-            }
+                Some(FurInspectorView::EditTask) => {
+                    if let Some(task_to_edit) = self.task_to_edit.as_mut() {
+                        match property {
+                            EditTaskProperty::Name => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    task_to_edit.input_error(
+                                        self.localization.get_message("name-cannot-contain", None),
+                                    );
+                                } else {
+                                    task_to_edit.new_name = new_value;
+                                    task_to_edit.input_error(String::new());
+                                }
+                            }
+                            EditTaskProperty::Project => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    task_to_edit.input_error(
+                                        self.localization
+                                            .get_message("project-cannot-contain", None),
+                                    );
+                                } else {
+                                    task_to_edit.new_project = new_value;
+                                }
+                            }
+                            EditTaskProperty::Tags => {
+                                if new_value.contains('@') || new_value.contains('$') {
+                                    task_to_edit.input_error(
+                                        self.localization.get_message("tags-cannot-contain", None),
+                                    );
+                                } else if !new_value.is_empty()
+                                    && new_value.chars().next() != Some('#')
+                                {
+                                    task_to_edit.input_error(
+                                        self.localization.get_message("tags-must-start", None),
+                                    );
+                                } else {
+                                    task_to_edit.new_tags = new_value;
+                                    task_to_edit.input_error(String::new());
+                                }
+                            }
+                            EditTaskProperty::Rate => {
+                                let new_value_parsed = new_value.parse::<f32>();
+                                if new_value.is_empty() {
+                                    task_to_edit.new_rate = String::new();
+                                } else if new_value.contains('$') {
+                                    task_to_edit.input_error(
+                                        self.localization.get_message("no-symbol-in-rate", None),
+                                    );
+                                } else if new_value_parsed.is_ok()
+                                    && has_max_two_decimals(&new_value)
+                                    && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
+                                {
+                                    task_to_edit.new_rate = new_value;
+                                    task_to_edit.input_error(String::new());
+                                } else {
+                                    task_to_edit.input_error(
+                                        self.localization.get_message("rate-invalid", None),
+                                    );
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                Some(FurInspectorView::EditGroup) => {
+                    if let Some(group_to_edit) = self.group_to_edit.as_mut() {
+                        match property {
+                            EditTaskProperty::Name => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    group_to_edit.input_error(
+                                        self.localization.get_message("name-cannot-contain", None),
+                                    );
+                                } else {
+                                    group_to_edit.new_name = new_value;
+                                    group_to_edit.input_error(String::new());
+                                }
+                            }
+                            EditTaskProperty::Project => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    group_to_edit.input_error(
+                                        self.localization
+                                            .get_message("project-cannot-contain", None),
+                                    );
+                                } else {
+                                    group_to_edit.new_project = new_value;
+                                }
+                            }
+                            EditTaskProperty::Tags => {
+                                if new_value.contains('@') || new_value.contains('$') {
+                                    group_to_edit.input_error(
+                                        self.localization.get_message("tags-cannot-contain", None),
+                                    );
+                                } else if !new_value.is_empty()
+                                    && new_value.chars().next() != Some('#')
+                                {
+                                    group_to_edit.input_error(
+                                        self.localization.get_message("tags-must-start", None),
+                                    );
+                                } else {
+                                    group_to_edit.new_tags = new_value;
+                                    group_to_edit.input_error(String::new());
+                                }
+                            }
+                            EditTaskProperty::Rate => {
+                                let new_value_parsed = new_value.parse::<f32>();
+                                if new_value.is_empty() {
+                                    group_to_edit.new_rate = String::new();
+                                } else if new_value.contains('$') {
+                                    group_to_edit.input_error(
+                                        self.localization.get_message("no-symbol-in-rate", None),
+                                    );
+                                } else if new_value_parsed.is_ok()
+                                    && has_max_two_decimals(&new_value)
+                                    && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
+                                {
+                                    group_to_edit.new_rate = new_value;
+                                    group_to_edit.input_error(String::new());
+                                } else {
+                                    group_to_edit.input_error(
+                                        self.localization.get_message("rate-invalid", None),
+                                    );
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                _ => {}
+            },
             Message::EnterPressedInTaskInput => {
                 if !self.task_input.is_empty() {
                     if !self.timer_is_running {
@@ -1902,6 +1921,19 @@ impl Furtherance {
             }
             Message::SyncWithServer => {
                 let last_sync = self.fur_settings.last_sync;
+
+                let key =
+                    match encryption::derive_key(&self.fur_user.password_hash, &self.fur_user.salt)
+                    {
+                        Ok(key) => key,
+                        Err(e) => {
+                            eprintln!("Failed to derive key: {:?}", e);
+                            return Task::none();
+                        }
+                    };
+
+                let user_clone = self.fur_user.clone();
+
                 return Task::perform(
                     async move {
                         let tasks =
@@ -1909,9 +1941,47 @@ impl Furtherance {
                         let shortcuts =
                             db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
 
-                        sync_with_server(last_sync, tasks, shortcuts)
-                            .await
-                            .map_err(Arc::new)
+                        // Encrypt each task and shortcut
+                        let encrypted_tasks: Vec<EncryptedTask> = tasks
+                            .into_iter()
+                            .filter_map(|task| match encryption::encrypt(&task, &key) {
+                                Ok((encrypted_data, nonce)) => Some(EncryptedTask {
+                                    encrypted_data,
+                                    nonce,
+                                    uuid: task.uuid,
+                                    last_updated: task.last_updated,
+                                }),
+                                Err(e) => {
+                                    eprintln!("Failed to encrypt task: {:?}", e);
+                                    None
+                                }
+                            })
+                            .collect();
+
+                        let encrypted_shortcuts: Vec<EncryptedShortcut> = shortcuts
+                            .into_iter()
+                            .filter_map(|shortcut| match encryption::encrypt(&shortcut, &key) {
+                                Ok((encrypted_data, nonce)) => Some(EncryptedShortcut {
+                                    encrypted_data,
+                                    nonce,
+                                    uuid: shortcut.uuid,
+                                    last_updated: shortcut.last_updated,
+                                }),
+                                Err(e) => {
+                                    eprintln!("Failed to encrypt shortcut: {:?}", e);
+                                    None
+                                }
+                            })
+                            .collect();
+
+                        sync_with_server(
+                            &user_clone,
+                            last_sync,
+                            encrypted_tasks,
+                            encrypted_shortcuts,
+                        )
+                        .await
+                        .map_err(Arc::new)
                     },
                     Message::SyncComplete,
                 );
@@ -1919,53 +1989,103 @@ impl Furtherance {
             Message::SyncComplete(sync_result) => {
                 match sync_result {
                     Ok(response) => {
-                        for server_task in response.tasks {
-                            match db_retrieve_task_by_id(&server_task.uuid) {
-                                Ok(Some(client_task)) => {
-                                    // Task exists - update it if it changed
-                                    if server_task.last_updated > client_task.last_updated {
-                                        if let Err(e) = db_update_task(&server_task) {
-                                            eprintln!("Error updating task from server: {}", e);
+                        // Get key for decryption
+                        let key = match encryption::derive_key(
+                            &self.fur_user.password_hash,
+                            &self.fur_user.salt,
+                        ) {
+                            Ok(k) => k,
+                            Err(e) => {
+                                eprintln!("Failed to derive key: {:?}", e);
+                                return Task::none();
+                            }
+                        };
+
+                        for encrypted_task in response.tasks {
+                            match encryption::decrypt::<FurTask>(
+                                &encrypted_task.encrypted_data,
+                                &encrypted_task.nonce,
+                                &key,
+                            ) {
+                                Ok(server_task) => {
+                                    match db_retrieve_task_by_id(&server_task.uuid) {
+                                        Ok(Some(client_task)) => {
+                                            // Task exists - update it if it changed
+                                            if server_task.last_updated > client_task.last_updated {
+                                                if let Err(e) = db_update_task(&server_task) {
+                                                    eprintln!(
+                                                        "Error updating task from server: {}",
+                                                        e
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        Ok(None) => {
+                                            // Task does not exist - insert it
+                                            if let Err(e) = db_insert_task(&server_task) {
+                                                eprintln!(
+                                                    "Error writing new task from server: {}",
+                                                    e
+                                                );
+                                            }
+                                        }
+                                        Err(e) => {
+                                            eprintln!(
+                                                "Error checking for existing task from server: {}",
+                                                e
+                                            )
                                         }
                                     }
                                 }
-                                Ok(None) => {
-                                    // Task does not exist - insert it
-                                    if let Err(e) = db_insert_task(&server_task) {
-                                        eprintln!("Error writing new task from server: {}", e);
-                                    }
-                                }
-                                Err(e) => {
-                                    eprintln!("Error checking for existing task from server: {}", e)
-                                }
+                                Err(e) => eprintln!("Failed to decrypt task: {:?}", e),
                             }
                         }
 
-                        for server_shortcut in response.shortcuts {
-                            match db_retrieve_shortcut_by_id(&server_shortcut.uuid) {
-                                Ok(Some(client_shortcut)) => {
-                                    // Shortcut exists - update it if it changed
-                                    if server_shortcut.last_updated > client_shortcut.last_updated {
-                                        if let Err(e) = db_update_shortcut(&server_shortcut) {
-                                            eprintln!("Error updating shortcut from server: {}", e);
+                        // Decrypt and process server shortcuts
+                        for encrypted_shortcut in response.shortcuts {
+                            match encryption::decrypt::<FurShortcut>(
+                                &encrypted_shortcut.encrypted_data,
+                                &encrypted_shortcut.nonce,
+                                &key,
+                            ) {
+                                Ok(server_shortcut) => {
+                                    match db_retrieve_shortcut_by_id(&server_shortcut.uuid) {
+                                        Ok(Some(client_shortcut)) => {
+                                            // Shortcut exists - update it if it changed
+                                            if server_shortcut.last_updated
+                                                > client_shortcut.last_updated
+                                            {
+                                                if let Err(e) = db_update_shortcut(&server_shortcut)
+                                                {
+                                                    eprintln!(
+                                                        "Error updating shortcut from server: {}",
+                                                        e
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        Ok(None) => {
+                                            // Shortcut does not exist - insert it
+                                            if let Err(e) = db_insert_shortcut(&server_shortcut) {
+                                                eprintln!(
+                                                    "Error writing new shortcut from server: {}",
+                                                    e
+                                                );
+                                            }
+                                        }
+                                        Err(e) => {
+                                            eprintln!(
+                                                "Error checking for existing shortcut from server: {}",
+                                                e
+                                            )
                                         }
                                     }
                                 }
-                                Ok(None) => {
-                                    // Shortcut does not exist - insert it
-                                    if let Err(e) = db_insert_shortcut(&server_shortcut) {
-                                        eprintln!("Error writing new shortcut from server: {}", e);
-                                    }
-                                }
-                                Err(e) => {
-                                    eprintln!(
-                                        "Error checking for existing shortcut from server: {}",
-                                        e
-                                    )
-                                }
+                                Err(e) => eprintln!("Failed to decrypt shortcut: {:?}", e),
                             }
                         }
 
+                        // Update last sync timestamp
                         if let Err(e) = self
                             .fur_settings
                             .change_last_sync(&response.server_timestamp)
@@ -1975,7 +2095,9 @@ impl Furtherance {
 
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
                     }
-                    Err(e) => eprintln!("Sync error: {}", e),
+                    Err(e) => {
+                        eprintln!("Sync error: {}", e);
+                    }
                 }
             }
             Message::TaskInputChanged(new_value) => {
@@ -2038,6 +2160,74 @@ impl Furtherance {
                 self.group_to_edit
                     .as_mut()
                     .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
+            }
+            Message::UserEmailChanged(new_email) => {
+                self.temp_fur_user.email = new_email;
+            }
+            Message::UserLoginPressed => {
+                let email = self.temp_fur_user.email.clone();
+                let password = self.temp_fur_user.password_hash.clone();
+                let server = self.temp_fur_user.server.clone();
+
+                return Task::perform(login(email, password, server), Message::UserLoginResponse);
+            }
+            Message::UserLoginResponse(response_result) => match response_result {
+                Ok(response) => {
+                    let salt = BASE64
+                        .decode(&response.salt)
+                        .expect("Failed to decode salt");
+
+                    if let Err(e) = db_store_credentials(
+                        &self.temp_fur_user.email,
+                        &response.password_hash,
+                        &salt,
+                        &self.temp_fur_user.server,
+                    ) {
+                        eprintln!("Error storing user credentials: {}", e);
+                        self.login_message = Err(self
+                            .localization
+                            .get_message("error-storing-credentials", None)
+                            .into());
+                    }
+
+                    // Load new user credentials from database
+                    self.fur_user = match db_retrieve_credentials() {
+                        Ok(optional_user) => match optional_user {
+                            Some(user) => user,
+                            None => FurUser::default(),
+                        },
+                        Err(e) => {
+                            eprintln!("Error retrieving user credentials from database: {}", e);
+                            self.login_message = Err(self
+                                .localization
+                                .get_message("error-retrieving-credentials", None)
+                                .into());
+                            FurUser::default()
+                        }
+                    };
+
+                    self.temp_fur_user = self.fur_user.clone();
+
+                    self.login_message = Ok(self.localization.get_message("login-successful", None))
+                }
+                Err(e) => {
+                    eprintln!("Error logging in: {}", e);
+                    if e == "builder error" {
+                        self.login_message = Err(self
+                            .localization
+                            .get_message("server-must-contain-protocol", None)
+                            .into());
+                    } else {
+                        self.login_message =
+                            Err(self.localization.get_message("login-failed", None).into());
+                    }
+                }
+            },
+            Message::UserPasswordChanged(new_password) => {
+                self.temp_fur_user.password_hash = new_password;
+            }
+            Message::UserServerChanged(new_server) => {
+                self.temp_fur_user.server = new_server;
             }
         }
         Task::none()
@@ -2491,6 +2681,54 @@ impl Furtherance {
         //         .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: SETTINGS
+        let mut sync_server_col = column![
+            row![
+                text(self.localization.get_message("server", None)),
+                column![
+                    text_input(&self.fur_user.server, &self.temp_fur_user.server)
+                        .on_input(Message::UserServerChanged)
+                ]
+                .padding([0, 15])
+            ]
+            .align_y(Alignment::Center),
+            row![
+                text(self.localization.get_message("email", None)),
+                column![text_input(&self.fur_user.email, &self.temp_fur_user.email)
+                    .on_input(Message::UserEmailChanged)]
+                .padding([0, 15])
+            ]
+            .align_y(Alignment::Center),
+            row![
+                text(self.localization.get_message("password", None)),
+                column![text_input(
+                    &self.fur_user.password_hash,
+                    &self.temp_fur_user.password_hash
+                )
+                .secure(true)
+                .on_input(Message::UserPasswordChanged)]
+                .padding([0, 15])
+            ]
+            .align_y(Alignment::Center),
+            row![
+                button(text(self.localization.get_message("log-in", None)))
+                    .on_press(Message::UserLoginPressed),
+                button(text(self.localization.get_message("sync", None)))
+                    .on_press(Message::SyncWithServer)
+            ]
+            .spacing(10)
+        ]
+        .spacing(10);
+        sync_server_col = sync_server_col.push_maybe(match &self.login_message {
+            Ok(msg) => {
+                if msg.is_empty() {
+                    None
+                } else {
+                    Some(text(msg).style(style::green_text))
+                }
+            }
+            Err(e) => Some(text!("{}", e).style(style::red_text)),
+        });
+
         let mut database_location_col = column![
             text(self.localization.get_message("database-location", None)),
             text_input(
@@ -2577,7 +2815,6 @@ impl Furtherance {
                     ),
                     Scrollable::new(
                         column![
-                            button("Sync").on_press(Message::SyncWithServer).padding(10),
                             settings_heading(self.localization.get_message("interface", None)),
                             row![
                                 text(self.localization.get_message("default-view", None)),
@@ -2965,6 +3202,8 @@ impl Furtherance {
                     ),
                     Scrollable::new(
                         column![
+                            settings_heading(self.localization.get_message("sync-server", None)),
+                            sync_server_col,
                             settings_heading(self.localization.get_message("local-database", None)),
                             database_location_col,
                             settings_heading("CSV".to_string()),

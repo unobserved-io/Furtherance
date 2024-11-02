@@ -73,6 +73,7 @@ pomodoro = Pomodoro
 data = Data
 
 ### General Settings
+sync = Sync
 interface = Interface
 default-view = Default view
 show-delete-confirmation = Show delete confirmation
@@ -124,6 +125,16 @@ time-recorded-for-selection = Time recorded for selection
 earnings-for-selection = Earnings for selection
 
 ### Data Settings
+sync-server = Sync Server
+server = Server
+email = Email
+password = Password
+log-in = Log in
+login-failed = Login failed
+login-successful = Login successful
+server-must-contain-protocol = The server must contain a protocol (http:// or https://)
+error-storing-credentials = Error storing user credentials
+error-retrieving-credentials = Error retrieving user credentials from database
 local-database = Local Database
 database-location = Database location
 create-new = Create New

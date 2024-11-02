@@ -14,44 +14,91 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::{fur_shortcut::FurShortcut, fur_task::FurTask};
+use core::fmt;
+
+use crate::models::{fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_user::FurUser};
 
 use reqwest;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-struct SyncRequest {
+pub struct SyncRequest {
+    email: String,
+    password_hash: String,
     last_sync: i64,
-    tasks: Vec<FurTask>,
-    shortcuts: Vec<FurShortcut>,
+    tasks: Vec<EncryptedTask>,
+    shortcuts: Vec<EncryptedShortcut>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SyncResponse {
     pub server_timestamp: i64,
-    pub tasks: Vec<FurTask>,
-    pub shortcuts: Vec<FurShortcut>,
+    pub tasks: Vec<EncryptedTask>,
+    pub shortcuts: Vec<EncryptedShortcut>,
+}
+
+#[derive(Debug)]
+pub enum SyncError {
+    DatabaseError(rusqlite::Error),
+    NetworkError(reqwest::Error),
+    AuthenticationFailed,
+    SerializationError(serde_json::Error),
+}
+
+impl fmt::Display for SyncError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SyncError::DatabaseError(err) => write!(f, "Database error: {}", err),
+            SyncError::NetworkError(err) => write!(f, "Network error: {}", err),
+            SyncError::AuthenticationFailed => write!(f, "Authentication failed"),
+            SyncError::SerializationError(err) => write!(f, "Serialization error: {}", err),
+        }
+    }
+}
+
+// Implement error conversion
+impl From<rusqlite::Error> for SyncError {
+    fn from(err: rusqlite::Error) -> SyncError {
+        SyncError::DatabaseError(err)
+    }
+}
+
+impl From<reqwest::Error> for SyncError {
+    fn from(err: reqwest::Error) -> SyncError {
+        SyncError::NetworkError(err)
+    }
+}
+
+impl From<serde_json::Error> for SyncError {
+    fn from(err: serde_json::Error) -> SyncError {
+        SyncError::SerializationError(err)
+    }
 }
 
 pub async fn sync_with_server(
+    user: &FurUser,
     last_sync: i64,
-    tasks: Vec<FurTask>,
-    shortcuts: Vec<FurShortcut>,
-) -> Result<SyncResponse, reqwest::Error> {
+    tasks: Vec<EncryptedTask>,
+    shortcuts: Vec<EncryptedShortcut>,
+) -> Result<SyncResponse, SyncError> {
     let client = reqwest::Client::new();
     let sync_request = SyncRequest {
+        email: user.email.clone(),
+        password_hash: user.password_hash.clone(),
         last_sync,
         tasks,
         shortcuts,
     };
 
     let response = client
-        .post("http://localhost:8662/sync") // TODO: Allow user to change server
+        .post(format!("{}/sync", user.server))
         .json(&sync_request)
         .send()
-        .await?
-        .json::<SyncResponse>()
         .await?;
 
-    Ok(response)
+    if response.status().is_success() {
+        response.json::<SyncResponse>().await.map_err(Into::into)
+    } else {
+        Err(SyncError::AuthenticationFailed)
+    }
 }
