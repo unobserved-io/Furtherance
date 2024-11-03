@@ -34,3 +34,6 @@ pub const INSPECTOR_PADDING: u16 = 10;
 pub const INSPECTOR_SPACING: u16 = 12;
 pub const INSPECTOR_WIDTH: u16 = 250;
 pub const INSPECTOR_ALIGNMENT: Alignment = Alignment::Start;
+
+// Sync
+pub const OFFICIAL_SERVER: &str = "https://sync.furtherance.app";

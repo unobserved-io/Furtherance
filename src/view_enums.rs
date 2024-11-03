@@ -184,6 +184,30 @@ impl std::fmt::Display for FurTaskProperty {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ServerChoices {
+    Official,
+    Custom,
+}
+
+impl ServerChoices {
+    pub const ALL: [ServerChoices; 2] = [ServerChoices::Official, ServerChoices::Custom];
+}
+
+impl std::fmt::Display for ServerChoices {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let localization = Localization::new();
+        write!(
+            f,
+            "{}",
+            match self {
+                ServerChoices::Official => localization.get_message("official-server", None),
+                ServerChoices::Custom => localization.get_message("custom", None),
+            }
+        )
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum FurDarkLight {
     Light,

@@ -28,7 +28,7 @@ use crate::{
     autosave::{autosave_exists, delete_autosave, restore_autosave, write_autosave},
     constants::{
         ALLOWED_DB_EXTENSIONS, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING, INSPECTOR_SPACING,
-        INSPECTOR_WIDTH, SETTINGS_SPACING,
+        INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_SPACING,
     },
     database::*,
     encryption,
@@ -108,6 +108,7 @@ pub struct Furtherance {
     settings_csv_message: Result<String, Box<dyn std::error::Error>>,
     settings_database_message: Result<String, Box<dyn std::error::Error>>,
     settings_more_message: Result<String, Box<dyn std::error::Error>>,
+    settings_server_choice: Option<ServerChoices>,
     shortcuts: Vec<FurShortcut>,
     shortcut_to_add: Option<ShortcutToAdd>,
     shortcut_to_edit: Option<ShortcutToEdit>,
@@ -196,6 +197,7 @@ pub enum Message {
     SettingsReminderIntervalChanged(u16),
     SettingsRemindersToggled(bool),
     ShowReminderNotification,
+    SettingsServerChoiceSelected(ServerChoices),
     SettingsShowChartAverageEarningsToggled(bool),
     SettingsShowChartAverageTimeToggled(bool),
     SettingsShowChartBreakdownBySelectionToggled(bool),
@@ -300,6 +302,13 @@ impl Furtherance {
             settings_csv_message: Ok(String::new()),
             settings_database_message: Ok(String::new()),
             settings_more_message: Ok(String::new()),
+            settings_server_choice: if !saved_user.server.is_empty()
+                && saved_user.server != OFFICIAL_SERVER
+            {
+                Some(ServerChoices::Custom)
+            } else {
+                Some(ServerChoices::Official)
+            },
             shortcuts: match db_retrieve_shortcuts() {
                 Ok(shortcuts) => shortcuts,
                 Err(e) => {
@@ -1556,6 +1565,14 @@ impl Furtherance {
                     show_notification(NotificationType::Reminder, &self.localization);
                 }
             }
+            Message::SettingsServerChoiceSelected(new_value) => {
+                self.settings_server_choice = Some(new_value);
+                if new_value == ServerChoices::Official {
+                    self.temp_fur_user.server = OFFICIAL_SERVER.to_string();
+                } else {
+                    self.temp_fur_user.server = self.fur_user.server.clone();
+                }
+            }
             Message::SettingsShowChartAverageEarningsToggled(new_value) => {
                 if let Err(e) = self
                     .fur_settings
@@ -2681,14 +2698,28 @@ impl Furtherance {
         //         .tab_bar_position(TabBarPosition::Top)];
 
         // MARK: SETTINGS
+        let mut server_choice_col = column![pick_list(
+            &ServerChoices::ALL[..],
+            self.settings_server_choice,
+            Message::SettingsServerChoiceSelected,
+        ),]
+        .padding([0, 15])
+        .spacing(10);
+        server_choice_col = server_choice_col.push_maybe(
+            if self.settings_server_choice == Some(ServerChoices::Custom) {
+                Some(
+                    text_input(&self.fur_user.server, &self.temp_fur_user.server)
+                        .on_input(Message::UserServerChanged),
+                )
+            } else {
+                None
+            },
+        );
+
         let mut sync_server_col = column![
             row![
                 text(self.localization.get_message("server", None)),
-                column![
-                    text_input(&self.fur_user.server, &self.temp_fur_user.server)
-                        .on_input(Message::UserServerChanged)
-                ]
-                .padding([0, 15])
+                server_choice_col,
             ]
             .align_y(Alignment::Center),
             row![
