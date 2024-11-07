@@ -81,7 +81,7 @@ impl Localization {
         }
     }
 
-    pub fn get_message(&self, key: &str, args: Option<&HashMap<&str, String>>) -> String {
+    pub fn get_message(&self, key: &str, args: Option<&HashMap<&str, FluentValue<'_>>>) -> String {
         let bundle = self.bundles.get(&self.current_lang).unwrap();
         let msg = match bundle.get_message(key) {
             Some(message) => message,
@@ -99,8 +99,7 @@ impl Localization {
         let formatted = if let Some(arg_map) = args {
             let mut fluent_args = FluentArgs::new();
             for (k, v) in arg_map {
-                let cow_str: Cow<str> = Cow::Borrowed(v.as_str());
-                fluent_args.set(Cow::Borrowed(*k), FluentValue::from(cow_str));
+                fluent_args.set(Cow::Borrowed(*k), v.clone());
             }
 
             bundle.format_pattern(pattern, Some(&fluent_args), &mut errors)

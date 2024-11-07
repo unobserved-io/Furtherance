@@ -61,6 +61,7 @@ use crate::{
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
+use fluent::FluentValue;
 use iced::{
     advanced::subscription,
     alignment, font,
@@ -224,7 +225,7 @@ pub enum Message {
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     SyncWithServer,
-    SyncComplete(Result<SyncResponse, ApiError>),
+    SyncComplete((Result<SyncResponse, ApiError>, usize)),
     TaskInputChanged(String),
     ToggleGroupEditor,
     UserEmailChanged(String),
@@ -2006,20 +2007,24 @@ impl Furtherance {
                             })
                             .collect();
 
-                        sync_with_server(
+                        let sync_count = encrypted_tasks.len() + encrypted_shortcuts.len();
+
+                        let sync_result = sync_with_server(
                             &credentials,
                             last_sync,
                             encrypted_tasks,
                             encrypted_shortcuts,
                         )
-                        .await
+                        .await;
+
+                        (sync_result, sync_count)
                     },
                     Message::SyncComplete,
                 );
             }
             Message::SyncComplete(sync_result) => {
                 match sync_result {
-                    Ok(response) => {
+                    (Ok(response), mut sync_count) => {
                         let credentials = match self.fur_user.clone() {
                             Some(user) => user,
                             None => {
@@ -2056,6 +2061,8 @@ impl Furtherance {
                                                         "Error updating task from server: {}",
                                                         e
                                                     );
+                                                } else {
+                                                    sync_count += 1;
                                                 }
                                             }
                                         }
@@ -2066,6 +2073,8 @@ impl Furtherance {
                                                     "Error writing new task from server: {}",
                                                     e
                                                 );
+                                            } else {
+                                                sync_count += 1;
                                             }
                                         }
                                         Err(e) => {
@@ -2100,6 +2109,8 @@ impl Furtherance {
                                                         "Error updating shortcut from server: {}",
                                                         e
                                                     );
+                                                } else {
+                                                    sync_count += 1;
                                                 }
                                             }
                                         }
@@ -2110,6 +2121,8 @@ impl Furtherance {
                                                     "Error writing new shortcut from server: {}",
                                                     e
                                                 );
+                                            } else {
+                                                sync_count += 1;
                                             }
                                         }
                                         Err(e) => {
@@ -2132,10 +2145,17 @@ impl Furtherance {
                             eprintln!("Failed to change last_sync in settings: {}", e);
                         }
 
+                        self.login_message = Ok(self.localization.get_message(
+                            "sync-successful",
+                            Some(&HashMap::from([("count", FluentValue::from(sync_count))])),
+                        ));
+
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
                     }
-                    Err(e) => {
+                    (Err(e), _) => {
                         eprintln!("Sync error: {:?}", e);
+                        self.login_message =
+                            Err(self.localization.get_message("sync-failed", None).into());
                     }
                 }
             }
@@ -2387,7 +2407,10 @@ impl Furtherance {
                 horizontal_space().width(Length::Fill),
                 text(self.localization.get_message(
                     "recorded-today",
-                    Some(&HashMap::from([("time", get_todays_total_time(&self))]))
+                    Some(&HashMap::from([(
+                        "time",
+                        FluentValue::from(get_todays_total_time(&self))
+                    )]))
                 )),
             ],
             vertical_space().height(Length::Fill),
@@ -2438,7 +2461,9 @@ impl Furtherance {
                             "started-at",
                             Some(&HashMap::from([(
                                 "time",
-                                self.timer_start_time.format("%H:%M").to_string()
+                                FluentValue::from(
+                                    self.timer_start_time.format("%H:%M").to_string()
+                                )
                             )]))
                         )))
                         .on_press(Message::ChooseCurrentTaskStartTime)
@@ -3875,15 +3900,19 @@ impl Furtherance {
                                                         Some(&HashMap::from([
                                                             (
                                                                 "start",
-                                                                task.start_time
-                                                                    .format("%H:%M")
-                                                                    .to_string()
+                                                                FluentValue::from(
+                                                                    task.start_time
+                                                                        .format("%H:%M")
+                                                                        .to_string()
+                                                                )
                                                             ),
                                                             (
                                                                 "stop",
-                                                                task.stop_time
-                                                                    .format("%H:%M")
-                                                                    .to_string()
+                                                                FluentValue::from(
+                                                                    task.stop_time
+                                                                        .format("%H:%M")
+                                                                        .to_string()
+                                                                )
                                                             )
                                                         ]))
                                                     )
@@ -3896,9 +3925,11 @@ impl Furtherance {
                                                     "total-time-dynamic",
                                                     Some(&HashMap::from([(
                                                         "time",
-                                                        seconds_to_formatted_duration(
-                                                            task.total_time_in_seconds(),
-                                                            self.fur_settings.show_seconds
+                                                        FluentValue::from(
+                                                            seconds_to_formatted_duration(
+                                                                task.total_time_in_seconds(),
+                                                                self.fur_settings.show_seconds
+                                                            )
                                                         )
                                                     )]))
                                                 ))
@@ -4171,7 +4202,10 @@ impl Furtherance {
                 FurAlert::Idle => {
                     alert_text = self.localization.get_message(
                         "idle-alert-title",
-                        Some(&HashMap::from([("duration", self.idle.duration())])),
+                        Some(&HashMap::from([(
+                            "duration",
+                            FluentValue::from(self.idle.duration()),
+                        )])),
                     );
                     alert_description = self
                         .localization
@@ -4254,7 +4288,7 @@ impl Furtherance {
                                 "snooze-button",
                                 Some(&HashMap::from([(
                                     "duration",
-                                    self.fur_settings.pomodoro_snooze_length.to_string(),
+                                    FluentValue::from(self.fur_settings.pomodoro_snooze_length),
                                 )])),
                             ))
                             .align_x(alignment::Horizontal::Center)
@@ -4780,10 +4814,10 @@ fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localizat
 
     if let Some(hours) = split.next() {
         if hours != "0" {
-            sidebar_timer_text.push_str(
-                &localization
-                    .get_message("x-h", Some(&HashMap::from([("hours", hours.to_string())]))),
-            );
+            sidebar_timer_text.push_str(&localization.get_message(
+                "x-h",
+                Some(&HashMap::from([("hours", FluentValue::from(hours))])),
+            ));
             sidebar_timer_text.push_str("\n");
         }
     }
@@ -4794,7 +4828,7 @@ fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localizat
                 "x-m",
                 Some(&HashMap::from([(
                     "minutes",
-                    mins.trim_start_matches('0').to_string(),
+                    FluentValue::from(mins.trim_start_matches('0')),
                 )])),
             ));
             sidebar_timer_text.push_str("\n");
@@ -4807,14 +4841,14 @@ fn convert_timer_text_to_vertical_hms(timer_text: &str, localization: &Localizat
                 "x-s",
                 Some(&HashMap::from([(
                     "seconds",
-                    secs.trim_start_matches('0').to_string(),
+                    FluentValue::from(secs.trim_start_matches('0')),
                 )])),
             ));
         } else {
-            sidebar_timer_text.push_str(
-                &localization
-                    .get_message("x-s", Some(&HashMap::from([("seconds", "0".to_string())]))),
-            );
+            sidebar_timer_text.push_str(&localization.get_message(
+                "x-s",
+                Some(&HashMap::from([("seconds", FluentValue::from("0"))])),
+            ));
         }
     }
 

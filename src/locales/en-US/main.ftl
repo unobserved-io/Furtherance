@@ -137,6 +137,12 @@ login-successful = Login successful
 server-must-contain-protocol = The server must contain a protocol (http:// or https://)
 error-storing-credentials = Error storing user credentials
 error-retrieving-credentials = Error retrieving user credentials from database
+sync-successful = {$count ->
+    [0] Nothing to sync
+    [one] {$count} item synced
+    *[other] {$count} items synced
+}
+sync-failed = Sync failed
 local-database = Local Database
 database-location = Database location
 create-new = Create New
