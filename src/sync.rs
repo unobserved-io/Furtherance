@@ -14,17 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use core::fmt;
+use std::sync::Arc;
 
-use crate::models::{fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_user::FurUser};
+use crate::{
+    database::db_update_access_token,
+    login::{refresh_auth_token, ApiError},
+    models::{fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_user::FurUser},
+};
 
-use reqwest;
+use reqwest::{self, Client};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct SyncRequest {
-    email: String,
-    password_hash: String,
     last_sync: i64,
     tasks: Vec<EncryptedTask>,
     shortcuts: Vec<EncryptedShortcut>,
@@ -37,68 +39,117 @@ pub struct SyncResponse {
     pub shortcuts: Vec<EncryptedShortcut>,
 }
 
-#[derive(Debug)]
-pub enum SyncError {
-    DatabaseError(rusqlite::Error),
-    NetworkError(reqwest::Error),
-    AuthenticationFailed,
-    SerializationError(serde_json::Error),
-}
+// #[derive(Debug)]
+// pub enum SyncError {
+//     DatabaseError(rusqlite::Error),
+//     NetworkError(reqwest::Error),
+//     AuthenticationFailed,
+//     SerializationError(serde_json::Error),
+// }
 
-impl fmt::Display for SyncError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SyncError::DatabaseError(err) => write!(f, "Database error: {}", err),
-            SyncError::NetworkError(err) => write!(f, "Network error: {}", err),
-            SyncError::AuthenticationFailed => write!(f, "Authentication failed"),
-            SyncError::SerializationError(err) => write!(f, "Serialization error: {}", err),
-        }
-    }
-}
+// impl fmt::Display for SyncError {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         match self {
+//             SyncError::DatabaseError(err) => write!(f, "Database error: {}", err),
+//             SyncError::NetworkError(err) => write!(f, "Network error: {}", err),
+//             SyncError::AuthenticationFailed => write!(f, "Authentication failed"),
+//             SyncError::SerializationError(err) => write!(f, "Serialization error: {}", err),
+//         }
+//     }
+// }
 
-// Implement error conversion
-impl From<rusqlite::Error> for SyncError {
-    fn from(err: rusqlite::Error) -> SyncError {
-        SyncError::DatabaseError(err)
-    }
-}
+// // Implement error conversion
+// impl From<rusqlite::Error> for SyncError {
+//     fn from(err: rusqlite::Error) -> SyncError {
+//         SyncError::DatabaseError(err)
+//     }
+// }
 
-impl From<reqwest::Error> for SyncError {
-    fn from(err: reqwest::Error) -> SyncError {
-        SyncError::NetworkError(err)
-    }
-}
+// impl From<reqwest::Error> for SyncError {
+//     fn from(err: reqwest::Error) -> SyncError {
+//         SyncError::NetworkError(err)
+//     }
+// }
 
-impl From<serde_json::Error> for SyncError {
-    fn from(err: serde_json::Error) -> SyncError {
-        SyncError::SerializationError(err)
-    }
-}
+// impl From<serde_json::Error> for SyncError {
+//     fn from(err: serde_json::Error) -> SyncError {
+//         SyncError::SerializationError(err)
+//     }
+// }
+
+// pub async fn sync_with_server(
+//     user: &FurUser,
+//     last_sync: i64,
+//     tasks: Vec<EncryptedTask>,
+//     shortcuts: Vec<EncryptedShortcut>,
+// ) -> Result<SyncResponse, SyncError> {
+//     let client = reqwest::Client::new();
+//     let sync_request = SyncRequest {
+//         email: user.email.clone(),
+//         password_hash: user.password_hash.clone(),
+//         last_sync,
+//         tasks,
+//         shortcuts,
+//     };
+
+//     let response = client
+//         .post(format!("{}/sync", user.server))
+//         .json(&sync_request)
+//         .send()
+//         .await?;
+
+//     if response.status().is_success() {
+//         response.json::<SyncResponse>().await.map_err(Into::into)
+//     } else {
+//         Err(SyncError::AuthenticationFailed)
+//     }
+// }
 
 pub async fn sync_with_server(
     user: &FurUser,
     last_sync: i64,
     tasks: Vec<EncryptedTask>,
     shortcuts: Vec<EncryptedShortcut>,
-) -> Result<SyncResponse, SyncError> {
-    let client = reqwest::Client::new();
+) -> Result<SyncResponse, ApiError> {
+    let client = Client::new();
     let sync_request = SyncRequest {
-        email: user.email.clone(),
-        password_hash: user.password_hash.clone(),
         last_sync,
         tasks,
         shortcuts,
     };
 
-    let response = client
+    let mut response = client
         .post(format!("{}/sync", user.server))
+        .header("Authorization", format!("Bearer {}", user.access_token))
         .json(&sync_request)
         .send()
-        .await?;
+        .await
+        .map_err(|e| ApiError::Network(Arc::new(e)))?;
+
+    if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+        // Try token refresh
+        let new_access_token =
+            refresh_auth_token(user.refresh_token.to_string(), &user.server).await?;
+        if let Err(e) = db_update_access_token(&user.email, &new_access_token) {
+            return Err(ApiError::TokenRefresh(e.to_string()));
+        }
+
+        // Retry with new token
+        response = client
+            .post(format!("{}/sync", user.server))
+            .header("Authorization", format!("Bearer {}", new_access_token))
+            .json(&sync_request)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(Arc::new(e)))?;
+    }
 
     if response.status().is_success() {
-        response.json::<SyncResponse>().await.map_err(Into::into)
+        response
+            .json()
+            .await
+            .map_err(|e| ApiError::Network(Arc::new(e)))
     } else {
-        Err(SyncError::AuthenticationFailed)
+        Err(ApiError::Server("Sync failed".into()))
     }
 }

@@ -139,8 +139,10 @@ pub fn db_init() -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS user (
             email TEXT PRIMARY KEY,
-            password_hash TEXT NOT NULL,
-            salt BLOB NOT NULL,
+            encrypted_key TEXT NOT NULL,
+            key_nonce TEXT NOT NULL,
+            access_token TEXT NOT NULL,
+            refresh_token TEXT NOT NULL,
             server TEXT NOT NULL
         )",
         [],
@@ -758,15 +760,6 @@ pub fn db_backup(backup_file: PathBuf) -> Result<()> {
     backup.run_to_completion(5, Duration::from_millis(250), None)
 }
 
-// pub fn db_update_task_sync_time(task_id: u32, sync_time: i64) -> Result<()> {
-//     let conn = Connection::open(db_get_directory())?;
-//     conn.execute(
-//         "UPDATE tasks SET last_updated = ?1 WHERE id = ?2",
-//         params![sync_time, task_id],
-//     )?;
-//     Ok(())
-// }
-
 pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 
@@ -1114,9 +1107,11 @@ pub fn db_retrieve_credentials() -> Result<Option<FurUser>> {
     let result = stmt.query_row([], |row| {
         Ok(FurUser {
             email: row.get(0)?,
-            password_hash: row.get(1)?,
-            salt: row.get(2)?,
-            server: row.get(3)?,
+            encrypted_key: row.get(1)?,
+            key_nonce: row.get(2)?,
+            access_token: row.get(3)?,
+            refresh_token: row.get(4)?,
+            server: row.get(5)?,
         })
     });
 
@@ -1129,16 +1124,39 @@ pub fn db_retrieve_credentials() -> Result<Option<FurUser>> {
 
 pub fn db_store_credentials(
     email: &str,
-    password_hash: &str,
-    salt: &[u8],
+    encrypted_key: &str,
+    key_nonce: &str,
+    access_token: &str,
+    refresh_token: &str,
     server: &str,
-) -> Result<(), rusqlite::Error> {
+) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
-        "INSERT OR REPLACE INTO user (email, password_hash, salt, server)
-         VALUES (?1, ?2, ?3, ?4)",
-        params![email, password_hash, salt, server],
+        "INSERT OR REPLACE INTO user
+        (email, encrypted_key, key_nonce, access_token, refresh_token, server)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        params![
+            email,
+            encrypted_key,
+            key_nonce,
+            access_token,
+            refresh_token,
+            server
+        ],
+    )?;
+
+    Ok(())
+}
+
+pub fn db_update_access_token(email: &str, new_token: &str) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "UPDATE user
+         SET access_token = ?1
+         WHERE email = ?2",
+        params![new_token, email],
     )?;
 
     Ok(())

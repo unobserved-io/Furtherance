@@ -31,14 +31,14 @@ use crate::{
         INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_SPACING,
     },
     database::*,
-    encryption,
+    encryption::{self, decrypt_encryption_key, derive_encryption_key, encrypt_encryption_key},
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle::get_idle_time,
         midnight_subscription::MidnightSubscription,
     },
     localization::Localization,
-    login::{login, LoginResponse},
+    login::{login, ApiError, LoginResponse},
     models::{
         fur_idle::FurIdle,
         fur_pomodoro::FurPomodoro,
@@ -47,7 +47,7 @@ use crate::{
         fur_shortcut::{EncryptedShortcut, FurShortcut},
         fur_task::{EncryptedTask, FurTask},
         fur_task_group::FurTaskGroup,
-        fur_user::FurUser,
+        fur_user::{FurUser, FurUserFields},
         group_to_edit::GroupToEdit,
         shortcut_to_add::ShortcutToAdd,
         shortcut_to_edit::ShortcutToEdit,
@@ -55,10 +55,9 @@ use crate::{
         task_to_edit::TaskToEdit,
     },
     style::{self, FurTheme},
-    sync::{sync_with_server, SyncError, SyncResponse},
+    sync::{sync_with_server, SyncResponse},
     view_enums::*,
 };
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
 use chrono::{TimeDelta, TimeZone, Timelike};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
@@ -96,7 +95,8 @@ pub struct Furtherance {
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
-    fur_user: FurUser,
+    fur_user: Option<FurUser>,
+    fur_user_fields: FurUserFields,
     group_to_edit: Option<GroupToEdit>,
     idle: FurIdle,
     inspector_view: Option<FurInspectorView>,
@@ -115,7 +115,6 @@ pub struct Furtherance {
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
-    temp_fur_user: FurUser,
     theme: FurTheme,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
@@ -225,12 +224,12 @@ pub enum Message {
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     SyncWithServer,
-    SyncComplete(Result<SyncResponse, Arc<SyncError>>),
+    SyncComplete(Result<SyncResponse, ApiError>),
     TaskInputChanged(String),
     ToggleGroupEditor,
     UserEmailChanged(String),
     UserLoginPressed,
-    UserLoginResponse(Result<LoginResponse, String>),
+    UserLoginComplete(Result<LoginResponse, ApiError>),
     UserPasswordChanged(String),
     UserServerChanged(String),
 }
@@ -264,13 +263,10 @@ impl Furtherance {
 
         // Load user credentials from database
         let saved_user = match db_retrieve_credentials() {
-            Ok(optional_user) => match optional_user {
-                Some(user) => user,
-                None => FurUser::default(),
-            },
+            Ok(optional_user) => optional_user,
             Err(e) => {
                 eprintln!("Error retrieving user credentials from database: {}", e);
-                FurUser::default()
+                None
             }
         };
 
@@ -291,6 +287,14 @@ impl Furtherance {
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
             fur_user: saved_user.clone(),
+            fur_user_fields: match &saved_user {
+                Some(user) => FurUserFields {
+                    email: user.email.clone(),
+                    password: "xxxxxxxx".to_string(),
+                    server: user.server.clone(),
+                },
+                None => FurUserFields::default(),
+            },
             group_to_edit: None,
             idle: FurIdle::new(),
             localization: Arc::new(Localization::new()),
@@ -302,8 +306,8 @@ impl Furtherance {
             settings_csv_message: Ok(String::new()),
             settings_database_message: Ok(String::new()),
             settings_more_message: Ok(String::new()),
-            settings_server_choice: if !saved_user.server.is_empty()
-                && saved_user.server != OFFICIAL_SERVER
+            settings_server_choice: if saved_user.is_some()
+                && saved_user.unwrap_or_default().server != OFFICIAL_SERVER
             {
                 Some(ServerChoices::Custom)
             } else {
@@ -321,7 +325,6 @@ impl Furtherance {
             show_timer_start_picker: false,
             task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
-            temp_fur_user: saved_user,
             theme: FurTheme::Light,
             timer_is_running: false,
             timer_start_time: Local::now(),
@@ -1568,9 +1571,13 @@ impl Furtherance {
             Message::SettingsServerChoiceSelected(new_value) => {
                 self.settings_server_choice = Some(new_value);
                 if new_value == ServerChoices::Official {
-                    self.temp_fur_user.server = OFFICIAL_SERVER.to_string();
+                    self.fur_user_fields.server = OFFICIAL_SERVER.to_string();
                 } else {
-                    self.temp_fur_user.server = self.fur_user.server.clone();
+                    if let Some(fur_user) = &self.fur_user {
+                        self.fur_user_fields.server = fur_user.server.clone();
+                    } else {
+                        self.fur_user_fields.server = String::new();
+                    }
                 }
             }
             Message::SettingsShowChartAverageEarningsToggled(new_value) => {
@@ -1939,17 +1946,24 @@ impl Furtherance {
             Message::SyncWithServer => {
                 let last_sync = self.fur_settings.last_sync;
 
-                let key =
-                    match encryption::derive_key(&self.fur_user.password_hash, &self.fur_user.salt)
-                    {
-                        Ok(key) => key,
-                        Err(e) => {
-                            eprintln!("Failed to derive key: {:?}", e);
-                            return Task::none();
-                        }
-                    };
+                let credentials = match self.fur_user.clone() {
+                    Some(user) => user,
+                    None => {
+                        eprintln!("Please log in first"); // TODO: Make warning or don't allow sync
+                        return Task::none();
+                    }
+                };
 
-                let user_clone = self.fur_user.clone();
+                let encryption_key = match decrypt_encryption_key(
+                    &credentials.encrypted_key,
+                    &credentials.key_nonce,
+                ) {
+                    Ok(key) => key,
+                    Err(e) => {
+                        eprintln!("Failed to decrypt encryption key: {:?}", e);
+                        return Task::none();
+                    }
+                };
 
                 return Task::perform(
                     async move {
@@ -1958,10 +1972,9 @@ impl Furtherance {
                         let shortcuts =
                             db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
 
-                        // Encrypt each task and shortcut
                         let encrypted_tasks: Vec<EncryptedTask> = tasks
                             .into_iter()
-                            .filter_map(|task| match encryption::encrypt(&task, &key) {
+                            .filter_map(|task| match encryption::encrypt(&task, &encryption_key) {
                                 Ok((encrypted_data, nonce)) => Some(EncryptedTask {
                                     encrypted_data,
                                     nonce,
@@ -1977,28 +1990,29 @@ impl Furtherance {
 
                         let encrypted_shortcuts: Vec<EncryptedShortcut> = shortcuts
                             .into_iter()
-                            .filter_map(|shortcut| match encryption::encrypt(&shortcut, &key) {
-                                Ok((encrypted_data, nonce)) => Some(EncryptedShortcut {
-                                    encrypted_data,
-                                    nonce,
-                                    uuid: shortcut.uuid,
-                                    last_updated: shortcut.last_updated,
-                                }),
-                                Err(e) => {
-                                    eprintln!("Failed to encrypt shortcut: {:?}", e);
-                                    None
+                            .filter_map(|shortcut| {
+                                match encryption::encrypt(&shortcut, &encryption_key) {
+                                    Ok((encrypted_data, nonce)) => Some(EncryptedShortcut {
+                                        encrypted_data,
+                                        nonce,
+                                        uuid: shortcut.uuid,
+                                        last_updated: shortcut.last_updated,
+                                    }),
+                                    Err(e) => {
+                                        eprintln!("Failed to encrypt shortcut: {:?}", e);
+                                        None
+                                    }
                                 }
                             })
                             .collect();
 
                         sync_with_server(
-                            &user_clone,
+                            &credentials,
                             last_sync,
                             encrypted_tasks,
                             encrypted_shortcuts,
                         )
                         .await
-                        .map_err(Arc::new)
                     },
                     Message::SyncComplete,
                 );
@@ -2006,23 +2020,31 @@ impl Furtherance {
             Message::SyncComplete(sync_result) => {
                 match sync_result {
                     Ok(response) => {
-                        // Get key for decryption
-                        let key = match encryption::derive_key(
-                            &self.fur_user.password_hash,
-                            &self.fur_user.salt,
-                        ) {
-                            Ok(k) => k,
-                            Err(e) => {
-                                eprintln!("Failed to derive key: {:?}", e);
+                        let credentials = match self.fur_user.clone() {
+                            Some(user) => user,
+                            None => {
+                                eprintln!("Please log in first");
                                 return Task::none();
                             }
                         };
 
+                        let encryption_key = match decrypt_encryption_key(
+                            &credentials.encrypted_key,
+                            &credentials.key_nonce,
+                        ) {
+                            Ok(key) => key,
+                            Err(e) => {
+                                eprintln!("Failed to decrypt encryption key: {:?}", e);
+                                return Task::none();
+                            }
+                        };
+
+                        // Decrypt and process server tasks
                         for encrypted_task in response.tasks {
                             match encryption::decrypt::<FurTask>(
                                 &encrypted_task.encrypted_data,
                                 &encrypted_task.nonce,
-                                &key,
+                                &encryption_key,
                             ) {
                                 Ok(server_task) => {
                                     match db_retrieve_task_by_id(&server_task.uuid) {
@@ -2063,7 +2085,7 @@ impl Furtherance {
                             match encryption::decrypt::<FurShortcut>(
                                 &encrypted_shortcut.encrypted_data,
                                 &encrypted_shortcut.nonce,
-                                &key,
+                                &encryption_key,
                             ) {
                                 Ok(server_shortcut) => {
                                     match db_retrieve_shortcut_by_id(&server_shortcut.uuid) {
@@ -2113,7 +2135,7 @@ impl Furtherance {
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
                     }
                     Err(e) => {
-                        eprintln!("Sync error: {}", e);
+                        eprintln!("Sync error: {:?}", e);
                     }
                 }
             }
@@ -2179,72 +2201,103 @@ impl Furtherance {
                     .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
             }
             Message::UserEmailChanged(new_email) => {
-                self.temp_fur_user.email = new_email;
+                self.fur_user_fields.email = new_email;
             }
             Message::UserLoginPressed => {
-                let email = self.temp_fur_user.email.clone();
-                let password = self.temp_fur_user.password_hash.clone();
-                let server = self.temp_fur_user.server.clone();
+                let email = self.fur_user_fields.email.clone();
+                let password = self.fur_user_fields.password.clone();
+                let server = self.fur_user_fields.server.clone();
 
-                return Task::perform(login(email, password, server), Message::UserLoginResponse);
+                return Task::perform(login(email, password, server), Message::UserLoginComplete);
             }
-            Message::UserLoginResponse(response_result) => match response_result {
+            Message::UserLoginComplete(response_result) => match response_result {
                 Ok(response) => {
-                    let salt = BASE64
-                        .decode(&response.salt)
-                        .expect("Failed to decode salt");
+                    // Derive encryption key from password
+                    let encryption_key = match derive_encryption_key(&self.fur_user_fields.password)
+                    {
+                        Ok(key) => key,
+                        Err(e) => {
+                            eprintln!("Error deriving encryption key: {:?}", e);
+                            self.login_message = Err(self
+                                .localization
+                                .get_message("error-storing-credentials", None)
+                                .into());
+                            return Task::none();
+                        }
+                    };
 
+                    // Encrypt encryption key with device-specific key
+                    let (encrypted_key, key_nonce) = match encrypt_encryption_key(&encryption_key) {
+                        Ok(result) => result,
+                        Err(e) => {
+                            eprintln!("Error encrypting key: {:?}", e);
+                            self.login_message = Err(self
+                                .localization
+                                .get_message("error-storing-credentials", None)
+                                .into());
+                            return Task::none();
+                        }
+                    };
+
+                    // Store credentials
                     if let Err(e) = db_store_credentials(
-                        &self.temp_fur_user.email,
-                        &response.password_hash,
-                        &salt,
-                        &self.temp_fur_user.server,
+                        &self.fur_user_fields.email,
+                        &encrypted_key,
+                        &key_nonce,
+                        &response.access_token,
+                        &response.refresh_token,
+                        &self.fur_user_fields.server,
                     ) {
                         eprintln!("Error storing user credentials: {}", e);
                         self.login_message = Err(self
                             .localization
                             .get_message("error-storing-credentials", None)
                             .into());
+                        return Task::none();
                     }
 
                     // Load new user credentials from database
                     self.fur_user = match db_retrieve_credentials() {
-                        Ok(optional_user) => match optional_user {
-                            Some(user) => user,
-                            None => FurUser::default(),
-                        },
+                        Ok(optional_user) => optional_user,
                         Err(e) => {
                             eprintln!("Error retrieving user credentials from database: {}", e);
                             self.login_message = Err(self
                                 .localization
                                 .get_message("error-retrieving-credentials", None)
                                 .into());
-                            FurUser::default()
+                            None
                         }
                     };
 
-                    self.temp_fur_user = self.fur_user.clone();
-
-                    self.login_message = Ok(self.localization.get_message("login-successful", None))
+                    if let Some(fur_user) = self.fur_user.clone() {
+                        self.fur_user_fields.email = fur_user.email;
+                        self.fur_user_fields.password = "xxxxxxxx".to_string();
+                        self.fur_user_fields.server = fur_user.server;
+                        self.login_message =
+                            Ok(self.localization.get_message("login-successful", None))
+                    }
                 }
                 Err(e) => {
-                    eprintln!("Error logging in: {}", e);
-                    if e == "builder error" {
-                        self.login_message = Err(self
-                            .localization
-                            .get_message("server-must-contain-protocol", None)
-                            .into());
-                    } else {
-                        self.login_message =
-                            Err(self.localization.get_message("login-failed", None).into());
+                    eprintln!("Error logging in: {:?}", e);
+                    match e {
+                        ApiError::Network(e) if e.to_string() == "builder error" => {
+                            self.login_message = Err(self
+                                .localization
+                                .get_message("server-must-contain-protocol", None)
+                                .into());
+                        }
+                        _ => {
+                            self.login_message =
+                                Err(self.localization.get_message("login-failed", None).into());
+                        }
                     }
                 }
             },
             Message::UserPasswordChanged(new_password) => {
-                self.temp_fur_user.password_hash = new_password;
+                self.fur_user_fields.password = new_password;
             }
             Message::UserServerChanged(new_server) => {
-                self.temp_fur_user.server = new_server;
+                self.fur_user_fields.server = new_server;
             }
         }
         Task::none()
@@ -2708,7 +2761,7 @@ impl Furtherance {
         server_choice_col = server_choice_col.push_maybe(
             if self.settings_server_choice == Some(ServerChoices::Custom) {
                 Some(
-                    text_input(&self.fur_user.server, &self.temp_fur_user.server)
+                    text_input("", &self.fur_user_fields.server)
                         .on_input(Message::UserServerChanged),
                 )
             } else {
@@ -2724,19 +2777,17 @@ impl Furtherance {
             .align_y(Alignment::Center),
             row![
                 text(self.localization.get_message("email", None)),
-                column![text_input(&self.fur_user.email, &self.temp_fur_user.email)
-                    .on_input(Message::UserEmailChanged)]
+                column![
+                    text_input("", &self.fur_user_fields.email).on_input(Message::UserEmailChanged)
+                ]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
             row![
                 text(self.localization.get_message("password", None)),
-                column![text_input(
-                    &self.fur_user.password_hash,
-                    &self.temp_fur_user.password_hash
-                )
-                .secure(true)
-                .on_input(Message::UserPasswordChanged)]
+                column![text_input("", &self.fur_user_fields.password)
+                    .secure(true)
+                    .on_input(Message::UserPasswordChanged)]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
