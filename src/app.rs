@@ -307,8 +307,9 @@ impl Furtherance {
             settings_csv_message: Ok(String::new()),
             settings_database_message: Ok(String::new()),
             settings_more_message: Ok(String::new()),
-            settings_server_choice: if saved_user.is_some()
-                && saved_user.unwrap_or_default().server != OFFICIAL_SERVER
+            settings_server_choice: if saved_user
+                .as_ref()
+                .map_or(false, |user| user.server != OFFICIAL_SERVER)
             {
                 Some(ServerChoices::Custom)
             } else {
@@ -2819,8 +2820,12 @@ impl Furtherance {
             row![
                 button(text(self.localization.get_message("log-in", None)))
                     .on_press(Message::UserLoginPressed),
-                button(text(self.localization.get_message("sync", None)))
-                    .on_press(Message::SyncWithServer)
+                button(text(self.localization.get_message("sync", None))).on_press_maybe(
+                    match self.fur_user {
+                        Some(_) => Some(Message::SyncWithServer),
+                        None => None,
+                    }
+                )
             ]
             .spacing(10)
         ]

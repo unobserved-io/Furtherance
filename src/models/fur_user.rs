@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct FurUser {
     pub email: String,
     pub encrypted_key: String,
@@ -6,19 +6,6 @@ pub struct FurUser {
     pub access_token: String,
     pub refresh_token: String,
     pub server: String,
-}
-
-impl Default for FurUser {
-    fn default() -> Self {
-        FurUser {
-            email: String::new(),
-            encrypted_key: String::new(),
-            key_nonce: String::new(),
-            access_token: String::new(),
-            refresh_token: String::new(),
-            server: String::new(),
-        }
-    }
 }
 
 #[derive(Clone)]
