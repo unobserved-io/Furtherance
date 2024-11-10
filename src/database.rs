@@ -23,8 +23,9 @@ use rusqlite::{backup, params, Connection, Result};
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
-use uuid::Uuid;
 
+use crate::models::fur_shortcut;
+use crate::models::fur_task;
 use crate::models::fur_user::FurUser;
 use crate::models::{
     fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
@@ -113,7 +114,7 @@ pub fn db_init() -> Result<()> {
             project TEXT,
             rate REAL,
             currency TEXT,
-            uuid BLOB,
+            uid TEXT,
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
@@ -129,7 +130,7 @@ pub fn db_init() -> Result<()> {
             rate REAL,
             currency TEXT,
             color_hex TEXT,
-            uuid BLOB,
+            uid TEXT,
             is_deleted BOOLEAN DEFAULT 0,
             last_updated INTEGER DEFAULT 0
         );",
@@ -168,7 +169,7 @@ pub fn db_upgrade_old() -> Result<()> {
     if !column_exists(&conn, "tasks", "currency")? {
         db_add_currency_column(&conn)?;
     }
-    if !column_exists(&conn, "tasks", "uuid")? {
+    if !column_exists(&conn, "tasks", "uid")? {
         db_add_sync_columns(&conn)?;
     }
 
@@ -201,34 +202,45 @@ pub fn db_add_currency_column(conn: &Connection) -> Result<()> {
 }
 
 pub fn db_add_sync_columns(conn: &Connection) -> Result<()> {
-    if !column_exists(conn, "tasks", "uuid")? {
-        conn.execute("ALTER TABLE tasks ADD COLUMN uuid BLOB", [])?;
-        let mut stmt = conn.prepare("SELECT id FROM tasks WHERE uuid IS NULL")?;
-        let task_ids: Vec<i64> = stmt
-            .query_map([], |row| row.get(0))?
-            .collect::<Result<_, _>>()?;
+    if !column_exists(conn, "tasks", "uid")? {
+        conn.execute("ALTER TABLE tasks ADD COLUMN uid TEXT", [])?;
+        let mut stmt = conn
+            .prepare("SELECT id, task_name, start_time, stop_time FROM tasks WHERE uid IS NULL")?;
+        let tasks: Vec<(i64, String, DateTime<Local>, DateTime<Local>)> = stmt
+            .query_map([], |row| {
+                Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
 
-        for id in task_ids {
-            let uuid = Uuid::new_v4();
-            conn.execute(
-                "UPDATE tasks SET uuid = ?1 WHERE id = ?2",
-                rusqlite::params![uuid.as_bytes().to_vec(), id],
-            )?;
+        for (id, name, start_time, stop_time) in tasks {
+            let uid = fur_task::generate_task_uid(&name, &start_time, &stop_time);
+            conn.execute("UPDATE tasks SET uid = ?1 WHERE id = ?2", params![uid, id])?;
         }
     }
 
-    if !column_exists(conn, "shortcuts", "uuid")? {
-        conn.execute("ALTER TABLE shortcuts ADD COLUMN uuid BLOB", [])?;
-        let mut stmt = conn.prepare("SELECT id FROM shortcuts WHERE uuid IS NULL")?;
-        let shortcut_ids: Vec<i64> = stmt
-            .query_map([], |row| row.get(0))?
-            .collect::<Result<_, _>>()?;
+    if !column_exists(conn, "shortcuts", "uid")? {
+        conn.execute("ALTER TABLE shortcuts ADD COLUMN uid TEXT", [])?;
+        let mut stmt = conn.prepare(
+            "SELECT id, name, tags, project, rate, currency FROM shortcuts WHERE uid IS NULL",
+        )?;
+        let shortcuts: Vec<(i64, String, String, String, f32, String)> = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get(0)?,
+                    row.get(1)?,
+                    row.get(2)?,
+                    row.get(3)?,
+                    row.get(4)?,
+                    row.get(5)?,
+                ))
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
 
-        for id in shortcut_ids {
-            let uuid = Uuid::new_v4();
+        for (id, name, tags, project, rate, currency) in shortcuts {
+            let uid = fur_shortcut::generate_shortcut_uid(&name, &tags, &project, &rate, &currency);
             conn.execute(
-                "UPDATE shortcuts SET uuid = ?1 WHERE id = ?2",
-                rusqlite::params![uuid.as_bytes().to_vec(), id],
+                "UPDATE shortcuts SET uid = ?1 WHERE id = ?2",
+                params![uid, id],
             )?;
         }
     }
@@ -276,7 +288,7 @@ pub fn db_insert_task(task: &FurTask) -> Result<()> {
             project,
             rate,
             currency,
-            uuid,
+            uid,
             is_deleted,
             last_updated
         ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
@@ -288,7 +300,7 @@ pub fn db_insert_task(task: &FurTask) -> Result<()> {
             task.project,
             task.rate,
             task.currency,
-            task.uuid,
+            task.uid,
             task.is_deleted,
             task.last_updated
         ],
@@ -312,7 +324,7 @@ pub fn db_insert_tasks(tasks: &[FurTask]) -> Result<()> {
                 project,
                 rate,
                 currency,
-                uuid,
+                uid,
                 is_deleted,
                 last_updated
             ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
@@ -327,7 +339,7 @@ pub fn db_insert_tasks(tasks: &[FurTask]) -> Result<()> {
                 task.project,
                 task.rate,
                 task.currency,
-                task.uuid,
+                task.uid,
                 task.is_deleted,
                 task.last_updated
             ])?;
@@ -367,7 +379,7 @@ pub fn db_retrieve_all_tasks(
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            uuid: row.get(8)?,
+            uid: row.get(8)?,
             is_deleted: row.get(9)?,
             last_updated: row.get(10)?,
         };
@@ -398,7 +410,7 @@ pub fn db_retrieve_tasks_by_date_range(
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            uuid: row.get(8)?,
+            uid: row.get(8)?,
             is_deleted: row.get(9)?,
             last_updated: row.get(10)?,
         };
@@ -437,7 +449,7 @@ pub fn db_retrieve_tasks_with_day_limit(
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            uuid: row.get(8)?,
+            uid: row.get(8)?,
             is_deleted: row.get(9)?,
             last_updated: row.get(10)?,
         };
@@ -447,10 +459,10 @@ pub fn db_retrieve_tasks_with_day_limit(
     Ok(tasks_vec)
 }
 
-pub fn db_retrieve_task_by_id(uuid: &Uuid) -> Result<Option<FurTask>> {
+pub fn db_retrieve_task_by_id(uid: &String) -> Result<Option<FurTask>> {
     let conn = Connection::open(db_get_directory())?;
-    let mut stmt = conn.prepare("SELECT * FROM tasks WHERE uuid = ?")?;
-    let mut rows = stmt.query_map([uuid.to_string()], |row| {
+    let mut stmt = conn.prepare("SELECT * FROM tasks WHERE uid = ?")?;
+    let mut rows = stmt.query_map([uid.to_string()], |row| {
         Ok(FurTask {
             name: row.get(1)?,
             start_time: row.get(2)?,
@@ -459,7 +471,7 @@ pub fn db_retrieve_task_by_id(uuid: &Uuid) -> Result<Option<FurTask>> {
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            uuid: row.get(8)?,
+            uid: row.get(8)?,
             is_deleted: row.get(9)?,
             last_updated: row.get(10)?,
         })
@@ -486,7 +498,7 @@ pub fn db_update_task(task: &FurTask) -> Result<()> {
             currency = ?7,
             is_deleted = ?8,
             last_updated = ?9,
-        WHERE uuid = ?10",
+        WHERE uid = ?10",
         params![
             task.name,
             task.start_time.to_rfc3339(),
@@ -497,7 +509,7 @@ pub fn db_update_task(task: &FurTask) -> Result<()> {
             task.currency,
             task.is_deleted,
             task.last_updated,
-            task.uuid,
+            task.uid,
         ],
     )?;
 
@@ -516,10 +528,10 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
             project = ?3,
             rate = ?4,
             last_updated = ?5,
-        WHERE uuid = ?6",
+        WHERE uid = ?6",
         )?;
 
-        for uuid in group.all_task_ids().iter() {
+        for uid in group.all_task_ids().iter() {
             stmt.execute(params![
                 group.new_name.trim(),
                 group
@@ -532,7 +544,7 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
                 group.new_project.trim(),
                 group.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                 chrono::Utc::now().timestamp(),
-                uuid,
+                uid,
             ])?;
         }
     }
@@ -575,12 +587,12 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
     Ok(exists)
 }
 
-pub fn db_delete_tasks_by_ids(id_list: &[Uuid]) -> Result<()> {
+pub fn db_delete_tasks_by_ids(id_list: &[String]) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     for id in id_list {
         conn.execute(
-            "UPDATE tasks SET is_deleted = 1 WHERE uuid = (?1)",
+            "UPDATE tasks SET is_deleted = 1 WHERE uid = (?1)",
             &[&id.to_string()],
         )?;
     }
@@ -599,7 +611,7 @@ pub fn db_insert_shortcut(shortcut: &FurShortcut) -> Result<()> {
             rate,
             currency,
             color_hex,
-            uuid,
+            uid,
             is_deleted,
             last_updated
         ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
@@ -610,7 +622,7 @@ pub fn db_insert_shortcut(shortcut: &FurShortcut) -> Result<()> {
             shortcut.rate,
             shortcut.currency,
             shortcut.color_hex,
-            shortcut.uuid,
+            shortcut.uid,
             shortcut.is_deleted,
             shortcut.last_updated,
         ],
@@ -636,7 +648,7 @@ pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            uuid: row.get(7)?,
+            uid: row.get(7)?,
             is_deleted: row.get(8)?,
             last_updated: row.get(9)?,
         };
@@ -659,7 +671,7 @@ pub fn db_update_shortcut(shortcut: &FurShortcut) -> Result<()> {
             color_hex = (?6),
             is_deleted = (?7),
             last_updated = (?8)
-        WHERE uuid = (?9)",
+        WHERE uid = (?9)",
         params![
             shortcut.name,
             shortcut.tags,
@@ -669,7 +681,7 @@ pub fn db_update_shortcut(shortcut: &FurShortcut) -> Result<()> {
             shortcut.color_hex,
             shortcut.is_deleted,
             shortcut.last_updated,
-            shortcut.uuid,
+            shortcut.uid,
         ],
     )?;
 
@@ -703,10 +715,10 @@ pub fn db_shortcut_exists(shortcut: &FurShortcut) -> Result<bool> {
     Ok(exists)
 }
 
-pub fn db_retrieve_shortcut_by_id(uuid: &Uuid) -> Result<Option<FurShortcut>> {
+pub fn db_retrieve_shortcut_by_id(uid: &String) -> Result<Option<FurShortcut>> {
     let conn = Connection::open(db_get_directory())?;
-    let mut stmt = conn.prepare("SELECT * FROM shortcuts WHERE uuid = ?")?;
-    let mut rows = stmt.query_map([uuid.to_string()], |row| {
+    let mut stmt = conn.prepare("SELECT * FROM shortcuts WHERE uid = ?")?;
+    let mut rows = stmt.query_map([uid.to_string()], |row| {
         Ok(FurShortcut {
             name: row.get(1)?,
             tags: row.get(2)?,
@@ -714,7 +726,7 @@ pub fn db_retrieve_shortcut_by_id(uuid: &Uuid) -> Result<Option<FurShortcut>> {
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            uuid: row.get(7)?,
+            uid: row.get(7)?,
             is_deleted: row.get(8)?,
             last_updated: row.get(9)?,
         })
@@ -727,12 +739,12 @@ pub fn db_retrieve_shortcut_by_id(uuid: &Uuid) -> Result<Option<FurShortcut>> {
     }
 }
 
-pub fn db_delete_shortcut_by_id(uuid: Uuid) -> Result<()> {
+pub fn db_delete_shortcut_by_id(uid: &str) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
 
     conn.execute(
-        "UPDATE shortcuts SET is_deleted = 1 WHERE uuid = (?1)",
-        &[&uuid],
+        "UPDATE shortcuts SET is_deleted = 1 WHERE uid = (?1)",
+        &[&uid],
     )?;
 
     Ok(())
@@ -778,7 +790,7 @@ pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>,
             project: row.get(5)?,
             rate: row.get(6)?,
             currency: row.get(7).unwrap_or(String::new()),
-            uuid: row.get(8)?,
+            uid: row.get(8)?,
             is_deleted: row.get(9)?,
             last_updated: row.get(10)?,
         };
@@ -807,7 +819,7 @@ pub fn db_retrieve_shortcuts_since_timestamp(
             rate: row.get(4)?,
             currency: row.get(5)?,
             color_hex: row.get(6)?,
-            uuid: row.get(7)?,
+            uid: row.get(7)?,
             is_deleted: row.get(8)?,
             last_updated: row.get(9)?,
         };
@@ -1058,18 +1070,15 @@ pub fn db_import_old_mac_db() -> Result<()> {
             let mut tasks_vec: Vec<FurTask> = Vec::new();
 
             while let Some(row) = rows.next()? {
-                let fur_task = FurTask {
-                    name: row.get(0)?,
-                    start_time: core_data_timestamp_to_datetime(row.get(1)?)?,
-                    stop_time: core_data_timestamp_to_datetime(row.get(2)?)?,
-                    tags: row.get(3)?,
-                    project: row.get(4)?,
-                    rate: row.get(5)?,
-                    currency: String::new(),
-                    uuid: Uuid::new_v4(),
-                    is_deleted: false,
-                    last_updated: chrono::Utc::now().timestamp(),
-                };
+                let fur_task = FurTask::new(
+                    row.get(0)?,
+                    core_data_timestamp_to_datetime(row.get(1)?)?,
+                    core_data_timestamp_to_datetime(row.get(2)?)?,
+                    row.get(3)?,
+                    row.get(4)?,
+                    row.get(5)?,
+                    String::new(),
+                );
 
                 // Don't import duplicate tasks
                 if let Ok(exists) = db_task_exists(&fur_task) {

@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct FurShortcut {
@@ -26,9 +26,34 @@ pub struct FurShortcut {
     pub rate: f32,
     pub currency: String,
     pub color_hex: String,
-    pub uuid: Uuid,
+    pub uid: String,
     pub is_deleted: bool,
     pub last_updated: i64,
+}
+
+impl FurShortcut {
+    pub fn new(
+        name: String,
+        tags: String,
+        project: String,
+        rate: f32,
+        currency: String,
+        color_hex: String,
+    ) -> Self {
+        let uid = generate_shortcut_uid(&name, &tags, &project, &rate, &currency);
+
+        FurShortcut {
+            name,
+            tags,
+            project,
+            rate,
+            currency,
+            color_hex,
+            uid,
+            is_deleted: false,
+            last_updated: Utc::now().timestamp(),
+        }
+    }
 }
 
 impl fmt::Display for FurShortcut {
@@ -51,10 +76,22 @@ impl fmt::Display for FurShortcut {
     }
 }
 
+pub fn generate_shortcut_uid(
+    name: &str,
+    tags: &str,
+    project: &str,
+    rate: &f32,
+    currency: &str,
+) -> String {
+    let input = format!("{}{}{}{}{}", name, tags, project, rate, currency);
+
+    blake3::hash(input.as_bytes()).to_hex().to_string()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EncryptedShortcut {
     pub encrypted_data: String,
     pub nonce: String,
-    pub uuid: Uuid,
+    pub uid: String,
     pub last_updated: i64,
 }

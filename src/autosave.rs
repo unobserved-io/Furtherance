@@ -21,7 +21,6 @@ use std::{
 };
 
 use chrono::{DateTime, Local};
-use uuid::Uuid;
 
 use crate::{
     app::split_task_input,
@@ -104,18 +103,15 @@ fn task_from_autosave(path: &PathBuf) -> Option<FurTask> {
                 } else {
                     currency = autosave_lines[6].clone()
                 }
-                return Some(FurTask {
-                    name: autosave_lines[0].clone(),
-                    start_time: DateTime::from(start_time),
-                    stop_time: DateTime::from(stop_time),
-                    tags: autosave_lines[3].clone(),
-                    project: autosave_lines[4].clone(),
-                    rate: autosave_lines[5].parse().unwrap_or(0.0),
+                return Some(FurTask::new(
+                    autosave_lines[0].clone(),
+                    DateTime::from(start_time),
+                    DateTime::from(stop_time),
+                    autosave_lines[3].clone(),
+                    autosave_lines[4].clone(),
+                    autosave_lines[5].parse().unwrap_or(0.0),
                     currency,
-                    uuid: Uuid::new_v4(),
-                    is_deleted: false,
-                    last_updated: chrono::Utc::now().timestamp(),
-                });
+                ));
             }
         }
 

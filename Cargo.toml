@@ -76,7 +76,6 @@ rusqlite = { version = "0.32", features = [
     "chrono",
     "backup",
     "functions",
-    "uuid",
 ] }
 rust-embed = "8.5"
 rustc-hash = "2.0.0"
@@ -87,7 +86,6 @@ sysinfo = "0.32"
 toml = "0.8"
 tokio = "1.39"
 user-idle = "0.6"
-uuid = { version = "1.11.0", features = ["v4", "serde"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 x11rb = "0.13.1"

@@ -14,13 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use uuid::Uuid;
-
 use crate::models::{fur_task::FurTask, fur_task_group::FurTaskGroup};
 
 #[derive(Debug, Clone)]
 pub struct GroupToEdit {
-    pub uuid: Uuid,
+    pub uid: String,
     pub name: String,
     pub new_name: String,
     pub tags: String,
@@ -37,7 +35,7 @@ pub struct GroupToEdit {
 impl GroupToEdit {
     pub fn new_from(group: &FurTaskGroup) -> Self {
         GroupToEdit {
-            uuid: group.uuid,
+            uid: group.uid.clone(),
             name: group.name.clone(),
             new_name: group.name.clone(),
             tags: group.tags.clone(),
@@ -78,7 +76,7 @@ impl GroupToEdit {
         self.invalid_input_error_message = message;
     }
 
-    pub fn all_task_ids(&self) -> Vec<Uuid> {
-        self.tasks.iter().map(|x| x.uuid).collect()
+    pub fn all_task_ids(&self) -> Vec<String> {
+        self.tasks.iter().map(|x| x.uid.clone()).collect()
     }
 }

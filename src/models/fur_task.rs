@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FurTask {
@@ -27,7 +26,7 @@ pub struct FurTask {
     pub project: String,
     pub rate: f32,
     pub currency: String,
-    pub uuid: Uuid,
+    pub uid: String,
     pub is_deleted: bool,
     pub last_updated: i64,
 }
@@ -51,6 +50,31 @@ impl ToString for FurTask {
 }
 
 impl FurTask {
+    pub fn new(
+        name: String,
+        start_time: DateTime<Local>,
+        stop_time: DateTime<Local>,
+        tags: String,
+        project: String,
+        rate: f32,
+        currency: String,
+    ) -> Self {
+        let uid = generate_task_uid(&name, &start_time, &stop_time);
+
+        FurTask {
+            name,
+            start_time,
+            stop_time,
+            tags,
+            project,
+            rate,
+            currency,
+            uid,
+            is_deleted: false,
+            last_updated: Utc::now().timestamp(),
+        }
+    }
+
     pub fn total_time_in_seconds(&self) -> i64 {
         (self.stop_time - self.start_time).num_seconds()
     }
@@ -60,10 +84,25 @@ impl FurTask {
     }
 }
 
+pub fn generate_task_uid(
+    name: &str,
+    start_time: &DateTime<Local>,
+    stop_time: &DateTime<Local>,
+) -> String {
+    let input = format!(
+        "{}{}{}",
+        name,
+        start_time.timestamp(),
+        stop_time.timestamp()
+    );
+
+    blake3::hash(input.as_bytes()).to_hex().to_string()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EncryptedTask {
     pub encrypted_data: String,
     pub nonce: String,
-    pub uuid: Uuid,
+    pub uid: String,
     pub last_updated: i64,
 }

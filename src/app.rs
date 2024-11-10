@@ -45,7 +45,7 @@ use crate::{
         fur_report::FurReport,
         fur_settings::FurSettings,
         fur_shortcut::{EncryptedShortcut, FurShortcut},
-        fur_task::{EncryptedTask, FurTask},
+        fur_task::{self, EncryptedTask, FurTask},
         fur_task_group::FurTaskGroup,
         fur_user::{FurUser, FurUserFields},
         group_to_edit::GroupToEdit,
@@ -87,12 +87,11 @@ use tokio::time;
 
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
-use uuid::Uuid;
 
 pub struct Furtherance {
     current_view: FurView,
-    delete_ids_from_context: Option<Vec<Uuid>>,
-    delete_shortcut_from_context: Option<Uuid>,
+    delete_ids_from_context: Option<Vec<String>>,
+    delete_shortcut_from_context: Option<String>,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
@@ -152,9 +151,9 @@ pub enum Message {
     DeleteEverything,
     DateRangeSelected(FurDateRange),
     DeleteShortcut,
-    DeleteShortcutFromContext(Uuid),
+    DeleteShortcutFromContext(String),
     DeleteTasks,
-    DeleteTasksFromContext(Vec<Uuid>),
+    DeleteTasksFromContext(Vec<String>),
     EditGroup(FurTaskGroup),
     EditShortcutPressed(FurShortcut),
     EditShortcutTextChanged(String, EditTaskProperty),
@@ -561,21 +560,18 @@ impl Furtherance {
                 }
             }
             Message::CreateShortcutFromTaskGroup(task_group) => {
-                let new_shortcut = FurShortcut {
-                    name: task_group.name,
-                    tags: if task_group.tags.is_empty() {
+                let new_shortcut = FurShortcut::new(
+                    task_group.name,
+                    if task_group.tags.is_empty() {
                         String::new()
                     } else {
                         format!("#{}", task_group.tags)
                     },
-                    project: task_group.project,
-                    rate: task_group.rate,
-                    currency: String::new(),
-                    color_hex: Srgb::random().to_hex(),
-                    uuid: Uuid::new_v4(),
-                    is_deleted: false,
-                    last_updated: chrono::Utc::now().timestamp(),
-                };
+                    task_group.project,
+                    task_group.rate,
+                    String::new(),
+                    Srgb::random().to_hex(),
+                );
 
                 match db_shortcut_exists(&new_shortcut) {
                     Ok(exists) => {
@@ -619,8 +615,8 @@ impl Furtherance {
             },
             Message::DateRangeSelected(new_range) => self.report.set_picked_date_ranged(new_range),
             Message::DeleteShortcut => {
-                if let Some(uuid) = self.delete_shortcut_from_context {
-                    if let Err(e) = db_delete_shortcut_by_id(uuid) {
+                if let Some(uid) = &self.delete_shortcut_from_context {
+                    if let Err(e) = db_delete_shortcut_by_id(uid) {
                         eprintln!("Failed to delete shortcut: {}", e);
                     }
                     self.delete_shortcut_from_context = None;
@@ -658,7 +654,7 @@ impl Furtherance {
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
                 } else if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
-                    if let Err(e) = db_delete_tasks_by_ids(&[task_to_edit.uuid]) {
+                    if let Err(e) = db_delete_tasks_by_ids(&[task_to_edit.uid.clone()]) {
                         eprintln!("Failed to delete task: {}", e);
                     }
                     self.task_to_edit = None;
@@ -1213,21 +1209,18 @@ impl Furtherance {
             }
             Message::SaveShortcut => {
                 if let Some(shortcut_to_add) = &self.shortcut_to_add {
-                    let new_shortcut = FurShortcut {
-                        name: shortcut_to_add.name.trim().to_string(),
-                        tags: shortcut_to_add.tags.trim().to_string(),
-                        project: shortcut_to_add.project.trim().to_string(),
-                        rate: shortcut_to_add
+                    let new_shortcut = FurShortcut::new(
+                        shortcut_to_add.name.trim().to_string(),
+                        shortcut_to_add.tags.trim().to_string(),
+                        shortcut_to_add.project.trim().to_string(),
+                        shortcut_to_add
                             .new_rate
                             .trim()
                             .parse::<f32>()
                             .unwrap_or(0.0),
-                        currency: String::new(),
-                        color_hex: shortcut_to_add.color.to_hex(),
-                        uuid: Uuid::new_v4(),
-                        is_deleted: false,
-                        last_updated: chrono::Utc::now().timestamp(),
-                    };
+                        String::new(),
+                        shortcut_to_add.color.to_hex(),
+                    );
                     match db_shortcut_exists(&new_shortcut) {
                         Ok(exists) => {
                             if exists {
@@ -1261,7 +1254,7 @@ impl Furtherance {
                             .unwrap_or(0.0),
                         currency: String::new(),
                         color_hex: shortcut_to_edit.new_color.to_hex(),
-                        uuid: shortcut_to_edit.uuid,
+                        uid: shortcut_to_edit.uid.clone(),
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     }) {
@@ -1292,7 +1285,7 @@ impl Furtherance {
                         project: task_to_edit.new_project.trim().to_string(),
                         rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         currency: String::new(),
-                        uuid: task_to_edit.uuid,
+                        uid: task_to_edit.uid.clone(),
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     });
@@ -1308,18 +1301,15 @@ impl Furtherance {
                         .unwrap_or(&task_to_add.tags)
                         .trim()
                         .to_string();
-                    let _ = db_insert_task(&FurTask {
-                        name: task_to_add.name.trim().to_string(),
-                        start_time: task_to_add.start_time,
-                        stop_time: task_to_add.stop_time,
-                        tags: tags_without_first_pound,
-                        project: task_to_add.project.trim().to_string(),
-                        rate: task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
-                        currency: String::new(),
-                        uuid: Uuid::new_v4(),
-                        is_deleted: false,
-                        last_updated: chrono::Utc::now().timestamp(),
-                    });
+                    let _ = db_insert_task(&FurTask::new(
+                        task_to_add.name.trim().to_string(),
+                        task_to_add.start_time,
+                        task_to_add.stop_time,
+                        tags_without_first_pound,
+                        task_to_add.project.trim().to_string(),
+                        task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                        String::new(),
+                    ));
                     self.inspector_view = None;
                     self.task_to_add = None;
                     self.group_to_edit = None;
@@ -1980,7 +1970,7 @@ impl Furtherance {
                                 Ok((encrypted_data, nonce)) => Some(EncryptedTask {
                                     encrypted_data,
                                     nonce,
-                                    uuid: task.uuid,
+                                    uid: task.uid,
                                     last_updated: task.last_updated,
                                 }),
                                 Err(e) => {
@@ -1997,7 +1987,7 @@ impl Furtherance {
                                     Ok((encrypted_data, nonce)) => Some(EncryptedShortcut {
                                         encrypted_data,
                                         nonce,
-                                        uuid: shortcut.uuid,
+                                        uid: shortcut.uid,
                                         last_updated: shortcut.last_updated,
                                     }),
                                     Err(e) => {
@@ -2053,7 +2043,7 @@ impl Furtherance {
                                 &encryption_key,
                             ) {
                                 Ok(server_task) => {
-                                    match db_retrieve_task_by_id(&server_task.uuid) {
+                                    match db_retrieve_task_by_id(&server_task.uid) {
                                         Ok(Some(client_task)) => {
                                             // Task exists - update it if it changed
                                             if server_task.last_updated > client_task.last_updated {
@@ -2098,7 +2088,7 @@ impl Furtherance {
                                 &encryption_key,
                             ) {
                                 Ok(server_shortcut) => {
-                                    match db_retrieve_shortcut_by_id(&server_shortcut.uuid) {
+                                    match db_retrieve_shortcut_by_id(&server_shortcut.uid) {
                                         Ok(Some(client_shortcut)) => {
                                             // Shortcut exists - update it if it changed
                                             if server_shortcut.last_updated
@@ -4693,7 +4683,7 @@ fn shortcut_button<'a, 'loc>(
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteShortcutFromContext(
-                        shortcut_clone.uuid.clone()
+                        shortcut_clone.uid.clone()
                     ))
                     .style(style::context_menu_button_style)
                     .width(Length::Fill),
@@ -4722,18 +4712,15 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
     state.timer_is_running = false;
 
     let (name, project, tags, rate) = split_task_input(&state.task_input);
-    db_insert_task(&FurTask {
+    db_insert_task(&FurTask::new(
         name,
-        start_time: state.timer_start_time,
-        stop_time: state.timer_stop_time,
+        state.timer_start_time,
+        state.timer_stop_time,
         tags,
         project,
         rate,
-        currency: String::new(),
-        uuid: Uuid::new_v4(),
-        is_deleted: false,
-        last_updated: chrono::Utc::now().timestamp(),
-    })
+        String::new(),
+    ))
     .expect("Couldn't write task to database.");
 
     delete_autosave();
@@ -5236,25 +5223,33 @@ pub fn read_csv(
 
         let task = match record.len() {
             // TODO: prob need to ad a 10 for v3.1
-            9 => FurTask {
+            9 => {
                 // v3 - Iced
-                name: record.get(0).unwrap_or("").to_string(),
-                start_time: record.get(1).unwrap_or("").parse().unwrap_or_default(),
-                stop_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
-                tags: record.get(3).unwrap_or("").trim().to_string(),
-                project: record.get(4).unwrap_or("").trim().to_string(),
-                rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
-                currency: record.get(6).unwrap_or("").trim().to_string(),
-                uuid: Uuid::new_v4(),
-                is_deleted: false,
-                last_updated: record.get(7).unwrap_or("0").parse().unwrap_or(0),
-            },
+                let name = record.get(0).unwrap_or("").to_string();
+                let start_time = record.get(1).unwrap_or("").parse().unwrap_or_default();
+                let stop_time = record.get(2).unwrap_or("").parse().unwrap_or_default();
+                let uid = fur_task::generate_task_uid(&name, &start_time, &stop_time);
+
+                FurTask {
+                    // v3 - Iced
+                    name,
+                    start_time,
+                    stop_time,
+                    tags: record.get(3).unwrap_or("").trim().to_string(),
+                    project: record.get(4).unwrap_or("").trim().to_string(),
+                    rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
+                    currency: record.get(6).unwrap_or("").trim().to_string(),
+                    uid,
+                    is_deleted: false,
+                    last_updated: record.get(7).unwrap_or("0").parse().unwrap_or(0),
+                }
+            }
             7 => {
                 // v2 - macOS SwiftUI
                 let date_format = "%Y-%m-%d %H:%M:%S";
-                FurTask {
-                    name: record.get(0).unwrap_or("").to_string(),
-                    start_time: Local
+                FurTask::new(
+                    record.get(0).unwrap_or("").to_string(),
+                    Local
                         .from_local_datetime(
                             &NaiveDateTime::parse_from_str(
                                 record.get(4).unwrap_or(""),
@@ -5264,7 +5259,7 @@ pub fn read_csv(
                         )
                         .single()
                         .unwrap_or_default(),
-                    stop_time: Local
+                    Local
                         .from_local_datetime(
                             &NaiveDateTime::parse_from_str(
                                 record.get(5).unwrap_or(""),
@@ -5274,7 +5269,7 @@ pub fn read_csv(
                         )
                         .single()
                         .unwrap_or_default(),
-                    tags: record
+                    record
                         .get(2)
                         .unwrap_or("")
                         .split('#')
@@ -5284,20 +5279,17 @@ pub fn read_csv(
                         .unique()
                         .collect::<Vec<String>>()
                         .join(" #"),
-                    project: record.get(1).unwrap_or("").trim().to_string(),
-                    rate: record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
-                    currency: String::new(),
-                    uuid: Uuid::new_v4(),
-                    is_deleted: false,
-                    last_updated: 0,
-                }
+                    record.get(1).unwrap_or("").trim().to_string(),
+                    record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
+                    String::new(),
+                )
             }
-            6 => FurTask {
+            6 => FurTask::new(
                 // v1 - GTK
-                name: record.get(1).unwrap_or("").to_string(),
-                start_time: record.get(2).unwrap_or("").parse().unwrap_or_default(),
-                stop_time: record.get(3).unwrap_or("").parse().unwrap_or_default(),
-                tags: record
+                record.get(1).unwrap_or("").to_string(),
+                record.get(2).unwrap_or("").parse().unwrap_or_default(),
+                record.get(3).unwrap_or("").parse().unwrap_or_default(),
+                record
                     .get(4)
                     .unwrap_or("")
                     .split('#')
@@ -5307,13 +5299,10 @@ pub fn read_csv(
                     .unique()
                     .collect::<Vec<String>>()
                     .join(" #"),
-                project: String::new(),
-                rate: 0.0,
-                currency: String::new(),
-                uuid: Uuid::new_v4(),
-                is_deleted: false,
-                last_updated: 0,
-            },
+                String::new(),
+                0.0,
+                String::new(),
+            ),
 
             _ => return Err(localization.get_message("invalid-csv", None).into()),
         };
