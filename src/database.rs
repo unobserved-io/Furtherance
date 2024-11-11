@@ -772,6 +772,75 @@ pub fn db_backup(backup_file: PathBuf) -> Result<()> {
     backup.run_to_completion(5, Duration::from_millis(250), None)
 }
 
+pub fn db_retrieve_orphaned_tasks(task_uids: Vec<String>) -> Result<Vec<FurTask>> {
+    let mut conn = Connection::open(db_get_directory())?;
+    let mut tasks = Vec::new();
+
+    let tx = conn.transaction()?;
+    {
+        let mut stmt = tx.prepare("SELECT * FROM tasks WHERE uid = ?")?;
+
+        for uid in task_uids {
+            let task_iter = stmt.query_map(params![uid], |row| {
+                Ok(FurTask {
+                    name: row.get(1)?,
+                    start_time: row.get(2)?,
+                    stop_time: row.get(3)?,
+                    tags: row.get(4)?,
+                    project: row.get(5)?,
+                    rate: row.get(6)?,
+                    currency: row.get(7).unwrap_or(String::new()),
+                    uid: row.get(8)?,
+                    is_deleted: row.get(9)?,
+                    last_updated: row.get(10)?,
+                })
+            })?;
+
+            // Collect any matching tasks
+            for task in task_iter {
+                tasks.push(task?);
+            }
+        }
+    }
+
+    tx.commit()?;
+    Ok(tasks)
+}
+
+pub fn db_retrieve_orphaned_shortcuts(shortcut_uids: Vec<String>) -> Result<Vec<FurShortcut>> {
+    let mut conn = Connection::open(db_get_directory())?;
+    let mut shortcuts = Vec::new();
+
+    let tx = conn.transaction()?;
+    {
+        let mut stmt = tx.prepare("SELECT * FROM shortcuts WHERE uid = ?")?;
+
+        for uid in shortcut_uids {
+            let shortcut_iter = stmt.query_map(params![uid], |row| {
+                Ok(FurShortcut {
+                    name: row.get(1)?,
+                    tags: row.get(2)?,
+                    project: row.get(3)?,
+                    rate: row.get(4)?,
+                    currency: row.get(5)?,
+                    color_hex: row.get(6)?,
+                    uid: row.get(7)?,
+                    is_deleted: row.get(8)?,
+                    last_updated: row.get(9)?,
+                })
+            })?;
+
+            // Collect any matching tasks
+            for shortcut in shortcut_iter {
+                shortcuts.push(shortcut?);
+            }
+        }
+    }
+
+    tx.commit()?;
+    Ok(shortcuts)
+}
+
 pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 

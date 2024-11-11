@@ -55,7 +55,7 @@ use crate::{
         task_to_edit::TaskToEdit,
     },
     style::{self, FurTheme},
-    sync::{sync_with_server, SyncResponse},
+    sync::{self, sync_with_server, SyncResponse},
     view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
@@ -1959,12 +1959,37 @@ impl Furtherance {
 
                 return Task::perform(
                     async move {
-                        let tasks =
+                        let orphaned_response = match sync::fetch_orphaned_items(&credentials).await
+                        {
+                            Ok(response) => response,
+                            Err(e) => {
+                                eprintln!("Error fetching orphaned items.");
+                                return (Err(e), 0);
+                            }
+                        };
+
+                        let orphaned_tasks =
+                            db_retrieve_orphaned_tasks(orphaned_response.task_uids)
+                                .unwrap_or_default();
+
+                        let orphaned_shortcuts =
+                            db_retrieve_orphaned_shortcuts(orphaned_response.shortcut_uids)
+                                .unwrap_or_default();
+
+                        let new_tasks =
                             db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
-                        let shortcuts =
+                        let new_shortcuts =
                             db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
 
-                        let encrypted_tasks: Vec<EncryptedTask> = tasks
+                        let mut all_tasks = orphaned_tasks;
+                        all_tasks.extend(new_tasks);
+                        all_tasks.dedup_by(|a, b| a.uid == b.uid);
+
+                        let mut all_shortcuts = orphaned_shortcuts;
+                        all_shortcuts.extend(new_shortcuts);
+                        all_shortcuts.dedup_by(|a, b| a.uid == b.uid);
+
+                        let encrypted_tasks: Vec<EncryptedTask> = all_tasks
                             .into_iter()
                             .filter_map(|task| match encryption::encrypt(&task, &encryption_key) {
                                 Ok((encrypted_data, nonce)) => Some(EncryptedTask {
@@ -1980,7 +2005,7 @@ impl Furtherance {
                             })
                             .collect();
 
-                        let encrypted_shortcuts: Vec<EncryptedShortcut> = shortcuts
+                        let encrypted_shortcuts: Vec<EncryptedShortcut> = all_shortcuts
                             .into_iter()
                             .filter_map(|shortcut| {
                                 match encryption::encrypt(&shortcut, &encryption_key) {
