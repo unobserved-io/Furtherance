@@ -73,7 +73,6 @@ pomodoro = Pomodoro
 data = Data
 
 ### General Settings
-sync = Sync
 interface = Interface
 default-view = Default view
 show-delete-confirmation = Show delete confirmation
@@ -132,6 +131,7 @@ official-server = Official Furtherance server
 email = Email
 encryption-key = Encryption key
 log-in = Log in
+log-in-first = Please log in first
 log-out = Log out
 login-failed = Login failed
 login-successful = Login successful
@@ -139,12 +139,15 @@ logged-out = Logged out
 server-must-contain-protocol = The server must contain a protocol (http:// or https://)
 error-storing-credentials = Error storing user credentials
 error-retrieving-credentials = Error retrieving user credentials from database
+sync = Sync
+syncing = Syncing...
 sync-successful = {$count ->
     [0] Nothing to sync
     [one] {$count} item synced
     *[other] {$count} items synced
 }
 sync-failed = Sync failed
+error-decrypting-key = Failed to decrypt encryption key
 local-database = Local Database
 database-location = Database location
 create-new = Create New

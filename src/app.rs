@@ -1950,17 +1950,22 @@ impl Furtherance {
                 let user = match self.fur_user.clone() {
                     Some(user) => user,
                     None => {
-                        eprintln!("Please log in first"); // TODO: Make warning or don't allow sync
+                        eprintln!("Please log in first");
                         return Task::none();
                     }
                 };
+
+                self.login_message = Ok(self.localization.get_message("syncing", None));
 
                 let encryption_key =
                     match decrypt_encryption_key(&user.encrypted_key, &user.key_nonce) {
                         Ok(key) => key,
                         Err(e) => {
                             eprintln!("Failed to decrypt encryption key: {:?}", e);
-                            return Task::none();
+                            return set_negative_temp_notice(
+                                &mut self.login_message,
+                                self.localization.get_message("error-decrypting-key", None),
+                            );
                         }
                     };
 
@@ -2051,7 +2056,10 @@ impl Furtherance {
                             Some(user) => user,
                             None => {
                                 eprintln!("Please log in first");
-                                return Task::none();
+                                return set_negative_temp_notice(
+                                    &mut self.login_message,
+                                    self.localization.get_message("log-in-first", None),
+                                );
                             }
                         };
 
@@ -2060,7 +2068,10 @@ impl Furtherance {
                                 Ok(key) => key,
                                 Err(e) => {
                                     eprintln!("Failed to decrypt encryption key: {:?}", e);
-                                    return Task::none();
+                                    return set_negative_temp_notice(
+                                        &mut self.login_message,
+                                        self.localization.get_message("error-decrypting-key", None),
+                                    );
                                 }
                             };
 
