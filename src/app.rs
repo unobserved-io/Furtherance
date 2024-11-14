@@ -39,6 +39,7 @@ use crate::{
     },
     localization::Localization,
     login::{login, ApiError, LoginResponse},
+    logout,
     models::{
         fur_idle::FurIdle,
         fur_pomodoro::FurPomodoro,
@@ -230,6 +231,8 @@ pub enum Message {
     UserEmailChanged(String),
     UserLoginPressed,
     UserLoginComplete(Result<LoginResponse, ApiError>),
+    UserLogoutPressed,
+    UserLogoutComplete,
     UserEncryptionKeyChanged(String),
     UserServerChanged(String),
 }
@@ -2319,6 +2322,21 @@ impl Furtherance {
                     reset_fur_user(&mut self.fur_user);
                 }
             },
+            Message::UserLogoutPressed => {
+                // Send logout to server
+                if let Some(user) = self.fur_user.clone() {
+                    return Task::perform(
+                        async move { logout::server_logout(&user).await },
+                        |_| Message::UserLogoutComplete,
+                    );
+                }
+            }
+            Message::UserLogoutComplete => {
+                reset_fur_user(&mut self.fur_user);
+                self.fur_user_fields = FurUserFields::default();
+                self.settings_server_choice = Some(ServerChoices::Official);
+                self.login_message = Ok(self.localization.get_message("logged-out", None).into());
+            }
             Message::UserEncryptionKeyChanged(new_key) => {
                 self.fur_user_fields.encryption_key = new_key;
             }
@@ -2823,8 +2841,19 @@ impl Furtherance {
             ]
             .align_y(Alignment::Center),
             row![
-                button(text(self.localization.get_message("log-in", None)))
-                    .on_press(Message::UserLoginPressed),
+                button(text(self.localization.get_message(
+                    if self.fur_user.is_none() {
+                        "log-in"
+                    } else {
+                        "log-out"
+                    },
+                    None
+                )))
+                .on_press(if self.fur_user.is_none() {
+                    Message::UserLoginPressed
+                } else {
+                    Message::UserLogoutPressed
+                }),
                 button(text(self.localization.get_message("sync", None))).on_press_maybe(
                     match self.fur_user {
                         Some(_) => Some(Message::SyncWithServer),

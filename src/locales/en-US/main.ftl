@@ -135,6 +135,7 @@ log-in = Log in
 log-out = Log out
 login-failed = Login failed
 login-successful = Login successful
+logged-out = Logged out
 server-must-contain-protocol = The server must contain a protocol (http:// or https://)
 error-storing-credentials = Error storing user credentials
 error-retrieving-credentials = Error retrieving user credentials from database

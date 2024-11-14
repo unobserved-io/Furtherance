@@ -36,6 +36,7 @@ mod helpers {
 }
 mod localization;
 mod login;
+mod logout;
 mod models {
     pub mod fur_idle;
     pub mod fur_pomodoro;
