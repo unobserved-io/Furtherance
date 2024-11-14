@@ -28,7 +28,7 @@ use crate::{
     autosave::{autosave_exists, delete_autosave, restore_autosave, write_autosave},
     constants::{
         ALLOWED_DB_EXTENSIONS, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING, INSPECTOR_SPACING,
-        INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_SPACING,
+        INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_MESSAGE_DURATION, SETTINGS_SPACING,
     },
     database::*,
     helpers::{
@@ -150,6 +150,7 @@ pub enum Message {
     ChooseShortcutColor,
     ChooseStartDate,
     ChooseTaskEditDateTime(EditTaskProperty),
+    ClearLoginMessage,
     CreateShortcutFromTaskGroup(FurTaskGroup),
     DeleteEverything,
     DateRangeSelected(FurDateRange),
@@ -563,6 +564,9 @@ impl Furtherance {
                         _ => {}
                     }
                 }
+            }
+            Message::ClearLoginMessage => {
+                self.login_message = Ok(String::new());
             }
             Message::CreateShortcutFromTaskGroup(task_group) => {
                 let new_shortcut = FurShortcut::new(
@@ -2161,17 +2165,22 @@ impl Furtherance {
                             eprintln!("Failed to change last_sync in settings: {}", e);
                         }
 
-                        self.login_message = Ok(self.localization.get_message(
-                            "sync-successful",
-                            Some(&HashMap::from([("count", FluentValue::from(sync_count))])),
-                        ));
-
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
+
+                        return set_positive_temp_notice(
+                            &mut self.login_message,
+                            self.localization.get_message(
+                                "sync-successful",
+                                Some(&HashMap::from([("count", FluentValue::from(sync_count))])),
+                            ),
+                        );
                     }
                     (Err(e), _) => {
                         eprintln!("Sync error: {:?}", e);
-                        self.login_message =
-                            Err(self.localization.get_message("sync-failed", None).into());
+                        return set_negative_temp_notice(
+                            &mut self.login_message,
+                            self.localization.get_message("sync-failed", None),
+                        );
                     }
                 }
             }
@@ -2257,12 +2266,12 @@ impl Furtherance {
                             Ok(result) => result,
                             Err(e) => {
                                 eprintln!("Error encrypting key: {:?}", e);
-                                self.login_message = Err(self
-                                    .localization
-                                    .get_message("error-storing-credentials", None)
-                                    .into());
                                 reset_fur_user(&mut self.fur_user);
-                                return Task::none();
+                                return set_negative_temp_notice(
+                                    &mut self.login_message,
+                                    self.localization
+                                        .get_message("error-storing-credentials", None),
+                                );
                             }
                         };
 
@@ -2276,12 +2285,12 @@ impl Furtherance {
                         &self.fur_user_fields.server,
                     ) {
                         eprintln!("Error storing user credentials: {}", e);
-                        self.login_message = Err(self
-                            .localization
-                            .get_message("error-storing-credentials", None)
-                            .into());
                         reset_fur_user(&mut self.fur_user);
-                        return Task::none();
+                        return set_negative_temp_notice(
+                            &mut self.login_message,
+                            self.localization
+                                .get_message("error-storing-credentials", None),
+                        );
                     }
 
                     let key_length = self.fur_user_fields.encryption_key.len();
@@ -2291,11 +2300,12 @@ impl Furtherance {
                         Ok(optional_user) => self.fur_user = optional_user,
                         Err(e) => {
                             eprintln!("Error retrieving user credentials from database: {}", e);
-                            self.login_message = Err(self
-                                .localization
-                                .get_message("error-retrieving-credentials", None)
-                                .into());
                             reset_fur_user(&mut self.fur_user);
+                            return set_negative_temp_notice(
+                                &mut self.login_message,
+                                self.localization
+                                    .get_message("error-storing-credentials", None),
+                            );
                         }
                     };
 
@@ -2303,25 +2313,30 @@ impl Furtherance {
                         self.fur_user_fields.email = fur_user.email;
                         self.fur_user_fields.encryption_key = "x".repeat(key_length);
                         self.fur_user_fields.server = fur_user.server;
-                        self.login_message =
-                            Ok(self.localization.get_message("login-successful", None))
+                        return set_positive_temp_notice(
+                            &mut self.login_message,
+                            self.localization.get_message("login-successful", None),
+                        );
                     }
                 }
                 Err(e) => {
                     eprintln!("Error logging in: {:?}", e);
+                    reset_fur_user(&mut self.fur_user);
                     match e {
                         ApiError::Network(e) if e.to_string() == "builder error" => {
-                            self.login_message = Err(self
-                                .localization
-                                .get_message("server-must-contain-protocol", None)
-                                .into());
+                            return set_negative_temp_notice(
+                                &mut self.login_message,
+                                self.localization
+                                    .get_message("server-must-contain-protocol", None),
+                            );
                         }
                         _ => {
-                            self.login_message =
-                                Err(self.localization.get_message("login-failed", None).into());
+                            return set_negative_temp_notice(
+                                &mut self.login_message,
+                                self.localization.get_message("login-failed", None),
+                            );
                         }
                     }
-                    reset_fur_user(&mut self.fur_user);
                 }
             },
             Message::UserLogoutPressed => {
@@ -2337,7 +2352,10 @@ impl Furtherance {
                 reset_fur_user(&mut self.fur_user);
                 self.fur_user_fields = FurUserFields::default();
                 self.settings_server_choice = Some(ServerChoices::Official);
-                self.login_message = Ok(self.localization.get_message("logged-out", None).into());
+                return set_positive_temp_notice(
+                    &mut self.login_message,
+                    self.localization.get_message("logged-out", None),
+                );
             }
             Message::UserEncryptionKeyChanged(new_key) => {
                 self.fur_user_fields.encryption_key = new_key;
@@ -5424,4 +5442,30 @@ fn reset_fur_user(user: &mut Option<FurUser>) {
         Ok(_) => {}
         Err(e) => eprintln!("Error deleting user credentials: {}", e),
     }
+}
+
+fn set_positive_temp_notice(
+    message_holder: &mut Result<String, Box<dyn std::error::Error>>,
+    message: String,
+) -> Task<Message> {
+    *message_holder = Ok(message);
+    Task::perform(
+        async {
+            tokio::time::sleep(std::time::Duration::from_secs(SETTINGS_MESSAGE_DURATION)).await;
+        },
+        |_| Message::ClearLoginMessage,
+    )
+}
+
+fn set_negative_temp_notice(
+    message_holder: &mut Result<String, Box<dyn std::error::Error>>,
+    message: String,
+) -> Task<Message> {
+    *message_holder = Err(message.into());
+    Task::perform(
+        async {
+            tokio::time::sleep(std::time::Duration::from_secs(SETTINGS_MESSAGE_DURATION)).await;
+        },
+        |_| Message::ClearLoginMessage,
+    )
 }

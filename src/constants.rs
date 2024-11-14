@@ -35,5 +35,8 @@ pub const INSPECTOR_SPACING: u16 = 12;
 pub const INSPECTOR_WIDTH: u16 = 250;
 pub const INSPECTOR_ALIGNMENT: Alignment = Alignment::Start;
 
+// Settings
+pub const SETTINGS_MESSAGE_DURATION: u64 = 8;
+
 // Sync
 pub const OFFICIAL_SERVER: &str = "https://sync.furtherance.app";
