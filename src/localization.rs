@@ -88,9 +88,10 @@ impl Localization {
             None => {
                 // Fallback to English if the message doesn't exist in the current language
                 let en_bundle = self.bundles.get("en-US").expect("English bundle not found");
-                en_bundle
-                    .get_message(key)
-                    .expect("Message doesn't exist in English either")
+                en_bundle.get_message(key).expect(&format!(
+                    "Message doesn't exist in English either ({})",
+                    key
+                ))
             }
         };
         let pattern = msg.value().expect("Message has no value");

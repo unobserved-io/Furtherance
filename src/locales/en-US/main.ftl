@@ -132,6 +132,7 @@ official-server = Official Furtherance server
 email = Email
 encryption-key = Encryption key
 log-in = Log in
+log-out = Log out
 login-failed = Login failed
 login-successful = Login successful
 server-must-contain-protocol = The server must contain a protocol (http:// or https://)
