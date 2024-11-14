@@ -11,7 +11,7 @@ pub struct FurUser {
 #[derive(Clone)]
 pub struct FurUserFields {
     pub email: String,
-    pub password: String,
+    pub encryption_key: String,
     pub server: String,
 }
 
@@ -19,7 +19,7 @@ impl Default for FurUserFields {
     fn default() -> Self {
         FurUserFields {
             email: String::new(),
-            password: String::new(),
+            encryption_key: String::new(),
             server: String::new(),
         }
     }

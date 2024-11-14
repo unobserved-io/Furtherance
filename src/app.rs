@@ -31,7 +31,7 @@ use crate::{
         INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_SPACING,
     },
     database::*,
-    encryption::{self, decrypt_encryption_key, derive_encryption_key, encrypt_encryption_key},
+    encryption::{self, decrypt_encryption_key, encrypt_encryption_key},
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle::get_idle_time,
@@ -230,7 +230,7 @@ pub enum Message {
     UserEmailChanged(String),
     UserLoginPressed,
     UserLoginComplete(Result<LoginResponse, ApiError>),
-    UserPasswordChanged(String),
+    UserEncryptionKeyChanged(String),
     UserServerChanged(String),
 }
 
@@ -290,7 +290,7 @@ impl Furtherance {
             fur_user_fields: match &saved_user {
                 Some(user) => FurUserFields {
                     email: user.email.clone(),
-                    password: "xxxxxxxx".to_string(),
+                    encryption_key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx".to_string(),
                     server: user.server.clone(),
                 },
                 None => FurUserFields::default(),
@@ -1938,7 +1938,7 @@ impl Furtherance {
             Message::SyncWithServer => {
                 let last_sync = self.fur_settings.last_sync;
 
-                let credentials = match self.fur_user.clone() {
+                let user = match self.fur_user.clone() {
                     Some(user) => user,
                     None => {
                         eprintln!("Please log in first"); // TODO: Make warning or don't allow sync
@@ -1946,21 +1946,18 @@ impl Furtherance {
                     }
                 };
 
-                let encryption_key = match decrypt_encryption_key(
-                    &credentials.encrypted_key,
-                    &credentials.key_nonce,
-                ) {
-                    Ok(key) => key,
-                    Err(e) => {
-                        eprintln!("Failed to decrypt encryption key: {:?}", e);
-                        return Task::none();
-                    }
-                };
+                let encryption_key =
+                    match decrypt_encryption_key(&user.encrypted_key, &user.key_nonce) {
+                        Ok(key) => key,
+                        Err(e) => {
+                            eprintln!("Failed to decrypt encryption key: {:?}", e);
+                            return Task::none();
+                        }
+                    };
 
                 return Task::perform(
                     async move {
-                        let orphaned_response = match sync::fetch_orphaned_items(&credentials).await
-                        {
+                        let orphaned_response = match sync::fetch_orphaned_items(&user).await {
                             Ok(response) => response,
                             Err(e) => {
                                 eprintln!("Error fetching orphaned items.");
@@ -2026,7 +2023,7 @@ impl Furtherance {
                         let sync_count = encrypted_tasks.len() + encrypted_shortcuts.len();
 
                         let sync_result = sync_with_server(
-                            &credentials,
+                            &user,
                             last_sync,
                             encrypted_tasks,
                             encrypted_shortcuts,
@@ -2041,7 +2038,7 @@ impl Furtherance {
             Message::SyncComplete(sync_result) => {
                 match sync_result {
                     (Ok(response), mut sync_count) => {
-                        let credentials = match self.fur_user.clone() {
+                        let user = match self.fur_user.clone() {
                             Some(user) => user,
                             None => {
                                 eprintln!("Please log in first");
@@ -2049,16 +2046,14 @@ impl Furtherance {
                             }
                         };
 
-                        let encryption_key = match decrypt_encryption_key(
-                            &credentials.encrypted_key,
-                            &credentials.key_nonce,
-                        ) {
-                            Ok(key) => key,
-                            Err(e) => {
-                                eprintln!("Failed to decrypt encryption key: {:?}", e);
-                                return Task::none();
-                            }
-                        };
+                        let encryption_key =
+                            match decrypt_encryption_key(&user.encrypted_key, &user.key_nonce) {
+                                Ok(key) => key,
+                                Err(e) => {
+                                    eprintln!("Failed to decrypt encryption key: {:?}", e);
+                                    return Task::none();
+                                }
+                            };
 
                         // Decrypt and process server tasks
                         for encrypted_task in response.tasks {
@@ -2241,39 +2236,29 @@ impl Furtherance {
             }
             Message::UserLoginPressed => {
                 let email = self.fur_user_fields.email.clone();
-                let password = self.fur_user_fields.password.clone();
+                let encryption_key = self.fur_user_fields.encryption_key.clone();
                 let server = self.fur_user_fields.server.clone();
 
-                return Task::perform(login(email, password, server), Message::UserLoginComplete);
+                return Task::perform(
+                    login(email, encryption_key, server),
+                    Message::UserLoginComplete,
+                );
             }
             Message::UserLoginComplete(response_result) => match response_result {
                 Ok(response) => {
-                    // Derive encryption key from password
-                    let encryption_key = match derive_encryption_key(&self.fur_user_fields.password)
-                    {
-                        Ok(key) => key,
-                        Err(e) => {
-                            eprintln!("Error deriving encryption key: {:?}", e);
-                            self.login_message = Err(self
-                                .localization
-                                .get_message("error-storing-credentials", None)
-                                .into());
-                            return Task::none();
-                        }
-                    };
-
                     // Encrypt encryption key with device-specific key
-                    let (encrypted_key, key_nonce) = match encrypt_encryption_key(&encryption_key) {
-                        Ok(result) => result,
-                        Err(e) => {
-                            eprintln!("Error encrypting key: {:?}", e);
-                            self.login_message = Err(self
-                                .localization
-                                .get_message("error-storing-credentials", None)
-                                .into());
-                            return Task::none();
-                        }
-                    };
+                    let (encrypted_key, key_nonce) =
+                        match encrypt_encryption_key(&self.fur_user_fields.encryption_key) {
+                            Ok(result) => result,
+                            Err(e) => {
+                                eprintln!("Error encrypting key: {:?}", e);
+                                self.login_message = Err(self
+                                    .localization
+                                    .get_message("error-storing-credentials", None)
+                                    .into());
+                                return Task::none();
+                            }
+                        };
 
                     // Store credentials
                     if let Err(e) = db_store_credentials(
@@ -2292,6 +2277,8 @@ impl Furtherance {
                         return Task::none();
                     }
 
+                    let key_length = self.fur_user_fields.encryption_key.len();
+
                     // Load new user credentials from database
                     self.fur_user = match db_retrieve_credentials() {
                         Ok(optional_user) => optional_user,
@@ -2307,7 +2294,7 @@ impl Furtherance {
 
                     if let Some(fur_user) = self.fur_user.clone() {
                         self.fur_user_fields.email = fur_user.email;
-                        self.fur_user_fields.password = "xxxxxxxx".to_string();
+                        self.fur_user_fields.encryption_key = "x".repeat(key_length);
                         self.fur_user_fields.server = fur_user.server;
                         self.login_message =
                             Ok(self.localization.get_message("login-successful", None))
@@ -2329,8 +2316,8 @@ impl Furtherance {
                     }
                 }
             },
-            Message::UserPasswordChanged(new_password) => {
-                self.fur_user_fields.password = new_password;
+            Message::UserEncryptionKeyChanged(new_key) => {
+                self.fur_user_fields.encryption_key = new_key;
             }
             Message::UserServerChanged(new_server) => {
                 self.fur_user_fields.server = new_server;
@@ -2825,10 +2812,10 @@ impl Furtherance {
             ]
             .align_y(Alignment::Center),
             row![
-                text(self.localization.get_message("password", None)),
-                column![text_input("", &self.fur_user_fields.password)
+                text(self.localization.get_message("encryption-key", None)),
+                column![text_input("", &self.fur_user_fields.encryption_key)
                     .secure(true)
-                    .on_input(Message::UserPasswordChanged)]
+                    .on_input(Message::UserEncryptionKeyChanged)]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),

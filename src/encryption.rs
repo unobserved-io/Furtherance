@@ -18,25 +18,21 @@ use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Key, Nonce,
 };
-use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use base64::{
+    engine::general_purpose::{STANDARD as BASE64, URL_SAFE_NO_PAD},
+    Engine,
+};
 use rand::{thread_rng, RngCore};
 use serde::{Deserialize, Serialize};
 use sysinfo::System;
 
 #[derive(Debug)]
 pub enum EncryptionError {
-    KeyDerivation,
     Encryption,
     Decryption,
     Serialization,
     DeviceId,
 }
-
-const FURTHERANCE_SALT: &[u8; 32] = &[
-    0x8a, 0x24, 0x3b, 0x71, 0x9c, 0xf5, 0xe2, 0x16, 0x4d, 0x8e, 0x57, 0x39, 0x0a, 0xb1, 0xca, 0x84,
-    0x6f, 0x92, 0xd3, 0x45, 0x1e, 0x7b, 0xc8, 0xf0, 0x5d, 0x9a, 0x36, 0x82, 0x4c, 0xb5, 0xe7, 0x1d,
-];
 
 pub fn encrypt<T: Serialize>(
     data: &T,
@@ -86,23 +82,6 @@ pub fn decrypt<T: for<'de> Deserialize<'de>>(
     serde_json::from_slice(&plaintext).map_err(|_| EncryptionError::Serialization)
 }
 
-/// Generate encryption key from password
-pub fn derive_encryption_key(password: &str) -> Result<[u8; 32], EncryptionError> {
-    let argon2 = Argon2::default();
-
-    let salt =
-        SaltString::encode_b64(FURTHERANCE_SALT).map_err(|_| EncryptionError::KeyDerivation)?;
-
-    argon2
-        .hash_password(password.as_bytes(), &salt)
-        .map_err(|_| EncryptionError::KeyDerivation)
-        .map(|hash| {
-            let mut key = [0u8; 32];
-            key.copy_from_slice(&hash.hash.unwrap().as_bytes()[0..32]);
-            key
-        })
-}
-
 /// Generate device-specific key for storing encryption key
 fn get_device_key() -> Result<[u8; 32], EncryptionError> {
     let device_id = generate_device_id()?;
@@ -116,7 +95,7 @@ fn get_device_key() -> Result<[u8; 32], EncryptionError> {
 }
 
 pub fn encrypt_encryption_key(
-    encryption_key: &[u8; 32],
+    encryption_key: &String,
 ) -> Result<(String, String), EncryptionError> {
     let device_key = get_device_key()?;
     encrypt(encryption_key, &device_key)
@@ -127,7 +106,19 @@ pub fn decrypt_encryption_key(
     nonce: &str,
 ) -> Result<[u8; 32], EncryptionError> {
     let device_key = get_device_key()?;
-    decrypt(encrypted_key, nonce, &device_key)
+    let key_string: String = decrypt(encrypted_key, nonce, &device_key)?;
+    let key_bytes = URL_SAFE_NO_PAD
+        .decode(key_string)
+        .map_err(|_| EncryptionError::Serialization)?;
+
+    if key_bytes.len() != 32 {
+        return Err(EncryptionError::Serialization);
+    }
+
+    let mut result = [0u8; 32];
+    result.copy_from_slice(&key_bytes);
+
+    Ok(result)
 }
 
 /// Combine multiple sources for unique device ID

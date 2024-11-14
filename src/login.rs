@@ -33,7 +33,7 @@ pub enum ApiError {
 #[derive(Serialize)]
 pub struct LoginRequest {
     pub email: String,
-    pub password: String,
+    pub encryption_key: String,
     pub device_id: String,
 }
 
@@ -56,7 +56,7 @@ struct RefreshResponse {
 
 pub async fn login(
     email: String,
-    password: String,
+    encryption_key: String,
     server: String,
 ) -> Result<LoginResponse, ApiError> {
     let client = Client::new();
@@ -69,7 +69,7 @@ pub async fn login(
         .post(format!("{}/api/login", server))
         .json(&LoginRequest {
             email,
-            password,
+            encryption_key,
             device_id,
         })
         .send()

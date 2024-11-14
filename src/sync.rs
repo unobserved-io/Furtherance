@@ -59,7 +59,7 @@ pub async fn sync_with_server(
     };
 
     let mut response = client
-        .post(format!("{}/sync", user.server))
+        .post(format!("{}/api/sync", user.server))
         .header("Authorization", format!("Bearer {}", user.access_token))
         .json(&sync_request)
         .send()
@@ -76,7 +76,7 @@ pub async fn sync_with_server(
 
         // Retry with new token
         response = client
-            .post(format!("{}/sync", user.server))
+            .post(format!("{}/api/sync", user.server))
             .header("Authorization", format!("Bearer {}", new_access_token))
             .json(&sync_request)
             .send()
