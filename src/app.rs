@@ -31,15 +31,12 @@ use crate::{
         INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_SPACING,
     },
     database::*,
-    encryption::{self, decrypt_encryption_key, encrypt_encryption_key},
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle::get_idle_time,
         midnight_subscription::MidnightSubscription,
     },
     localization::Localization,
-    login::{login, ApiError, LoginResponse},
-    logout,
     models::{
         fur_idle::FurIdle,
         fur_pomodoro::FurPomodoro,
@@ -55,8 +52,13 @@ use crate::{
         task_to_add::TaskToAdd,
         task_to_edit::TaskToEdit,
     },
+    server::{
+        encryption::{self, decrypt_encryption_key, encrypt_encryption_key},
+        login::{login, ApiError, LoginResponse},
+        logout,
+        sync::{self, sync_with_server, SyncResponse},
+    },
     style::{self, FurTheme},
-    sync::{self, sync_with_server, SyncResponse},
     view_enums::*,
 };
 use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};

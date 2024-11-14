@@ -17,7 +17,7 @@
 use reqwest::Client;
 use serde::Serialize;
 
-use crate::{encryption, models::fur_user::FurUser};
+use crate::{models::fur_user::FurUser, server::encryption};
 
 #[derive(Serialize)]
 pub struct LogoutRequest {

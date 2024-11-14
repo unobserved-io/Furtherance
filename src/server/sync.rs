@@ -18,8 +18,8 @@ use std::sync::Arc;
 
 use crate::{
     database::db_update_access_token,
-    login::{refresh_auth_token, ApiError},
     models::{fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_user::FurUser},
+    server::login::{refresh_auth_token, ApiError},
 };
 
 use reqwest::{self, Client};

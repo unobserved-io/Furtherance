@@ -19,7 +19,7 @@ use std::sync::Arc;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::encryption::generate_device_id;
+use crate::server::encryption::generate_device_id;
 
 #[derive(Clone, Debug)]
 pub enum ApiError {

@@ -28,15 +28,12 @@ mod charts {
 }
 mod constants;
 mod database;
-mod encryption;
 mod helpers {
     pub mod color_utils;
     pub mod idle;
     pub mod midnight_subscription;
 }
 mod localization;
-mod login;
-mod logout;
 mod models {
     pub mod fur_idle;
     pub mod fur_pomodoro;
@@ -52,8 +49,13 @@ mod models {
     pub mod task_to_add;
     pub mod task_to_edit;
 }
+pub mod server {
+    pub mod encryption;
+    pub mod login;
+    pub mod logout;
+    pub mod sync;
+}
 mod style;
-mod sync;
 mod tests {
     mod timer_tests;
 }
