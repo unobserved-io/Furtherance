@@ -1239,3 +1239,11 @@ pub fn db_update_access_token(email: &str, new_token: &str) -> Result<()> {
 
     Ok(())
 }
+
+pub fn db_delete_all_credentials() -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute("DELETE FROM user", [])?;
+
+    Ok(())
+}

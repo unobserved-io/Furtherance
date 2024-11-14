@@ -2256,6 +2256,7 @@ impl Furtherance {
                                     .localization
                                     .get_message("error-storing-credentials", None)
                                     .into());
+                                reset_fur_user(&mut self.fur_user);
                                 return Task::none();
                             }
                         };
@@ -2274,21 +2275,22 @@ impl Furtherance {
                             .localization
                             .get_message("error-storing-credentials", None)
                             .into());
+                        reset_fur_user(&mut self.fur_user);
                         return Task::none();
                     }
 
                     let key_length = self.fur_user_fields.encryption_key.len();
 
                     // Load new user credentials from database
-                    self.fur_user = match db_retrieve_credentials() {
-                        Ok(optional_user) => optional_user,
+                    match db_retrieve_credentials() {
+                        Ok(optional_user) => self.fur_user = optional_user,
                         Err(e) => {
                             eprintln!("Error retrieving user credentials from database: {}", e);
                             self.login_message = Err(self
                                 .localization
                                 .get_message("error-retrieving-credentials", None)
                                 .into());
-                            None
+                            reset_fur_user(&mut self.fur_user);
                         }
                     };
 
@@ -2314,6 +2316,7 @@ impl Furtherance {
                                 Err(self.localization.get_message("login-failed", None).into());
                         }
                     }
+                    reset_fur_user(&mut self.fur_user);
                 }
             },
             Message::UserEncryptionKeyChanged(new_key) => {
@@ -5382,4 +5385,12 @@ where
 fn format_iced_time_as_hm(time: iced_aw::time_picker::Time) -> String {
     let naive_time = NaiveTime::from(time);
     naive_time.format("%H:%M").to_string()
+}
+
+fn reset_fur_user(user: &mut Option<FurUser>) {
+    *user = None;
+    match db_delete_all_credentials() {
+        Ok(_) => {}
+        Err(e) => eprintln!("Error deleting user credentials: {}", e),
+    }
 }
