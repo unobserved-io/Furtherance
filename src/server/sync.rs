@@ -25,9 +25,12 @@ use crate::{
 use reqwest::{self, Client};
 use serde::{Deserialize, Serialize};
 
+use super::encryption;
+
 #[derive(Serialize, Deserialize)]
 pub struct SyncRequest {
     last_sync: i64,
+    device_id: String,
     tasks: Vec<EncryptedTask>,
     shortcuts: Vec<EncryptedShortcut>,
 }
@@ -48,8 +51,14 @@ pub async fn sync_with_server(
     shortcuts: Vec<EncryptedShortcut>,
 ) -> Result<SyncResponse, ApiError> {
     let client = Client::new();
+    let device_id = encryption::generate_device_id().map_err(|e| {
+        eprintln!("Failed to create device id for logout: {:?}", e);
+        ApiError::Device("Failed to generate device ID".to_string())
+    })?;
+
     let sync_request = SyncRequest {
         last_sync,
+        device_id,
         tasks,
         shortcuts,
     };
