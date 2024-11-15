@@ -37,12 +37,8 @@ pub struct SyncResponse {
     pub server_timestamp: i64,
     pub tasks: Vec<EncryptedTask>,
     pub shortcuts: Vec<EncryptedShortcut>,
-}
-
-#[derive(Deserialize)]
-pub struct OrphanedItemsResponse {
-    pub task_uids: Vec<String>,
-    pub shortcut_uids: Vec<String>,
+    pub orphaned_tasks: Vec<String>,
+    pub orphaned_shortcuts: Vec<String>,
 }
 
 pub async fn sync_with_server(
@@ -79,42 +75,6 @@ pub async fn sync_with_server(
             .post(format!("{}/api/sync", user.server))
             .header("Authorization", format!("Bearer {}", new_access_token))
             .json(&sync_request)
-            .send()
-            .await
-            .map_err(|e| ApiError::Network(Arc::new(e)))?;
-    }
-
-    if response.status().is_success() {
-        response
-            .json()
-            .await
-            .map_err(|e| ApiError::Network(Arc::new(e)))
-    } else {
-        Err(ApiError::Server("Sync failed".into()))
-    }
-}
-
-pub async fn fetch_orphaned_items(user: &FurUser) -> Result<OrphanedItemsResponse, ApiError> {
-    let client = Client::new();
-    let mut response = client
-        .get(format!("{}/api/orphaned", user.server))
-        .bearer_auth(&user.access_token)
-        .send()
-        .await
-        .map_err(|e| ApiError::Network(Arc::new(e)))?;
-
-    if response.status() == reqwest::StatusCode::UNAUTHORIZED {
-        // Try token refresh
-        let new_access_token =
-            refresh_auth_token(user.refresh_token.to_string(), &user.server).await?;
-        if let Err(e) = db_update_access_token(&user.email, &new_access_token) {
-            return Err(ApiError::TokenRefresh(e.to_string()));
-        }
-
-        // Retry with new token
-        response = client
-            .get(format!("{}/api/orphaned", user.server))
-            .bearer_auth(&user.access_token)
             .send()
             .await
             .map_err(|e| ApiError::Network(Arc::new(e)))?;

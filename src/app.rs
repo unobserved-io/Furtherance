@@ -56,7 +56,7 @@ use crate::{
         encryption::{self, decrypt_encryption_key, encrypt_encryption_key},
         login::{login, ApiError, LoginResponse},
         logout,
-        sync::{self, sync_with_server, SyncResponse},
+        sync::{sync_with_server, SyncResponse},
     },
     style::{self, FurTheme},
     view_enums::*,
@@ -1971,36 +1971,12 @@ impl Furtherance {
 
                 return Task::perform(
                     async move {
-                        let orphaned_response = match sync::fetch_orphaned_items(&user).await {
-                            Ok(response) => response,
-                            Err(e) => {
-                                eprintln!("Error fetching orphaned items.");
-                                return (Err(e), 0);
-                            }
-                        };
-
-                        let orphaned_tasks =
-                            db_retrieve_orphaned_tasks(orphaned_response.task_uids)
-                                .unwrap_or_default();
-
-                        let orphaned_shortcuts =
-                            db_retrieve_orphaned_shortcuts(orphaned_response.shortcut_uids)
-                                .unwrap_or_default();
-
                         let new_tasks =
                             db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
                         let new_shortcuts =
                             db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
 
-                        let mut all_tasks = orphaned_tasks;
-                        all_tasks.extend(new_tasks);
-                        all_tasks.dedup_by(|a, b| a.uid == b.uid);
-
-                        let mut all_shortcuts = orphaned_shortcuts;
-                        all_shortcuts.extend(new_shortcuts);
-                        all_shortcuts.dedup_by(|a, b| a.uid == b.uid);
-
-                        let encrypted_tasks: Vec<EncryptedTask> = all_tasks
+                        let encrypted_tasks: Vec<EncryptedTask> = new_tasks
                             .into_iter()
                             .filter_map(|task| match encryption::encrypt(&task, &encryption_key) {
                                 Ok((encrypted_data, nonce)) => Some(EncryptedTask {
@@ -2016,7 +1992,7 @@ impl Furtherance {
                             })
                             .collect();
 
-                        let encrypted_shortcuts: Vec<EncryptedShortcut> = all_shortcuts
+                        let encrypted_shortcuts: Vec<EncryptedShortcut> = new_shortcuts
                             .into_iter()
                             .filter_map(|shortcut| {
                                 match encryption::encrypt(&shortcut, &encryption_key) {
@@ -2174,6 +2150,97 @@ impl Furtherance {
                             .change_last_sync(&response.server_timestamp)
                         {
                             eprintln!("Failed to change last_sync in settings: {}", e);
+                        }
+
+                        // If the server has orphaned tasks, re-sync those tasks
+                        if !response.orphaned_tasks.is_empty()
+                            || !response.orphaned_shortcuts.is_empty()
+                        {
+                            let last_sync = self.fur_settings.last_sync;
+
+                            let orphaned_tasks = if !response.orphaned_tasks.is_empty() {
+                                db_retrieve_orphaned_tasks(response.orphaned_tasks)
+                                    .unwrap_or_default()
+                            } else {
+                                Vec::new()
+                            };
+
+                            let orphaned_shortcuts = if !response.orphaned_shortcuts.is_empty() {
+                                db_retrieve_orphaned_shortcuts(response.orphaned_shortcuts)
+                                    .unwrap_or_default()
+                            } else {
+                                Vec::new()
+                            };
+
+                            if !orphaned_tasks.is_empty() || !orphaned_shortcuts.is_empty() {
+                                return Task::perform(
+                                    async move {
+                                        let encrypted_tasks: Vec<EncryptedTask> = orphaned_tasks
+                                            .into_iter()
+                                            .filter_map(|task| {
+                                                match encryption::encrypt(&task, &encryption_key) {
+                                                    Ok((encrypted_data, nonce)) => {
+                                                        Some(EncryptedTask {
+                                                            encrypted_data,
+                                                            nonce,
+                                                            uid: task.uid,
+                                                            last_updated: task.last_updated,
+                                                        })
+                                                    }
+                                                    Err(e) => {
+                                                        eprintln!(
+                                                            "Failed to encrypt task: {:?}",
+                                                            e
+                                                        );
+                                                        None
+                                                    }
+                                                }
+                                            })
+                                            .collect();
+
+                                        let encrypted_shortcuts: Vec<EncryptedShortcut> =
+                                            orphaned_shortcuts
+                                                .into_iter()
+                                                .filter_map(|shortcut| {
+                                                    match encryption::encrypt(
+                                                        &shortcut,
+                                                        &encryption_key,
+                                                    ) {
+                                                        Ok((encrypted_data, nonce)) => {
+                                                            Some(EncryptedShortcut {
+                                                                encrypted_data,
+                                                                nonce,
+                                                                uid: shortcut.uid,
+                                                                last_updated: shortcut.last_updated,
+                                                            })
+                                                        }
+                                                        Err(e) => {
+                                                            eprintln!(
+                                                                "Failed to encrypt shortcut: {:?}",
+                                                                e
+                                                            );
+                                                            None
+                                                        }
+                                                    }
+                                                })
+                                                .collect();
+
+                                        sync_count +=
+                                            encrypted_tasks.len() + encrypted_shortcuts.len();
+
+                                        let sync_result = sync_with_server(
+                                            &user,
+                                            last_sync,
+                                            encrypted_tasks,
+                                            encrypted_shortcuts,
+                                        )
+                                        .await;
+
+                                        (sync_result, sync_count)
+                                    },
+                                    Message::SyncComplete,
+                                );
+                            }
                         }
 
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
