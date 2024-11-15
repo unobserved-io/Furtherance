@@ -231,6 +231,7 @@ pub enum Message {
     SyncComplete((Result<SyncResponse, ApiError>, usize)),
     TaskInputChanged(String),
     ToggleGroupEditor,
+    UserAutoLogoutComplete,
     UserEmailChanged(String),
     UserLoginPressed,
     UserLoginComplete(Result<LoginResponse, ApiError>),
@@ -2253,6 +2254,15 @@ impl Furtherance {
                             ),
                         );
                     }
+                    (Err(ApiError::TokenRefresh(msg)), _) if msg == "Failed to refresh token" => {
+                        eprintln!("Sync error. Credentials have changed. Log in again.");
+                        if let Some(user) = self.fur_user.clone() {
+                            return Task::perform(
+                                async move { logout::server_logout(&user).await },
+                                |_| Message::UserAutoLogoutComplete,
+                            );
+                        }
+                    }
                     (Err(e), _) => {
                         eprintln!("Sync error: {:?}", e);
                         return set_negative_temp_notice(
@@ -2433,6 +2443,15 @@ impl Furtherance {
                 return set_positive_temp_notice(
                     &mut self.login_message,
                     self.localization.get_message("logged-out", None),
+                );
+            }
+            Message::UserAutoLogoutComplete => {
+                reset_fur_user(&mut self.fur_user);
+                self.fur_user_fields = FurUserFields::default();
+                self.settings_server_choice = Some(ServerChoices::Official);
+                return set_negative_temp_notice(
+                    &mut self.login_message,
+                    self.localization.get_message("reauthenticate-error", None),
                 );
             }
             Message::UserEncryptionKeyChanged(new_key) => {

@@ -139,6 +139,7 @@ logged-out = Logged out
 server-must-contain-protocol = The server must contain a protocol (http:// or https://)
 error-storing-credentials = Error storing user credentials
 error-retrieving-credentials = Error retrieving user credentials from database
+reauthenticate-error = Credentials have changed. Log in again.
 sync = Sync
 syncing = Syncing...
 sync-successful = {$count ->
