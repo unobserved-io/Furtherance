@@ -2337,6 +2337,12 @@ impl Furtherance {
                 self.fur_user_fields.email = new_email;
             }
             Message::UserLoginPressed => {
+                self.fur_user_fields.server = self
+                    .fur_user_fields
+                    .server
+                    .clone()
+                    .trim_end_matches('/')
+                    .to_string();
                 let email = self.fur_user_fields.email.clone();
                 let encryption_key = self.fur_user_fields.encryption_key.clone();
                 let server = self.fur_user_fields.server.clone();
