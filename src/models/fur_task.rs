@@ -75,6 +75,32 @@ impl FurTask {
         }
     }
 
+    pub fn new_with_last_updated(
+        name: String,
+        start_time: DateTime<Local>,
+        stop_time: DateTime<Local>,
+        tags: String,
+        project: String,
+        rate: f32,
+        currency: String,
+        last_updated: i64,
+    ) -> Self {
+        let uid = generate_task_uid(&name, &start_time, &stop_time);
+
+        FurTask {
+            name,
+            start_time,
+            stop_time,
+            tags,
+            project,
+            rate,
+            currency,
+            uid,
+            is_deleted: false,
+            last_updated,
+        }
+    }
+
     pub fn total_time_in_seconds(&self) -> i64 {
         (self.stop_time - self.start_time).num_seconds()
     }

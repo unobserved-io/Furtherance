@@ -1204,7 +1204,7 @@ pub fn db_import_old_mac_db() -> Result<()> {
             let mut tasks_vec: Vec<FurTask> = Vec::new();
 
             while let Some(row) = rows.next()? {
-                let fur_task = FurTask::new(
+                let fur_task = FurTask::new_with_last_updated(
                     row.get(0)?,
                     core_data_timestamp_to_datetime(row.get(1)?)?,
                     core_data_timestamp_to_datetime(row.get(2)?)?,
@@ -1212,6 +1212,7 @@ pub fn db_import_old_mac_db() -> Result<()> {
                     row.get(4)?,
                     row.get(5)?,
                     String::new(),
+                    0,
                 );
 
                 // Don't import duplicate tasks

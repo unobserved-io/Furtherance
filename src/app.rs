@@ -43,7 +43,7 @@ use crate::{
         fur_report::FurReport,
         fur_settings::FurSettings,
         fur_shortcut::{EncryptedShortcut, FurShortcut},
-        fur_task::{self, EncryptedTask, FurTask},
+        fur_task::{EncryptedTask, FurTask},
         fur_task_group::FurTaskGroup,
         fur_user::{FurUser, FurUserFields},
         group_to_edit::GroupToEdit,
@@ -1122,6 +1122,12 @@ impl Furtherance {
                                 import_csv_to_database(&mut file, &self.localization);
                                 self.settings_csv_message =
                                     Ok(self.localization.get_message("csv-imported", None).into());
+
+                                // Always do a full sync after import
+                                if let Err(e) = self.fur_settings.change_needs_full_sync(&true) {
+                                    eprintln!("Error changing needs_full_sync: {}", e);
+                                };
+
                                 self.task_history =
                                     get_task_history(self.fur_settings.days_to_show);
                             }
@@ -1138,7 +1144,14 @@ impl Furtherance {
             }
             Message::ImportOldMacDatabase => {
                 match db_import_old_mac_db() {
-                    Ok(_) => self.task_history = get_task_history(self.fur_settings.days_to_show),
+                    Ok(_) => {
+                        // Always do a full sync after import
+                        if let Err(e) = self.fur_settings.change_needs_full_sync(&true) {
+                            eprintln!("Error changing needs_full_sync: {}", e);
+                        };
+
+                        self.task_history = get_task_history(self.fur_settings.days_to_show)
+                    }
                     Err(e) => eprintln!("Error importing existing Core Data database: {e}"),
                 }
                 self.displayed_alert = None;
@@ -5409,32 +5422,23 @@ pub fn read_csv(
         let record = result?;
 
         let task = match record.len() {
-            // TODO: prob need to ad a 10 for v3.1
             9 => {
                 // v3 - Iced
-                let name = record.get(0).unwrap_or("").to_string();
-                let start_time = record.get(1).unwrap_or("").parse().unwrap_or_default();
-                let stop_time = record.get(2).unwrap_or("").parse().unwrap_or_default();
-                let uid = fur_task::generate_task_uid(&name, &start_time, &stop_time);
-
-                FurTask {
-                    // v3 - Iced
-                    name,
-                    start_time,
-                    stop_time,
-                    tags: record.get(3).unwrap_or("").trim().to_string(),
-                    project: record.get(4).unwrap_or("").trim().to_string(),
-                    rate: record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
-                    currency: record.get(6).unwrap_or("").trim().to_string(),
-                    uid,
-                    is_deleted: false,
-                    last_updated: record.get(7).unwrap_or("0").parse().unwrap_or(0),
-                }
+                FurTask::new_with_last_updated(
+                    record.get(0).unwrap_or("").to_string(),
+                    record.get(1).unwrap_or("").parse().unwrap_or_default(),
+                    record.get(2).unwrap_or("").parse().unwrap_or_default(),
+                    record.get(3).unwrap_or("").trim().to_string(),
+                    record.get(4).unwrap_or("").trim().to_string(),
+                    record.get(5).unwrap_or("0").trim().parse().unwrap_or(0.0),
+                    record.get(6).unwrap_or("").trim().to_string(),
+                    0,
+                )
             }
             7 => {
                 // v2 - macOS SwiftUI
                 let date_format = "%Y-%m-%d %H:%M:%S";
-                FurTask::new(
+                FurTask::new_with_last_updated(
                     record.get(0).unwrap_or("").to_string(),
                     Local
                         .from_local_datetime(
@@ -5469,9 +5473,10 @@ pub fn read_csv(
                     record.get(1).unwrap_or("").trim().to_string(),
                     record.get(3).unwrap_or("0").trim().parse().unwrap_or(0.0),
                     String::new(),
+                    0,
                 )
             }
-            6 => FurTask::new(
+            6 => FurTask::new_with_last_updated(
                 // v1 - GTK
                 record.get(1).unwrap_or("").to_string(),
                 record.get(2).unwrap_or("").parse().unwrap_or_default(),
@@ -5489,6 +5494,7 @@ pub fn read_csv(
                 String::new(),
                 0.0,
                 String::new(),
+                0,
             ),
 
             _ => return Err(localization.get_message("invalid-csv", None).into()),
