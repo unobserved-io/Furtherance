@@ -360,6 +360,44 @@ pub fn db_retrieve_all_tasks(
 
     let mut stmt = conn.prepare(
         format!(
+            "SELECT * FROM tasks ORDER BY {0} {1}",
+            sort.to_sqlite(),
+            order.to_sqlite()
+        )
+        .as_str(),
+    )?;
+    let mut rows = stmt.query(params![])?;
+
+    let mut tasks_vec: Vec<FurTask> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTask {
+            name: row.get(1)?,
+            start_time: row.get(2)?,
+            stop_time: row.get(3)?,
+            tags: row.get(4)?,
+            project: row.get(5)?,
+            rate: row.get(6)?,
+            currency: row.get(7).unwrap_or(String::new()),
+            uid: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
+        };
+        tasks_vec.push(fur_task);
+    }
+
+    Ok(tasks_vec)
+}
+
+pub fn db_retrieve_all_existing_tasks(
+    sort: SortBy,
+    order: SortOrder,
+) -> Result<Vec<FurTask>, rusqlite::Error> {
+    // Retrieve all tasks from the database
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn.prepare(
+        format!(
             "SELECT * FROM tasks WHERE is_deleted = 0 ORDER BY {0} {1}",
             sort.to_sqlite(),
             order.to_sqlite()
@@ -632,7 +670,34 @@ pub fn db_insert_shortcut(shortcut: &FurShortcut) -> Result<()> {
 }
 
 /// Retrieve all shortcuts from the database
-pub fn db_retrieve_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
+pub fn db_retrieve_all_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn.prepare("SELECT * FROM shortcuts ORDER BY name")?;
+    let mut rows = stmt.query(params![])?;
+
+    let mut shortcuts: Vec<FurShortcut> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_shortcut = FurShortcut {
+            name: row.get(1)?,
+            tags: row.get(2)?,
+            project: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5)?,
+            color_hex: row.get(6)?,
+            uid: row.get(7)?,
+            is_deleted: row.get(8)?,
+            last_updated: row.get(9)?,
+        };
+        shortcuts.push(fur_shortcut);
+    }
+
+    Ok(shortcuts)
+}
+
+/// Retrieve all existing (not deleted) shortcuts from the database
+pub fn db_retrieve_existing_shortcuts() -> Result<Vec<FurShortcut>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 
     let mut stmt = conn.prepare("SELECT * FROM shortcuts WHERE is_deleted = 0 ORDER BY name")?;

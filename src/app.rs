@@ -321,7 +321,7 @@ impl Furtherance {
             } else {
                 Some(ServerChoices::Official)
             },
-            shortcuts: match db_retrieve_shortcuts() {
+            shortcuts: match db_retrieve_existing_shortcuts() {
                 Ok(shortcuts) => shortcuts,
                 Err(e) => {
                     eprintln!("Error reading shortcuts from database: {}", e);
@@ -591,7 +591,7 @@ impl Furtherance {
                             if let Err(e) = db_insert_shortcut(&new_shortcut) {
                                 eprintln!("Failed to write shortcut to database: {}", e);
                             }
-                            match db_retrieve_shortcuts() {
+                            match db_retrieve_existing_shortcuts() {
                                 Ok(shortcuts) => self.shortcuts = shortcuts,
                                 Err(e) => {
                                     eprintln!("Failed to retrieve shortcuts from database: {}", e)
@@ -609,7 +609,7 @@ impl Furtherance {
                     self.settings_more_message =
                         Ok(self.localization.get_message("deleted-everything", None));
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
-                    match db_retrieve_shortcuts() {
+                    match db_retrieve_existing_shortcuts() {
                         Ok(shortcuts) => self.shortcuts = shortcuts,
                         Err(e) => {
                             eprintln!("Failed to retrieve shortcuts from database: {}", e)
@@ -631,7 +631,7 @@ impl Furtherance {
                     }
                     self.delete_shortcut_from_context = None;
                     self.displayed_alert = None;
-                    match db_retrieve_shortcuts() {
+                    match db_retrieve_existing_shortcuts() {
                         Ok(shortcuts) => self.shortcuts = shortcuts,
                         Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
                     };
@@ -1241,7 +1241,7 @@ impl Furtherance {
                                 }
                                 self.inspector_view = None;
                                 self.shortcut_to_add = None;
-                                match db_retrieve_shortcuts() {
+                                match db_retrieve_existing_shortcuts() {
                                     Ok(shortcuts) => self.shortcuts = shortcuts,
                                     Err(e) => eprintln!(
                                         "Failed to retrieve shortcuts from database: {}",
@@ -1272,7 +1272,7 @@ impl Furtherance {
                     }
                     self.inspector_view = None;
                     self.shortcut_to_edit = None;
-                    match db_retrieve_shortcuts() {
+                    match db_retrieve_existing_shortcuts() {
                         Ok(shortcuts) => self.shortcuts = shortcuts,
                         Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
                     };
@@ -1970,12 +1970,24 @@ impl Furtherance {
                         }
                     };
 
+                let needs_full_sync = self.fur_settings.needs_full_sync;
+
                 return Task::perform(
                     async move {
-                        let new_tasks =
-                            db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
-                        let new_shortcuts =
-                            db_retrieve_shortcuts_since_timestamp(last_sync).unwrap_or_default();
+                        let new_tasks: Vec<FurTask>;
+                        let new_shortcuts: Vec<FurShortcut>;
+
+                        if needs_full_sync {
+                            new_tasks =
+                                db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Ascending)
+                                    .unwrap_or_default();
+                            new_shortcuts = db_retrieve_all_shortcuts().unwrap_or_default();
+                        } else {
+                            new_tasks =
+                                db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
+                            new_shortcuts = db_retrieve_shortcuts_since_timestamp(last_sync)
+                                .unwrap_or_default();
+                        }
 
                         let encrypted_tasks: Vec<EncryptedTask> = new_tasks
                             .into_iter()
@@ -2153,7 +2165,7 @@ impl Furtherance {
                             eprintln!("Failed to change last_sync in settings: {}", e);
                         }
 
-                        // If the server has orphaned tasks, re-sync those tasks
+                        // If the database_id changed, send all tasks, or if the server has orphaned tasks, re-sync those
                         if !response.orphaned_tasks.is_empty()
                             || !response.orphaned_shortcuts.is_empty()
                         {
@@ -2243,6 +2255,8 @@ impl Furtherance {
                                 );
                             }
                         }
+
+                        self.fur_settings.needs_full_sync = false;
 
                         self.task_history = get_task_history(self.fur_settings.days_to_show);
 
@@ -2386,6 +2400,11 @@ impl Furtherance {
                                 .get_message("error-storing-credentials", None),
                         );
                     }
+
+                    // Always do a full sync after login
+                    if let Err(e) = self.fur_settings.change_needs_full_sync(&true) {
+                        eprintln!("Error changing needs_full_sync: {}", e);
+                    };
 
                     let key_length = self.fur_user_fields.encryption_key.len();
 
@@ -5266,7 +5285,8 @@ pub fn write_furtasks_to_csv(
     localization: &Localization,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Ok(file) = std::fs::File::create(path) {
-        if let Ok(tasks) = db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Descending) {
+        if let Ok(tasks) = db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending)
+        {
             let mut csv_writer = Writer::from_writer(file);
             csv_writer.write_record(&[
                 "Name",
