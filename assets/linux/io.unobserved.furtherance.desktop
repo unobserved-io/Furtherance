@@ -2,10 +2,11 @@
 Name=Furtherance
 GenericName=Time Tracker
 Comment=Track your time without being tracked
-Exec=furtherance
+Exec=furtherance %U
 Icon=io.unobserved.furtherance
 Terminal=false
 Type=Application
 Categories=Utility;
 StartupNotify=true
+StartupWMClass=io.unobserved.furtherance
 Keywords=timer;tracker;clock;tasks;productivity;
