@@ -52,10 +52,11 @@ use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use iced::{
     advanced::subscription,
     alignment, font,
+    keyboard::{self, key},
     widget::{
-        button, center, checkbox, column, container, horizontal_rule, horizontal_space, mouse_area,
-        opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
-        Button, Column, Container, Row, Scrollable,
+        self, button, center, checkbox, column, container, horizontal_rule, horizontal_space,
+        mouse_area, opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule,
+        vertical_space, Button, Column, Container, Row, Scrollable,
     },
     Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
@@ -205,6 +206,7 @@ pub enum Message {
     SubmitStartDate(date_picker::Date),
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
+    TabPressed { shift: bool },
     TaskInputChanged(String),
     ToggleGroupEditor,
 }
@@ -340,7 +342,21 @@ impl Furtherance {
             None
         };
 
+        let key_presssed = keyboard::on_key_press(|key, modifiers| {
+            let keyboard::Key::Named(key) = key else {
+                return None;
+            };
+
+            match (key, modifiers) {
+                (key::Named::Tab, _) => Some(Message::TabPressed {
+                    shift: modifiers.shift(),
+                }),
+                _ => None,
+            }
+        });
+
         Subscription::batch([
+            key_presssed,
             subscription::from_recipe(MidnightSubscription),
             show_reminder_notification.unwrap_or(Subscription::none()),
             #[cfg(not(target_os = "macos"))]
@@ -1884,6 +1900,13 @@ impl Furtherance {
                         }
                         _ => {}
                     }
+                }
+            }
+            Message::TabPressed { shift } => {
+                if shift {
+                    return widget::focus_previous();
+                } else {
+                    return widget::focus_next();
                 }
             }
             Message::TaskInputChanged(new_value) => {
