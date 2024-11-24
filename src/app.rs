@@ -2306,6 +2306,13 @@ impl Furtherance {
                             );
                         }
                     }
+                    (Err(ApiError::InactiveSubscription(msg)), _) => {
+                        eprintln!("Sync error: {}", msg);
+                        return set_negative_temp_notice(
+                            &mut self.login_message,
+                            self.localization.get_message("subscription-inactive", None),
+                        );
+                    }
                     (Err(e), _) => {
                         eprintln!("Sync error: {:?}", e);
                         return set_negative_temp_notice(

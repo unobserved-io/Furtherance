@@ -23,11 +23,12 @@ use crate::server::encryption::generate_device_id;
 
 #[derive(Clone, Debug)]
 pub enum ApiError {
-    Network(Arc<reqwest::Error>),
     Auth(String),
+    Device(String),
+    InactiveSubscription(String),
+    Network(Arc<reqwest::Error>),
     Server(String),
     TokenRefresh(String),
-    Device(String),
 }
 
 #[derive(Serialize)]

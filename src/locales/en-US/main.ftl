@@ -140,6 +140,7 @@ server-must-contain-protocol = The server must contain a protocol (http:// or ht
 error-storing-credentials = Error storing user credentials
 error-retrieving-credentials = Error retrieving user credentials from database
 reauthenticate-error = Credentials have changed. Log in again.
+subscription-inactive = Your subscription is not active. Please log in at sync.furtherance.com to reactivate it.
 sync = Sync
 syncing = Syncing...
 sync-successful = {$count ->
