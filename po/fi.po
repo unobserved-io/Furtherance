@@ -2,13 +2,14 @@
 # Copyright (C) 2022 Ricky Kresslein <rk@lakoliu.com>
 # This file is distributed under the same license as the Furtherance package.
 # Jiri Grönroos <jiri.gronroos@iki.fi>, 2023.
+# Ricky Tigg <ricky.tigg@gmail.com>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: furtherance\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-10-18 11:58+0200\n"
-"PO-Revision-Date: 2023-06-05 16:00+0000\n"
-"Last-Translator: Jiri Grönroos <jiri.gronroos@iki.fi>\n"
+"PO-Revision-Date: 2024-11-30 03:04+0000\n"
+"Last-Translator: Ricky Tigg <ricky.tigg@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/furtherance/"
 "translations/fi/>\n"
 "Language: fi\n"
@@ -16,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.9-dev\n"
 
 #: data/com.lakoliu.Furtherance.appdata.xml.in:6 src/application.rs:186
 msgid "Track your time without being tracked"
@@ -346,7 +347,7 @@ msgstr "Alku"
 
 #: src/gtk/report.ui:58 src/gtk/report.ui:74
 msgid "MM/DD/YYYY"
-msgstr ""
+msgstr "KK/PP/VVVV"
 
 #: src/gtk/report.ui:68
 msgid "End"
