@@ -243,14 +243,8 @@ pub enum Message {
     UserServerChanged(String),
 }
 
-impl Default for Furtherance {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Furtherance {
-    pub fn new() -> Self {
+    pub fn new() -> (Self, iced::Task<Message>) {
         // Load settings
         let mut settings = match FurSettings::new() {
             Ok(loaded_settings) => loaded_settings,
@@ -366,7 +360,21 @@ impl Furtherance {
 
         furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
 
-        furtherance
+        let user = furtherance.fur_user.clone();
+        (
+            furtherance,
+            if user.is_some() {
+                Task::perform(
+                    async {
+                        // Small delay to allow startup operations to complete
+                        time::sleep(Duration::from_secs(1)).await;
+                    },
+                    |_| Message::SyncWithServer,
+                )
+            } else {
+                Task::none()
+            },
+        )
     }
 
     pub fn title(&self) -> String {
@@ -410,10 +418,21 @@ impl Furtherance {
             }
         });
 
+        let timed_sync = if self.fur_user.is_some() {
+            let sync_interval = 900; // 15 mins in secs
+            Some(
+                iced::time::every(Duration::from_secs(sync_interval))
+                    .map(|_| Message::SyncWithServer),
+            )
+        } else {
+            None
+        };
+
         Subscription::batch([
             key_presssed,
             subscription::from_recipe(MidnightSubscription),
             show_reminder_notification.unwrap_or(Subscription::none()),
+            timed_sync.unwrap_or(Subscription::none()),
             #[cfg(not(target_os = "macos"))]
             theme_watcher.unwrap_or(Subscription::none()),
         ])
@@ -614,6 +633,7 @@ impl Furtherance {
                                 }
                             };
                             self.current_view = FurView::Shortcuts;
+                            return sync_after_change(&self.fur_user);
                         }
                     }
                     Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
@@ -1118,6 +1138,7 @@ impl Furtherance {
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
                 self.displayed_alert = None;
+                return sync_after_change(&self.fur_user);
             }
             Message::IdleReset => {
                 self.idle = FurIdle::new();
@@ -1213,13 +1234,17 @@ impl Furtherance {
                 self.task_input = original_task_input;
                 self.displayed_alert = None;
                 start_timer(self);
-                return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                return Task::batch([
+                    Task::perform(get_timer_duration(), |_| Message::StopwatchTick),
+                    sync_after_change(&self.fur_user),
+                ]);
             }
             Message::PomodoroStop => {
                 self.pomodoro.snoozed = false;
                 stop_timer(self, Local::now());
                 self.displayed_alert = None;
                 self.pomodoro.sessions = 0;
+                return sync_after_change(&self.fur_user);
             }
             Message::PomodoroStopAfterBreak => {
                 self.timer_is_running = false;
@@ -1244,6 +1269,7 @@ impl Furtherance {
                     self.inspector_view = None;
                     self.group_to_edit = None;
                     self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    return sync_after_change(&self.fur_user);
                 }
             }
             Message::SaveShortcut => {
@@ -1265,24 +1291,29 @@ impl Furtherance {
                             if exists {
                                 self.displayed_alert = Some(FurAlert::ShortcutExists);
                             } else {
-                                if let Err(e) = db_insert_shortcut(&new_shortcut) {
-                                    eprintln!("Failed to write shortcut to database: {}", e);
+                                match db_insert_shortcut(&new_shortcut) {
+                                    Ok(_) => {
+                                        self.inspector_view = None;
+                                        self.shortcut_to_add = None;
+                                        match db_retrieve_existing_shortcuts() {
+                                            Ok(shortcuts) => self.shortcuts = shortcuts,
+                                            Err(e) => eprintln!(
+                                                "Failed to retrieve shortcuts from database: {}",
+                                                e
+                                            ),
+                                        };
+                                        return sync_after_change(&self.fur_user);
+                                    }
+                                    Err(e) => {
+                                        eprintln!("Failed to write shortcut to database: {}", e)
+                                    }
                                 }
-                                self.inspector_view = None;
-                                self.shortcut_to_add = None;
-                                match db_retrieve_existing_shortcuts() {
-                                    Ok(shortcuts) => self.shortcuts = shortcuts,
-                                    Err(e) => eprintln!(
-                                        "Failed to retrieve shortcuts from database: {}",
-                                        e
-                                    ),
-                                };
                             }
                         }
                         Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
                     }
                 } else if let Some(shortcut_to_edit) = &self.shortcut_to_edit {
-                    if let Err(e) = db_update_shortcut(&FurShortcut {
+                    match db_update_shortcut(&FurShortcut {
                         name: shortcut_to_edit.new_name.trim().to_string(),
                         tags: shortcut_to_edit.new_tags.trim().to_string(),
                         project: shortcut_to_edit.new_project.trim().to_string(),
@@ -1297,14 +1328,19 @@ impl Furtherance {
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
                     }) {
-                        eprintln!("Failed to update shortcut in database: {}", e);
+                        Ok(_) => {
+                            self.inspector_view = None;
+                            self.shortcut_to_edit = None;
+                            match db_retrieve_existing_shortcuts() {
+                                Ok(shortcuts) => self.shortcuts = shortcuts,
+                                Err(e) => {
+                                    eprintln!("Failed to retrieve shortcuts from database: {}", e)
+                                }
+                            };
+                            return sync_after_change(&self.fur_user);
+                        }
+                        Err(e) => eprintln!("Failed to update shortcut in database: {}", e),
                     }
-                    self.inspector_view = None;
-                    self.shortcut_to_edit = None;
-                    match db_retrieve_existing_shortcuts() {
-                        Ok(shortcuts) => self.shortcuts = shortcuts,
-                        Err(e) => eprintln!("Failed to retrieve shortcuts from database: {}", e),
-                    };
                 }
             }
             Message::SaveTaskEdit => {
@@ -1333,6 +1369,7 @@ impl Furtherance {
                             self.task_to_edit = None;
                             self.group_to_edit = None;
                             self.task_history = get_task_history(self.fur_settings.days_to_show);
+                            return sync_after_change(&self.fur_user);
                         }
                         Err(e) => eprintln!("Failed to update task in database: {}", e),
                     }
@@ -1358,6 +1395,7 @@ impl Furtherance {
                             self.task_to_add = None;
                             self.group_to_edit = None;
                             self.task_history = get_task_history(self.fur_settings.days_to_show);
+                            return sync_after_change(&self.fur_user);
                         }
                         Err(e) => eprintln!("Error adding task: {}", e),
                     }
@@ -1765,6 +1803,7 @@ impl Furtherance {
                         self.pomodoro.snoozed = false;
                         self.pomodoro.sessions = 0;
                         stop_timer(self, Local::now());
+                        return sync_after_change(&self.fur_user);
                     }
                     return Task::none();
                 } else {
@@ -5635,4 +5674,18 @@ fn set_negative_temp_notice(
         },
         |_| Message::ClearLoginMessage,
     )
+}
+
+pub fn sync_after_change(user: &Option<FurUser>) -> Task<Message> {
+    if user.is_some() {
+        Task::perform(
+            async {
+                // Small delay to allow any pending DB operations to complete
+                time::sleep(Duration::from_secs(1)).await;
+            },
+            |_| Message::SyncWithServer,
+        )
+    } else {
+        Task::none()
+    }
 }

@@ -87,5 +87,5 @@ fn main() -> iced::Result {
         .font(iced_fonts::REQUIRED_FONT_BYTES)
         .font(iced_fonts::BOOTSTRAP_FONT_BYTES)
         .window(window_settings)
-        .run()
+        .run_with(Furtherance::new)
 }
