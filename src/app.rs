@@ -71,8 +71,8 @@ use iced::{
     keyboard::{self, key},
     widget::{
         self, button, center, checkbox, column, container, horizontal_rule, horizontal_space,
-        mouse_area, opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule,
-        vertical_space, Button, Column, Container, Row, Scrollable,
+        opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
+        Button, Column, Container, Row, Scrollable,
     },
     Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
@@ -122,7 +122,6 @@ pub struct Furtherance {
     theme: FurTheme,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
-    timer_stop_time: DateTime<Local>,
     timer_text: String,
     task_to_add: Option<TaskToAdd>,
     task_to_edit: Option<TaskToEdit>,
@@ -332,7 +331,6 @@ impl Furtherance {
             theme: FurTheme::Light,
             timer_is_running: false,
             timer_start_time: Local::now(),
-            timer_stop_time: Local::now(),
             timer_text: "0:00:00".to_string(),
             task_to_add: None,
             task_to_edit: None,
@@ -1226,11 +1224,9 @@ impl Furtherance {
             }
             Message::PomodoroStartBreak => {
                 let original_task_input = self.task_input.clone();
-                let pomodoro_stop_time = self.timer_start_time
-                    + TimeDelta::minutes(self.fur_settings.pomodoro_break_length);
                 self.pomodoro.on_break = true;
                 self.pomodoro.snoozed = false;
-                stop_timer(self, pomodoro_stop_time);
+                stop_timer(self, Local::now());
                 self.task_input = original_task_input;
                 self.displayed_alert = None;
                 start_timer(self);
@@ -4641,7 +4637,7 @@ impl Furtherance {
         };
 
         if let Some(alert) = overlay {
-            modal(content, container(alert), Message::AlertClose).into()
+            modal(content, container(alert)).into()
         } else {
             content.into()
         }
@@ -4984,14 +4980,13 @@ fn start_timer(state: &mut Furtherance) {
 }
 
 fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
-    state.timer_stop_time = stop_time;
     state.timer_is_running = false;
 
     let (name, project, tags, rate) = split_task_input(&state.task_input);
     db_insert_task(&FurTask::new(
         name,
         state.timer_start_time,
-        state.timer_stop_time,
+        stop_time,
         tags,
         project,
         rate,
@@ -5607,7 +5602,6 @@ pub fn import_csv_to_database(file: &mut File, localization: &Localization) {
 fn modal<'a, Message>(
     base: impl Into<Element<'a, Message>>,
     alert: Container<'a, Message>,
-    on_blur: Message,
 ) -> Element<'a, Message>
 where
     Message: Clone + 'a,
@@ -5615,23 +5609,18 @@ where
     stack![
         base.into(),
         opaque(
-            mouse_area(
-                center(opaque(row![horizontal_space(), alert, horizontal_space()])).style(
-                    |_theme| {
-                        container::Style {
-                            background: Some(
-                                Color {
-                                    a: 0.8,
-                                    ..Color::BLACK
-                                }
-                                .into(),
-                            ),
-                            ..container::Style::default()
+            center(opaque(row![horizontal_space(), alert, horizontal_space()])).style(|_theme| {
+                container::Style {
+                    background: Some(
+                        Color {
+                            a: 0.8,
+                            ..Color::BLACK
                         }
-                    }
-                )
-            )
-            .on_press(on_blur)
+                        .into(),
+                    ),
+                    ..container::Style::default()
+                }
+            })
         )
     ]
     .into()
