@@ -535,7 +535,7 @@ pub fn db_update_task(task: &FurTask) -> Result<()> {
             rate = ?6,
             currency = ?7,
             is_deleted = ?8,
-            last_updated = ?9,
+            last_updated = ?9
         WHERE uid = ?10",
         params![
             task.name,
@@ -565,7 +565,7 @@ pub fn db_update_group_of_tasks(group: &GroupToEdit) -> Result<()> {
             tags = ?2,
             project = ?3,
             rate = ?4,
-            last_updated = ?5,
+            last_updated = ?5
         WHERE uid = ?6",
         )?;
 

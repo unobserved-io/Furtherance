@@ -1316,7 +1316,7 @@ impl Furtherance {
                         .unwrap_or(&task_to_edit.new_tags)
                         .trim()
                         .to_string();
-                    let _ = db_update_task(&FurTask {
+                    match db_update_task(&FurTask {
                         name: task_to_edit.new_name.trim().to_string(),
                         start_time: task_to_edit.new_start_time,
                         stop_time: task_to_edit.new_stop_time,
@@ -1327,11 +1327,15 @@ impl Furtherance {
                         uid: task_to_edit.uid.clone(),
                         is_deleted: false,
                         last_updated: chrono::Utc::now().timestamp(),
-                    });
-                    self.inspector_view = None;
-                    self.task_to_edit = None;
-                    self.group_to_edit = None;
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    }) {
+                        Ok(_) => {
+                            self.inspector_view = None;
+                            self.task_to_edit = None;
+                            self.group_to_edit = None;
+                            self.task_history = get_task_history(self.fur_settings.days_to_show);
+                        }
+                        Err(e) => eprintln!("Failed to update task in database: {}", e),
+                    }
                 } else if let Some(task_to_add) = &self.task_to_add {
                     let tags_without_first_pound = task_to_add
                         .tags
@@ -1340,7 +1344,7 @@ impl Furtherance {
                         .unwrap_or(&task_to_add.tags)
                         .trim()
                         .to_string();
-                    let _ = db_insert_task(&FurTask::new(
+                    match db_insert_task(&FurTask::new(
                         task_to_add.name.trim().to_string(),
                         task_to_add.start_time,
                         task_to_add.stop_time,
@@ -1348,11 +1352,15 @@ impl Furtherance {
                         task_to_add.project.trim().to_string(),
                         task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
                         String::new(),
-                    ));
-                    self.inspector_view = None;
-                    self.task_to_add = None;
-                    self.group_to_edit = None;
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    )) {
+                        Ok(_) => {
+                            self.inspector_view = None;
+                            self.task_to_add = None;
+                            self.group_to_edit = None;
+                            self.task_history = get_task_history(self.fur_settings.days_to_show);
+                        }
+                        Err(e) => eprintln!("Error adding task: {}", e),
+                    }
                 }
             }
             Message::SettingsChangeDatabaseLocationPressed(new_or_open) => {
