@@ -2034,7 +2034,7 @@ impl Furtherance {
                     match decrypt_encryption_key(&user.encrypted_key, &user.key_nonce) {
                         Ok(key) => key,
                         Err(e) => {
-                            eprintln!("Failed to decrypt encryption key: {:?}", e);
+                            eprintln!("Failed to decrypt encryption key (SyncWithServer): {:?}", e);
                             return set_negative_temp_notice(
                                 &mut self.login_message,
                                 self.localization.get_message("error-decrypting-key", None),
@@ -2128,7 +2128,10 @@ impl Furtherance {
                             match decrypt_encryption_key(&user.encrypted_key, &user.key_nonce) {
                                 Ok(key) => key,
                                 Err(e) => {
-                                    eprintln!("Failed to decrypt encryption key: {:?}", e);
+                                    eprintln!(
+                                        "Failed to decrypt encryption key (SyncComplete): {:?}",
+                                        e
+                                    );
                                     return set_negative_temp_notice(
                                         &mut self.login_message,
                                         self.localization.get_message("error-decrypting-key", None),
