@@ -627,11 +627,12 @@ pub fn db_task_exists(task: &FurTask) -> Result<bool> {
 
 pub fn db_delete_tasks_by_ids(id_list: &[String]) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+    let now = chrono::Utc::now().timestamp();
 
     for id in id_list {
         conn.execute(
-            "UPDATE tasks SET is_deleted = 1 WHERE uid = (?1)",
-            &[&id.to_string()],
+            "UPDATE tasks SET is_deleted = 1, last_updated = ?1 WHERE uid = ?2",
+            params![now, id],
         )?;
     }
 
@@ -803,13 +804,13 @@ pub fn db_retrieve_shortcut_by_id(uid: &String) -> Result<Option<FurShortcut>> {
         None => Ok(None),
     }
 }
-
 pub fn db_delete_shortcut_by_id(uid: &str) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+    let now = chrono::Utc::now().timestamp();
 
     conn.execute(
-        "UPDATE shortcuts SET is_deleted = 1 WHERE uid = (?1)",
-        &[&uid],
+        "UPDATE shortcuts SET is_deleted = 1, last_updated = ?1 WHERE uid = ?2",
+        params![now, uid],
     )?;
 
     Ok(())
@@ -817,15 +818,17 @@ pub fn db_delete_shortcut_by_id(uid: &str) -> Result<()> {
 
 pub fn db_delete_everything() -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+    let now = chrono::Utc::now().timestamp();
 
-    conn.execute_batch(
+    conn.execute_batch(&format!(
         "
             BEGIN TRANSACTION;
-            UPDATE tasks SET is_deleted = 1;
-            UPDATE shortcuts SET is_deleted = 1;
+            UPDATE tasks SET is_deleted = 1, last_updated = {};
+            UPDATE shortcuts SET is_deleted = 1, last_updated = {};
             COMMIT;
         ",
-    )?;
+        now, now
+    ))?;
 
     Ok(())
 }
