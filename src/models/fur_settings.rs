@@ -36,6 +36,7 @@ pub struct FurSettings {
     pub first_run: bool,
     pub last_sync: i64,
     pub needs_full_sync: bool,
+    pub notify_of_sync: bool,
     pub notify_on_idle: bool,
     pub notify_reminder: bool,
     pub notify_reminder_interval: u16,
@@ -77,6 +78,7 @@ impl Default for FurSettings {
             first_run: true,
             last_sync: 0,
             needs_full_sync: true,
+            notify_of_sync: true,
             notify_on_idle: true,
             notify_reminder: false,
             notify_reminder_interval: 10,
@@ -134,6 +136,7 @@ impl FurSettings {
         builder = builder.set_default("show_chart_selection_earnings", "true")?;
         builder = builder.set_default("last_sync", "0")?;
         builder = builder.set_default("needs_full_sync", "true")?;
+        builder = builder.set_default("notify_of_sync", "true")?;
 
         let config = builder.build()?;
         let settings: FurSettings = config.try_deserialize()?;
@@ -185,6 +188,11 @@ impl FurSettings {
 
     pub fn change_needs_full_sync(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.needs_full_sync = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_notify_of_sync(&mut self, value: bool) -> Result<(), std::io::Error> {
+        self.notify_of_sync = value;
         self.save()
     }
 

@@ -172,6 +172,7 @@ pub enum Message {
     IdleReset,
     ImportCsvPressed,
     ImportOldMacDatabase,
+    LearnAboutSync,
     MidnightReached,
     NavigateTo(FurView),
     OpenUrl(String),
@@ -342,6 +343,13 @@ impl Furtherance {
         furtherance.theme = get_system_theme(furtherance.fur_settings.theme);
         furtherance.timer_text = get_timer_text(&furtherance, 0);
 
+        if autosave_exists() {
+            restore_autosave();
+            if furtherance.displayed_alert == None {
+                furtherance.displayed_alert = Some(FurAlert::AutosaveRestored);
+            }
+        }
+
         // Ask user to import old Furtherance database on first run
         if furtherance.fur_settings.first_run {
             #[cfg(target_os = "macos")]
@@ -350,13 +358,9 @@ impl Furtherance {
             }
 
             let _ = furtherance.fur_settings.change_first_run(false);
-        }
-
-        if autosave_exists() {
-            restore_autosave();
-            if furtherance.displayed_alert == None {
-                furtherance.displayed_alert = Some(FurAlert::AutosaveRestored);
-            }
+            let _ = furtherance.fur_settings.change_notify_of_sync(false);
+        } else if furtherance.fur_settings.notify_of_sync {
+            furtherance.displayed_alert = Some(FurAlert::NotifyOfSync)
         }
 
         furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
@@ -1193,6 +1197,15 @@ impl Furtherance {
                     Err(e) => eprintln!("Error importing existing Core Data database: {e}"),
                 }
                 self.displayed_alert = None;
+            }
+            Message::LearnAboutSync => {
+                if let Err(e) = webbrowser::open("https://furtherance.app/sync") {
+                    eprintln!("Failed to open URL in browser: {}", e);
+                }
+                self.displayed_alert = None;
+                if let Err(e) = self.fur_settings.change_notify_of_sync(false) {
+                    eprintln!("Error changing notify_of_sync: {}", e);
+                };
             }
             Message::MidnightReached => {
                 self.task_history = get_task_history(self.fur_settings.days_to_show);
@@ -4549,6 +4562,28 @@ impl Furtherance {
                                 .width(Length::Fill),
                         )
                         .on_press(Message::ImportOldMacDatabase)
+                        .style(style::primary_button_style),
+                    );
+                }
+                FurAlert::NotifyOfSync => {
+                    alert_text = self.localization.get_message("syncing-now-available", None);
+                    alert_description = self.localization.get_message("syncing-now-possible", None);
+                    close_button = Some(
+                        button(
+                            text(self.localization.get_message("ok", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(button::secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text(self.localization.get_message("learn-more", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::LearnAboutSync)
                         .style(style::primary_button_style),
                     );
                 }

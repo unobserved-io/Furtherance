@@ -227,6 +227,9 @@ x-s = {$seconds} s
 pomodoro-over-notification-body = It's time to take a break.
 idle-notification-title = You've been idle.
 idle-notification-body = Open Furtherance to continue or discard the idle time.
+syncing-now-available = Syncing Now Available
+syncing-now-possible = You can now sync your task history across all of your devices! You can self-host the sync server or set up a hosted account for $5/month.
+learn-more = Learn more
 
 ## Errors
 invalid-database = Invalid database.
