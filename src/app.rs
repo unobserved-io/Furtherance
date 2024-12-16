@@ -2456,6 +2456,7 @@ impl Furtherance {
                 let email = self.fur_user_fields.email.clone();
                 let encryption_key = self.fur_user_fields.encryption_key.clone();
                 let server = self.fur_user_fields.server.clone();
+                self.login_message = Ok(self.localization.get_message("logging-in", None));
 
                 return Task::perform(
                     login(email, encryption_key, server),

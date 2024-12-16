@@ -131,6 +131,7 @@ official-server = Official Furtherance server
 email = Email
 encryption-key = Encryption key
 log-in = Log in
+logging-in = Logging in...
 log-in-first = Please log in first
 log-out = Log out
 login-failed = Login failed
