@@ -1,3 +1,5 @@
+use crate::constants::OFFICIAL_SERVER;
+
 #[derive(Clone, PartialEq)]
 pub struct FurUser {
     pub email: String,
@@ -20,7 +22,7 @@ impl Default for FurUserFields {
         FurUserFields {
             email: String::new(),
             encryption_key: String::new(),
-            server: String::new(),
+            server: OFFICIAL_SERVER.to_string(),
         }
     }
 }
