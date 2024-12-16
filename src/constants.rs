@@ -23,6 +23,7 @@ pub const ALLOWED_DB_EXTENSIONS: &[&str] =
 pub const DEBUG_MODE: bool = cfg!(debug_assertions);
 pub const FURTHERANCE_PURPLE: Srgb = Srgb::new(0.694, 0.475, 0.945);
 pub const SETTINGS_SPACING: f32 = 15.0;
+pub const FURTHERANCE_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // Charts
 pub const CHART_HEIGHT: f32 = 400.0;

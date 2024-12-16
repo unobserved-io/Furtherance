@@ -27,8 +27,9 @@ use std::{
 use crate::{
     autosave::{autosave_exists, delete_autosave, restore_autosave, write_autosave},
     constants::{
-        ALLOWED_DB_EXTENSIONS, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING, INSPECTOR_SPACING,
-        INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_MESSAGE_DURATION, SETTINGS_SPACING,
+        ALLOWED_DB_EXTENSIONS, FURTHERANCE_VERSION, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING,
+        INSPECTOR_SPACING, INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_MESSAGE_DURATION,
+        SETTINGS_SPACING,
     },
     database::*,
     helpers::{
@@ -3398,6 +3399,17 @@ impl Furtherance {
                             ]
                             .spacing(10)
                             .align_y(Alignment::Center),
+                            row![text(format!("Furtherance version {}", FURTHERANCE_VERSION))
+                                .font(font::Font {
+                                    style: iced::font::Style::Italic,
+                                    ..Default::default()
+                                })]
+                            .padding(Padding {
+                                top: 40.0,
+                                right: 0.0,
+                                bottom: 0.0,
+                                left: 0.0,
+                            }),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10)
