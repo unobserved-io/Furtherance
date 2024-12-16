@@ -150,6 +150,7 @@ sync-successful = {$count ->
 }
 sync-failed = Sync failed
 error-decrypting-key = Failed to decrypt encryption key
+sign-up = Sign up
 local-database = Local Database
 database-location = Database location
 create-new = Create New

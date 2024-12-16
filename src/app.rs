@@ -88,6 +88,7 @@ use palette::Srgb;
 use regex::Regex;
 use rfd::FileDialog;
 use tokio::time;
+use webbrowser;
 
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
@@ -172,6 +173,7 @@ pub enum Message {
     ImportOldMacDatabase,
     MidnightReached,
     NavigateTo(FurView),
+    OpenUrl(String),
     PomodoroContinueAfterBreak,
     PomodoroSnooze,
     PomodoroStartBreak,
@@ -1201,6 +1203,11 @@ impl Furtherance {
                     if destination == FurView::Report {
                         self.report.update_tasks_in_range();
                     }
+                }
+            }
+            Message::OpenUrl(url) => {
+                if let Err(e) = webbrowser::open(&url) {
+                    eprintln!("Failed to open URL in browser: {}", e);
                 }
             }
             Message::PomodoroContinueAfterBreak => {
@@ -3071,30 +3078,39 @@ impl Furtherance {
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
-            row![
-                button(text(self.localization.get_message(
-                    if self.fur_user.is_none() {
-                        "log-in"
-                    } else {
-                        "log-out"
-                    },
-                    None
-                )))
-                .on_press(if self.fur_user.is_none() {
-                    Message::UserLoginPressed
+        ]
+        .spacing(10);
+        let mut sync_button_row: Row<'_, Message> =
+            row![button(text(self.localization.get_message(
+                if self.fur_user.is_none() {
+                    "log-in"
                 } else {
-                    Message::UserLogoutPressed
-                }),
+                    "log-out"
+                },
+                None
+            )))
+            .on_press(if self.fur_user.is_none() {
+                Message::UserLoginPressed
+            } else {
+                Message::UserLogoutPressed
+            }),]
+            .spacing(10);
+        sync_button_row = sync_button_row.push_maybe(if self.fur_user.is_some() {
+            Some(
                 button(text(self.localization.get_message("sync", None))).on_press_maybe(
                     match self.fur_user {
                         Some(_) => Some(Message::SyncWithServer),
                         None => None,
-                    }
-                )
-            ]
-            .spacing(10)
-        ]
-        .spacing(10);
+                    },
+                ),
+            )
+        } else {
+            Some(
+                button(text(self.localization.get_message("sign-up", None)))
+                    .on_press(Message::OpenUrl("https://furtherance.app/sync".to_string())),
+            )
+        });
+        sync_server_col = sync_server_col.push(sync_button_row);
         sync_server_col = sync_server_col.push_maybe(match &self.login_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -3579,7 +3595,7 @@ impl Furtherance {
                     ),
                     Scrollable::new(
                         column![
-                            settings_heading(self.localization.get_message("sync-server", None)),
+                            settings_heading(self.localization.get_message("sync", None)),
                             sync_server_col,
                             settings_heading(self.localization.get_message("local-database", None)),
                             database_location_col,
