@@ -3108,6 +3108,11 @@ impl Furtherance {
                 Message::UserLoginPressed
             } else {
                 Message::UserLogoutPressed
+            })
+            .style(if self.fur_user.is_none() {
+                style::primary_button_style
+            } else {
+                button::secondary
             }),]
             .spacing(10);
         sync_button_row = sync_button_row.push_maybe(if self.fur_user.is_some() {
