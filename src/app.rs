@@ -166,6 +166,7 @@ pub enum Message {
     EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
     EnterPressedInTaskInput,
+    EnterPressedInSyncFields,
     ExportCsvPressed,
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
@@ -1110,6 +1111,14 @@ impl Furtherance {
                     if !self.timer_is_running {
                         return Task::perform(async { Message::StartStopPressed }, |msg| msg);
                     }
+                }
+            }
+            Message::EnterPressedInSyncFields => {
+                if !self.fur_user_fields.server.is_empty()
+                    && !self.fur_user_fields.email.is_empty()
+                    && !self.fur_user_fields.encryption_key.is_empty()
+                {
+                    return Task::perform(async { Message::UserLoginPressed }, |msg| msg);
                 }
             }
             Message::ExportCsvPressed => {
@@ -3064,7 +3073,8 @@ impl Furtherance {
             if self.settings_server_choice == Some(ServerChoices::Custom) {
                 Some(
                     text_input("", &self.fur_user_fields.server)
-                        .on_input(Message::UserServerChanged),
+                        .on_input(Message::UserServerChanged)
+                        .on_submit(Message::EnterPressedInSyncFields),
                 )
             } else {
                 None
@@ -3079,9 +3089,9 @@ impl Furtherance {
             .align_y(Alignment::Center),
             row![
                 text(self.localization.get_message("email", None)),
-                column![
-                    text_input("", &self.fur_user_fields.email).on_input(Message::UserEmailChanged)
-                ]
+                column![text_input("", &self.fur_user_fields.email)
+                    .on_input(Message::UserEmailChanged)
+                    .on_submit(Message::EnterPressedInSyncFields)]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
@@ -3089,7 +3099,8 @@ impl Furtherance {
                 text(self.localization.get_message("encryption-key", None)),
                 column![text_input("", &self.fur_user_fields.encryption_key)
                     .secure(true)
-                    .on_input(Message::UserEncryptionKeyChanged)]
+                    .on_input(Message::UserEncryptionKeyChanged)
+                    .on_submit(Message::EnterPressedInSyncFields)]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
