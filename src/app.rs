@@ -3104,10 +3104,17 @@ impl Furtherance {
                 },
                 None
             )))
-            .on_press(if self.fur_user.is_none() {
-                Message::UserLoginPressed
+            .on_press_maybe(if self.fur_user.is_none() {
+                if !self.fur_user_fields.server.is_empty()
+                    && !self.fur_user_fields.email.is_empty()
+                    && !self.fur_user_fields.encryption_key.is_empty()
+                {
+                    Some(Message::UserLoginPressed)
+                } else {
+                    None
+                }
             } else {
-                Message::UserLogoutPressed
+                Some(Message::UserLogoutPressed)
             })
             .style(if self.fur_user.is_none() {
                 style::primary_button_style
