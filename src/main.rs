@@ -66,7 +66,7 @@ use iced::advanced::graphics::image::image_rs::ImageFormat;
 
 fn main() -> iced::Result {
     let window_icon = iced::window::icon::from_file_data(
-        include_bytes!("../assets/icon/64x64.png"),
+        include_bytes!("../assets/icon/32x32@2x.png"),
         Some(ImageFormat::Png),
     );
     let window_settings = iced::window::Settings {
