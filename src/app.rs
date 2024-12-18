@@ -176,6 +176,7 @@ pub enum Message {
     LearnAboutSync,
     MidnightReached,
     NavigateTo(FurView),
+    NotifyOfSyncClose,
     OpenUrl(String),
     PomodoroContinueAfterBreak,
     PomodoroSnooze,
@@ -1227,6 +1228,12 @@ impl Furtherance {
                         self.report.update_tasks_in_range();
                     }
                 }
+            }
+            Message::NotifyOfSyncClose => {
+                if let Err(e) = self.fur_settings.change_notify_of_sync(false) {
+                    eprintln!("Error changing notify_of_sync: {}", e);
+                };
+                return Task::perform(async { Message::AlertClose }, |msg| msg);
             }
             Message::OpenUrl(url) => {
                 if let Err(e) = webbrowser::open(&url) {
@@ -4597,7 +4604,7 @@ impl Furtherance {
                                 .align_x(alignment::Horizontal::Center)
                                 .width(Length::Fill),
                         )
-                        .on_press(Message::AlertClose)
+                        .on_press(Message::NotifyOfSyncClose)
                         .style(button::secondary),
                     );
                     confirmation_button = Some(
