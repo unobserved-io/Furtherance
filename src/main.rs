@@ -61,6 +61,8 @@ mod tests {
 }
 mod view_enums;
 
+use std::borrow::Cow;
+
 use app::Furtherance;
 use iced::advanced::graphics::image::image_rs::ImageFormat;
 
@@ -74,18 +76,23 @@ fn main() -> iced::Result {
             width: 1024.0,
             height: 600.0,
         },
-        icon: match window_icon {
-            Ok(icon) => Some(icon),
-            Err(_) => None,
-        },
+        icon: window_icon.ok(),
+        ..Default::default()
+    };
+
+    let settings = iced::Settings {
+        id: Some(String::from("io.unobserved.furtherance")),
+        fonts: vec![
+            Cow::Borrowed(iced_fonts::REQUIRED_FONT_BYTES),
+            Cow::Borrowed(iced_fonts::BOOTSTRAP_FONT_BYTES),
+        ],
         ..Default::default()
     };
 
     iced::application(Furtherance::title, Furtherance::update, Furtherance::view)
         .subscription(Furtherance::subscription)
         .theme(Furtherance::theme)
-        .font(iced_fonts::REQUIRED_FONT_BYTES)
-        .font(iced_fonts::BOOTSTRAP_FONT_BYTES)
         .window(window_settings)
+        .settings(settings)
         .run_with(Furtherance::new)
 }
