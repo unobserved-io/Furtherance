@@ -2,9 +2,6 @@
 Furtherance is a time tracking app.
 It allows you to track time spent on different activities without worrying about your data being captured and sold.
 
-**UPDATE: Furtherance has undergone a complete rewrite using [Iced](https://github.com/iced-rs/iced). It is better in many ways and contains more features. Most importantly, there is now a single, cross-platform version,
-so updates will be far more frequent and everyone will have the same features, regardless of OS. You can read more about the change [here](https://unobserved.io/blog/twau-1).**
-
 <p align="center">
     <img width="750px" src="https://unobserved.io/assets/screenshots/furtherance/mac/Timer.png" alt="Furtherance timer"/>
 </p>
@@ -13,6 +10,7 @@ so updates will be far more frequent and everyone will have the same features, r
 * Track your time spent on tasks with an associated project, rate, and tags.
 * Pomodoro timer with breaks and periodic larger breaks.
 * Cross-platform! Use it on Linux, Mac, and Windows.
+* Sync your task history across all of your devices with [Furtherance Sync](furtherance.com/sync).
 * Tasks can be edited after they are created.
 * Settings to customize the view and defaults to your liking.
 * Features can be added! Just open an issue.
@@ -39,6 +37,11 @@ _**Furtherance has been re-written and uses a new database structure. Back up yo
 
 ### Use
 Type in the `name` of the task you are working on, add a `@Project`, some `#tags`, and a `$rate`, and press start. That's really all there is to it.
+
+### Sync
+To sync you task history across multiple devices use [Furtherance Sync](https://github.com/unobserved-io/furtherance-sync), which is end-to-end encrypted.
+
+To get started, you can either self-host it (free), or subscribe to the paid, easy-to-use, [hosted version](furtherance.com/sync) for $5/month. Sync subscriptions have the added benefit of supporting this project, so thank you!
 
 ## Contribute
 
