@@ -3142,17 +3142,18 @@ impl Furtherance {
             .spacing(10);
         sync_button_row = sync_button_row.push_maybe(if self.fur_user.is_some() {
             Some(
-                button(text(self.localization.get_message("sync", None))).on_press_maybe(
-                    match self.fur_user {
+                button(text(self.localization.get_message("sync", None)))
+                    .on_press_maybe(match self.fur_user {
                         Some(_) => Some(Message::SyncWithServer),
                         None => None,
-                    },
-                ),
+                    })
+                    .style(style::primary_button_style),
             )
         } else {
             Some(
                 button(text(self.localization.get_message("sign-up", None)))
-                    .on_press(Message::OpenUrl("https://furtherance.app/sync".to_string())),
+                    .on_press(Message::OpenUrl("https://furtherance.app/sync".to_string()))
+                    .style(style::primary_button_style),
             )
         });
         sync_server_col = sync_server_col.push(sync_button_row);
