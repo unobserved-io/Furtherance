@@ -50,6 +50,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="24.12.0" date="2024-12-19">
+      <description translate="no">
+        <ul>
+          <li>Added support for Furtherance Sync</li>
+          <li>Fixed an issue with Pomodoro breaks - #159</li>
+          <li>Added tab switching between text inputs - #157</li>
+        </ul>
+      </description>
+    </release>
     <release version="24.10.5" date="2024-10-21">
       <description translate="no">
         <ul>
