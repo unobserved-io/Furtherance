@@ -95,20 +95,16 @@ pub async fn sync_with_server(
             .await
             .map_err(|e| ApiError::Network(Arc::new(e)))
     } else {
-        if response.status() == reqwest::StatusCode::OK
-            || response.status() == reqwest::StatusCode::BAD_REQUEST
-        {
-            if let Ok(error) = response.json::<serde_json::Value>().await {
-                if let Some(error_type) = error.get("error").and_then(|e| e.as_str()) {
-                    if error_type == "inactive_subscription" {
-                        return Err(ApiError::InactiveSubscription(
-                            error
-                                .get("message")
-                                .and_then(|m| m.as_str())
-                                .unwrap_or("Subscription inactive")
-                                .to_string(),
-                        ));
-                    }
+        if let Ok(error) = response.json::<serde_json::Value>().await {
+            if let Some(error_type) = error.get("error").and_then(|e| e.as_str()) {
+                if error_type == "inactive_subscription" {
+                    return Err(ApiError::InactiveSubscription(
+                        error
+                            .get("message")
+                            .and_then(|m| m.as_str())
+                            .unwrap_or("Subscription inactive")
+                            .to_string(),
+                    ));
                 }
             }
         }
