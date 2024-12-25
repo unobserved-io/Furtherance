@@ -83,7 +83,11 @@ use iced_aw::{
 };
 use iced_fonts::{bootstrap::icon_to_char, Bootstrap, BOOTSTRAP_FONT};
 use itertools::Itertools;
-use notify_rust::{Notification, Timeout};
+use notify_rust::{
+    Notification, 
+    Timeout, 
+    Hint::{SuppressSound},
+};
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
 use regex::Regex;
@@ -200,6 +204,7 @@ pub enum Message {
     SettingsPomodoroExtendedBreaksToggled(bool),
     SettingsPomodoroExtendedBreakIntervalChanged(u16),
     SettingsPomodoroExtendedBreakLengthChanged(i64),
+    SettingsPomodoroNotificationAlarmSoundToggled(bool),
     SettingsPomodoroLengthChanged(i64),
     SettingsPomodoroSnoozeLengthChanged(i64),
     SettingsPomodoroToggled(bool),
@@ -1657,6 +1662,11 @@ impl Furtherance {
                         .num_seconds(),
                 );
             }
+            Message::SettingsPomodoroNotificationAlarmSoundToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_pomodoro_notification_alarm_sound(&new_value) {
+                    eprintln!("Failed to change pomodoro_notification_alarm_sound in settings: {}", e);
+                }
+            }
             Message::SettingsReminderIntervalChanged(new_value) => {
                 if let Err(e) = self
                     .fur_settings
@@ -1675,7 +1685,7 @@ impl Furtherance {
             }
             Message::ShowReminderNotification => {
                 if !self.timer_is_running {
-                    show_notification(NotificationType::Reminder, &self.localization);
+                    show_notification(NotificationType::Reminder, &self.localization, self.fur_settings.pomodoro_notification_alarm_sound);
                 }
             }
             Message::SettingsServerChoiceSelected(new_value) => {
@@ -1856,12 +1866,13 @@ impl Furtherance {
                         // Check if idle or other alert is being displayed so as not to replace it
                         if self.displayed_alert.is_none() {
                             if self.pomodoro.on_break {
-                                show_notification(NotificationType::BreakOver, &self.localization);
+                                show_notification(NotificationType::BreakOver, &self.localization, self.fur_settings.pomodoro_notification_alarm_sound);
                                 self.displayed_alert = Some(FurAlert::PomodoroBreakOver);
                             } else {
                                 show_notification(
                                     NotificationType::PomodoroOver,
                                     &self.localization,
+                                    self.fur_settings.pomodoro_notification_alarm_sound,
                                 );
                                 self.displayed_alert = Some(FurAlert::PomodoroOver);
                             }
@@ -1886,7 +1897,7 @@ impl Furtherance {
                         {
                             // User is back - show idle message
                             self.idle.notified = true;
-                            show_notification(NotificationType::Idle, &self.localization);
+                            show_notification(NotificationType::Idle, &self.localization, self.fur_settings.pomodoro_notification_alarm_sound);
                             self.displayed_alert = Some(FurAlert::Idle);
                         }
                     }
@@ -3468,6 +3479,15 @@ impl Furtherance {
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("pomodoro-timer", None)),
+                            row![
+                                text(self.localization.get_message("notification_alarm_sound", None)),
+                                toggler(self.fur_settings.pomodoro_notification_alarm_sound)
+                                    .on_toggle(Message::SettingsPomodoroNotificationAlarmSoundToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style)
+                            ]
+                            .spacing(10)
+                            .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("countdown-timer", None)),
                                 toggler(self.fur_settings.pomodoro)
@@ -5374,25 +5394,31 @@ fn has_max_two_decimals(input: &str) -> bool {
     }
 }
 
-fn show_notification(notification_type: NotificationType, localization: &Localization) {
+fn show_notification(notification_type: NotificationType, localization: &Localization, notification_alarm_sound: bool) {
     let heading: String;
     let details: String;
+    let has_sound: bool;
+
     match notification_type {
         NotificationType::PomodoroOver => {
             heading = localization.get_message("pomodoro-over-title", None);
             details = localization.get_message("pomodoro-over-notification-body", None);
+            has_sound = true;
         }
         NotificationType::BreakOver => {
             heading = localization.get_message("break-over-title", None);
             details = localization.get_message("break-over-description", None);
+            has_sound = true;
         }
         NotificationType::Idle => {
             heading = localization.get_message("idle-notification-title", None);
             details = localization.get_message("idle-notification-body", None);
+            has_sound = false;
         }
         NotificationType::Reminder => {
             heading = localization.get_message("track-your-time", None);
             details = localization.get_message("did-you-forget", None);
+            has_sound = false;
         }
     }
 
@@ -5400,6 +5426,8 @@ fn show_notification(notification_type: NotificationType, localization: &Localiz
         .summary(&heading)
         .body(&details)
         .appname("Furtherance")
+        .sound_name(if has_sound && notification_alarm_sound {"alarm-clock-elapsed"} else {""})
+        .hint(SuppressSound(!has_sound || !notification_alarm_sound))
         .timeout(Timeout::Milliseconds(6000))
         .show()
     {

@@ -95,6 +95,7 @@ days-to-show = Días a mostrar
 
 ### Pomodoro Settings
 pomodoro-timer = Temporizador Pomodoro
+notification_alarm_sound = Sonido de alarma de notificación
 countdown-timer = Temporizador de cuenta regresiva
 timer-length = Duración del temporizador
 break-length = Duración del descanso

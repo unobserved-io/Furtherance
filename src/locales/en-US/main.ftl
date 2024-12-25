@@ -102,6 +102,7 @@ reminder-interval = Minutes between reminders
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro timer
+notification_alarm_sound = Notification alarm sound
 countdown-timer = Countdown timer
 timer-length = Timer length
 break-length = Break length

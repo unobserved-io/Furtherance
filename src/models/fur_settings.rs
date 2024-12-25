@@ -47,6 +47,7 @@ pub struct FurSettings {
     pub pomodoro_extended_break_length: i64,
     pub pomodoro_length: i64,
     pub pomodoro_snooze_length: i64,
+    pub pomodoro_notification_alarm_sound: bool,
     pub show_chart_average_earnings: bool,
     pub show_chart_average_time: bool,
     pub show_chart_breakdown_by_selection: bool,
@@ -89,6 +90,7 @@ impl Default for FurSettings {
             pomodoro_extended_break_length: 25,
             pomodoro_length: 25,
             pomodoro_snooze_length: 5,
+            pomodoro_notification_alarm_sound: true,
             show_chart_average_earnings: true,
             show_chart_average_time: true,
             show_chart_breakdown_by_selection: true,
@@ -254,6 +256,11 @@ impl FurSettings {
 
     pub fn change_pomodoro_snooze_length(&mut self, value: &i64) -> Result<(), std::io::Error> {
         self.pomodoro_snooze_length = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_notification_alarm_sound(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.pomodoro_notification_alarm_sound = value.to_owned();
         self.save()
     }
 

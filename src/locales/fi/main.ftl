@@ -95,6 +95,7 @@ days-to-show = Näytettävät päivät
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro-ajastin
+notification_alarm_sound = Ilmoitusäänet hälytysääni
 countdown-timer = Lähtölaskenta-ajastin
 timer-length = Ajastimen pituus
 break-length = Tauon pituus
