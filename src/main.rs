@@ -32,6 +32,7 @@ mod helpers {
     pub mod color_utils;
     pub mod idle;
     pub mod midnight_subscription;
+    pub mod wayland_idle;
 }
 mod localization;
 mod models {

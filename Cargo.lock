@@ -1609,6 +1609,7 @@ dependencies = [
  "iced_aw",
  "iced_fonts",
  "itertools",
+ "lazy_static",
  "machine-uid",
  "notify-rust",
  "palette",
@@ -1629,6 +1630,9 @@ dependencies = [
  "toml",
  "user-idle",
  "uzers",
+ "wayland-client",
+ "wayland-protocols",
+ "wayland-protocols-plasma",
  "webbrowser",
  "winresource",
  "x11rb",
@@ -4991,9 +4995,23 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
+ "parking_lot 0.12.3",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "693d596312e88961bc67d7f1f97af8a70227d9f90c31bba5806eec004978d752"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.90",
 ]
 
 [[package]]

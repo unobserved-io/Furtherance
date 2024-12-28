@@ -20,11 +20,7 @@ use user_idle::UserIdle;
 
 #[cfg(target_os = "linux")]
 use {
-    std::path::Path,
-    std::sync::Arc,
-    tokio::runtime::Runtime,
-    uzers::get_current_uid,
-    zbus::{proxy, Connection},
+    std::path::Path, std::sync::Arc, tokio::runtime::Runtime, uzers::get_current_uid, zbus::proxy,
 };
 
 pub fn get_mac_windows_x11_idle_seconds() -> u64 {
@@ -42,9 +38,18 @@ pub fn get_idle_time() -> u64 {
         #[cfg(target_os = "linux")]
         "linux" => {
             if is_wayland() {
-                match get_wayland_idle_sync() {
-                    Ok(seconds) => seconds,
-                    Err(_) => 0,
+                if is_kde() {
+                    match get_wayland_idle_sync() {
+                        Ok(seconds) => seconds,
+                        Err(_) => 0,
+                    }
+                } else if is_gnome() {
+                    match get_gnome_idle_sync() {
+                        Ok(seconds) => seconds,
+                        Err(_) => 0,
+                    }
+                } else {
+                    0
                 }
             } else if is_x11() {
                 get_mac_windows_x11_idle_seconds()
@@ -82,15 +87,30 @@ trait GnomeIdleMonitor {
 }
 
 #[cfg(target_os = "linux")]
-fn get_wayland_idle_sync() -> Result<u64, Box<dyn std::error::Error>> {
+fn get_wayland_idle_sync() -> Result<u64, Box<dyn std::error::Error + Send + Sync>> {
     let rt = Arc::new(Runtime::new()?);
     rt.block_on(get_wayland_idle_seconds())
+}
+
+#[cfg(target_os = "linux")]
+async fn get_wayland_idle_seconds() -> Result<u64, Box<dyn std::error::Error + Send + Sync>> {
+    use crate::helpers::wayland_idle;
+
+    wayland_idle::initialize_wayland()?;
+
+    Ok(wayland_idle::get_idle_time())
+}
+
+#[cfg(target_os = "linux")]
+fn get_gnome_idle_sync() -> Result<u64, Box<dyn std::error::Error>> {
+    let rt = Arc::new(Runtime::new()?);
+    rt.block_on(get_gnome_idle_seconds())
         .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
 
 #[cfg(target_os = "linux")]
-async fn get_wayland_idle_seconds() -> zbus::Result<u64> {
-    let connection = Connection::session().await?;
+async fn get_gnome_idle_seconds() -> zbus::Result<u64> {
+    let connection = zbus::Connection::session().await?;
 
     // Try GNOME Mutter IdleMonitor
     if let Ok(proxy) = GnomeIdleMonitorProxy::new(&connection).await {
@@ -100,4 +120,29 @@ async fn get_wayland_idle_seconds() -> zbus::Result<u64> {
     }
 
     Err(zbus::Error::InvalidField)
+}
+
+#[cfg(target_os = "linux")]
+pub fn is_kde() -> bool {
+    if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
+        return desktop.to_uppercase().contains("KDE");
+    }
+    false
+}
+
+#[cfg(target_os = "linux")]
+fn is_gnome() -> bool {
+    if let Ok(xdg_current_desktop) = env::var("XDG_CURRENT_DESKTOP") {
+        if xdg_current_desktop.to_lowercase().contains("gnome") {
+            return true;
+        }
+    }
+
+    if let Ok(gdm_session) = env::var("GDMSESSION") {
+        if gdm_session.to_lowercase().contains("gnome") {
+            return true;
+        }
+    }
+
+    false
 }
