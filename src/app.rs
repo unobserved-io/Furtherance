@@ -36,7 +36,6 @@ use crate::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle,
         midnight_subscription::MidnightSubscription,
-        wayland_idle,
     },
     localization::Localization,
     models::{
@@ -92,6 +91,8 @@ use rfd::FileDialog;
 use tokio::time;
 use webbrowser;
 
+#[cfg(target_os = "linux")]
+use crate::helpers::wayland_idle;
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
 
