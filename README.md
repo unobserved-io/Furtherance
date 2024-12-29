@@ -10,7 +10,7 @@ It allows you to track time spent on different activities without worrying about
 * Track your time spent on tasks with an associated project, rate, and tags.
 * Pomodoro timer with breaks and periodic larger breaks.
 * Cross-platform! Use it on Linux, Mac, and Windows.
-* Sync your task history across all of your devices with [Furtherance Sync](furtherance.com/sync).
+* Sync your task history across all of your devices with [Furtherance Sync](https://github.com/unobserved-io/furtherance-sync).
 * Tasks can be edited after they are created.
 * Settings to customize the view and defaults to your liking.
 * Features can be added! Just open an issue.
