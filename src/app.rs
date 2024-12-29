@@ -86,7 +86,6 @@ use itertools::Itertools;
 use notify_rust::{
     Notification, 
     Timeout, 
-    Hint::{SuppressSound},
 };
 use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
@@ -5441,7 +5440,6 @@ fn show_notification(notification_type: NotificationType, localization: &Localiz
         .body(&details)
         .appname("Furtherance")
         .sound_name(if has_sound && notification_alarm_sound {"alarm-clock-elapsed"} else {""})
-        .hint(SuppressSound(!has_sound || !notification_alarm_sound))
         .timeout(Timeout::Milliseconds(6000))
         .show()
     {
