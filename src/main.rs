@@ -32,6 +32,8 @@ mod helpers {
     pub mod color_utils;
     pub mod idle;
     pub mod midnight_subscription;
+    #[cfg(target_os = "linux")]
+    pub mod wayland_idle;
 }
 mod localization;
 mod models {

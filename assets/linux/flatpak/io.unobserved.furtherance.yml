@@ -13,6 +13,7 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   - --talk-name=org.gnome.Mutter.IdleMonitor
   - --filesystem=xdg-documents
+  - --share=network
 build-options:
   append-path: /usr/lib/sdk/rust-stable/bin
   build-args:

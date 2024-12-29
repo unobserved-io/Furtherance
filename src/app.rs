@@ -34,7 +34,7 @@ use crate::{
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
-        idle::get_idle_time,
+        idle,
         midnight_subscription::MidnightSubscription,
     },
     localization::Localization,
@@ -95,6 +95,8 @@ use rfd::FileDialog;
 use tokio::time;
 use webbrowser;
 
+#[cfg(target_os = "linux")]
+use crate::helpers::wayland_idle;
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
 
@@ -1883,7 +1885,7 @@ impl Furtherance {
                     if self.fur_settings.notify_on_idle
                         && self.displayed_alert != Some(FurAlert::PomodoroOver)
                     {
-                        let idle_time = get_idle_time() as i64;
+                        let idle_time = idle::get_idle_time() as i64;
                         if idle_time >= self.fur_settings.chosen_idle_time * 60
                             && !self.idle.reached
                         {
@@ -5095,6 +5097,13 @@ fn start_timer(state: &mut Furtherance) {
     if state.fur_settings.pomodoro && !state.pomodoro.on_break {
         state.pomodoro.sessions += 1;
     }
+
+    #[cfg(target_os = "linux")]
+    if idle::is_kde() {
+        if let Err(e) = wayland_idle::start_idle_monitor() {
+            eprintln!("Failed to start idle monitor: {}", e);
+        }
+    }
 }
 
 fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
@@ -5114,6 +5123,11 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
 
     delete_autosave();
     reset_timer(state);
+
+    #[cfg(target_os = "linux")]
+    if idle::is_kde() {
+        wayland_idle::stop_idle_monitor();
+    }
 }
 
 fn reset_timer(state: &mut Furtherance) {
