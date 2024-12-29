@@ -95,6 +95,7 @@ days-to-show = Anzuzeigende Tage
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro-Timer
+notification-alarm-sound = Benachrichtigungs-Alarmsound
 countdown-timer = Countdown-Timer
 timer-length = Timer-Länge
 break-length = Pausenlänge

@@ -46,6 +46,7 @@ pub struct FurSettings {
     pub pomodoro_extended_break_interval: u16,
     pub pomodoro_extended_break_length: i64,
     pub pomodoro_length: i64,
+    pub pomodoro_notification_alarm_sound: bool,
     pub pomodoro_snooze_length: i64,
     pub show_chart_average_earnings: bool,
     pub show_chart_average_time: bool,
@@ -88,6 +89,7 @@ impl Default for FurSettings {
             pomodoro_extended_break_interval: 4,
             pomodoro_extended_break_length: 25,
             pomodoro_length: 25,
+            pomodoro_notification_alarm_sound: true,
             pomodoro_snooze_length: 5,
             show_chart_average_earnings: true,
             show_chart_average_time: true,
@@ -137,6 +139,7 @@ impl FurSettings {
         builder = builder.set_default("last_sync", "0")?;
         builder = builder.set_default("needs_full_sync", "true")?;
         builder = builder.set_default("notify_of_sync", "true")?;
+        builder = builder.set_default("pomodoro_notification_alarm_sound", "true")?;
 
         let config = builder.build()?;
         let settings: FurSettings = config.try_deserialize()?;
@@ -254,6 +257,14 @@ impl FurSettings {
 
     pub fn change_pomodoro_snooze_length(&mut self, value: &i64) -> Result<(), std::io::Error> {
         self.pomodoro_snooze_length = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_pomodoro_notification_alarm_sound(
+        &mut self,
+        value: &bool,
+    ) -> Result<(), std::io::Error> {
+        self.pomodoro_notification_alarm_sound = value.to_owned();
         self.save()
     }
 

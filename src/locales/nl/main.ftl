@@ -96,6 +96,7 @@ days-to-show = Te tonen dagen
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro-tijdklok
+notification-alarm-sound = Meldingsalarmgeluid
 countdown-timer = Aftelklok
 timer-length = Tijdklokduur
 break-length = Pauzeduur

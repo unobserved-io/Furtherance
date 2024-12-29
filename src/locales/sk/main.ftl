@@ -95,6 +95,7 @@ days-to-show = Počet dní na zobrazenie
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro časovač
+notification-alarm-sound = Zvuk alarmu notifikácie
 countdown-timer = Odpočítavanie
 timer-length = Dĺžka časovača
 break-length = Dĺžka prestávky
