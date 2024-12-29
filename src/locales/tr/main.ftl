@@ -95,7 +95,7 @@ days-to-show = Gösterilecek gün sayısı
 
 ### Pomodoro Settings
 pomodoro-timer = Pomodoro zamanlayıcısı
-notification_alarm_sound = Bildirim alarm sesi
+notification-alarm-sound = Bildirim alarm sesi
 countdown-timer = Geri sayım zamanlayıcısı
 timer-length = Zamanlayıcı uzunluğu
 break-length = Mola uzunluğu
