@@ -54,7 +54,6 @@ Besides helping to pay the bills, tips show me people want me to continue spendi
 * [GitHub](https://github.com/sponsors/rickykresslein)
 * [Patreon](https://www.patreon.com/unobserved)
 * [Ko-fi](https://ko-fi.com/unobserved)
-* Lightning: unobserved [at] getalby [dot com]
 
 Thank you so much!
 
