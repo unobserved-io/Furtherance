@@ -2658,11 +2658,6 @@ impl Furtherance {
                     self.current_view == FurView::Timer
                 ),
                 nav_button(
-                    self.localization.get_message("history", None),
-                    FurView::History,
-                    self.current_view == FurView::History
-                ),
-                nav_button(
                     self.localization.get_message("report", None),
                     FurView::Report,
                     self.current_view == FurView::Report
@@ -2719,28 +2714,73 @@ impl Furtherance {
         ];
 
         // MARK: TIMER
-        let timer_view = column![
-            row![
-                button(text(icon_to_char(Bootstrap::ArrowRepeat)).font(BOOTSTRAP_FONT))
-                    .on_press_maybe(get_last_task_input(&self))
-                    .style(button::text),
-                horizontal_space().width(Length::Fill),
-                text(self.localization.get_message(
-                    "recorded-today",
-                    Some(&HashMap::from([(
-                        "time",
-                        FluentValue::from(get_todays_total_time(&self))
-                    )]))
-                )),
-            ],
-            vertical_space().height(Length::Fill),
-            text(&self.timer_text).size(80).style(|theme| {
-                if self.pomodoro.on_break {
-                    style::red_text(theme)
+        let mut all_history_rows: Column<'_, Message, Theme, Renderer> =
+            Column::new().spacing(8).padding(Padding {
+                top: 20.0,
+                right: 20.0,
+                bottom: 0.0,
+                left: 20.0,
+            });
+        // TODO: Move this add task button
+        // if self.inspector_view.is_none() {
+        //     all_history_rows = all_history_rows.push(row![
+        //         horizontal_space(),
+        //         button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+        //             .on_press(Message::AddNewTaskPressed)
+        //             .style(button::text),
+        //     ]);
+        // }
+        for (i, (date, task_groups)) in self.task_history.iter().rev().enumerate() {
+            let (total_time, total_earnings) = task_groups.iter().fold(
+                (0i64, 0f32),
+                |(accumulated_time, accumulated_earnings), group| {
+                    let group_time = group.total_time;
+                    let group_earnings = (group_time as f32 / 3600.0) * group.rate;
+
+                    (
+                        accumulated_time + group_time,
+                        accumulated_earnings + group_earnings,
+                    )
+                },
+            );
+            all_history_rows = all_history_rows.push(history_title_row(
+                date,
+                total_time,
+                total_earnings,
+                &self.fur_settings,
+                if i == 0 {
+                    Some((self.timer_is_running, &self.timer_text))
                 } else {
-                    text::Style::default()
-                }
-            }),
+                    None
+                },
+                &self.localization,
+            ));
+            for task_group in task_groups {
+                all_history_rows = all_history_rows.push(history_group_row(
+                    task_group,
+                    self.timer_is_running,
+                    &self.fur_settings,
+                    &self.localization,
+                ))
+            }
+        }
+
+        let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center);
+
+        timer_view = timer_view.push_maybe(if self.task_history.is_empty() {
+            Some(vertical_space())
+        } else {
+            None
+        });
+
+        timer_view = timer_view.push(text(&self.timer_text).size(80).style(|theme| {
+            if self.pomodoro.on_break {
+                style::red_text(theme)
+            } else {
+                text::Style::default()
+            }
+        }));
+        timer_view = timer_view.push(
             column![
                 row![
                     text_input(
@@ -2795,64 +2835,24 @@ impl Furtherance {
                     .align_y(Alignment::Center)
                     .spacing(10)
                 } else {
-                    row![button("").style(button::text)] // Button to match height
+                    row![]
                 },
             ]
             .align_x(Alignment::Center)
-            .spacing(15),
-            vertical_space().height(Length::Fill),
-        ]
-        .align_x(Alignment::Center)
-        .padding(20);
+            .spacing(15)
+            .padding(Padding {
+                top: 20.0,
+                right: 20.0,
+                bottom: 0.0,
+                left: 20.0,
+            }),
+        );
 
-        // MARK: HISTORY
-        let mut all_history_rows: Column<'_, Message, Theme, Renderer> =
-            Column::new().spacing(8).padding(20);
-        if self.inspector_view.is_none() {
-            all_history_rows = all_history_rows.push(row![
-                horizontal_space(),
-                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
-                    .on_press(Message::AddNewTaskPressed)
-                    .style(button::text),
-            ]);
-        }
-        for (i, (date, task_groups)) in self.task_history.iter().rev().enumerate() {
-            let (total_time, total_earnings) = task_groups.iter().fold(
-                (0i64, 0f32),
-                |(accumulated_time, accumulated_earnings), group| {
-                    let group_time = group.total_time;
-                    let group_earnings = (group_time as f32 / 3600.0) * group.rate;
-
-                    (
-                        accumulated_time + group_time,
-                        accumulated_earnings + group_earnings,
-                    )
-                },
-            );
-            all_history_rows = all_history_rows.push(history_title_row(
-                date,
-                total_time,
-                total_earnings,
-                &self.fur_settings,
-                if i == 0 {
-                    Some((self.timer_is_running, &self.timer_text))
-                } else {
-                    None
-                },
-                &self.localization,
-            ));
-            for task_group in task_groups {
-                all_history_rows = all_history_rows.push(history_group_row(
-                    task_group,
-                    self.timer_is_running,
-                    &self.fur_settings,
-                    &self.localization,
-                ))
-            }
-        }
-        let history_view = column![Scrollable::new(all_history_rows)
-            .width(Length::FillPortion(3)) // TODO: Adjust?
-            .height(Length::Fill)];
+        timer_view = timer_view.push_maybe(if self.task_history.is_empty() {
+            Some(Scrollable::new(column![]).height(Length::Fill))
+        } else {
+            Some(Scrollable::new(all_history_rows).height(Length::Fill))
+        });
 
         // MARK: REPORT
         let mut charts_column = Column::new().align_x(Alignment::Center);
@@ -4448,7 +4448,6 @@ impl Furtherance {
             match self.current_view {
                 FurView::Shortcuts => shortcuts_view,
                 FurView::Timer => timer_view,
-                FurView::History => history_view,
                 FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },
@@ -5326,36 +5325,6 @@ pub fn split_task_input(input: &str) -> (String, String, String, f32) {
     let rate: f32 = rate_string.parse().unwrap_or(0.0);
 
     (name, project, tags, rate)
-}
-
-fn get_last_task_input(state: &Furtherance) -> Option<Message> {
-    if state.timer_is_running {
-        None
-    } else {
-        if let Some((_, first_gorup)) = state.task_history.last_key_value() {
-            if let Some(last_run_task) = first_gorup.first() {
-                let task_input_builder = last_run_task.to_string();
-                Some(Message::RepeatLastTaskPressed(task_input_builder))
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-}
-
-fn get_todays_total_time(state: &Furtherance) -> String {
-    let today = Local::now().date_naive();
-    let mut total_seconds: i64 = if let Some(groups) = state.task_history.get(&today) {
-        groups.iter().map(|group| group.total_time).sum()
-    } else {
-        0
-    };
-    if state.fur_settings.dynamic_total && state.timer_is_running {
-        total_seconds = combine_timer_with_seconds(&state.timer_text, total_seconds);
-    }
-    seconds_to_formatted_duration(total_seconds, state.fur_settings.show_seconds)
 }
 
 fn seconds_to_formatted_duration(total_seconds: i64, show_seconds: bool) -> String {
