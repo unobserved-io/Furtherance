@@ -19,6 +19,7 @@
 pub mod app;
 mod autosave;
 mod charts {
+    pub mod all_charts;
     pub mod average_earnings_chart;
     pub mod average_time_chart;
     pub mod earnings_chart;

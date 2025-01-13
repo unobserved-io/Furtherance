@@ -123,7 +123,6 @@ pub struct Furtherance {
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
-    theme: FurTheme,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
     timer_text: String,
@@ -146,7 +145,6 @@ pub enum Message {
     CancelStartDate,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
-    ChangeTheme,
     ChartTaskPropertyKeySelected(FurTaskProperty),
     ChartTaskPropertyValueSelected(String),
     ChooseCurrentTaskStartTime,
@@ -225,7 +223,6 @@ pub enum Message {
     SettingsShowSecondsToggled(bool),
     SettingsShowDailyTimeTotalToggled(bool),
     SettingsTabSelected(TabId),
-    SettingsThemeSelected(FurDarkLight),
     ShortcutPressed(String),
     ShowAlert(FurAlert),
     StartStopPressed,
@@ -337,7 +334,6 @@ impl Furtherance {
             show_timer_start_picker: false,
             task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
-            theme: FurTheme::Light,
             timer_is_running: false,
             timer_start_time: Local::now(),
             timer_text: "0:00:00".to_string(),
@@ -345,7 +341,6 @@ impl Furtherance {
             task_to_edit: None,
         };
 
-        furtherance.theme = get_system_theme(furtherance.fur_settings.theme);
         furtherance.timer_text = get_timer_text(&furtherance, 0);
 
         if autosave_exists() {
@@ -392,18 +387,18 @@ impl Furtherance {
     }
 
     pub fn theme(&self) -> Theme {
-        self.theme.clone().to_theme()
+        match dark_light::detect() {
+            Ok(mode) => match mode {
+                dark_light::Mode::Light | dark_light::Mode::Unspecified => {
+                    FurTheme::Light.to_theme()
+                }
+                dark_light::Mode::Dark => FurTheme::Dark.to_theme(),
+            },
+            Err(_) => FurTheme::Light.to_theme(),
+        }
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        // Live dark-light theme switching does not currently work on macOS
-        #[cfg(not(target_os = "macos"))]
-        let theme_watcher = if self.fur_settings.theme == FurDarkLight::Auto {
-            Some(iced::time::every(time::Duration::from_secs(10)).map(|_| Message::ChangeTheme))
-        } else {
-            None
-        };
-
         let show_reminder_notification = if self.fur_settings.notify_reminder {
             Some(
                 iced::time::every(time::Duration::from_secs(
@@ -443,8 +438,6 @@ impl Furtherance {
             subscription::from_recipe(MidnightSubscription),
             show_reminder_notification.unwrap_or(Subscription::none()),
             timed_sync.unwrap_or(Subscription::none()),
-            #[cfg(not(target_os = "macos"))]
-            theme_watcher.unwrap_or(Subscription::none()),
         ])
     }
 
@@ -559,7 +552,6 @@ impl Furtherance {
                     }
                 }
             }
-            Message::ChangeTheme => self.theme = get_system_theme(self.fur_settings.theme),
             Message::ChartTaskPropertyKeySelected(new_property) => {
                 self.report.set_picked_task_property_key(new_property);
             }
@@ -1799,12 +1791,6 @@ impl Furtherance {
                 }
             }
             Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
-            Message::SettingsThemeSelected(selected_theme) => {
-                if let Err(e) = self.fur_settings.change_theme(&selected_theme) {
-                    eprintln!("Failed to change theme in settings: {}", e);
-                }
-                self.theme = get_system_theme(self.fur_settings.theme)
-            }
             Message::ShortcutPressed(shortcut_task_input) => {
                 self.task_input = shortcut_task_input;
                 self.inspector_view = None;
@@ -3292,26 +3278,6 @@ impl Furtherance {
                             ]
                             .spacing(10)
                             .align_y(Alignment::Center),
-                            row![
-                                text(self.localization.get_message("theme", None)),
-                                pick_list(
-                                    &FurDarkLight::ALL[..],
-                                    Some(self.fur_settings.theme),
-                                    Message::SettingsThemeSelected,
-                                ),
-                            ]
-                            .spacing(10)
-                            .align_y(Alignment::Center),
-                            if cfg!(target_os = "macos")
-                                && self.fur_settings.theme == FurDarkLight::Auto
-                            {
-                                row![
-                                    text(self.localization.get_message("mac-theme-warning", None))
-                                        .style(style::red_text)
-                                ]
-                            } else {
-                                row![].height(Length::Shrink)
-                            },
                             row![
                                 text(
                                     self.localization
@@ -5482,21 +5448,6 @@ fn parse_timer_text_to_seconds(timer_text: &str) -> i64 {
         }
         1 => parts[0].parse().unwrap_or(0),
         _ => 0,
-    }
-}
-
-fn get_system_theme(theme_setting: FurDarkLight) -> FurTheme {
-    if theme_setting == FurDarkLight::Auto {
-        match dark_light::detect() {
-            dark_light::Mode::Light | dark_light::Mode::Default => FurTheme::Light,
-            dark_light::Mode::Dark => FurTheme::Dark,
-        }
-    } else {
-        match theme_setting {
-            FurDarkLight::Light => FurTheme::Light,
-            FurDarkLight::Dark => FurTheme::Dark,
-            _ => FurTheme::Light,
-        }
     }
 }
 

@@ -27,6 +27,8 @@ use plotters_backend::DrawingBackend;
 use plotters_iced::{plotters_backend, Chart, ChartWidget};
 use std::collections::BTreeMap;
 
+use super::all_charts;
+
 #[derive(Clone, Debug)]
 pub struct SelectionTimeRecordedChart {
     date_time: BTreeMap<NaiveDate, i64>,
@@ -69,7 +71,9 @@ impl Chart<Message> for SelectionTimeRecordedChart {
                         .margin(30)
                         .caption(
                             localization.get_message("time-recorded-for-selection-title", None),
-                            ("sans-serif", 15).into_font().color(&light_dark_color()),
+                            ("sans-serif", 15)
+                                .into_font()
+                                .color(&all_charts::light_dark_color()),
                         )
                         .x_label_area_size(30)
                         .y_label_area_size(30)
@@ -81,17 +85,23 @@ impl Chart<Message> for SelectionTimeRecordedChart {
 
                     chart
                         .configure_mesh()
-                        .label_style(&light_dark_color())
-                        .x_label_style(("sans-serif", 12).into_font().color(&light_dark_color()))
+                        .label_style(&all_charts::light_dark_color())
+                        .x_label_style(
+                            ("sans-serif", 12)
+                                .into_font()
+                                .color(&all_charts::light_dark_color()),
+                        )
                         .x_labels(MAX_X_VALUES)
                         .y_label_style(
                             ("sans-serif", 12)
                                 .into_font()
-                                .color(&light_dark_color())
+                                .color(&all_charts::light_dark_color())
                                 .transform(FontTransform::Rotate90),
                         )
                         .y_label_formatter(&|y| seconds_to_hms(y))
-                        .axis_style(ShapeStyle::from(light_dark_color()).stroke_width(1))
+                        .axis_style(
+                            ShapeStyle::from(all_charts::light_dark_color()).stroke_width(1),
+                        )
                         .draw()
                         .unwrap();
 
@@ -114,13 +124,6 @@ fn time_per_day(tasks: &[&FurTask]) -> BTreeMap<NaiveDate, i64> {
             task.total_time_in_seconds();
     }
     time_by_day
-}
-
-fn light_dark_color() -> RGBColor {
-    match dark_light::detect() {
-        dark_light::Mode::Light | dark_light::Mode::Default => BLACK,
-        dark_light::Mode::Dark => WHITE,
-    }
 }
 
 fn seconds_to_hms(total_seconds: &i64) -> String {

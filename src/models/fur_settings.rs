@@ -14,10 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{
-    constants::DEBUG_MODE,
-    view_enums::{FurDarkLight, FurView},
-};
+use crate::{constants::DEBUG_MODE, view_enums::FurView};
 
 use config::{Config, ConfigError, File};
 use directories::ProjectDirs;
@@ -63,7 +60,6 @@ pub struct FurSettings {
     pub show_project: bool,
     pub show_seconds: bool,
     pub show_tags: bool,
-    pub theme: FurDarkLight,
 }
 
 impl Default for FurSettings {
@@ -106,7 +102,6 @@ impl Default for FurSettings {
             show_project: true,
             show_seconds: true,
             show_tags: true,
-            theme: FurDarkLight::Auto,
         }
     }
 }
@@ -132,7 +127,6 @@ impl FurSettings {
 
         // Add new settings
         builder = builder.set_default("first_run", "true")?;
-        builder = builder.set_default("theme", "Auto")?;
         builder = builder.set_default("notify_reminder", "false")?;
         builder = builder.set_default("notify_reminder_interval", "10")?;
         builder = builder.set_default("show_chart_selection_earnings", "true")?;
@@ -352,11 +346,6 @@ impl FurSettings {
 
     pub fn change_show_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_tags = value.to_owned();
-        self.save()
-    }
-
-    pub fn change_theme(&mut self, value: &FurDarkLight) -> Result<(), std::io::Error> {
-        self.theme = value.to_owned();
         self.save()
     }
 

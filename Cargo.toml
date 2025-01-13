@@ -40,7 +40,7 @@ blake3 = "1.5"
 config = "0.14"
 chrono = { version = "0.4", features = ["alloc", "serde"] }
 csv = "1.3"
-dark-light = "1.1.1"
+dark-light = "2.0"
 directories = "5.0"
 fluent = "0.16"
 futures-core = "0.3"
@@ -96,9 +96,6 @@ wayland-client = "0.31"
 wayland-protocols = { version = "0.32", features = ["client"] }
 wayland-protocols-plasma = "0.3"
 lazy_static = "1.5"
-
-[patch.crates-io]
-dark-light = { git = "https://github.com/frewsxcv/rust-dark-light", rev = "3eb3e93dd0fa30733c3e93082dd9517fb580ae95" }
 
 [build-dependencies]
 winresource = "0.1"
