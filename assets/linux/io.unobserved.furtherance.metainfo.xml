@@ -49,6 +49,18 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="25.1.2" date="2025-01-14">
+      <description translate="no">
+        <ul>
+          <li>Combined history and timer views</li>
+          <li>Added sound to pomodoro and idle notifications</li>
+          <li>Improved dark/light theme switching</li>
+          <li>Now supports idle detection for KDE on Wayland</li>
+          <li>Fixed release date in 25.1.0</li>
+          <li>Made metainfo xml Flatpak compliant</li>
+        </ul>
+      </description>
+    </release>
     <release version="25.1.1" date="2025-01-14">
       <description translate="no">
         <ul>
