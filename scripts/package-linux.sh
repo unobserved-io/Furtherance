@@ -27,7 +27,7 @@ package() {
   build
 
   install -Dm755 $BINARY -t $ARCHIVE_DIR/bin
-  install -Dm644 $ASSETS_DIR/io.unobserved.furtherance.appdata.xml -t $ARCHIVE_DIR/share/metainfo
+  install -Dm644 $ASSETS_DIR/io.unobserved.furtherance.metainfo.xml -t $ARCHIVE_DIR/share/metainfo
   install -Dm644 $ASSETS_DIR/io.unobserved.furtherance.desktop -t $ARCHIVE_DIR/share/applications
   cp -r $ASSETS_DIR/icon/io.unobserved.furtherance.svg $ARCHIVE_DIR/share/icons/hicolor/scalable/apps/
 
