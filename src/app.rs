@@ -2707,15 +2707,6 @@ impl Furtherance {
                 bottom: 0.0,
                 left: 20.0,
             });
-        // TODO: Move this add task button
-        // if self.inspector_view.is_none() {
-        //     all_history_rows = all_history_rows.push(row![
-        //         horizontal_space(),
-        //         button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
-        //             .on_press(Message::AddNewTaskPressed)
-        //             .style(button::text),
-        //     ]);
-        // }
         for (i, (date, task_groups)) in self.task_history.iter().rev().enumerate() {
             let (total_time, total_earnings) = task_groups.iter().fold(
                 (0i64, 0f32),
@@ -2752,6 +2743,16 @@ impl Furtherance {
         }
 
         let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center);
+        timer_view = timer_view.push_maybe(if self.inspector_view.is_none() {
+            Some(row![
+                horizontal_space(),
+                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+                    .on_press(Message::AddNewTaskPressed)
+                    .style(button::text),
+            ])
+        } else {
+            None
+        });
 
         timer_view = timer_view.push_maybe(if self.task_history.is_empty() {
             Some(vertical_space())
