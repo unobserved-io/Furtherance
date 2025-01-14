@@ -1695,7 +1695,7 @@ dependencies = [
 
 [[package]]
 name = "furtherance"
-version = "24.12.0"
+version = "25.1.0"
 dependencies = [
  "aes-gcm",
  "async-stream",
