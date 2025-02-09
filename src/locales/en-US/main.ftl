@@ -15,11 +15,13 @@ open-database-title = Open Furtherance Database
 ## General UI
 shortcuts = Shortcuts
 timer = Timer
+todo = Todo
 history = History
 report = Report
 settings = Settings
 today = Today
 yesterday = Yesterday
+tomorrow = Tomorrow
 cancel = Cancel
 save = Save
 delete = Delete

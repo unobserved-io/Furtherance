@@ -46,6 +46,7 @@ use crate::{
         fur_shortcut::{EncryptedShortcut, FurShortcut},
         fur_task::{EncryptedTask, FurTask},
         fur_task_group::FurTaskGroup,
+        fur_todo::FurTodo,
         fur_user::{FurUser, FurUserFields},
         group_to_edit::GroupToEdit,
         shortcut_to_add::ShortcutToAdd,
@@ -60,10 +61,13 @@ use crate::{
         sync::{sync_with_server, SyncResponse},
     },
     style::{self, FurTheme},
+    ui::todos,
     view_enums::*,
 };
-use chrono::{offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime};
-use chrono::{TimeDelta, TimeZone, Timelike};
+use chrono::{
+    offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeDelta,
+    TimeZone, Timelike,
+};
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use fluent::FluentValue;
 use iced::{
@@ -123,11 +127,12 @@ pub struct Furtherance {
     show_timer_start_picker: bool,
     task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
+    task_to_add: Option<TaskToAdd>,
+    task_to_edit: Option<TaskToEdit>,
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
     timer_text: String,
-    task_to_add: Option<TaskToAdd>,
-    task_to_edit: Option<TaskToEdit>,
+    todos: BTreeMap<chrono::NaiveDate, Vec<FurTodo>>,
 }
 
 #[derive(Debug, Clone)]
@@ -160,11 +165,13 @@ pub enum Message {
     DeleteShortcutFromContext(String),
     DeleteTasks,
     DeleteTasksFromContext(Vec<String>),
+    DeleteTodo(String),
     EditGroup(FurTaskGroup),
     EditShortcutPressed(FurShortcut),
     EditShortcutTextChanged(String, EditTaskProperty),
     EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
+    EditTodo(FurTodo),
     EnterPressedInTaskInput,
     EnterPressedInSyncFields,
     ExportCsvPressed,
@@ -334,11 +341,12 @@ impl Furtherance {
             show_timer_start_picker: false,
             task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
+            task_to_add: None,
+            task_to_edit: None,
             timer_is_running: false,
             timer_start_time: Local::now(),
             timer_text: "0:00:00".to_string(),
-            task_to_add: None,
-            task_to_edit: None,
+            todos: BTreeMap::<chrono::NaiveDate, Vec<FurTodo>>::new(),
         };
 
         furtherance.timer_text = get_timer_text(&furtherance, 0);
@@ -364,6 +372,8 @@ impl Furtherance {
         }
 
         furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
+
+        furtherance.todos = todos::get_all_todos();
 
         let user = furtherance.fur_user.clone();
         (
@@ -738,6 +748,7 @@ impl Furtherance {
                     |msg| msg,
                 );
             }
+            Message::DeleteTodo(uid) => {}
             Message::EditGroup(task_group) => {
                 if task_group.tasks.len() == 1 {
                     if let Some(task_to_edit) = task_group.tasks.first() {
@@ -1102,6 +1113,7 @@ impl Furtherance {
                 }
                 _ => {}
             },
+            Message::EditTodo(todo_to_edit) => {}
             Message::EnterPressedInTaskInput => {
                 if !self.task_input.is_empty() {
                     if !self.timer_is_running {
@@ -2644,6 +2656,11 @@ impl Furtherance {
                     self.current_view == FurView::Timer
                 ),
                 nav_button(
+                    self.localization.get_message("todo", None),
+                    FurView::Todos,
+                    self.current_view == FurView::Todos
+                ),
+                nav_button(
                     self.localization.get_message("report", None),
                     FurView::Report,
                     self.current_view == FurView::Report
@@ -2840,6 +2857,43 @@ impl Furtherance {
         } else {
             Some(Scrollable::new(all_history_rows).height(Length::Fill))
         });
+
+        // MARK: TODOS
+        let mut all_todo_rows: Column<'_, Message, Theme, Renderer> =
+            Column::new().spacing(8).padding(Padding {
+                top: 20.0,
+                right: 20.0,
+                bottom: 0.0,
+                left: 20.0,
+            });
+        for (date, todos) in &self.todos {
+            all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
+            // TODO: If todos contains today's date, push that.
+            // If it contains tomorrow's date, push that
+            // Then push all other dates
+            for todo in todos {
+                all_todo_rows = all_todo_rows.push(todos::todo_row(
+                    todo,
+                    self.timer_is_running,
+                    &self.fur_settings,
+                    &self.localization,
+                ))
+            }
+        }
+
+        let mut todo_view: Column<'_, Message> = column![].align_x(Alignment::Center);
+        todo_view = todo_view.push_maybe(if self.inspector_view.is_none() {
+            Some(row![
+                horizontal_space(),
+                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+                    .on_press(Message::AddNewTaskPressed)
+                    .style(button::text),
+            ])
+        } else {
+            None
+        });
+
+        todo_view = todo_view.push(Scrollable::new(all_todo_rows).height(Length::Fill));
 
         // MARK: REPORT
         let mut charts_column = Column::new().align_x(Alignment::Center);
@@ -4415,6 +4469,7 @@ impl Furtherance {
             match self.current_view {
                 FurView::Shortcuts => shortcuts_view,
                 FurView::Timer => timer_view,
+                FurView::Todos => todo_view,
                 FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },

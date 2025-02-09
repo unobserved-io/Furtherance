@@ -22,6 +22,7 @@ use serde::{Deserialize, Serialize};
 pub enum FurView {
     Shortcuts,
     Timer,
+    Todos,
     Report,
     Settings,
 }
@@ -44,6 +45,7 @@ impl std::fmt::Display for FurView {
             match self {
                 FurView::Shortcuts => localization.get_message("shortcuts", None),
                 FurView::Timer => localization.get_message("timer", None),
+                FurView::Todos => localization.get_message("todo", None),
                 FurView::Report => localization.get_message("report", None),
                 FurView::Settings => localization.get_message("settings", None),
             }

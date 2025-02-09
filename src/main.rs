@@ -45,6 +45,7 @@ mod models {
     pub mod fur_shortcut;
     pub mod fur_task;
     pub mod fur_task_group;
+    pub mod fur_todo;
     pub mod fur_user;
     pub mod group_to_edit;
     pub mod shortcut_to_add;
@@ -61,6 +62,9 @@ pub mod server {
 mod style;
 mod tests {
     mod timer_tests;
+}
+pub mod ui {
+    pub mod todos;
 }
 mod view_enums;
 

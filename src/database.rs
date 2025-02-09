@@ -26,6 +26,7 @@ use std::time::Duration;
 
 use crate::models::fur_shortcut;
 use crate::models::fur_task;
+use crate::models::fur_todo::FurTodo;
 use crate::models::fur_user::FurUser;
 use crate::models::{
     fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task::FurTask,
@@ -145,6 +146,23 @@ pub fn db_init() -> Result<()> {
             access_token TEXT NOT NULL,
             refresh_token TEXT NOT NULL,
             server TEXT NOT NULL
+        )",
+        [],
+    )?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS todos (
+            id INTEGER PRIMARY KEY,
+            task TEXT NOT NULL,
+            project TEXT,
+            tags TEXT,
+            rate REAL,
+            currency TEXT,
+            date TIMESTAMP,
+            uid TEXT,
+            is_completed BOOLEAN DEFAULT 0,
+            is_deleted BOOLEAN DEFAULT 0,
+            last_updated INTEGER DEFAULT 0
         )",
         [],
     )?;
@@ -1315,4 +1333,36 @@ pub fn db_delete_all_credentials() -> Result<()> {
     conn.execute("DELETE FROM user", [])?;
 
     Ok(())
+}
+
+pub fn db_retrieve_todos_between_dates(
+    start_date: String,
+    end_date: String,
+) -> Result<Vec<FurTodo>> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt =
+        conn.prepare("SELECT * FROM todos WHERE date BETWEEN ?1 AND ?2 AND is_deleted = 0")?;
+
+    let mut rows = stmt.query(params![start_date, end_date])?;
+
+    let mut todo_vec: Vec<FurTodo> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_task = FurTodo {
+            task: row.get(1)?,
+            project: row.get(2)?,
+            tags: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5).unwrap_or(String::new()),
+            date: row.get(6)?,
+            uid: row.get(7)?,
+            is_completed: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
+        };
+        todo_vec.push(fur_task);
+    }
+
+    Ok(todo_vec)
 }
