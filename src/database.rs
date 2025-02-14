@@ -1366,3 +1366,81 @@ pub fn db_retrieve_todos_between_dates(
 
     Ok(todo_vec)
 }
+
+pub fn db_update_todo(todo: &FurTodo) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "UPDATE todos SET
+            task = ?1,
+            project = ?2,
+            tags = ?3,
+            rate = ?4,
+            currency = ?5,
+            date = ?6,
+            is_completed = ?7,
+            is_deleted = ?8,
+            last_updated = ?9
+        WHERE uid = ?10",
+        params![
+            todo.task,
+            todo.project,
+            todo.tags,
+            todo.rate,
+            todo.currency,
+            todo.date.to_rfc3339(),
+            todo.is_completed,
+            todo.is_deleted,
+            todo.last_updated,
+            todo.uid,
+        ],
+    )?;
+
+    Ok(())
+}
+
+pub fn db_insert_todo(todo: &FurTodo) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "INSERT INTO todos (
+            task,
+            project,
+            tags,
+            rate,
+            currency,
+            date,
+            uid,
+            is_completed,
+            is_deleted,
+            last_updated
+        ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+        params![
+            todo.task,
+            todo.project,
+            todo.tags,
+            todo.rate,
+            todo.currency,
+            todo.date.to_rfc3339(),
+            todo.uid,
+            todo.is_completed,
+            todo.is_deleted,
+            todo.last_updated
+        ],
+    )?;
+
+    Ok(())
+}
+
+pub fn db_toggle_todo_completed(uid: &str) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "UPDATE todos SET
+            is_completed = NOT is_completed
+        WHERE uid = ?1",
+        params![uid],
+    )?;
+
+    Ok(())
+}

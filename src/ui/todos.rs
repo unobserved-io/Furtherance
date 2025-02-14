@@ -3,7 +3,9 @@ use std::collections::BTreeMap;
 use chrono::{Datelike, Local, NaiveDate, TimeDelta};
 use iced::{
     font,
-    widget::{button, column, horizontal_space, row, text, Column, Container, Row},
+    widget::{
+        button, column, horizontal_space, rich_text, row, span, text, Column, Container, Row,
+    },
     Alignment, Element, Length, Renderer, Theme,
 };
 use iced_aw::ContextMenu;
@@ -84,33 +86,49 @@ pub fn todo_row<'a, 'loc>(
     settings: &'a FurSettings,
     localization: &'loc Localization,
 ) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
-    // TODO: Strikethrough task when completed
-    let mut todo_properties: Column<'_, Message, Theme, Renderer> =
-        column![text(todo.task.clone()).font(font::Font {
-            weight: iced::font::Weight::Bold,
-            ..Default::default()
-        }),]
-        .width(Length::FillPortion(6));
+    let mut todo_extra_text: String = String::new();
     if settings.show_project && !todo.project.is_empty() {
-        todo_properties = todo_properties.push(text!("@{}", todo.project));
-    }
+        todo_extra_text = format!(" @{}", todo.project);
+    };
     if settings.show_tags && !todo.tags.is_empty() {
-        todo_properties = todo_properties.push(text!("#{}", todo.tags));
+        todo_extra_text = todo_extra_text + &format!(" #{}", todo.tags);
     }
-    let todo_row: Row<'_, Message, Theme, Renderer> = row![
-        // TODO: Checkbox,
-        text(icon_to_char(if todo.is_completed {
-            Bootstrap::CheckSquareFill
-        } else {
-            Bootstrap::CheckSquare
-        }))
-        .font(BOOTSTRAP_FONT),
-        todo_properties,
+
+    let todo_text: text::Rich<'_, Message, Theme, Renderer> = rich_text![
+        span(todo.task.clone())
+            .font(font::Font {
+                weight: iced::font::Weight::Bold,
+                ..Default::default()
+            })
+            .strikethrough(todo.is_completed),
+        span(todo_extra_text).strikethrough(todo.is_completed)
+    ];
+
+    let mut todo_row: Row<'_, Message, Theme, Renderer> = row![
+        button(
+            text(icon_to_char(if todo.is_completed {
+                Bootstrap::CheckSquare
+            } else {
+                Bootstrap::Square
+            }))
+            .font(BOOTSTRAP_FONT)
+        )
+        .on_press(Message::ToggleTodoCompletePressed(todo.uid.clone()))
+        .style(button::text),
+        todo_text,
         horizontal_space().width(Length::Fill),
-        // TODO: Play button? If timer not running or crossed off. Maybe another symbol if this task is running with the timer
     ]
     .align_y(Alignment::Center)
-    .spacing(5);
+    .spacing(10);
+
+    if !todo.is_completed && !timer_is_running {
+        // TODO: Maybe another symbol if this task is running with the timer
+        todo_row = todo_row.push(
+            button(text(icon_to_char(Bootstrap::PlayFill)).font(BOOTSTRAP_FONT))
+                .style(button::text)
+                .on_press(Message::StartTimerWithTask(todo.full_string(&settings))),
+        );
+    }
 
     let todo_clone = todo.clone();
 

@@ -71,6 +71,7 @@ pub enum FurAlert {
 #[derive(Debug)]
 pub enum FurInspectorView {
     AddNewTask,
+    AddNewTodo,
     AddShortcut,
     AddTaskToGroup,
     EditGroup,
@@ -88,6 +89,15 @@ pub enum EditTaskProperty {
     StopTime,
     StartDate,
     StopDate,
+}
+
+#[derive(Debug, Clone)]
+pub enum EditTodoProperty {
+    Task,
+    Project,
+    Tags,
+    Rate,
+    Date,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

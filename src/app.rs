@@ -46,7 +46,7 @@ use crate::{
         fur_shortcut::{EncryptedShortcut, FurShortcut},
         fur_task::{EncryptedTask, FurTask},
         fur_task_group::FurTaskGroup,
-        fur_todo::FurTodo,
+        fur_todo::{FurTodo, TodoToAdd, TodoToEdit},
         fur_user::{FurUser, FurUserFields},
         group_to_edit::GroupToEdit,
         shortcut_to_add::ShortcutToAdd,
@@ -132,6 +132,8 @@ pub struct Furtherance {
     timer_is_running: bool,
     timer_start_time: DateTime<Local>,
     timer_text: String,
+    todo_to_add: Option<TodoToAdd>,
+    todo_to_edit: Option<TodoToEdit>,
     todos: BTreeMap<chrono::NaiveDate, Vec<FurTodo>>,
 }
 
@@ -139,6 +141,7 @@ pub struct Furtherance {
 pub enum Message {
     AddNewShortcutPressed,
     AddNewTaskPressed,
+    AddNewTodoPressed,
     AddTaskToGroup(GroupToEdit),
     AlertClose,
     BackupDatabase,
@@ -150,6 +153,8 @@ pub enum Message {
     CancelStartDate,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
+    CancelTodoEdit,
+    CancelTodoEditDate,
     ChartTaskPropertyKeySelected(FurTaskProperty),
     ChartTaskPropertyValueSelected(String),
     ChooseCurrentTaskStartTime,
@@ -157,6 +162,7 @@ pub enum Message {
     ChooseShortcutColor,
     ChooseStartDate,
     ChooseTaskEditDateTime(EditTaskProperty),
+    ChooseTodoEditDate,
     ClearLoginMessage,
     CreateShortcutFromTaskGroup(FurTaskGroup),
     DeleteEverything,
@@ -171,6 +177,7 @@ pub enum Message {
     EditShortcutTextChanged(String, EditTaskProperty),
     EditTask(FurTask),
     EditTaskTextChanged(String, EditTaskProperty),
+    EditTodoTextChanged(String, EditTodoProperty),
     EditTodo(FurTodo),
     EnterPressedInTaskInput,
     EnterPressedInSyncFields,
@@ -195,6 +202,7 @@ pub enum Message {
     SaveGroupEdit,
     SaveShortcut,
     SaveTaskEdit,
+    SaveTodoEdit,
     SettingsChangeDatabaseLocationPressed(ChangeDB),
     SettingsDatabaseLocationInputChanged(String),
     SettingsDaysToShowChanged(i64),
@@ -233,6 +241,7 @@ pub enum Message {
     ShortcutPressed(String),
     ShowAlert(FurAlert),
     StartStopPressed,
+    StartTimerWithTask(String),
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
     SubmitEndDate(date_picker::Date),
@@ -240,11 +249,13 @@ pub enum Message {
     SubmitStartDate(date_picker::Date),
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
+    SubmitTodoEditDate(date_picker::Date),
     SyncWithServer,
     SyncComplete((Result<SyncResponse, ApiError>, usize)),
     TabPressed { shift: bool },
     TaskInputChanged(String),
     ToggleGroupEditor,
+    ToggleTodoCompletePressed(String),
     UserAutoLogoutComplete,
     UserEmailChanged(String),
     UserLoginPressed,
@@ -346,6 +357,8 @@ impl Furtherance {
             timer_is_running: false,
             timer_start_time: Local::now(),
             timer_text: "0:00:00".to_string(),
+            todo_to_add: None,
+            todo_to_edit: None,
             todos: BTreeMap::<chrono::NaiveDate, Vec<FurTodo>>::new(),
         };
 
@@ -461,6 +474,10 @@ impl Furtherance {
                 self.task_to_add = Some(TaskToAdd::new());
                 self.inspector_view = Some(FurInspectorView::AddNewTask);
             }
+            Message::AddNewTodoPressed => {
+                self.todo_to_add = Some(TodoToAdd::new());
+                self.inspector_view = Some(FurInspectorView::AddNewTodo);
+            }
             Message::AddTaskToGroup(group_to_edit) => {
                 self.task_to_add = Some(TaskToAdd::new_from(&group_to_edit));
                 self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
@@ -562,6 +579,17 @@ impl Furtherance {
                     }
                 }
             }
+            Message::CancelTodoEdit => {
+                self.todo_to_edit = None;
+                self.todo_to_add = None;
+            }
+            Message::CancelTodoEditDate => {
+                if let Some(todo_to_edit) = self.todo_to_edit.as_mut() {
+                    todo_to_edit.show_date_picker = false;
+                } else if let Some(todo_to_add) = self.todo_to_add.as_mut() {
+                    todo_to_add.show_date_picker = false;
+                }
+            }
             Message::ChartTaskPropertyKeySelected(new_property) => {
                 self.report.set_picked_task_property_key(new_property);
             }
@@ -611,6 +639,13 @@ impl Furtherance {
                         }
                         _ => {}
                     }
+                }
+            }
+            Message::ChooseTodoEditDate => {
+                if let Some(todo_to_edit) = self.todo_to_edit.as_mut() {
+                    todo_to_edit.show_date_picker = true;
+                } else if let Some(todo_to_add) = self.todo_to_add.as_mut() {
+                    todo_to_add.show_date_picker = true;
                 }
             }
             Message::ClearLoginMessage => {
@@ -1113,7 +1148,150 @@ impl Furtherance {
                 }
                 _ => {}
             },
-            Message::EditTodo(todo_to_edit) => {}
+            Message::EditTodoTextChanged(new_value, property) => match self.inspector_view {
+                Some(FurInspectorView::AddNewTodo) => {
+                    if let Some(todo_to_add) = self.todo_to_add.as_mut() {
+                        match property {
+                            EditTodoProperty::Task => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    todo_to_add.invalid_input_error_message =
+                                        self.localization.get_message("name-cannot-contain", None);
+                                } else {
+                                    todo_to_add.task = new_value;
+                                    todo_to_add.invalid_input_error_message = String::new();
+                                }
+                            }
+                            EditTodoProperty::Project => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    todo_to_add.input_error(
+                                        self.localization
+                                            .get_message("project-cannot-contain", None),
+                                    );
+                                } else {
+                                    todo_to_add.project = new_value;
+                                }
+                            }
+                            EditTodoProperty::Tags => {
+                                if new_value.contains('@') || new_value.contains('$') {
+                                    todo_to_add.input_error(
+                                        self.localization.get_message("tags-cannot-contain", None),
+                                    );
+                                } else if !new_value.is_empty()
+                                    && new_value.chars().next() != Some('#')
+                                {
+                                    todo_to_add.input_error(
+                                        self.localization.get_message("tags-must-start", None),
+                                    );
+                                } else {
+                                    todo_to_add.tags = new_value;
+                                    todo_to_add.input_error(String::new());
+                                }
+                            }
+                            EditTodoProperty::Rate => {
+                                let new_value_parsed = new_value.parse::<f32>();
+                                if new_value.is_empty() {
+                                    todo_to_add.new_rate = String::new();
+                                } else if new_value.contains('$') {
+                                    todo_to_add.input_error(
+                                        self.localization.get_message("no-symbol-in-rate", None),
+                                    );
+                                } else if new_value_parsed.is_ok()
+                                    && has_max_two_decimals(&new_value)
+                                    && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
+                                {
+                                    todo_to_add.new_rate = new_value;
+                                    todo_to_add.input_error(String::new());
+                                } else {
+                                    todo_to_add.input_error(
+                                        self.localization.get_message("rate-invalid", None),
+                                    );
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                Some(FurInspectorView::EditTask) => {
+                    if let Some(todo_to_edit) = self.todo_to_edit.as_mut() {
+                        match property {
+                            EditTodoProperty::Task => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    todo_to_edit.input_error(
+                                        self.localization.get_message("name-cannot-contain", None),
+                                    );
+                                } else {
+                                    todo_to_edit.new_task = new_value;
+                                    todo_to_edit.input_error(String::new());
+                                }
+                            }
+                            EditTodoProperty::Project => {
+                                if new_value.contains('#')
+                                    || new_value.contains('@')
+                                    || new_value.contains('$')
+                                {
+                                    todo_to_edit.input_error(
+                                        self.localization
+                                            .get_message("project-cannot-contain", None),
+                                    );
+                                } else {
+                                    todo_to_edit.new_project = new_value;
+                                }
+                            }
+                            EditTodoProperty::Tags => {
+                                if new_value.contains('@') || new_value.contains('$') {
+                                    todo_to_edit.input_error(
+                                        self.localization.get_message("tags-cannot-contain", None),
+                                    );
+                                } else if !new_value.is_empty()
+                                    && new_value.chars().next() != Some('#')
+                                {
+                                    todo_to_edit.input_error(
+                                        self.localization.get_message("tags-must-start", None),
+                                    );
+                                } else {
+                                    todo_to_edit.new_tags = new_value;
+                                    todo_to_edit.input_error(String::new());
+                                }
+                            }
+                            EditTodoProperty::Rate => {
+                                let new_value_parsed = new_value.parse::<f32>();
+                                if new_value.is_empty() {
+                                    todo_to_edit.new_rate = String::new();
+                                } else if new_value.contains('$') {
+                                    todo_to_edit.input_error(
+                                        self.localization.get_message("no-symbol-in-rate", None),
+                                    );
+                                } else if new_value_parsed.is_ok()
+                                    && has_max_two_decimals(&new_value)
+                                    && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
+                                {
+                                    todo_to_edit.new_rate = new_value;
+                                    todo_to_edit.input_error(String::new());
+                                } else {
+                                    todo_to_edit.input_error(
+                                        self.localization.get_message("rate-invalid", None),
+                                    );
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+                _ => {}
+            },
+            Message::EditTodo(todo_to_edit) => {
+                // self.task_to_edit = Some(TaskToEdit::new_from(&task));
+                // self.inspector_view = Some(FurInspectorView::EditTask);
+            }
             Message::EnterPressedInTaskInput => {
                 if !self.task_input.is_empty() {
                     if !self.timer_is_running {
@@ -1438,6 +1616,60 @@ impl Furtherance {
                             return sync_after_change(&self.fur_user);
                         }
                         Err(e) => eprintln!("Error adding task: {}", e),
+                    }
+                }
+            }
+            Message::SaveTodoEdit => {
+                if let Some(todo_to_edit) = &self.todo_to_edit {
+                    let tags_without_first_pound = todo_to_edit
+                        .new_tags
+                        .trim()
+                        .strip_prefix('#')
+                        .unwrap_or(&todo_to_edit.new_tags)
+                        .trim()
+                        .to_string();
+                    match db_update_todo(&FurTodo {
+                        task: todo_to_edit.new_task.trim().to_string(),
+                        project: todo_to_edit.new_project.trim().to_string(),
+                        tags: tags_without_first_pound,
+                        rate: todo_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                        currency: String::new(),
+                        date: todo_to_edit.new_date,
+                        uid: todo_to_edit.uid.clone(),
+                        is_completed: todo_to_edit.is_completed,
+                        is_deleted: false,
+                        last_updated: chrono::Utc::now().timestamp(),
+                    }) {
+                        Ok(_) => {
+                            self.inspector_view = None;
+                            self.todo_to_edit = None;
+                            self.todos = todos::get_all_todos();
+                            return sync_after_change(&self.fur_user);
+                        }
+                        Err(e) => eprintln!("Failed to update todo in database: {}", e),
+                    }
+                } else if let Some(todo_to_add) = &self.todo_to_add {
+                    let tags_without_first_pound = todo_to_add
+                        .tags
+                        .trim()
+                        .strip_prefix('#')
+                        .unwrap_or(&todo_to_add.tags)
+                        .trim()
+                        .to_string();
+                    match db_insert_todo(&FurTodo::new(
+                        todo_to_add.task.trim().to_string(),
+                        todo_to_add.project.trim().to_string(),
+                        tags_without_first_pound,
+                        todo_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                        todo_to_add.date,
+                    )) {
+                        Ok(_) => {
+                            self.inspector_view = None;
+                            self.todo_to_add = None;
+                            self.todos = todos::get_all_todos();
+                            return sync_after_change(&self.fur_user);
+                        }
+                        Err(e) => eprintln!("Error adding todo: {}", e),
                     }
                 }
             }
@@ -1860,6 +2092,14 @@ impl Furtherance {
                     return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
                 }
             }
+            Message::StartTimerWithTask(task_input) => {
+                self.task_input = task_input;
+                self.inspector_view = None;
+                self.task_to_add = None;
+                self.task_to_edit = None;
+                self.current_view = FurView::Timer;
+                return Task::perform(async { Message::StartStopPressed }, |msg| msg);
+            }
             Message::StopwatchTick => {
                 if self.timer_is_running {
                     let duration = Local::now().signed_duration_since(self.timer_start_time);
@@ -2076,6 +2316,25 @@ impl Furtherance {
                             }
                         }
                         _ => {}
+                    }
+                }
+            }
+            Message::SubmitTodoEditDate(new_date) => {
+                if let Some(todo_to_edit) = self.todo_to_edit.as_mut() {
+                    if let LocalResult::Single(new_local_date_time) =
+                        Local.with_ymd_and_hms(new_date.year, new_date.month, new_date.day, 0, 0, 0)
+                    {
+                        todo_to_edit.displayed_date = new_date;
+                        todo_to_edit.new_date = new_local_date_time;
+                        todo_to_edit.show_date_picker = false;
+                    }
+                } else if let Some(todo_to_add) = self.todo_to_add.as_mut() {
+                    if let LocalResult::Single(new_local_date_time) =
+                        Local.with_ymd_and_hms(new_date.year, new_date.month, new_date.day, 0, 0, 0)
+                    {
+                        todo_to_add.displayed_date = new_date;
+                        todo_to_add.date = new_local_date_time;
+                        todo_to_add.show_date_picker = false;
                     }
                 }
             }
@@ -2498,6 +2757,35 @@ impl Furtherance {
                     .as_mut()
                     .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
             }
+            Message::ToggleTodoCompletePressed(uid) => match self
+                .todos
+                .values_mut()
+                .flat_map(|vec| vec.iter_mut())
+                .find(|todo| todo.uid == uid)
+            {
+                Some(todo) => {
+                    todo.is_completed = !todo.is_completed;
+                    if let Err(e) = db_toggle_todo_completed(&uid) {
+                        eprintln!(
+                            "Failed to toggle is_completed on todo with uid {}: {}",
+                            uid, e
+                        );
+                        match self
+                            .todos
+                            .values_mut()
+                            .flat_map(|vec| vec.iter_mut())
+                            .find(|todo| todo.uid == uid)
+                        {
+                            Some(todo_undo) => todo_undo.is_completed = !todo_undo.is_completed,
+                            None => eprintln!(
+                                "Failed to undo toggle is_completed on todo with uid {}.",
+                                uid
+                            ),
+                        }
+                    }
+                }
+                None => eprintln!("Failed to toggle is_completed on todo with uid {}.", uid),
+            },
             Message::UserEmailChanged(new_email) => {
                 self.fur_user_fields.email = new_email;
             }
@@ -2882,11 +3170,12 @@ impl Furtherance {
         }
 
         let mut todo_view: Column<'_, Message> = column![].align_x(Alignment::Center);
+        // Add new todo button
         todo_view = todo_view.push_maybe(if self.inspector_view.is_none() {
             Some(row![
                 horizontal_space(),
                 button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
-                    .on_press(Message::AddNewTaskPressed)
+                    .on_press(Message::AddNewTodoPressed)
                     .style(button::text),
             ])
         } else {
@@ -3829,6 +4118,79 @@ impl Furtherance {
                             None
                         } else {
                             Some(Message::SaveTaskEdit)
+                        })
+                        .width(Length::Fill)
+                        .style(style::primary_button_style),
+                    ]
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
+                    .spacing(10),
+                ]
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
+                None => column![]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_x(Alignment::Start),
+            },
+            // Add todo
+            Some(FurInspectorView::AddNewTodo) => match &self.todo_to_add {
+                Some(todo_to_add) => column![
+                    text_input(
+                        &self.localization.get_message("task", None),
+                        &todo_to_add.task
+                    )
+                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task)),
+                    text_input(
+                        &self.localization.get_message("project", None),
+                        &todo_to_add.project
+                    )
+                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project)),
+                    text_input(
+                        &self.localization.get_message("hashtag-tags", None),
+                        &todo_to_add.tags
+                    )
+                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags)),
+                    text_input("0.00", &todo_to_add.new_rate)
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Rate)),
+                    row![
+                        text(self.localization.get_message("date-colon", None)),
+                        date_picker(
+                            todo_to_add.show_date_picker,
+                            todo_to_add.displayed_date,
+                            button(text(todo_to_add.displayed_date.to_string()))
+                                .on_press(Message::ChooseTodoEditDate)
+                                .style(style::primary_button_style),
+                            Message::CancelTodoEditDate,
+                            |date| Message::SubmitTodoEditDate(date),
+                        ),
+                    ]
+                    .align_y(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .align_x(alignment::Horizontal::Center)
+                        )
+                        .style(button::secondary)
+                        .on_press(Message::CancelTodoEdit)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .align_x(alignment::Horizontal::Center)
+                        )
+                        .style(button::primary)
+                        .on_press_maybe(if todo_to_add.task.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveTodoEdit)
                         })
                         .width(Length::Fill)
                         .style(style::primary_button_style),

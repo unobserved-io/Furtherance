@@ -168,9 +168,11 @@ delete-everything = Delete Everything
 deleted-everything = Deleted everything
 
 ## Inspector
+task = Task
 task-name = Task name
 project = Project
 hashtag-tags = #tags
+date-colon = Date:
 start-colon = Start:
 stop-colon = Stop:
 per-hour = /hr
