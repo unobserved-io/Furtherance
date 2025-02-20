@@ -28,14 +28,15 @@ use crate::{
     autosave::{autosave_exists, delete_autosave, restore_autosave, write_autosave},
     constants::{
         ALLOWED_DB_EXTENSIONS, FURTHERANCE_VERSION, INSPECTOR_ALIGNMENT, INSPECTOR_PADDING,
-        INSPECTOR_SPACING, INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_MESSAGE_DURATION,
-        SETTINGS_SPACING,
+        INSPECTOR_SPACING, INSPECTOR_WIDTH, OFFICIAL_SERVER, SETTINGS_SPACING,
     },
     database::*,
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle,
+        messages::{self, chain_tasks},
         midnight_subscription::MidnightSubscription,
+        task_actions, tasks,
     },
     localization::Localization,
     models::{
@@ -172,6 +173,7 @@ pub enum Message {
     DeleteTasks,
     DeleteTasksFromContext(Vec<String>),
     DeleteTodo(String),
+    Done,
     EditGroup(FurTaskGroup),
     EditShortcutPressed(FurShortcut),
     EditShortcutTextChanged(String, EditTaskProperty),
@@ -256,6 +258,8 @@ pub enum Message {
     TaskInputChanged(String),
     ToggleGroupEditor,
     ToggleTodoCompletePressed(String),
+    UpdateTaskHistory(BTreeMap<NaiveDate, Vec<FurTaskGroup>>),
+    UpdateTodaysTodos(Vec<FurTodo>),
     UserAutoLogoutComplete,
     UserEmailChanged(String),
     UserLoginPressed,
@@ -384,25 +388,23 @@ impl Furtherance {
             furtherance.displayed_alert = Some(FurAlert::NotifyOfSync)
         }
 
-        furtherance.task_history = get_task_history(furtherance.fur_settings.days_to_show);
+        furtherance.task_history = tasks::get_task_history(furtherance.fur_settings.days_to_show);
 
         furtherance.todos = todos::get_all_todos();
 
-        let user = furtherance.fur_user.clone();
-        (
-            furtherance,
-            if user.is_some() {
-                Task::perform(
-                    async {
-                        // Small delay to allow startup operations to complete
-                        time::sleep(Duration::from_secs(1)).await;
-                    },
-                    |_| Message::SyncWithServer,
-                )
-            } else {
-                Task::none()
-            },
-        )
+        let mut tasks: Vec<Task<Message>> = vec![];
+
+        if furtherance.fur_user.is_some() {
+            tasks.push(Task::perform(
+                async {
+                    // Small delay to allow startup operations to complete
+                    // time::sleep(Duration::from_secs(1)).await;
+                },
+                |_| Message::SyncWithServer,
+            ));
+        }
+
+        (furtherance, messages::chain_tasks(tasks))
     }
 
     pub fn title(&self) -> String {
@@ -680,7 +682,7 @@ impl Furtherance {
                                 }
                             };
                             self.current_view = FurView::Shortcuts;
-                            return sync_after_change(&self.fur_user);
+                            return messages::sync_after_change(&self.fur_user);
                         }
                     }
                     Err(e) => eprintln!("Failed to check if shortcut exists: {}", e),
@@ -691,13 +693,13 @@ impl Furtherance {
                     self.displayed_alert = None;
                     self.settings_more_message =
                         Ok(self.localization.get_message("deleted-everything", None));
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
                     match db_retrieve_existing_shortcuts() {
                         Ok(shortcuts) => self.shortcuts = shortcuts,
                         Err(e) => {
                             eprintln!("Failed to retrieve shortcuts from database: {}", e)
                         }
                     };
+                    return messages::update_task_history(self.fur_settings.days_to_show);
                 }
                 Err(_) => {
                     self.settings_more_message = Err(self
@@ -744,7 +746,7 @@ impl Furtherance {
                     self.group_to_edit = None;
                     self.task_to_edit = None;
                     self.displayed_alert = None;
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    return messages::update_task_history(self.fur_settings.days_to_show);
                 } else if let Some(task_to_edit) = &self.task_to_edit {
                     self.inspector_view = None;
                     if let Err(e) = db_delete_tasks_by_ids(&[task_to_edit.uid.clone()]) {
@@ -752,7 +754,7 @@ impl Furtherance {
                     }
                     self.task_to_edit = None;
                     self.displayed_alert = None;
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    return messages::update_task_history(self.fur_settings.days_to_show);
                 } else if let Some(group_to_edit) = &self.group_to_edit {
                     self.inspector_view = None;
                     if let Err(e) = db_delete_tasks_by_ids(&group_to_edit.all_task_ids()) {
@@ -760,7 +762,7 @@ impl Furtherance {
                     }
                     self.group_to_edit = None;
                     self.displayed_alert = None;
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
+                    return messages::update_task_history(self.fur_settings.days_to_show);
                 }
             }
             Message::DeleteTasksFromContext(task_group_ids) => {
@@ -783,7 +785,9 @@ impl Furtherance {
                     |msg| msg,
                 );
             }
-            Message::DeleteTodo(uid) => {}
+            Message::DeleteTodo(uid) => { // TODO:
+            }
+            Message::Done => {}
             Message::EditGroup(task_group) => {
                 if task_group.tasks.len() == 1 {
                     if let Some(task_to_edit) = task_group.tasks.first() {
@@ -1289,7 +1293,7 @@ impl Furtherance {
                 _ => {}
             },
             Message::EditTodo(todo_to_edit) => {
-                // self.task_to_edit = Some(TaskToEdit::new_from(&task));
+                // TODO: self.task_to_edit = Some(TaskToEdit::new_from(&task));
                 // self.inspector_view = Some(FurInspectorView::EditTask);
             }
             Message::EnterPressedInTaskInput => {
@@ -1338,7 +1342,12 @@ impl Furtherance {
             Message::IdleDiscard => {
                 stop_timer(self, self.idle.start_time);
                 self.displayed_alert = None;
-                return sync_after_change(&self.fur_user);
+                let mut tasks = vec![];
+                tasks.push(messages::update_task_history(
+                    self.fur_settings.days_to_show,
+                ));
+                tasks.push(messages::sync_after_change(&self.fur_user));
+                return chain_tasks(tasks);
             }
             Message::IdleReset => {
                 self.idle = FurIdle::new();
@@ -1365,8 +1374,9 @@ impl Furtherance {
                                     eprintln!("Error changing needs_full_sync: {}", e);
                                 };
 
-                                self.task_history =
-                                    get_task_history(self.fur_settings.days_to_show);
+                                return messages::update_task_history(
+                                    self.fur_settings.days_to_show,
+                                );
                             }
                             Err(e) => {
                                 eprintln!("Invalid CSV file: {}", e);
@@ -1380,6 +1390,7 @@ impl Furtherance {
                 }
             }
             Message::ImportOldMacDatabase => {
+                self.displayed_alert = None;
                 match db_import_old_mac_db() {
                     Ok(_) => {
                         // Always do a full sync after import
@@ -1387,11 +1398,12 @@ impl Furtherance {
                             eprintln!("Error changing needs_full_sync: {}", e);
                         };
 
-                        self.task_history = get_task_history(self.fur_settings.days_to_show)
+                        return messages::update_task_history(self.fur_settings.days_to_show);
                     }
-                    Err(e) => eprintln!("Error importing existing Core Data database: {e}"),
+                    Err(e) => {
+                        eprintln!("Error importing existing Core Data database: {e}")
+                    }
                 }
-                self.displayed_alert = None;
             }
             Message::LearnAboutSync => {
                 if let Err(e) = webbrowser::open("https://furtherance.app/sync") {
@@ -1403,7 +1415,7 @@ impl Furtherance {
                 };
             }
             Message::MidnightReached => {
-                self.task_history = get_task_history(self.fur_settings.days_to_show);
+                return messages::update_task_history(self.fur_settings.days_to_show);
             }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
@@ -1434,7 +1446,14 @@ impl Furtherance {
                 self.task_input = original_task_input;
                 self.displayed_alert = None;
                 start_timer(self);
-                return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
+                let mut tasks = vec![];
+                tasks.push(Task::perform(get_timer_duration(), |_| {
+                    Message::StopwatchTick
+                }));
+                tasks.push(messages::update_task_history(
+                    self.fur_settings.days_to_show,
+                ));
+                return messages::chain_tasks(tasks);
             }
             Message::PomodoroSnooze => {
                 self.pomodoro.snoozed = true;
@@ -1452,17 +1471,28 @@ impl Furtherance {
                 self.task_input = original_task_input;
                 self.displayed_alert = None;
                 start_timer(self);
-                return Task::batch([
-                    Task::perform(get_timer_duration(), |_| Message::StopwatchTick),
-                    sync_after_change(&self.fur_user),
-                ]);
+
+                let mut tasks = vec![];
+                tasks.push(Task::perform(get_timer_duration(), |_| {
+                    Message::StopwatchTick
+                }));
+                tasks.push(messages::update_task_history(
+                    self.fur_settings.days_to_show,
+                ));
+                tasks.push(messages::sync_after_change(&self.fur_user));
+                return chain_tasks(tasks);
             }
             Message::PomodoroStop => {
                 self.pomodoro.snoozed = false;
                 stop_timer(self, Local::now());
                 self.displayed_alert = None;
                 self.pomodoro.sessions = 0;
-                return sync_after_change(&self.fur_user);
+                let mut tasks = vec![];
+                tasks.push(messages::update_task_history(
+                    self.fur_settings.days_to_show,
+                ));
+                tasks.push(messages::sync_after_change(&self.fur_user));
+                return chain_tasks(tasks);
             }
             Message::PomodoroStopAfterBreak => {
                 self.timer_is_running = false;
@@ -1471,6 +1501,7 @@ impl Furtherance {
                 reset_timer(self);
                 self.pomodoro.sessions = 0;
                 self.displayed_alert = None;
+                return messages::update_task_history(self.fur_settings.days_to_show);
             }
             Message::RepeatLastTaskPressed(last_task_input) => {
                 self.task_input = last_task_input;
@@ -1486,8 +1517,12 @@ impl Furtherance {
                     let _ = db_update_group_of_tasks(group_to_edit);
                     self.inspector_view = None;
                     self.group_to_edit = None;
-                    self.task_history = get_task_history(self.fur_settings.days_to_show);
-                    return sync_after_change(&self.fur_user);
+                    let mut tasks = vec![];
+                    tasks.push(messages::update_task_history(
+                        self.fur_settings.days_to_show,
+                    ));
+                    tasks.push(messages::sync_after_change(&self.fur_user));
+                    return chain_tasks(tasks);
                 }
             }
             Message::SaveShortcut => {
@@ -1520,7 +1555,7 @@ impl Furtherance {
                                                 e
                                             ),
                                         };
-                                        return sync_after_change(&self.fur_user);
+                                        return messages::sync_after_change(&self.fur_user);
                                     }
                                     Err(e) => {
                                         eprintln!("Failed to write shortcut to database: {}", e)
@@ -1555,7 +1590,7 @@ impl Furtherance {
                                     eprintln!("Failed to retrieve shortcuts from database: {}", e)
                                 }
                             };
-                            return sync_after_change(&self.fur_user);
+                            return messages::sync_after_change(&self.fur_user);
                         }
                         Err(e) => eprintln!("Failed to update shortcut in database: {}", e),
                     }
@@ -1586,8 +1621,12 @@ impl Furtherance {
                             self.inspector_view = None;
                             self.task_to_edit = None;
                             self.group_to_edit = None;
-                            self.task_history = get_task_history(self.fur_settings.days_to_show);
-                            return sync_after_change(&self.fur_user);
+                            let mut tasks = vec![];
+                            tasks.push(messages::update_task_history(
+                                self.fur_settings.days_to_show,
+                            ));
+                            tasks.push(messages::sync_after_change(&self.fur_user));
+                            return chain_tasks(tasks);
                         }
                         Err(e) => eprintln!("Failed to update task in database: {}", e),
                     }
@@ -1612,8 +1651,12 @@ impl Furtherance {
                             self.inspector_view = None;
                             self.task_to_add = None;
                             self.group_to_edit = None;
-                            self.task_history = get_task_history(self.fur_settings.days_to_show);
-                            return sync_after_change(&self.fur_user);
+                            let mut tasks = vec![];
+                            tasks.push(messages::update_task_history(
+                                self.fur_settings.days_to_show,
+                            ));
+                            tasks.push(messages::sync_after_change(&self.fur_user));
+                            return chain_tasks(tasks);
                         }
                         Err(e) => eprintln!("Error adding task: {}", e),
                     }
@@ -1644,7 +1687,7 @@ impl Furtherance {
                             self.inspector_view = None;
                             self.todo_to_edit = None;
                             self.todos = todos::get_all_todos();
-                            return sync_after_change(&self.fur_user);
+                            return messages::sync_after_change(&self.fur_user);
                         }
                         Err(e) => eprintln!("Failed to update todo in database: {}", e),
                     }
@@ -1667,7 +1710,7 @@ impl Furtherance {
                             self.inspector_view = None;
                             self.todo_to_add = None;
                             self.todos = todos::get_all_todos();
-                            return sync_after_change(&self.fur_user);
+                            return messages::sync_after_change(&self.fur_user);
                         }
                         Err(e) => eprintln!("Error adding todo: {}", e),
                     }
@@ -1751,8 +1794,6 @@ impl Furtherance {
                                                 return Task::none();
                                             }
                                         }
-                                        self.task_history =
-                                            get_task_history(self.fur_settings.days_to_show);
                                         self.settings_database_message = Ok(match new_or_open {
                                             ChangeDB::Open => self
                                                 .localization
@@ -1762,6 +1803,9 @@ impl Furtherance {
                                                 .get_message("database-created", None)
                                                 .to_string(),
                                         });
+                                        return messages::update_task_history(
+                                            self.fur_settings.days_to_show,
+                                        );
                                     }
                                     Err(e) => {
                                         eprintln!("Error accessing new database: {}", e);
@@ -1780,7 +1824,9 @@ impl Furtherance {
             Message::SettingsDaysToShowChanged(new_days) => {
                 if new_days >= 1 {
                     match self.fur_settings.change_days_to_show(&new_days) {
-                        Ok(_) => self.task_history = get_task_history(new_days),
+                        Ok(_) => {
+                            return messages::update_task_history(self.fur_settings.days_to_show)
+                        }
                         Err(e) => eprintln!("Failed to change days_to_show in settings: {}", e),
                     }
                 }
@@ -2079,14 +2125,20 @@ impl Furtherance {
                         self.pomodoro.snoozed = false;
                         self.pomodoro.sessions = 0;
                         reset_timer(self);
+                        return messages::update_task_history(self.fur_settings.days_to_show);
                     } else {
                         self.pomodoro.on_break = false;
                         self.pomodoro.snoozed = false;
                         self.pomodoro.sessions = 0;
                         stop_timer(self, Local::now());
-                        return sync_after_change(&self.fur_user);
+
+                        let mut tasks = vec![];
+                        tasks.push(messages::update_task_history(
+                            self.fur_settings.days_to_show,
+                        ));
+                        tasks.push(messages::sync_after_change(&self.fur_user));
+                        return chain_tasks(tasks);
                     }
-                    return Task::none();
                 } else {
                     start_timer(self);
                     return Task::perform(get_timer_duration(), |_| Message::StopwatchTick);
@@ -2356,7 +2408,7 @@ impl Furtherance {
                         Ok(key) => key,
                         Err(e) => {
                             eprintln!("Failed to decrypt encryption key (SyncWithServer): {:?}", e);
-                            return set_negative_temp_notice(
+                            return messages::set_negative_temp_notice(
                                 &mut self.login_message,
                                 self.localization.get_message("error-decrypting-key", None),
                             );
@@ -2438,7 +2490,7 @@ impl Furtherance {
                             Some(user) => user,
                             None => {
                                 eprintln!("Please log in first");
-                                return set_negative_temp_notice(
+                                return messages::set_negative_temp_notice(
                                     &mut self.login_message,
                                     self.localization.get_message("log-in-first", None),
                                 );
@@ -2453,7 +2505,7 @@ impl Furtherance {
                                         "Failed to decrypt encryption key (SyncComplete): {:?}",
                                         e
                                     );
-                                    return set_negative_temp_notice(
+                                    return messages::set_negative_temp_notice(
                                         &mut self.login_message,
                                         self.localization.get_message("error-decrypting-key", None),
                                     );
@@ -2654,15 +2706,18 @@ impl Furtherance {
 
                         self.fur_settings.needs_full_sync = false;
 
-                        self.task_history = get_task_history(self.fur_settings.days_to_show);
-
-                        return set_positive_temp_notice(
+                        let mut tasks = vec![];
+                        tasks.push(messages::update_task_history(
+                            self.fur_settings.days_to_show,
+                        ));
+                        tasks.push(messages::set_positive_temp_notice(
                             &mut self.login_message,
                             self.localization.get_message(
                                 "sync-successful",
                                 Some(&HashMap::from([("count", FluentValue::from(sync_count))])),
                             ),
-                        );
+                        ));
+                        return chain_tasks(tasks);
                     }
                     (Err(ApiError::TokenRefresh(msg)), _) if msg == "Failed to refresh token" => {
                         eprintln!("Sync error. Credentials have changed. Log in again.");
@@ -2675,14 +2730,14 @@ impl Furtherance {
                     }
                     (Err(ApiError::InactiveSubscription(msg)), _) => {
                         eprintln!("Sync error: {}", msg);
-                        return set_negative_temp_notice(
+                        return messages::set_negative_temp_notice(
                             &mut self.login_message,
                             self.localization.get_message("subscription-inactive", None),
                         );
                     }
                     (Err(e), _) => {
                         eprintln!("Sync error: {:?}", e);
-                        return set_negative_temp_notice(
+                        return messages::set_negative_temp_notice(
                             &mut self.login_message,
                             self.localization.get_message("sync-failed", None),
                         );
@@ -2786,6 +2841,28 @@ impl Furtherance {
                 }
                 None => eprintln!("Failed to toggle is_completed on todo with uid {}.", uid),
             },
+            Message::UpdateTaskHistory(new_history) => {
+                self.task_history = new_history;
+
+                let today = Local::now().date_naive();
+                if let Some(todays_todos) = self.todos.get(&today) {
+                    if let Some(todays_tasks) = self.task_history.get(&today) {
+                        let todos_clone = todays_todos.clone();
+                        let tasks_clone = todays_tasks.clone();
+
+                        return Task::perform(
+                            async move { task_actions::after_refresh(todos_clone, tasks_clone) },
+                            |new_todos| Message::UpdateTodaysTodos(new_todos),
+                        );
+                    }
+                };
+            }
+            Message::UpdateTodaysTodos(new_todos) => {
+                let today = Local::now().date_naive();
+                if let Some(todays_todos) = self.todos.get_mut(&today) {
+                    *todays_todos = new_todos;
+                }
+            }
             Message::UserEmailChanged(new_email) => {
                 self.fur_user_fields.email = new_email;
             }
@@ -2815,7 +2892,7 @@ impl Furtherance {
                             Err(e) => {
                                 eprintln!("Error encrypting key: {:?}", e);
                                 reset_fur_user(&mut self.fur_user);
-                                return set_negative_temp_notice(
+                                return messages::set_negative_temp_notice(
                                     &mut self.login_message,
                                     self.localization
                                         .get_message("error-storing-credentials", None),
@@ -2834,7 +2911,7 @@ impl Furtherance {
                     ) {
                         eprintln!("Error storing user credentials: {}", e);
                         reset_fur_user(&mut self.fur_user);
-                        return set_negative_temp_notice(
+                        return messages::set_negative_temp_notice(
                             &mut self.login_message,
                             self.localization
                                 .get_message("error-storing-credentials", None),
@@ -2854,7 +2931,7 @@ impl Furtherance {
                         Err(e) => {
                             eprintln!("Error retrieving user credentials from database: {}", e);
                             reset_fur_user(&mut self.fur_user);
-                            return set_negative_temp_notice(
+                            return messages::set_negative_temp_notice(
                                 &mut self.login_message,
                                 self.localization
                                     .get_message("error-storing-credentials", None),
@@ -2866,7 +2943,7 @@ impl Furtherance {
                         self.fur_user_fields.email = fur_user.email;
                         self.fur_user_fields.encryption_key = "x".repeat(key_length);
                         self.fur_user_fields.server = fur_user.server;
-                        return set_positive_temp_notice(
+                        return messages::set_positive_temp_notice(
                             &mut self.login_message,
                             self.localization.get_message("login-successful", None),
                         );
@@ -2877,14 +2954,14 @@ impl Furtherance {
                     reset_fur_user(&mut self.fur_user);
                     match e {
                         ApiError::Network(e) if e.to_string() == "builder error" => {
-                            return set_negative_temp_notice(
+                            return messages::set_negative_temp_notice(
                                 &mut self.login_message,
                                 self.localization
                                     .get_message("server-must-contain-protocol", None),
                             );
                         }
                         _ => {
-                            return set_negative_temp_notice(
+                            return messages::set_negative_temp_notice(
                                 &mut self.login_message,
                                 self.localization.get_message("login-failed", None),
                             );
@@ -2905,7 +2982,7 @@ impl Furtherance {
                 reset_fur_user(&mut self.fur_user);
                 self.fur_user_fields = FurUserFields::default();
                 self.settings_server_choice = Some(ServerChoices::Official);
-                return set_positive_temp_notice(
+                return messages::set_positive_temp_notice(
                     &mut self.login_message,
                     self.localization.get_message("logged-out", None),
                 );
@@ -2914,7 +2991,7 @@ impl Furtherance {
                 reset_fur_user(&mut self.fur_user);
                 self.fur_user_fields = FurUserFields::default();
                 self.settings_server_choice = Some(ServerChoices::Official);
-                return set_negative_temp_notice(
+                return messages::set_negative_temp_notice(
                     &mut self.login_message,
                     self.localization.get_message("reauthenticate-error", None),
                 );
@@ -3154,7 +3231,7 @@ impl Furtherance {
                 bottom: 0.0,
                 left: 20.0,
             });
-        for (date, todos) in &self.todos {
+        for (date, todos) in self.todos.iter().rev() {
             all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
             // TODO: If todos contains today's date, push that.
             // If it contains tomorrow's date, push that
@@ -5358,48 +5435,6 @@ fn format_history_date(date: &NaiveDate, localization: &Localization) -> String 
     }
 }
 
-fn get_task_history(limit: i64) -> BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> {
-    let mut grouped_tasks_by_date: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>> = BTreeMap::new();
-
-    match db_retrieve_tasks_with_day_limit(limit, SortBy::StopTime, SortOrder::Descending) {
-        Ok(all_tasks) => {
-            let tasks_by_date = group_tasks_by_date(all_tasks);
-
-            for (date, tasks) in tasks_by_date {
-                let mut all_groups: Vec<FurTaskGroup> = vec![];
-                for task in tasks {
-                    if let Some(matching_group) =
-                        all_groups.iter_mut().find(|x| x.is_equal_to(&task))
-                    {
-                        matching_group.add(task);
-                    } else {
-                        all_groups.push(FurTaskGroup::new_from(task));
-                    }
-                }
-                grouped_tasks_by_date.insert(date, all_groups);
-            }
-        }
-        Err(e) => {
-            eprintln!("Error retrieving tasks from database: {}", e);
-        }
-    }
-    grouped_tasks_by_date
-}
-
-fn group_tasks_by_date(tasks: Vec<FurTask>) -> BTreeMap<chrono::NaiveDate, Vec<FurTask>> {
-    let mut grouped_tasks: BTreeMap<chrono::NaiveDate, Vec<FurTask>> = BTreeMap::new();
-
-    for task in tasks {
-        let date = task.start_time.date_naive(); // Extract the date part
-        grouped_tasks
-            .entry(date)
-            .or_insert_with(Vec::new)
-            .push(task);
-    }
-
-    grouped_tasks
-}
-
 fn shortcut_button_content<'a>(
     shortcut: &'a FurShortcut,
     text_color: Color,
@@ -5534,7 +5569,6 @@ fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
 
 fn reset_timer(state: &mut Furtherance) {
     state.task_input = "".to_string();
-    state.task_history = get_task_history(state.fur_settings.days_to_show);
     state.timer_text = get_timer_text(state, 0);
     state.idle = FurIdle::new();
 }
@@ -6140,45 +6174,5 @@ fn reset_fur_user(user: &mut Option<FurUser>) {
     match db_delete_all_credentials() {
         Ok(_) => {}
         Err(e) => eprintln!("Error deleting user credentials: {}", e),
-    }
-}
-
-fn set_positive_temp_notice(
-    message_holder: &mut Result<String, Box<dyn std::error::Error>>,
-    message: String,
-) -> Task<Message> {
-    *message_holder = Ok(message);
-    Task::perform(
-        async {
-            tokio::time::sleep(std::time::Duration::from_secs(SETTINGS_MESSAGE_DURATION)).await;
-        },
-        |_| Message::ClearLoginMessage,
-    )
-}
-
-fn set_negative_temp_notice(
-    message_holder: &mut Result<String, Box<dyn std::error::Error>>,
-    message: String,
-) -> Task<Message> {
-    *message_holder = Err(message.into());
-    Task::perform(
-        async {
-            tokio::time::sleep(std::time::Duration::from_secs(SETTINGS_MESSAGE_DURATION)).await;
-        },
-        |_| Message::ClearLoginMessage,
-    )
-}
-
-pub fn sync_after_change(user: &Option<FurUser>) -> Task<Message> {
-    if user.is_some() {
-        Task::perform(
-            async {
-                // Small delay to allow any pending DB operations to complete
-                time::sleep(Duration::from_secs(1)).await;
-            },
-            |_| Message::SyncWithServer,
-        )
-    } else {
-        Task::none()
     }
 }

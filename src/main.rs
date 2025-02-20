@@ -32,7 +32,10 @@ mod database;
 mod helpers {
     pub mod color_utils;
     pub mod idle;
+    pub mod messages;
     pub mod midnight_subscription;
+    pub mod task_actions;
+    pub mod tasks;
     #[cfg(target_os = "linux")]
     pub mod wayland_idle;
 }

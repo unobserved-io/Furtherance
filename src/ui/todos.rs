@@ -3,9 +3,7 @@ use std::collections::BTreeMap;
 use chrono::{Datelike, Local, NaiveDate, TimeDelta};
 use iced::{
     font,
-    widget::{
-        button, column, horizontal_space, rich_text, row, span, text, Column, Container, Row,
-    },
+    widget::{button, column, horizontal_space, rich_text, row, span, text, Container, Row},
     Alignment, Element, Length, Renderer, Theme,
 };
 use iced_aw::ContextMenu;
@@ -123,10 +121,11 @@ pub fn todo_row<'a, 'loc>(
 
     if !todo.is_completed && !timer_is_running {
         // TODO: Maybe another symbol if this task is running with the timer
+        // TODO: Show total time spent on this task?
         todo_row = todo_row.push(
             button(text(icon_to_char(Bootstrap::PlayFill)).font(BOOTSTRAP_FONT))
                 .style(button::text)
-                .on_press(Message::StartTimerWithTask(todo.full_string(&settings))),
+                .on_press(Message::StartTimerWithTask(todo.to_string())),
         );
     }
 

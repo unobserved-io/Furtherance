@@ -41,17 +41,23 @@ impl FurTodo {
             last_updated: Utc::now().timestamp(),
         }
     }
+}
 
-    pub fn full_string(&self, settings: &FurSettings) -> String {
-        let mut todo_text: String = self.task.clone();
-        if settings.show_project && !self.project.is_empty() {
-            todo_text = format!(" @{}", self.project);
-        };
-        if settings.show_tags && !self.tags.is_empty() {
-            todo_text = todo_text + &format!(" #{}", self.tags);
+impl ToString for FurTodo {
+    fn to_string(&self) -> String {
+        let mut task_string: String = self.task.to_string();
+
+        if !self.project.is_empty() {
+            task_string += &format!(" @{}", self.project);
+        }
+        if !self.tags.is_empty() {
+            task_string += &format!(" #{}", self.tags);
+        }
+        if self.rate != 0.0 {
+            task_string += &format!(" ${:.2}", self.rate);
         }
 
-        todo_text
+        task_string
     }
 }
 

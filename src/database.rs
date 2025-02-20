@@ -1444,3 +1444,16 @@ pub fn db_toggle_todo_completed(uid: &str) -> Result<()> {
 
     Ok(())
 }
+
+pub fn db_set_todo_completed(uid: &str) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+
+    conn.execute(
+        "UPDATE todos SET
+            is_completed = true
+        WHERE uid = ?1",
+        params![uid],
+    )?;
+
+    Ok(())
+}
