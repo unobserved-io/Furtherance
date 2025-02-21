@@ -584,6 +584,7 @@ impl Furtherance {
             Message::CancelTodoEdit => {
                 self.todo_to_edit = None;
                 self.todo_to_add = None;
+                self.inspector_view = None;
             }
             Message::CancelTodoEditDate => {
                 if let Some(todo_to_edit) = self.todo_to_edit.as_mut() {
@@ -1221,7 +1222,7 @@ impl Furtherance {
                         }
                     }
                 }
-                Some(FurInspectorView::EditTask) => {
+                Some(FurInspectorView::EditTodo) => {
                     if let Some(todo_to_edit) = self.todo_to_edit.as_mut() {
                         match property {
                             EditTodoProperty::Task => {
@@ -1293,8 +1294,8 @@ impl Furtherance {
                 _ => {}
             },
             Message::EditTodo(todo_to_edit) => {
-                // TODO: self.task_to_edit = Some(TaskToEdit::new_from(&task));
-                // self.inspector_view = Some(FurInspectorView::EditTask);
+                self.todo_to_edit = Some(TodoToEdit::new_from(&todo_to_edit));
+                self.inspector_view = Some(FurInspectorView::EditTodo);
             }
             Message::EnterPressedInTaskInput => {
                 if !self.task_input.is_empty() {
@@ -4898,6 +4899,88 @@ impl Furtherance {
                 .spacing(12)
                 .padding(20)
                 .align_x(Alignment::Start),
+            },
+            // MARK: Edit Todo
+            Some(FurInspectorView::EditTodo) => match &self.todo_to_edit {
+                Some(todo_to_edit) => column![
+                    row![
+                        horizontal_space(),
+                        button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
+                            .on_press(if self.fur_settings.show_delete_confirmation {
+                                Message::ShowAlert(FurAlert::DeleteTaskConfirmation)
+                            } else {
+                                Message::DeleteTasks
+                            })
+                            .style(button::text),
+                    ],
+                    text_input(&todo_to_edit.task, &todo_to_edit.new_task)
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task)),
+                    text_input(&todo_to_edit.project, &todo_to_edit.new_project)
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project)),
+                    text_input(&todo_to_edit.tags, &todo_to_edit.new_tags)
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags)),
+                    row![
+                        text("$"),
+                        text_input(
+                            &format!("{:.2}", &todo_to_edit.rate),
+                            &todo_to_edit.new_rate
+                        )
+                        .on_input(|s| { Message::EditTodoTextChanged(s, EditTodoProperty::Rate) }),
+                    ]
+                    .align_y(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        text(self.localization.get_message("date-colon", None)),
+                        date_picker(
+                            todo_to_edit.show_date_picker,
+                            todo_to_edit.displayed_date,
+                            button(text(todo_to_edit.displayed_date.to_string()))
+                                .on_press(Message::ChooseTodoEditDate)
+                                .style(style::primary_button_style),
+                            Message::CancelTodoEditDate,
+                            |date| Message::SubmitTodoEditDate(date),
+                        ),
+                    ]
+                    .align_y(Alignment::Center)
+                    .spacing(5),
+                    row![
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .align_x(alignment::Horizontal::Center)
+                        )
+                        .style(button::secondary)
+                        .on_press(Message::CancelTodoEdit)
+                        .width(Length::Fill),
+                        button(
+                            text(self.localization.get_message("save", None))
+                                .align_x(alignment::Horizontal::Center)
+                        )
+                        .style(button::primary)
+                        .on_press_maybe(if todo_to_edit.task.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveTodoEdit)
+                        })
+                        .width(Length::Fill)
+                        .style(style::primary_button_style),
+                    ]
+                    .padding(Padding {
+                        top: 20.0,
+                        right: 0.0,
+                        bottom: 0.0,
+                        left: 0.0,
+                    })
+                    .spacing(10),
+                ]
+                .spacing(INSPECTOR_SPACING)
+                .padding(INSPECTOR_PADDING)
+                .width(INSPECTOR_WIDTH)
+                .align_x(INSPECTOR_ALIGNMENT),
+                None => column![]
+                    .spacing(12)
+                    .padding(20)
+                    .width(250)
+                    .align_x(Alignment::Start),
             },
             _ => column![],
         };

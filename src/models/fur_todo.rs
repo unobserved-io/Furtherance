@@ -2,8 +2,6 @@ use chrono::{DateTime, Local, Utc};
 use iced_aw::date_picker::Date;
 use serde::{Deserialize, Serialize};
 
-use super::fur_settings::FurSettings;
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FurTodo {
     pub task: String,

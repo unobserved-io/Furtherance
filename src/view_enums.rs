@@ -77,6 +77,7 @@ pub enum FurInspectorView {
     EditGroup,
     EditShortcut,
     EditTask,
+    EditTodo,
 }
 
 #[derive(Debug, Clone)]
