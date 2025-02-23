@@ -103,8 +103,9 @@ use notify_rust::set_application;
 
 pub struct Furtherance {
     current_view: FurView,
-    delete_ids_from_context: Option<Vec<String>>,
+    delete_tasks_from_context: Option<Vec<String>>,
     delete_shortcut_from_context: Option<String>,
+    delete_todo_uid: Option<String>,
     displayed_alert: Option<FurAlert>,
     displayed_task_start_time: time_picker::Time,
     fur_settings: FurSettings,
@@ -126,7 +127,7 @@ pub struct Furtherance {
     shortcut_to_add: Option<ShortcutToAdd>,
     shortcut_to_edit: Option<ShortcutToEdit>,
     show_timer_start_picker: bool,
-    task_history: BTreeMap<chrono::NaiveDate, Vec<FurTaskGroup>>,
+    task_history: BTreeMap<NaiveDate, Vec<FurTaskGroup>>,
     task_input: String,
     task_to_add: Option<TaskToAdd>,
     task_to_edit: Option<TaskToEdit>,
@@ -135,7 +136,7 @@ pub struct Furtherance {
     timer_text: String,
     todo_to_add: Option<TodoToAdd>,
     todo_to_edit: Option<TodoToEdit>,
-    todos: BTreeMap<chrono::NaiveDate, Vec<FurTodo>>,
+    todos: BTreeMap<NaiveDate, Vec<FurTodo>>,
 }
 
 #[derive(Debug, Clone)]
@@ -172,7 +173,8 @@ pub enum Message {
     DeleteShortcutFromContext(String),
     DeleteTasks,
     DeleteTasksFromContext(Vec<String>),
-    DeleteTodo(String),
+    DeleteTodo,
+    DeleteTodoPressed(String),
     Done,
     EditGroup(FurTaskGroup),
     EditShortcutPressed(FurShortcut),
@@ -260,6 +262,7 @@ pub enum Message {
     ToggleTodoCompletePressed(String),
     UpdateTaskHistory(BTreeMap<NaiveDate, Vec<FurTaskGroup>>),
     UpdateTodaysTodos(Vec<FurTodo>),
+    UpdateTodoList(BTreeMap<NaiveDate, Vec<FurTodo>>),
     UserAutoLogoutComplete,
     UserEmailChanged(String),
     UserLoginPressed,
@@ -311,8 +314,9 @@ impl Furtherance {
 
         let mut furtherance = Furtherance {
             current_view: settings.default_view,
-            delete_ids_from_context: None,
+            delete_tasks_from_context: None,
             delete_shortcut_from_context: None,
+            delete_todo_uid: None,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
             fur_settings: settings,
@@ -485,7 +489,7 @@ impl Furtherance {
                 self.inspector_view = Some(FurInspectorView::AddTaskToGroup);
             }
             Message::AlertClose => {
-                self.delete_ids_from_context = None;
+                self.delete_tasks_from_context = None;
                 self.delete_shortcut_from_context = None;
                 self.displayed_alert = None;
             }
@@ -738,11 +742,11 @@ impl Furtherance {
                 );
             }
             Message::DeleteTasks => {
-                if let Some(tasks_to_delete) = &self.delete_ids_from_context {
+                if let Some(tasks_to_delete) = &self.delete_tasks_from_context {
                     if let Err(e) = db_delete_tasks_by_ids(tasks_to_delete) {
                         eprintln!("Failed to delete tasks: {}", e);
                     }
-                    self.delete_ids_from_context = None;
+                    self.delete_tasks_from_context = None;
                     self.inspector_view = None;
                     self.group_to_edit = None;
                     self.task_to_edit = None;
@@ -768,7 +772,7 @@ impl Furtherance {
             }
             Message::DeleteTasksFromContext(task_group_ids) => {
                 let number_of_tasks = task_group_ids.len();
-                self.delete_ids_from_context = Some(task_group_ids);
+                self.delete_tasks_from_context = Some(task_group_ids);
                 let delete_confirmation = self.fur_settings.show_delete_confirmation;
 
                 return Task::perform(
@@ -786,7 +790,39 @@ impl Furtherance {
                     |msg| msg,
                 );
             }
-            Message::DeleteTodo(uid) => { // TODO:
+            Message::DeleteTodo => {
+                if let Some(todo_to_delete) = &self.delete_todo_uid {
+                    if let Err(e) = db_delete_todo_by_id(todo_to_delete) {
+                        eprintln!("Failed to delete todo: {}", e);
+                    }
+                    self.delete_todo_uid = None;
+                    self.inspector_view = None;
+                    self.todo_to_edit = None;
+                    self.displayed_alert = None;
+                    return messages::update_todo_list();
+                } else if let Some(todo_to_edit) = &self.todo_to_edit {
+                    self.inspector_view = None;
+                    if let Err(e) = db_delete_todo_by_id(&todo_to_edit.uid.clone()) {
+                        eprintln!("Failed to delete todo: {}", e);
+                    }
+                    self.todo_to_edit = None;
+                    self.displayed_alert = None;
+                    return messages::update_todo_list();
+                }
+            }
+            Message::DeleteTodoPressed(id) => {
+                self.delete_todo_uid = Some(id);
+                let delete_confirmation = self.fur_settings.show_delete_confirmation;
+                return Task::perform(
+                    async move {
+                        if delete_confirmation {
+                            Message::ShowAlert(FurAlert::DeleteTodoConfirmation)
+                        } else {
+                            Message::DeleteTodo
+                        }
+                    },
+                    |msg| msg,
+                );
             }
             Message::Done => {}
             Message::EditGroup(task_group) => {
@@ -1687,8 +1723,10 @@ impl Furtherance {
                         Ok(_) => {
                             self.inspector_view = None;
                             self.todo_to_edit = None;
-                            self.todos = todos::get_all_todos();
-                            return messages::sync_after_change(&self.fur_user);
+                            let mut tasks = vec![];
+                            tasks.push(messages::update_todo_list());
+                            tasks.push(messages::sync_after_change(&self.fur_user));
+                            return chain_tasks(tasks);
                         }
                         Err(e) => eprintln!("Failed to update todo in database: {}", e),
                     }
@@ -1710,8 +1748,10 @@ impl Furtherance {
                         Ok(_) => {
                             self.inspector_view = None;
                             self.todo_to_add = None;
-                            self.todos = todos::get_all_todos();
-                            return messages::sync_after_change(&self.fur_user);
+                            let mut tasks = vec![];
+                            tasks.push(messages::update_todo_list());
+                            tasks.push(messages::sync_after_change(&self.fur_user));
+                            return chain_tasks(tasks);
                         }
                         Err(e) => eprintln!("Error adding todo: {}", e),
                     }
@@ -2863,6 +2903,9 @@ impl Furtherance {
                 if let Some(todays_todos) = self.todos.get_mut(&today) {
                     *todays_todos = new_todos;
                 }
+            }
+            Message::UpdateTodoList(new_list) => {
+                self.todos = new_list;
             }
             Message::UserEmailChanged(new_email) => {
                 self.fur_user_fields.email = new_email;
@@ -4906,11 +4949,7 @@ impl Furtherance {
                     row![
                         horizontal_space(),
                         button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
-                            .on_press(if self.fur_settings.show_delete_confirmation {
-                                Message::ShowAlert(FurAlert::DeleteTaskConfirmation)
-                            } else {
-                                Message::DeleteTasks
-                            })
+                            .on_press(Message::DeleteTodoPressed(todo_to_edit.uid.clone()))
                             .style(button::text),
                     ],
                     text_input(&todo_to_edit.task, &todo_to_edit.new_task)
@@ -5123,6 +5162,30 @@ impl Furtherance {
                                 .width(Length::Fill),
                         )
                         .on_press(Message::DeleteTasks)
+                        .style(button::danger),
+                    );
+                }
+                FurAlert::DeleteTodoConfirmation => {
+                    alert_text = self.localization.get_message("delete-todo-question", None);
+                    alert_description = self
+                        .localization
+                        .get_message("delete-todo-description", None);
+                    close_button = Some(
+                        button(
+                            text(self.localization.get_message("cancel", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::AlertClose)
+                        .style(button::secondary),
+                    );
+                    confirmation_button = Some(
+                        button(
+                            text(self.localization.get_message("delete", None))
+                                .align_x(alignment::Horizontal::Center)
+                                .width(Length::Fill),
+                        )
+                        .on_press(Message::DeleteTodo)
                         .style(button::danger),
                     );
                 }

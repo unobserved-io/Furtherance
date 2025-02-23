@@ -140,7 +140,7 @@ pub fn todo_row<'a, 'loc>(
                     .style(style::context_menu_button_style)
                     .width(Length::Fill),
                 iced::widget::button(text(localization.get_message("delete", None)))
-                    .on_press(Message::DeleteTodo(todo_clone.uid.clone()))
+                    .on_press(Message::DeleteTodoPressed(todo_clone.uid.clone()))
                     .style(style::context_menu_button_style)
                     .width(Length::Fill),
             ])

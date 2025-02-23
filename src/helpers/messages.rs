@@ -3,7 +3,9 @@ use std::time::Duration;
 use iced::Task;
 use tokio::time;
 
-use crate::{app::Message, constants::SETTINGS_MESSAGE_DURATION, models::fur_user::FurUser};
+use crate::{
+    app::Message, constants::SETTINGS_MESSAGE_DURATION, models::fur_user::FurUser, ui::todos,
+};
 
 use super::tasks;
 
@@ -15,6 +17,13 @@ pub fn update_task_history(days_to_show: i64) -> Task<Message> {
     Task::perform(
         async move { tasks::get_task_history(days_to_show) },
         Message::UpdateTaskHistory,
+    )
+}
+
+pub fn update_todo_list() -> Task<Message> {
+    Task::perform(
+        async move { todos::get_all_todos() },
+        Message::UpdateTodoList,
     )
 }
 

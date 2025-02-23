@@ -60,6 +60,7 @@ pub enum FurAlert {
     DeleteGroupConfirmation,
     DeleteShortcutConfirmation,
     DeleteTaskConfirmation,
+    DeleteTodoConfirmation,
     Idle,
     ImportMacDatabase,
     NotifyOfSync,

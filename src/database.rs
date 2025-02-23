@@ -822,6 +822,7 @@ pub fn db_retrieve_shortcut_by_id(uid: &String) -> Result<Option<FurShortcut>> {
         None => Ok(None),
     }
 }
+
 pub fn db_delete_shortcut_by_id(uid: &str) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
     let now = chrono::Utc::now().timestamp();
@@ -1453,6 +1454,18 @@ pub fn db_set_todo_completed(uid: &str) -> Result<()> {
             is_completed = true
         WHERE uid = ?1",
         params![uid],
+    )?;
+
+    Ok(())
+}
+
+pub fn db_delete_todo_by_id(uid: &str) -> Result<()> {
+    let conn = Connection::open(db_get_directory())?;
+    let now = chrono::Utc::now().timestamp();
+
+    conn.execute(
+        "UPDATE todos SET is_deleted = 1, last_updated = ?1 WHERE uid = ?2",
+        params![now, uid],
     )?;
 
     Ok(())
