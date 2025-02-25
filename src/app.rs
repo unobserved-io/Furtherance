@@ -1240,7 +1240,7 @@ impl Furtherance {
                             EditTodoProperty::Rate => {
                                 let new_value_parsed = new_value.parse::<f32>();
                                 if new_value.is_empty() {
-                                    todo_to_add.new_rate = String::new();
+                                    todo_to_add.rate = String::new();
                                 } else if new_value.contains('$') {
                                     todo_to_add.input_error(
                                         self.localization.get_message("no-symbol-in-rate", None),
@@ -1249,7 +1249,7 @@ impl Furtherance {
                                     && has_max_two_decimals(&new_value)
                                     && new_value_parsed.unwrap_or(f32::MAX) < f32::MAX
                                 {
-                                    todo_to_add.new_rate = new_value;
+                                    todo_to_add.rate = new_value;
                                     todo_to_add.input_error(String::new());
                                 } else {
                                     todo_to_add.input_error(
@@ -1745,7 +1745,7 @@ impl Furtherance {
                         todo_to_add.task.trim().to_string(),
                         todo_to_add.project.trim().to_string(),
                         tags_without_first_pound,
-                        todo_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                        todo_to_add.rate.trim().parse::<f32>().unwrap_or(0.0),
                         todo_to_add.date,
                     )) {
                         Ok(_) => {
@@ -3084,8 +3084,8 @@ impl Furtherance {
                 ),
                 nav_button(
                     self.localization.get_message("todo", None),
-                    FurView::Todos,
-                    self.current_view == FurView::Todos
+                    FurView::Todo,
+                    self.current_view == FurView::Todo
                 ),
                 nav_button(
                     self.localization.get_message("report", None),
@@ -4367,7 +4367,7 @@ impl Furtherance {
                         &todo_to_add.tags
                     )
                     .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags)),
-                    text_input("0.00", &todo_to_add.new_rate)
+                    text_input("0.00", &todo_to_add.rate)
                         .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Rate)),
                     row![
                         text(self.localization.get_message("date-colon", None)),
@@ -5120,7 +5120,7 @@ impl Furtherance {
             match self.current_view {
                 FurView::Shortcuts => shortcuts_view,
                 FurView::Timer => timer_view,
-                FurView::Todos => todo_view,
+                FurView::Todo => todo_view,
                 FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },
