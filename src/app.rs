@@ -3284,7 +3284,7 @@ impl Furtherance {
         {
             all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
             let mut today_column: Column<'_, Message, Theme, Renderer> = column![].spacing(8);
-            for todo in todos {
+            for todo in todos.iter().sorted_by_key(|todo| todo.is_completed) {
                 today_column = today_column.push(todos::todo_row(
                     todo,
                     self.timer_is_running,
@@ -3305,7 +3305,7 @@ impl Furtherance {
             .find(|(date, _)| date == &&(Local::now().date_naive() + TimeDelta::days(1)))
         {
             all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
-            for todo in todos {
+            for todo in todos.iter().sorted_by_key(|todo| todo.is_completed) {
                 all_todo_rows = all_todo_rows.push(todos::todo_row(
                     todo,
                     self.timer_is_running,
@@ -3321,7 +3321,7 @@ impl Furtherance {
             {
                 all_todo_rows =
                     all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
-                for todo in todos {
+                for todo in todos.iter().sorted_by_key(|todo| todo.is_completed) {
                     all_todo_rows = all_todo_rows.push(todos::todo_row(
                         todo,
                         self.timer_is_running,
