@@ -3283,14 +3283,20 @@ impl Furtherance {
             .find(|(date, _)| date == &&Local::now().date_naive())
         {
             all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
+            let mut today_column: Column<'_, Message, Theme, Renderer> = column![].spacing(8);
             for todo in todos {
-                all_todo_rows = all_todo_rows.push(todos::todo_row(
+                today_column = today_column.push(todos::todo_row(
                     todo,
                     self.timer_is_running,
                     &self.fur_settings,
                     &self.localization,
                 ))
             }
+            let today_container = Container::new(today_column)
+                .padding([10, 0])
+                .width(Length::Fill)
+                .style(style::task_row);
+            all_todo_rows = all_todo_rows.push(today_container);
         }
         // Next, check for tomorrow
         if let Some((date, todos)) = self
