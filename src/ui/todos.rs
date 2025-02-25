@@ -96,7 +96,7 @@ pub fn todo_row<'a, 'loc>(
     }
 
     let todo_text: text::Rich<'_, Message, Theme, Renderer> = rich_text![
-        span(todo.task.clone())
+        span(todo.name.clone())
             .font(font::Font {
                 weight: iced::font::Weight::Bold,
                 ..Default::default()

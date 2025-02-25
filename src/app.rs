@@ -1204,7 +1204,7 @@ impl Furtherance {
                                     todo_to_add.invalid_input_error_message =
                                         self.localization.get_message("name-cannot-contain", None);
                                 } else {
-                                    todo_to_add.task = new_value;
+                                    todo_to_add.name = new_value;
                                     todo_to_add.invalid_input_error_message = String::new();
                                 }
                             }
@@ -1273,7 +1273,7 @@ impl Furtherance {
                                         self.localization.get_message("name-cannot-contain", None),
                                     );
                                 } else {
-                                    todo_to_edit.new_task = new_value;
+                                    todo_to_edit.new_name = new_value;
                                     todo_to_edit.input_error(String::new());
                                 }
                             }
@@ -1712,7 +1712,7 @@ impl Furtherance {
                         .trim()
                         .to_string();
                     match db_update_todo(&FurTodo {
-                        task: todo_to_edit.new_task.trim().to_string(),
+                        name: todo_to_edit.new_name.trim().to_string(),
                         project: todo_to_edit.new_project.trim().to_string(),
                         tags: tags_without_first_pound,
                         rate: todo_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
@@ -1742,7 +1742,7 @@ impl Furtherance {
                         .trim()
                         .to_string();
                     match db_insert_todo(&FurTodo::new(
-                        todo_to_add.task.trim().to_string(),
+                        todo_to_add.name.trim().to_string(),
                         todo_to_add.project.trim().to_string(),
                         tags_without_first_pound,
                         todo_to_add.rate.trim().parse::<f32>().unwrap_or(0.0),
@@ -4354,7 +4354,7 @@ impl Furtherance {
                 Some(todo_to_add) => column![
                     text_input(
                         &self.localization.get_message("task", None),
-                        &todo_to_add.task
+                        &todo_to_add.name
                     )
                     .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task)),
                     text_input(
@@ -4396,7 +4396,7 @@ impl Furtherance {
                                 .align_x(alignment::Horizontal::Center)
                         )
                         .style(button::primary)
-                        .on_press_maybe(if todo_to_add.task.trim().is_empty() {
+                        .on_press_maybe(if todo_to_add.name.trim().is_empty() {
                             None
                         } else {
                             Some(Message::SaveTodoEdit)
@@ -5040,7 +5040,7 @@ impl Furtherance {
                             .on_press(Message::DeleteTodoPressed(todo_to_edit.uid.clone()))
                             .style(button::text),
                     ],
-                    text_input(&todo_to_edit.task, &todo_to_edit.new_task)
+                    text_input(&todo_to_edit.name, &todo_to_edit.new_name)
                         .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task)),
                     text_input(&todo_to_edit.project, &todo_to_edit.new_project)
                         .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project)),
@@ -5084,7 +5084,7 @@ impl Furtherance {
                         )
                         .style(button::primary)
                         .on_press_maybe(
-                            if todo_to_edit.task.trim().is_empty() || !todo_to_edit.is_changed() {
+                            if todo_to_edit.name.trim().is_empty() || !todo_to_edit.is_changed() {
                                 None
                             } else {
                                 Some(Message::SaveTodoEdit)

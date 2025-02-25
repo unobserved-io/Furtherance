@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FurTodo {
-    pub task: String,
+    pub name: String,
     pub project: String,
     pub tags: String,
     pub rate: f32,
@@ -18,16 +18,16 @@ pub struct FurTodo {
 
 impl FurTodo {
     pub fn new(
-        task: String,
+        name: String,
         project: String,
         tags: String,
         rate: f32,
         date: DateTime<Local>,
     ) -> Self {
-        let uid = generate_todo_uid(&task, &date);
+        let uid = generate_todo_uid(&name, &date);
 
         FurTodo {
-            task,
+            name,
             project,
             tags,
             rate,
@@ -43,25 +43,25 @@ impl FurTodo {
 
 impl ToString for FurTodo {
     fn to_string(&self) -> String {
-        let mut task_string: String = self.task.to_string();
+        let mut todo_string: String = self.name.to_string();
 
         if !self.project.is_empty() {
-            task_string += &format!(" @{}", self.project);
+            todo_string += &format!(" @{}", self.project);
         }
         if !self.tags.is_empty() {
-            task_string += &format!(" #{}", self.tags);
+            todo_string += &format!(" #{}", self.tags);
         }
         if self.rate != 0.0 {
-            task_string += &format!(" ${:.2}", self.rate);
+            todo_string += &format!(" ${:.2}", self.rate);
         }
 
-        task_string
+        todo_string
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct TodoToAdd {
-    pub task: String,
+    pub name: String,
     pub project: String,
     pub tags: String,
     pub rate: String,
@@ -75,7 +75,7 @@ impl TodoToAdd {
     pub fn new() -> Self {
         let now = Local::now();
         TodoToAdd {
-            task: String::new(),
+            name: String::new(),
             project: String::new(),
             tags: String::new(),
             rate: format!("{:.2}", 0.0),
@@ -92,8 +92,8 @@ impl TodoToAdd {
 }
 
 pub struct TodoToEdit {
-    pub task: String,
-    pub new_task: String,
+    pub name: String,
+    pub new_name: String,
     pub date: DateTime<Local>,
     pub new_date: DateTime<Local>,
     pub displayed_date: Date,
@@ -112,8 +112,8 @@ pub struct TodoToEdit {
 impl TodoToEdit {
     pub fn new_from(todo: &FurTodo) -> Self {
         TodoToEdit {
-            task: todo.task.clone(),
-            new_task: todo.task.clone(),
+            name: todo.name.clone(),
+            new_name: todo.name.clone(),
             date: todo.date,
             new_date: todo.date,
             displayed_date: Date::from(todo.date.date_naive()),
@@ -135,7 +135,7 @@ impl TodoToEdit {
     }
 
     pub fn is_changed(&self) -> bool {
-        if self.task != self.new_task.trim()
+        if self.name != self.new_name.trim()
             || self.date != self.new_date
             || self.tags
                 != self
@@ -158,7 +158,7 @@ impl TodoToEdit {
     }
 }
 
-pub fn generate_todo_uid(task: &str, date: &DateTime<Local>) -> String {
-    let input = format!("{}{}", task, date.timestamp());
+pub fn generate_todo_uid(name: &str, date: &DateTime<Local>) -> String {
+    let input = format!("{}{}", name, date.timestamp());
     blake3::hash(input.as_bytes()).to_hex().to_string()
 }

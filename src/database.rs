@@ -1351,7 +1351,7 @@ pub fn db_retrieve_todos_between_dates(
 
     while let Some(row) = rows.next()? {
         let fur_task = FurTodo {
-            task: row.get(1)?,
+            name: row.get(1)?,
             project: row.get(2)?,
             tags: row.get(3)?,
             rate: row.get(4)?,
@@ -1384,7 +1384,7 @@ pub fn db_update_todo(todo: &FurTodo) -> Result<()> {
             last_updated = ?9
         WHERE uid = ?10",
         params![
-            todo.task,
+            todo.name,
             todo.project,
             todo.tags,
             todo.rate,
@@ -1417,7 +1417,7 @@ pub fn db_insert_todo(todo: &FurTodo) -> Result<()> {
             last_updated
         ) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
         params![
-            todo.task,
+            todo.name,
             todo.project,
             todo.tags,
             todo.rate,
