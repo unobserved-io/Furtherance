@@ -123,8 +123,6 @@ pub fn todo_row<'a, 'loc>(
     .spacing(10);
 
     if !todo.is_completed && !timer_is_running {
-        // TODO: Maybe another symbol if this task is running with the timer
-        // TODO: Show total time spent on this task?
         todo_row = todo_row.push(
             button(text(icon_to_char(Bootstrap::PlayFill)).font(BOOTSTRAP_FONT))
                 .style(button::text)
