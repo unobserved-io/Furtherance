@@ -56,10 +56,13 @@ pub struct FurSettings {
     pub show_chart_total_time_box: bool,
     pub show_daily_time_total: bool,
     pub show_delete_confirmation: bool,
-    pub show_earnings: bool,
-    pub show_project: bool,
     pub show_seconds: bool,
-    pub show_tags: bool,
+    pub show_task_earnings: bool,
+    pub show_task_project: bool,
+    pub show_task_tags: bool,
+    pub show_todo_project: bool,
+    pub show_todo_rate: bool,
+    pub show_todo_tags: bool,
 }
 
 impl Default for FurSettings {
@@ -98,10 +101,13 @@ impl Default for FurSettings {
             show_chart_total_time_box: true,
             show_daily_time_total: true,
             show_delete_confirmation: true,
-            show_earnings: true,
-            show_project: true,
             show_seconds: true,
-            show_tags: true,
+            show_task_earnings: true,
+            show_task_project: true,
+            show_task_tags: true,
+            show_todo_project: true,
+            show_todo_rate: true,
+            show_todo_tags: true,
         }
     }
 }
@@ -125,7 +131,7 @@ impl FurSettings {
             builder = builder.add_source(File::from_str(&toml, config::FileFormat::Toml));
         }
 
-        // Add new settings
+        // Add new settings to existing configuration file
         builder = builder.set_default("first_run", "true")?;
         builder = builder.set_default("notify_reminder", "false")?;
         builder = builder.set_default("notify_reminder_interval", "10")?;
@@ -134,6 +140,12 @@ impl FurSettings {
         builder = builder.set_default("needs_full_sync", "true")?;
         builder = builder.set_default("notify_of_sync", "true")?;
         builder = builder.set_default("pomodoro_notification_alarm_sound", "true")?;
+        builder = builder.set_default("show_task_earnings", "true")?;
+        builder = builder.set_default("show_task_project", "true")?;
+        builder = builder.set_default("show_task_tags", "true")?;
+        builder = builder.set_default("show_todo_project", "true")?;
+        builder = builder.set_default("show_todo_rate", "true")?;
+        builder = builder.set_default("show_todo_tags", "true")?;
 
         let config = builder.build()?;
         let settings: FurSettings = config.try_deserialize()?;
@@ -329,23 +341,38 @@ impl FurSettings {
         self.save()
     }
 
-    pub fn change_show_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
-        self.show_earnings = value.to_owned();
-        self.save()
-    }
-
-    pub fn change_show_project(&mut self, value: &bool) -> Result<(), std::io::Error> {
-        self.show_project = value.to_owned();
-        self.save()
-    }
-
     pub fn change_show_seconds(&mut self, value: &bool) -> Result<(), std::io::Error> {
         self.show_seconds = value.to_owned();
         self.save()
     }
 
-    pub fn change_show_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
-        self.show_tags = value.to_owned();
+    pub fn change_show_task_earnings(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_task_earnings = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_task_project(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_task_project = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_task_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_task_tags = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_todo_project(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_todo_project = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_todo_rate(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_todo_rate = value.to_owned();
+        self.save()
+    }
+
+    pub fn change_show_todo_tags(&mut self, value: &bool) -> Result<(), std::io::Error> {
+        self.show_todo_tags = value.to_owned();
         self.save()
     }
 

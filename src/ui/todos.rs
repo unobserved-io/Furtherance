@@ -85,11 +85,14 @@ pub fn todo_row<'a, 'loc>(
     localization: &'loc Localization,
 ) -> ContextMenu<'a, Box<dyn Fn() -> Element<'a, Message, Theme, Renderer> + 'loc>, Message> {
     let mut todo_extra_text: String = String::new();
-    if settings.show_project && !todo.project.is_empty() {
+    if settings.show_todo_project && !todo.project.is_empty() {
         todo_extra_text = format!(" @{}", todo.project);
-    };
-    if settings.show_tags && !todo.tags.is_empty() {
+    }
+    if settings.show_todo_tags && !todo.tags.is_empty() {
         todo_extra_text = todo_extra_text + &format!(" #{}", todo.tags);
+    }
+    if settings.show_todo_rate && todo.rate > 0.0 {
+        todo_extra_text = todo_extra_text + &format!(" ${}", todo.rate);
     }
 
     let todo_text: text::Rich<'_, Message, Theme, Renderer> = rich_text![

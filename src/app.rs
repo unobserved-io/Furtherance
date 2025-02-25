@@ -236,11 +236,14 @@ pub enum Message {
     SettingsShowChartTimeRecordedToggled(bool),
     SettingsShowChartTotalEarningsBoxToggled(bool),
     SettingsShowChartTotalTimeBoxToggled(bool),
-    SettingsShowProjectToggled(bool),
-    SettingsShowTagsToggled(bool),
+    SettingsShowDailyTimeTotalToggled(bool),
     SettingsShowEarningsToggled(bool),
     SettingsShowSecondsToggled(bool),
-    SettingsShowDailyTimeTotalToggled(bool),
+    SettingsShowTaskProjectToggled(bool),
+    SettingsShowTaskTagsToggled(bool),
+    SettingsShowTodoProjectToggled(bool),
+    SettingsShowTodoRateToggled(bool),
+    SettingsShowTodoTagsToggled(bool),
     SettingsTabSelected(TabId),
     ShortcutPressed(String),
     ShowAlert(FurAlert),
@@ -2121,6 +2124,11 @@ impl Furtherance {
                     );
                 }
             }
+            Message::SettingsShowDailyTimeTotalToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_daily_time_total(&new_value) {
+                    eprintln!("Failed to change show_daily_time_total in settings: {}", e);
+                }
+            }
             Message::SettingsTabSelected(new_tab) => self.settings_active_tab = new_tab,
             Message::ShortcutPressed(shortcut_task_input) => {
                 self.task_input = shortcut_task_input;
@@ -2131,18 +2139,8 @@ impl Furtherance {
                 return Task::perform(async { Message::StartStopPressed }, |msg| msg);
             }
             Message::ShowAlert(alert_to_show) => self.displayed_alert = Some(alert_to_show),
-            Message::SettingsShowProjectToggled(new_value) => {
-                if let Err(e) = self.fur_settings.change_show_project(&new_value) {
-                    eprintln!("Failed to change show_project in settings: {}", e);
-                }
-            }
-            Message::SettingsShowTagsToggled(new_value) => {
-                if let Err(e) = self.fur_settings.change_show_tags(&new_value) {
-                    eprintln!("Failed to change show_tags in settings: {}", e);
-                }
-            }
             Message::SettingsShowEarningsToggled(new_value) => {
-                if let Err(e) = self.fur_settings.change_show_earnings(&new_value) {
+                if let Err(e) = self.fur_settings.change_show_task_earnings(&new_value) {
                     eprintln!("Failed to change show_earnings in settings: {}", e);
                 }
             }
@@ -2151,9 +2149,29 @@ impl Furtherance {
                     eprintln!("Failed to change show_seconds in settings: {}", e);
                 }
             }
-            Message::SettingsShowDailyTimeTotalToggled(new_value) => {
-                if let Err(e) = self.fur_settings.change_show_daily_time_total(&new_value) {
-                    eprintln!("Failed to change show_daily_time_total in settings: {}", e);
+            Message::SettingsShowTaskProjectToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_task_project(&new_value) {
+                    eprintln!("Failed to change show_task_project in settings: {}", e);
+                }
+            }
+            Message::SettingsShowTaskTagsToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_task_tags(&new_value) {
+                    eprintln!("Failed to change show_task_tags in settings: {}", e);
+                }
+            }
+            Message::SettingsShowTodoProjectToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_todo_project(&new_value) {
+                    eprintln!("Failed to change show_todo_project in settings: {}", e);
+                }
+            }
+            Message::SettingsShowTodoRateToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_todo_rate(&new_value) {
+                    eprintln!("Failed to change show_todo_rate in settings: {}", e);
+                }
+            }
+            Message::SettingsShowTodoTagsToggled(new_value) => {
+                if let Err(e) = self.fur_settings.change_show_todo_tags(&new_value) {
+                    eprintln!("Failed to change show_todo_tags in settings: {}", e);
                 }
             }
             Message::StartStopPressed => {
@@ -3800,8 +3818,8 @@ impl Furtherance {
                             settings_heading(self.localization.get_message("task-history", None)),
                             row![
                                 text(self.localization.get_message("show-project", None)),
-                                toggler(self.fur_settings.show_project)
-                                    .on_toggle(Message::SettingsShowProjectToggled)
+                                toggler(self.fur_settings.show_task_project)
+                                    .on_toggle(Message::SettingsShowTaskProjectToggled)
                                     .width(Length::Shrink)
                                     .style(style::fur_toggler_style),
                             ]
@@ -3809,8 +3827,8 @@ impl Furtherance {
                             .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("show-tags", None)),
-                                toggler(self.fur_settings.show_tags)
-                                    .on_toggle(Message::SettingsShowTagsToggled)
+                                toggler(self.fur_settings.show_task_tags)
+                                    .on_toggle(Message::SettingsShowTaskTagsToggled)
                                     .width(Length::Shrink)
                                     .style(style::fur_toggler_style),
                             ]
@@ -3818,7 +3836,7 @@ impl Furtherance {
                             .align_y(Alignment::Center),
                             row![
                                 text(self.localization.get_message("show-earnings", None)),
-                                toggler(self.fur_settings.show_earnings)
+                                toggler(self.fur_settings.show_task_earnings)
                                     .on_toggle(Message::SettingsShowEarningsToggled)
                                     .width(Length::Shrink)
                                     .style(style::fur_toggler_style),
@@ -3838,6 +3856,34 @@ impl Furtherance {
                                 text(self.localization.get_message("show-daily-time-total", None)),
                                 toggler(self.fur_settings.show_daily_time_total)
                                     .on_toggle(Message::SettingsShowDailyTimeTotalToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
+                            ]
+                            .spacing(10)
+                            .align_y(Alignment::Center),
+                            settings_heading(self.localization.get_message("todos", None)),
+                            row![
+                                text(self.localization.get_message("show-project", None)),
+                                toggler(self.fur_settings.show_todo_project)
+                                    .on_toggle(Message::SettingsShowTodoProjectToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
+                            ]
+                            .spacing(10)
+                            .align_y(Alignment::Center),
+                            row![
+                                text(self.localization.get_message("show-tags", None)),
+                                toggler(self.fur_settings.show_todo_tags)
+                                    .on_toggle(Message::SettingsShowTodoTagsToggled)
+                                    .width(Length::Shrink)
+                                    .style(style::fur_toggler_style),
+                            ]
+                            .spacing(10)
+                            .align_y(Alignment::Center),
+                            row![
+                                text(self.localization.get_message("show-rate", None)),
+                                toggler(self.fur_settings.show_todo_rate)
+                                    .on_toggle(Message::SettingsShowTodoRateToggled)
                                     .width(Length::Shrink)
                                     .style(style::fur_toggler_style),
                             ]
@@ -5037,11 +5083,13 @@ impl Furtherance {
                                 .align_x(alignment::Horizontal::Center)
                         )
                         .style(button::primary)
-                        .on_press_maybe(if todo_to_edit.task.trim().is_empty() {
-                            None
-                        } else {
-                            Some(Message::SaveTodoEdit)
-                        })
+                        .on_press_maybe(
+                            if todo_to_edit.task.trim().is_empty() || !todo_to_edit.is_changed() {
+                                None
+                            } else {
+                                Some(Message::SaveTodoEdit)
+                            }
+                        )
                         .width(Length::Fill)
                         .style(style::primary_button_style),
                     ]
@@ -5455,10 +5503,10 @@ fn history_group_row<'a, 'loc>(
             ..Default::default()
         }),]
         .width(Length::FillPortion(6));
-    if settings.show_project && !task_group.project.is_empty() {
+    if settings.show_task_project && !task_group.project.is_empty() {
         task_details_column = task_details_column.push(text!("@{}", task_group.project));
     }
-    if settings.show_tags && !task_group.tags.is_empty() {
+    if settings.show_task_tags && !task_group.tags.is_empty() {
         task_details_column = task_details_column.push(text!("#{}", task_group.tags));
     }
 
@@ -5482,7 +5530,7 @@ fn history_group_row<'a, 'loc>(
         })]
     .align_x(Alignment::End);
 
-    if settings.show_earnings && task_group.rate > 0.0 {
+    if settings.show_task_earnings && task_group.rate > 0.0 {
         let total_earnings = task_group.rate * (task_group.total_time as f32 / 3600.0);
         totals_column = totals_column.push(text!("${:.2}", total_earnings));
     }
@@ -5592,7 +5640,7 @@ fn history_title_row<'a>(
         }
     }
 
-    if settings.show_earnings && total_earnings > 0.0 {
+    if settings.show_task_earnings && total_earnings > 0.0 {
         total_time_column = total_time_column.push(text!("${:.2}", total_earnings));
     }
 
