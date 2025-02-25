@@ -3275,11 +3275,14 @@ impl Furtherance {
                 bottom: 0.0,
                 left: 20.0,
             });
-        for (date, todos) in self.todos.iter().rev() {
+
+        // First, check for today
+        if let Some((date, todos)) = self
+            .todos
+            .iter()
+            .find(|(date, _)| date == &&Local::now().date_naive())
+        {
             all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
-            // TODO: If todos contains today's date, push that.
-            // If it contains tomorrow's date, push that
-            // Then push all other dates
             for todo in todos {
                 all_todo_rows = all_todo_rows.push(todos::todo_row(
                     todo,
@@ -3287,6 +3290,39 @@ impl Furtherance {
                     &self.fur_settings,
                     &self.localization,
                 ))
+            }
+        }
+        // Next, check for tomorrow
+        if let Some((date, todos)) = self
+            .todos
+            .iter()
+            .find(|(date, _)| date == &&(Local::now().date_naive() + TimeDelta::days(1)))
+        {
+            all_todo_rows = all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
+            for todo in todos {
+                all_todo_rows = all_todo_rows.push(todos::todo_row(
+                    todo,
+                    self.timer_is_running,
+                    &self.fur_settings,
+                    &self.localization,
+                ))
+            }
+        }
+        // Finally, show all other dates below
+        for (date, todos) in self.todos.iter().rev() {
+            if date != &Local::now().date_naive()
+                && date != &(Local::now().date_naive() + TimeDelta::days(1))
+            {
+                all_todo_rows =
+                    all_todo_rows.push(todos::todo_title_row(&date, &self.localization));
+                for todo in todos {
+                    all_todo_rows = all_todo_rows.push(todos::todo_row(
+                        todo,
+                        self.timer_is_running,
+                        &self.fur_settings,
+                        &self.localization,
+                    ))
+                }
             }
         }
 
