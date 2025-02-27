@@ -162,3 +162,11 @@ pub fn generate_todo_uid(name: &str, date: &DateTime<Local>) -> String {
     let input = format!("{}{}", name, date.timestamp());
     blake3::hash(input.as_bytes()).to_hex().to_string()
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EncryptedTodo {
+    pub encrypted_data: String,
+    pub nonce: String,
+    pub uid: String,
+    pub last_updated: i64,
+}

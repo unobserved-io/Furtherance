@@ -153,7 +153,7 @@ pub fn db_init() -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS todos (
             id INTEGER PRIMARY KEY,
-            task TEXT NOT NULL,
+            name TEXT NOT NULL,
             project TEXT,
             tags TEXT,
             rate REAL,
@@ -928,6 +928,41 @@ pub fn db_retrieve_orphaned_shortcuts(shortcut_uids: Vec<String>) -> Result<Vec<
     Ok(shortcuts)
 }
 
+pub fn db_retrieve_orphaned_todos(todo_uids: Vec<String>) -> Result<Vec<FurTodo>> {
+    let mut conn = Connection::open(db_get_directory())?;
+    let mut todos = Vec::new();
+
+    let tx = conn.transaction()?;
+    {
+        let mut stmt = tx.prepare("SELECT * FROM todos WHERE uid = ?")?;
+
+        for uid in todo_uids {
+            let todo_iter = stmt.query_map(params![uid], |row| {
+                Ok(FurTodo {
+                    name: row.get(1)?,
+                    project: row.get(2)?,
+                    tags: row.get(3)?,
+                    rate: row.get(4)?,
+                    currency: row.get(5).unwrap_or(String::new()),
+                    date: row.get(6)?,
+                    uid: row.get(7)?,
+                    is_completed: row.get(8)?,
+                    is_deleted: row.get(9)?,
+                    last_updated: row.get(10)?,
+                })
+            })?;
+
+            // Collect any matching tasks
+            for todo in todo_iter {
+                todos.push(todo?);
+            }
+        }
+    }
+
+    tx.commit()?;
+    Ok(todos)
+}
+
 pub fn db_retrieve_tasks_since_timestamp(timestamp: i64) -> Result<Vec<FurTask>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 
@@ -1336,6 +1371,33 @@ pub fn db_delete_all_credentials() -> Result<()> {
     Ok(())
 }
 
+pub fn db_retrieve_all_todos() -> Result<Vec<FurTodo>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt = conn.prepare("SELECT * FROM shortcuts ORDER BY name")?;
+    let mut rows = stmt.query(params![])?;
+
+    let mut todos: Vec<FurTodo> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_todo = FurTodo {
+            name: row.get(1)?,
+            project: row.get(2)?,
+            tags: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5).unwrap_or(String::new()),
+            date: row.get(6)?,
+            uid: row.get(7)?,
+            is_completed: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
+        };
+        todos.push(fur_todo);
+    }
+
+    Ok(todos)
+}
+
 pub fn db_retrieve_todos_between_dates(
     start_date: String,
     end_date: String,
@@ -1366,6 +1428,59 @@ pub fn db_retrieve_todos_between_dates(
     }
 
     Ok(todo_vec)
+}
+
+pub fn db_retrieve_todos_since_timestamp(timestamp: i64) -> Result<Vec<FurTodo>, rusqlite::Error> {
+    let conn = Connection::open(db_get_directory())?;
+
+    let mut stmt =
+        conn.prepare("SELECT * FROM todos WHERE last_updated >= ? ORDER BY last_updated ASC")?;
+    let mut rows = stmt.query(params![timestamp])?;
+
+    let mut todos: Vec<FurTodo> = Vec::new();
+
+    while let Some(row) = rows.next()? {
+        let fur_todo = FurTodo {
+            name: row.get(1)?,
+            project: row.get(2)?,
+            tags: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5).unwrap_or(String::new()),
+            date: row.get(6)?,
+            uid: row.get(7)?,
+            is_completed: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
+        };
+        todos.push(fur_todo);
+    }
+
+    Ok(todos)
+}
+
+pub fn db_retrieve_todo_by_id(uid: &String) -> Result<Option<FurTodo>> {
+    let conn = Connection::open(db_get_directory())?;
+    let mut stmt = conn.prepare("SELECT * FROM todos WHERE uid = ?")?;
+    let mut rows = stmt.query_map([uid.to_string()], |row| {
+        Ok(FurTodo {
+            name: row.get(1)?,
+            project: row.get(2)?,
+            tags: row.get(3)?,
+            rate: row.get(4)?,
+            currency: row.get(5).unwrap_or(String::new()),
+            date: row.get(6)?,
+            uid: row.get(7)?,
+            is_completed: row.get(8)?,
+            is_deleted: row.get(9)?,
+            last_updated: row.get(10)?,
+        })
+    })?;
+
+    match rows.next() {
+        Some(Ok(todo)) => Ok(Some(todo)),
+        Some(Err(e)) => Err(e.into()),
+        None => Ok(None),
+    }
 }
 
 pub fn db_update_todo(todo: &FurTodo) -> Result<()> {

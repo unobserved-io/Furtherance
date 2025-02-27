@@ -18,7 +18,10 @@ use std::sync::Arc;
 
 use crate::{
     database::db_update_access_token,
-    models::{fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_user::FurUser},
+    models::{
+        fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_todo::EncryptedTodo,
+        fur_user::FurUser,
+    },
     server::login::{refresh_auth_token, ApiError},
 };
 
@@ -33,6 +36,7 @@ pub struct SyncRequest {
     device_id: String,
     tasks: Vec<EncryptedTask>,
     shortcuts: Vec<EncryptedShortcut>,
+    todos: Vec<EncryptedTodo>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -40,8 +44,10 @@ pub struct SyncResponse {
     pub server_timestamp: i64,
     pub tasks: Vec<EncryptedTask>,
     pub shortcuts: Vec<EncryptedShortcut>,
+    pub todos: Vec<EncryptedTodo>,
     pub orphaned_tasks: Vec<String>,
     pub orphaned_shortcuts: Vec<String>,
+    pub orphaned_todos: Vec<String>,
 }
 
 pub async fn sync_with_server(
@@ -49,6 +55,7 @@ pub async fn sync_with_server(
     last_sync: i64,
     tasks: Vec<EncryptedTask>,
     shortcuts: Vec<EncryptedShortcut>,
+    todos: Vec<EncryptedTodo>,
 ) -> Result<SyncResponse, ApiError> {
     let client = Client::new();
     let device_id = encryption::generate_device_id().map_err(|e| {
@@ -61,6 +68,7 @@ pub async fn sync_with_server(
         device_id,
         tasks,
         shortcuts,
+        todos,
     };
 
     let mut response = client

@@ -47,7 +47,7 @@ use crate::{
         fur_shortcut::{EncryptedShortcut, FurShortcut},
         fur_task::{EncryptedTask, FurTask},
         fur_task_group::FurTaskGroup,
-        fur_todo::{FurTodo, TodoToAdd, TodoToEdit},
+        fur_todo::{EncryptedTodo, FurTodo, TodoToAdd, TodoToEdit},
         fur_user::{FurUser, FurUserFields},
         group_to_edit::GroupToEdit,
         shortcut_to_add::ShortcutToAdd,
@@ -2480,17 +2480,21 @@ impl Furtherance {
                     async move {
                         let new_tasks: Vec<FurTask>;
                         let new_shortcuts: Vec<FurShortcut>;
+                        let new_todos: Vec<FurTodo>;
 
                         if needs_full_sync {
                             new_tasks =
                                 db_retrieve_all_tasks(SortBy::StartTime, SortOrder::Ascending)
                                     .unwrap_or_default();
                             new_shortcuts = db_retrieve_all_shortcuts().unwrap_or_default();
+                            new_todos = db_retrieve_all_todos().unwrap_or_default();
                         } else {
                             new_tasks =
                                 db_retrieve_tasks_since_timestamp(last_sync).unwrap_or_default();
                             new_shortcuts = db_retrieve_shortcuts_since_timestamp(last_sync)
                                 .unwrap_or_default();
+                            new_todos =
+                                db_retrieve_todos_since_timestamp(last_sync).unwrap_or_default();
                         }
 
                         let encrypted_tasks: Vec<EncryptedTask> = new_tasks
@@ -2527,13 +2531,32 @@ impl Furtherance {
                             })
                             .collect();
 
-                        let sync_count = encrypted_tasks.len() + encrypted_shortcuts.len();
+                        let encrypted_todos: Vec<EncryptedTodo> = new_todos
+                            .into_iter()
+                            .filter_map(|todo| match encryption::encrypt(&todo, &encryption_key) {
+                                Ok((encrypted_data, nonce)) => Some(EncryptedTodo {
+                                    encrypted_data,
+                                    nonce,
+                                    uid: todo.uid,
+                                    last_updated: todo.last_updated,
+                                }),
+                                Err(e) => {
+                                    eprintln!("Failed to encrypt todo: {:?}", e);
+                                    None
+                                }
+                            })
+                            .collect();
+
+                        let sync_count = encrypted_tasks.len()
+                            + encrypted_shortcuts.len()
+                            + encrypted_todos.len();
 
                         let sync_result = sync_with_server(
                             &user,
                             last_sync,
                             encrypted_tasks,
                             encrypted_shortcuts,
+                            encrypted_todos,
                         )
                         .await;
 
@@ -2664,6 +2687,51 @@ impl Furtherance {
                             }
                         }
 
+                        // Decrypt and process server todos
+                        for encrypted_todo in response.todos {
+                            match encryption::decrypt::<FurTodo>(
+                                &encrypted_todo.encrypted_data,
+                                &encrypted_todo.nonce,
+                                &encryption_key,
+                            ) {
+                                Ok(server_todo) => {
+                                    match db_retrieve_todo_by_id(&server_todo.uid) {
+                                        Ok(Some(client_todo)) => {
+                                            // Todo exists - update it if it changed
+                                            if server_todo.last_updated > client_todo.last_updated {
+                                                if let Err(e) = db_update_todo(&server_todo) {
+                                                    eprintln!(
+                                                        "Error updating todo from server: {}",
+                                                        e
+                                                    );
+                                                } else {
+                                                    sync_count += 1;
+                                                }
+                                            }
+                                        }
+                                        Ok(None) => {
+                                            // Todo does not exist - insert it
+                                            if let Err(e) = db_insert_todo(&server_todo) {
+                                                eprintln!(
+                                                    "Error writing new todo from server: {}",
+                                                    e
+                                                );
+                                            } else {
+                                                sync_count += 1;
+                                            }
+                                        }
+                                        Err(e) => {
+                                            eprintln!(
+                                                "Error checking for existing todo from server: {}",
+                                                e
+                                            )
+                                        }
+                                    }
+                                }
+                                Err(e) => eprintln!("Failed to decrypt todo: {:?}", e),
+                            }
+                        }
+
                         // Update last sync timestamp
                         if let Err(e) = self
                             .fur_settings
@@ -2675,6 +2743,7 @@ impl Furtherance {
                         // If the database_id changed, send all tasks, or if the server has orphaned tasks, re-sync those
                         if !response.orphaned_tasks.is_empty()
                             || !response.orphaned_shortcuts.is_empty()
+                            || !response.orphaned_todos.is_empty()
                         {
                             let last_sync = self.fur_settings.last_sync;
 
@@ -2692,7 +2761,17 @@ impl Furtherance {
                                 Vec::new()
                             };
 
-                            if !orphaned_tasks.is_empty() || !orphaned_shortcuts.is_empty() {
+                            let orphaned_todos = if !response.orphaned_todos.is_empty() {
+                                db_retrieve_orphaned_todos(response.orphaned_todos)
+                                    .unwrap_or_default()
+                            } else {
+                                Vec::new()
+                            };
+
+                            if !orphaned_tasks.is_empty()
+                                || !orphaned_shortcuts.is_empty()
+                                || !orphaned_todos.is_empty()
+                            {
                                 return Task::perform(
                                     async move {
                                         let encrypted_tasks: Vec<EncryptedTask> = orphaned_tasks
@@ -2745,14 +2824,39 @@ impl Furtherance {
                                                 })
                                                 .collect();
 
-                                        sync_count +=
-                                            encrypted_tasks.len() + encrypted_shortcuts.len();
+                                        let encrypted_todos: Vec<EncryptedTodo> = orphaned_todos
+                                            .into_iter()
+                                            .filter_map(|todo| {
+                                                match encryption::encrypt(&todo, &encryption_key) {
+                                                    Ok((encrypted_data, nonce)) => {
+                                                        Some(EncryptedTodo {
+                                                            encrypted_data,
+                                                            nonce,
+                                                            uid: todo.uid,
+                                                            last_updated: todo.last_updated,
+                                                        })
+                                                    }
+                                                    Err(e) => {
+                                                        eprintln!(
+                                                            "Failed to encrypt todo: {:?}",
+                                                            e
+                                                        );
+                                                        None
+                                                    }
+                                                }
+                                            })
+                                            .collect();
+
+                                        sync_count += encrypted_tasks.len()
+                                            + encrypted_shortcuts.len()
+                                            + encrypted_todos.len();
 
                                         let sync_result = sync_with_server(
                                             &user,
                                             last_sync,
                                             encrypted_tasks,
                                             encrypted_shortcuts,
+                                            encrypted_todos,
                                         )
                                         .await;
 
@@ -2769,6 +2873,7 @@ impl Furtherance {
                         tasks.push(messages::update_task_history(
                             self.fur_settings.days_to_show,
                         ));
+                        tasks.push(messages::update_todo_list());
                         tasks.push(messages::set_positive_temp_notice(
                             &mut self.login_message,
                             self.localization.get_message(
