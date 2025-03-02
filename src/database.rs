@@ -1374,7 +1374,7 @@ pub fn db_delete_all_credentials() -> Result<()> {
 pub fn db_retrieve_all_todos() -> Result<Vec<FurTodo>, rusqlite::Error> {
     let conn = Connection::open(db_get_directory())?;
 
-    let mut stmt = conn.prepare("SELECT * FROM shortcuts ORDER BY name")?;
+    let mut stmt = conn.prepare("SELECT * FROM todos ORDER BY name")?;
     let mut rows = stmt.query(params![])?;
 
     let mut todos: Vec<FurTodo> = Vec::new();
