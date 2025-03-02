@@ -1550,12 +1550,14 @@ pub fn db_insert_todo(todo: &FurTodo) -> Result<()> {
 
 pub fn db_toggle_todo_completed(uid: &str) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+    let now = chrono::Utc::now().timestamp();
 
     conn.execute(
         "UPDATE todos SET
-            is_completed = NOT is_completed
-        WHERE uid = ?1",
-        params![uid],
+            is_completed = NOT is_completed,
+            last_updated = ?1
+        WHERE uid = ?2",
+        params![now, uid],
     )?;
 
     Ok(())
@@ -1563,12 +1565,14 @@ pub fn db_toggle_todo_completed(uid: &str) -> Result<()> {
 
 pub fn db_set_todo_completed(uid: &str) -> Result<()> {
     let conn = Connection::open(db_get_directory())?;
+    let now = chrono::Utc::now().timestamp();
 
     conn.execute(
         "UPDATE todos SET
-            is_completed = true
-        WHERE uid = ?1",
-        params![uid],
+            is_completed = true,
+            last_updated = ?1
+        WHERE uid = ?2",
+        params![now, uid],
     )?;
 
     Ok(())
@@ -1579,7 +1583,10 @@ pub fn db_delete_todo_by_id(uid: &str) -> Result<()> {
     let now = chrono::Utc::now().timestamp();
 
     conn.execute(
-        "UPDATE todos SET is_deleted = 1, last_updated = ?1 WHERE uid = ?2",
+        "UPDATE todos SET
+            is_deleted = 1,
+            last_updated = ?1
+        WHERE uid = ?2",
         params![now, uid],
     )?;
 
