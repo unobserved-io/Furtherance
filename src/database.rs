@@ -1412,7 +1412,7 @@ pub fn db_retrieve_todos_between_dates(
     let mut todo_vec: Vec<FurTodo> = Vec::new();
 
     while let Some(row) = rows.next()? {
-        let fur_task = FurTodo {
+        let fur_todo = FurTodo {
             name: row.get(1)?,
             project: row.get(2)?,
             tags: row.get(3)?,
@@ -1424,7 +1424,7 @@ pub fn db_retrieve_todos_between_dates(
             is_deleted: row.get(9)?,
             last_updated: row.get(10)?,
         };
-        todo_vec.push(fur_task);
+        todo_vec.push(fur_todo);
     }
 
     Ok(todo_vec)
@@ -1488,7 +1488,7 @@ pub fn db_update_todo(todo: &FurTodo) -> Result<()> {
 
     conn.execute(
         "UPDATE todos SET
-            task = ?1,
+            name = ?1,
             project = ?2,
             tags = ?3,
             rate = ?4,
@@ -1520,7 +1520,7 @@ pub fn db_insert_todo(todo: &FurTodo) -> Result<()> {
 
     conn.execute(
         "INSERT INTO todos (
-            task,
+            name,
             project,
             tags,
             rate,
