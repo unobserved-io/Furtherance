@@ -3382,6 +3382,12 @@ impl Furtherance {
                     .use_24h(),]
                     .align_y(Alignment::Center)
                     .spacing(10)
+                    .padding(Padding {
+                        top: 0.0,
+                        right: 0.0,
+                        bottom: 10.0,
+                        left: 0.0,
+                    })
                 } else {
                     row![]
                 },
