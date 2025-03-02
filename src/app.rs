@@ -3796,7 +3796,17 @@ impl Furtherance {
             Some(
                 button(text(self.localization.get_message("sync", None)))
                     .on_press_maybe(match self.fur_user {
-                        Some(_) => Some(Message::SyncWithServer),
+                        Some(_) => {
+                            if self
+                                .login_message
+                                .iter()
+                                .any(|v| v != &self.localization.get_message("syncing", None))
+                            {
+                                Some(Message::SyncWithServer)
+                            } else {
+                                None
+                            }
+                        }
                         None => None,
                     })
                     .style(style::primary_button_style),
