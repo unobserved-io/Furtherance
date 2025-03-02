@@ -34,7 +34,7 @@ use crate::{
     helpers::{
         color_utils::{FromHex, RandomColor, ToHex, ToSrgb},
         idle,
-        messages::{self, chain_tasks},
+        messages::{self, chain_tasks, sync_after_change},
         midnight_subscription::MidnightSubscription,
         task_actions, tasks,
     },
@@ -2990,22 +2990,25 @@ impl Furtherance {
             {
                 Some(todo) => {
                     todo.is_completed = !todo.is_completed;
-                    if let Err(e) = db_toggle_todo_completed(&uid) {
-                        eprintln!(
-                            "Failed to toggle is_completed on todo with uid {}: {}",
-                            uid, e
-                        );
-                        match self
-                            .todos
-                            .values_mut()
-                            .flat_map(|vec| vec.iter_mut())
-                            .find(|todo| todo.uid == uid)
-                        {
-                            Some(todo_undo) => todo_undo.is_completed = !todo_undo.is_completed,
-                            None => eprintln!(
-                                "Failed to undo toggle is_completed on todo with uid {}.",
-                                uid
-                            ),
+                    match db_toggle_todo_completed(&uid) {
+                        Ok(_) => return sync_after_change(&self.fur_user),
+                        Err(e) => {
+                            eprintln!(
+                                "Failed to toggle is_completed on todo with uid {}: {}",
+                                uid, e
+                            );
+                            match self
+                                .todos
+                                .values_mut()
+                                .flat_map(|vec| vec.iter_mut())
+                                .find(|todo| todo.uid == uid)
+                            {
+                                Some(todo_undo) => todo_undo.is_completed = !todo_undo.is_completed,
+                                None => eprintln!(
+                                    "Failed to undo toggle is_completed on todo with uid {}.",
+                                    uid
+                                ),
+                            }
                         }
                     }
                 }
