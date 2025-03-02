@@ -662,7 +662,7 @@ impl Furtherance {
                 if self
                     .login_message
                     .iter()
-                    .any(|v| v != &self.localization.get_message("syncing", None))
+                    .any(|message| message != &self.localization.get_message("syncing", None))
                 {
                     self.login_message = Ok(String::new());
                 }
@@ -3797,11 +3797,9 @@ impl Furtherance {
                 button(text(self.localization.get_message("sync", None)))
                     .on_press_maybe(match self.fur_user {
                         Some(_) => {
-                            if self
-                                .login_message
-                                .iter()
-                                .any(|v| v != &self.localization.get_message("syncing", None))
-                            {
+                            if self.login_message.iter().any(|message| {
+                                message != &self.localization.get_message("syncing", None)
+                            }) {
                                 Some(Message::SyncWithServer)
                             } else {
                                 None
