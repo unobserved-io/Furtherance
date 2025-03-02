@@ -659,7 +659,13 @@ impl Furtherance {
                 }
             }
             Message::ClearLoginMessage => {
-                self.login_message = Ok(String::new());
+                if self
+                    .login_message
+                    .iter()
+                    .any(|v| v != &self.localization.get_message("syncing", None))
+                {
+                    self.login_message = Ok(String::new());
+                }
             }
             Message::CreateShortcutFromTaskGroup(task_group) => {
                 let new_shortcut = FurShortcut::new(
@@ -3110,10 +3116,13 @@ impl Furtherance {
                         self.fur_user_fields.email = fur_user.email;
                         self.fur_user_fields.encryption_key = "x".repeat(key_length);
                         self.fur_user_fields.server = fur_user.server;
-                        return messages::set_positive_temp_notice(
+                        let mut tasks: Vec<Task<Message>> = vec![];
+                        tasks.push(messages::set_positive_temp_notice(
                             &mut self.login_message,
                             self.localization.get_message("login-successful", None),
-                        );
+                        ));
+                        tasks.push(messages::sync_after_change(&self.fur_user));
+                        return chain_tasks(tasks);
                     }
                 }
                 Err(e) => {
