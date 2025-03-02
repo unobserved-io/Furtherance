@@ -844,9 +844,10 @@ pub fn db_delete_everything() -> Result<()> {
             BEGIN TRANSACTION;
             UPDATE tasks SET is_deleted = 1, last_updated = {};
             UPDATE shortcuts SET is_deleted = 1, last_updated = {};
+            UPDATE todos SET is_deleted = 1, last_updated = {};
             COMMIT;
         ",
-        now, now
+        now, now, now
     ))?;
 
     Ok(())
