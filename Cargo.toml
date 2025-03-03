@@ -1,6 +1,6 @@
 [package]
 name = "furtherance"
-version = "25.1.2"
+version = "25.3.0"
 authors = ["Ricky Kresslein <ricky@unobserved.io>"]
 description = "Track your time without being tracked."
 license = "GPL-3.0-or-later"
@@ -9,7 +9,7 @@ edition = "2021"
 [package.metadata.bundle]
 name = "Furtherance"
 identifier = "io.unobserved.furtherance"
-copyright = "© Unobserved 2024"
+copyright = "© Unobserved 2025"
 icon = [
     "assets/icon/16x16.png",
     "assets/icon/16x16@2x.png",
