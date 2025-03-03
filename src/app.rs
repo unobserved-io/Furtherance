@@ -3422,13 +3422,15 @@ impl Furtherance {
         });
 
         // MARK: TODOS
-        let mut all_todo_rows: Column<'_, Message, Theme, Renderer> =
-            Column::new().spacing(8).padding(Padding {
+        let mut all_todo_rows: Column<'_, Message, Theme, Renderer> = Column::new()
+            .spacing(8)
+            .padding(Padding {
                 top: 20.0,
                 right: 20.0,
                 bottom: 0.0,
                 left: 20.0,
-            });
+            })
+            .width(Length::Fill);
 
         // First, check for today
         if let Some((date, todos)) = self
