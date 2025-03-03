@@ -4,7 +4,7 @@ use chrono::{Datelike, Local, NaiveDate, TimeDelta};
 use iced::{
     font,
     widget::{button, column, horizontal_space, rich_text, row, span, text, Container, Row},
-    Alignment, Element, Length, Padding, Renderer, Theme,
+    Alignment, Element, Length, Renderer, Theme,
 };
 use iced_aw::ContextMenu;
 use iced_fonts::{bootstrap::icon_to_char, Bootstrap, BOOTSTRAP_FONT};
