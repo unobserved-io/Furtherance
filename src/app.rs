@@ -713,7 +713,13 @@ impl Furtherance {
                             eprintln!("Failed to retrieve shortcuts from database: {}", e)
                         }
                     };
-                    return messages::update_task_history(self.fur_settings.days_to_show);
+                    let mut tasks = vec![];
+                    tasks.push(messages::update_task_history(
+                        self.fur_settings.days_to_show,
+                    ));
+                    tasks.push(messages::update_todo_list());
+                    tasks.push(messages::sync_after_change(&self.fur_user));
+                    return chain_tasks(tasks);
                 }
                 Err(_) => {
                     self.settings_more_message = Err(self
