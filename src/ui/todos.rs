@@ -4,7 +4,7 @@ use chrono::{Datelike, Local, NaiveDate, TimeDelta};
 use iced::{
     font,
     widget::{button, column, horizontal_space, rich_text, row, span, text, Container, Row},
-    Alignment, Element, Length, Renderer, Theme,
+    Alignment, Element, Length, Padding, Renderer, Theme,
 };
 use iced_aw::ContextMenu;
 use iced_fonts::{bootstrap::icon_to_char, Bootstrap, BOOTSTRAP_FONT};
@@ -116,8 +116,8 @@ pub fn todo_row<'a, 'loc>(
         )
         .on_press(Message::ToggleTodoCompletePressed(todo.uid.clone()))
         .style(button::text),
-        todo_text,
-        horizontal_space().width(Length::Fill),
+        todo_text.width(Length::FillPortion(10)),
+        horizontal_space().width(Length::FillPortion(1)),
     ]
     .align_y(Alignment::Center)
     .spacing(10);
