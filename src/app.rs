@@ -3255,14 +3255,21 @@ impl Furtherance {
                 &self.localization,
             ));
         }
-        let shortcuts_view = column![
+
+        let new_shortcut_row = if self.inspector_view.is_none() {
             row![
                 horizontal_space(),
                 button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
                     .on_press(Message::AddNewShortcutPressed)
                     .style(button::text),
             ]
-            .padding([10, 20]),
+            .padding([10, 20])
+        } else {
+            row![].padding([10, 20])
+        };
+
+        let shortcuts_view = column![
+            new_shortcut_row,
             Scrollable::new(column![shortcuts_row.width(Length::Fill).wrap()].padding(20))
         ];
 
