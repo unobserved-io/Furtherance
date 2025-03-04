@@ -1719,10 +1719,18 @@ impl Furtherance {
                     let tags_without_first_pound = todo_to_edit
                         .new_tags
                         .trim()
-                        .strip_prefix('#')
-                        .unwrap_or(&todo_to_edit.new_tags)
-                        .trim()
-                        .to_string();
+                        .split('#')
+                        .filter_map(|tag| {
+                            let trimmed = tag.trim();
+                            if trimmed.is_empty() {
+                                None
+                            } else {
+                                Some(trimmed.to_lowercase())
+                            }
+                        })
+                        .sorted()
+                        .collect::<Vec<String>>()
+                        .join(" #");
                     match db_update_todo(&FurTodo {
                         name: todo_to_edit.new_name.trim().to_string(),
                         project: todo_to_edit.new_project.trim().to_string(),
@@ -1749,10 +1757,18 @@ impl Furtherance {
                     let tags_without_first_pound = todo_to_add
                         .tags
                         .trim()
-                        .strip_prefix('#')
-                        .unwrap_or(&todo_to_add.tags)
-                        .trim()
-                        .to_string();
+                        .split('#')
+                        .filter_map(|tag| {
+                            let trimmed = tag.trim();
+                            if trimmed.is_empty() {
+                                None
+                            } else {
+                                Some(trimmed.to_lowercase())
+                            }
+                        })
+                        .sorted()
+                        .collect::<Vec<String>>()
+                        .join(" #");
                     match db_insert_todo(&FurTodo::new(
                         todo_to_add.name.trim().to_string(),
                         todo_to_add.project.trim().to_string(),
