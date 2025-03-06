@@ -4422,19 +4422,39 @@ impl Furtherance {
                         &self.localization.get_message("task-name", None),
                         &task_to_add.name
                     )
-                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
+                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name))
+                    .on_submit_maybe(if task_to_add.name.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::SaveTaskEdit)
+                    }),
                     text_input(
                         &self.localization.get_message("project", None),
                         &task_to_add.project
                     )
-                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
+                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project))
+                    .on_submit_maybe(if task_to_add.name.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::SaveTaskEdit)
+                    }),
                     text_input(
                         &self.localization.get_message("hashtag-tags", None),
                         &task_to_add.tags
                     )
-                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
+                    .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags))
+                    .on_submit_maybe(if task_to_add.name.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::SaveTaskEdit)
+                    }),
                     text_input("0.00", &task_to_add.new_rate)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Rate)),
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Rate))
+                        .on_submit_maybe(if task_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveTaskEdit)
+                        }),
                     row![
                         text(self.localization.get_message("start-colon", None)),
                         date_picker(
@@ -4635,24 +4655,51 @@ impl Furtherance {
                         &self.localization.get_message("task-name", None),
                         &shortcut_to_add.name
                     )
-                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name))
+                    .on_submit_maybe(
+                        if shortcut_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        }
+                    ),
                     text_input(
                         &self.localization.get_message("project", None),
                         &shortcut_to_add.project
                     )
                     .on_input(|s| {
                         Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
-                    }),
+                    })
+                    .on_submit_maybe(
+                        if shortcut_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        }
+                    ),
                     text_input(
                         &self.localization.get_message("hashtag-tags", None),
                         &shortcut_to_add.tags
                     )
-                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags))
+                    .on_submit_maybe(
+                        if shortcut_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        }
+                    ),
                     row![
                         text("$"),
-                        text_input("0.00", &shortcut_to_add.new_rate).on_input(|s| {
-                            Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
-                        }),
+                        text_input("0.00", &shortcut_to_add.new_rate)
+                            .on_input(|s| {
+                                Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
+                            })
+                            .on_submit_maybe(if shortcut_to_add.name.trim().is_empty() {
+                                None
+                            } else {
+                                Some(Message::SaveShortcut)
+                            }),
                         text(self.localization.get_message("per-hour", None)),
                     ]
                     .spacing(3)
@@ -4823,24 +4870,61 @@ impl Furtherance {
                         &self.localization.get_message("task-name", None),
                         &shortcut_to_edit.new_name
                     )
-                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name)),
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Name))
+                    .on_submit_maybe(
+                        if shortcut_to_edit.new_name.trim().is_empty()
+                            || !shortcut_to_edit.is_changed()
+                        {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        }
+                    ),
                     text_input(
                         &self.localization.get_message("project", None),
                         &shortcut_to_edit.new_project
                     )
                     .on_input(|s| {
                         Message::EditShortcutTextChanged(s, EditTaskProperty::Project)
-                    }),
+                    })
+                    .on_submit_maybe(
+                        if shortcut_to_edit.new_name.trim().is_empty()
+                            || !shortcut_to_edit.is_changed()
+                        {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        }
+                    ),
                     text_input(
                         &self.localization.get_message("hashtag-tags", None),
                         &shortcut_to_edit.new_tags
                     )
-                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags)),
+                    .on_input(|s| Message::EditShortcutTextChanged(s, EditTaskProperty::Tags))
+                    .on_submit_maybe(
+                        if shortcut_to_edit.new_name.trim().is_empty()
+                            || !shortcut_to_edit.is_changed()
+                        {
+                            None
+                        } else {
+                            Some(Message::SaveShortcut)
+                        }
+                    ),
                     row![
                         text("$"),
-                        text_input("0.00", &shortcut_to_edit.new_rate).on_input(|s| {
-                            Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
-                        }),
+                        text_input("0.00", &shortcut_to_edit.new_rate)
+                            .on_input(|s| {
+                                Message::EditShortcutTextChanged(s, EditTaskProperty::Rate)
+                            })
+                            .on_submit_maybe(
+                                if shortcut_to_edit.new_name.trim().is_empty()
+                                    || !shortcut_to_edit.is_changed()
+                                {
+                                    None
+                                } else {
+                                    Some(Message::SaveShortcut)
+                                }
+                            ),
                         text(self.localization.get_message("per-hour", None)),
                     ]
                     .spacing(3)
@@ -4931,18 +5015,50 @@ impl Furtherance {
                             .style(button::text),
                     ],
                     text_input(&task_to_edit.name, &task_to_edit.new_name)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name)),
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Name))
+                        .on_submit_maybe(
+                            if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
+                            {
+                                Some(Message::SaveTaskEdit)
+                            } else {
+                                None
+                            }
+                        ),
                     text_input(&task_to_edit.project, &task_to_edit.new_project)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project)),
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Project))
+                        .on_submit_maybe(
+                            if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
+                            {
+                                Some(Message::SaveTaskEdit)
+                            } else {
+                                None
+                            }
+                        ),
                     text_input(&task_to_edit.tags, &task_to_edit.new_tags)
-                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags)),
+                        .on_input(|s| Message::EditTaskTextChanged(s, EditTaskProperty::Tags))
+                        .on_submit_maybe(
+                            if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
+                            {
+                                Some(Message::SaveTaskEdit)
+                            } else {
+                                None
+                            }
+                        ),
                     row![
                         text("$"),
                         text_input(
                             &format!("{:.2}", &task_to_edit.rate),
                             &task_to_edit.new_rate
                         )
-                        .on_input(|s| { Message::EditTaskTextChanged(s, EditTaskProperty::Rate) }),
+                        .on_input(|s| { Message::EditTaskTextChanged(s, EditTaskProperty::Rate) })
+                        .on_submit_maybe(
+                            if task_to_edit.is_changed() && !task_to_edit.new_name.trim().is_empty()
+                            {
+                                Some(Message::SaveTaskEdit)
+                            } else {
+                                None
+                            }
+                        ),
                     ]
                     .align_y(Alignment::Center)
                     .spacing(5),
