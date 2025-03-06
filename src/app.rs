@@ -1468,7 +1468,12 @@ impl Furtherance {
                 };
             }
             Message::MidnightReached => {
-                return messages::update_task_history(self.fur_settings.days_to_show);
+                let mut tasks = vec![];
+                tasks.push(messages::update_task_history(
+                    self.fur_settings.days_to_show,
+                ));
+                tasks.push(messages::update_todo_list());
+                return chain_tasks(tasks);
             }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
