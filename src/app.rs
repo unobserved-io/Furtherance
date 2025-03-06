@@ -4541,19 +4541,39 @@ impl Furtherance {
                         &self.localization.get_message("task", None),
                         &todo_to_add.name
                     )
-                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task)),
+                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task))
+                    .on_submit_maybe(if todo_to_add.name.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::SaveTodoEdit)
+                    }),
                     text_input(
                         &self.localization.get_message("project", None),
                         &todo_to_add.project
                     )
-                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project)),
+                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project))
+                    .on_submit_maybe(if todo_to_add.name.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::SaveTodoEdit)
+                    }),
                     text_input(
                         &self.localization.get_message("hashtag-tags", None),
                         &todo_to_add.tags
                     )
-                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags)),
+                    .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags))
+                    .on_submit_maybe(if todo_to_add.name.trim().is_empty() {
+                        None
+                    } else {
+                        Some(Message::SaveTodoEdit)
+                    }),
                     text_input("0.00", &todo_to_add.rate)
-                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Rate)),
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Rate))
+                        .on_submit_maybe(if todo_to_add.name.trim().is_empty() {
+                            None
+                        } else {
+                            Some(Message::SaveTodoEdit)
+                        }),
                     row![
                         text(self.localization.get_message("date-colon", None)),
                         date_picker(
@@ -5226,18 +5246,46 @@ impl Furtherance {
                             .style(button::text),
                     ],
                     text_input(&todo_to_edit.name, &todo_to_edit.new_name)
-                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task)),
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Task))
+                        .on_submit_maybe(
+                            if todo_to_edit.name.trim().is_empty() || !todo_to_edit.is_changed() {
+                                None
+                            } else {
+                                Some(Message::SaveTodoEdit)
+                            }
+                        ),
                     text_input(&todo_to_edit.project, &todo_to_edit.new_project)
-                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project)),
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Project))
+                        .on_submit_maybe(
+                            if todo_to_edit.name.trim().is_empty() || !todo_to_edit.is_changed() {
+                                None
+                            } else {
+                                Some(Message::SaveTodoEdit)
+                            }
+                        ),
                     text_input(&todo_to_edit.tags, &todo_to_edit.new_tags)
-                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags)),
+                        .on_input(|s| Message::EditTodoTextChanged(s, EditTodoProperty::Tags))
+                        .on_submit_maybe(
+                            if todo_to_edit.name.trim().is_empty() || !todo_to_edit.is_changed() {
+                                None
+                            } else {
+                                Some(Message::SaveTodoEdit)
+                            }
+                        ),
                     row![
                         text("$"),
                         text_input(
                             &format!("{:.2}", &todo_to_edit.rate),
                             &todo_to_edit.new_rate
                         )
-                        .on_input(|s| { Message::EditTodoTextChanged(s, EditTodoProperty::Rate) }),
+                        .on_input(|s| { Message::EditTodoTextChanged(s, EditTodoProperty::Rate) })
+                        .on_submit_maybe(
+                            if todo_to_edit.name.trim().is_empty() || !todo_to_edit.is_changed() {
+                                None
+                            } else {
+                                Some(Message::SaveTodoEdit)
+                            }
+                        ),
                     ]
                     .align_y(Alignment::Center)
                     .spacing(5),
