@@ -202,6 +202,7 @@ pub enum Message {
     PomodoroStop,
     PomodoroStopAfterBreak,
     RepeatLastTaskPressed(String),
+    RepeatTodoToday(FurTodo),
     ReportTabSelected(TabId),
     SaveGroupEdit,
     SaveShortcut,
@@ -1562,6 +1563,23 @@ impl Furtherance {
                 self.task_to_edit = None;
                 self.current_view = FurView::Timer;
                 return Task::perform(async { Message::StartStopPressed }, |msg| msg);
+            }
+            Message::RepeatTodoToday(todo_to_copy) => {
+                match db_insert_todo(&FurTodo::new(
+                    todo_to_copy.name,
+                    todo_to_copy.project,
+                    todo_to_copy.tags,
+                    todo_to_copy.rate,
+                    Local::now(),
+                )) {
+                    Ok(_) => {
+                        let mut tasks = vec![];
+                        tasks.push(messages::update_todo_list());
+                        tasks.push(messages::sync_after_change(&self.fur_user));
+                        return chain_tasks(tasks);
+                    }
+                    Err(e) => eprintln!("Error duplicating todo: {}", e),
+                }
             }
             Message::ReportTabSelected(new_tab) => self.report.active_tab = new_tab,
             Message::SaveGroupEdit => {

@@ -135,18 +135,31 @@ pub fn todo_row<'a, 'loc>(
     ContextMenu::new(
         todo_row,
         Box::new(move || -> Element<'a, Message, Theme, Renderer> {
-            Container::new(column![
-                iced::widget::button(text(localization.get_message("edit", None)))
-                    .on_press(Message::EditTodo(todo_clone.clone()))
-                    .style(style::context_menu_button_style)
-                    .width(Length::Fill),
+            let mut menu_items =
+                column![
+                    iced::widget::button(text(localization.get_message("edit", None)))
+                        .on_press(Message::EditTodo(todo_clone.clone()))
+                        .style(style::context_menu_button_style)
+                        .width(Length::Fill),
+                ];
+
+            if todo_clone.date.date_naive() != Local::now().date_naive() {
+                menu_items = menu_items.push(
+                    iced::widget::button(text(localization.get_message("repeat-today", None)))
+                        .on_press(Message::RepeatTodoToday(todo_clone.clone()))
+                        .style(style::context_menu_button_style)
+                        .width(Length::Fill),
+                );
+            }
+
+            menu_items = menu_items.push(
                 iced::widget::button(text(localization.get_message("delete", None)))
                     .on_press(Message::DeleteTodoPressed(todo_clone.uid.clone()))
                     .style(style::context_menu_button_style)
                     .width(Length::Fill),
-            ])
-            .max_width(150)
-            .into()
+            );
+
+            Container::new(menu_items).max_width(150).into()
         }),
     )
 }

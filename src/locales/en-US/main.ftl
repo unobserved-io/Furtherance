@@ -26,6 +26,7 @@ cancel = Cancel
 save = Save
 delete = Delete
 edit = Edit
+repeat-today = Repeat today
 ok = OK
 stop = Stop
 continue = Continue
