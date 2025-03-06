@@ -18,7 +18,7 @@ It allows you to track time spent on different activities without worrying about
 ## Getting Started
 
 ### Install
-_**Furtherance has been re-written and uses a new database structure. Back up your old database (to either .db or .csv) before converting the database with the new app**_
+_**Furtherance has been re-written and uses a new database structure. If you are still using the GTK version, back up your old database (to either .db or .csv) before converting the database with the new app**_
 
 **Linux**
 
