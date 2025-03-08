@@ -49,6 +49,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="25.3.0" date="2025-03-08">
+      <description translate="no">
+        <ul>
+          <li>Added Todos - A simple todo list built right into Furtherance. Set your daily goals and start the timer for each todo when you're ready.</li>
+          <li>Sync's automatically after login (if using Furtherance Sync)</li>
+          <li>Pressing enter saves when adding or modifying an item from the inspector</li>
+        </ul>
+      </description>
+    </release>
     <release version="25.1.2" date="2025-01-14">
       <description translate="no">
         <ul>
