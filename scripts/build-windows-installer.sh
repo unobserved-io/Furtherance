@@ -10,7 +10,7 @@ scripts/build-windows.sh $([[ "$ARCH" == "arm64" ]] && echo "aarch64" || echo "x
 dotnet tool install --global wix
 
 # add required wix extension
-wix extension add WixToolset.UI.wixext
+wix extension add -g WixToolset.UI.wixext/5.0.2
 
 # build the installer
 wix build -pdbtype none -arch $ARCH -d PackageVersion=$FURTHERANCE_VERSION $WXS_FILE -o target/release/furtherance-installer-$ARCH.msi -ext WixToolset.UI.wixext
