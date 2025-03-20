@@ -35,6 +35,8 @@ _**Furtherance has been re-written and uses a new database structure. If you are
 * Install from the [Microsoft Store](https://apps.microsoft.com/detail/9nhg98s3vr3w)
 * Use the .msi installer provided in the latest release.
 
+**iOS and Android are [coming soon!](https://github.com/unobserved-io/furtherance-mobile)**
+
 ### Use
 Type in the `name` of the task you are working on, add a `@Project`, some `#tags`, and a `$rate`, and press start. That's really all there is to it.
 
