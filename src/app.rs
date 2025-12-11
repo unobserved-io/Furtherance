@@ -3302,7 +3302,7 @@ impl Furtherance {
             ]
             .padding([10, 20])
         } else {
-            row![].padding([10, 20])
+            row![button(" ").style(button::text)].padding([10, 20])
         };
 
         let shortcuts_view = column![
@@ -3356,14 +3356,15 @@ impl Furtherance {
         let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center);
         // TODO: Make sure this works after changing .push_maybe
         timer_view = timer_view.push(if self.inspector_view.is_none() {
-            Some(row![
+            row![
                 space::horizontal(),
-                button(button(bootstrap::plus_lg()))
+                button(bootstrap::plus_lg())
                     .on_press(Message::AddNewTaskPressed)
                     .style(button::text),
-            ])
+            ]
+            .padding([10, 20])
         } else {
-            None
+            row![button(" ").style(button::text)].padding([10, 20])
         });
 
         // TODO: Make sure this works after changing .push_maybe
@@ -3528,14 +3529,15 @@ impl Furtherance {
         // Add new todo button
         // TODO: Make sure this works after changing .push_maybe
         todo_view = todo_view.push(if self.inspector_view.is_none() {
-            Some(row![
+            row![
                 space::horizontal(),
                 button(bootstrap::plus_lg())
                     .on_press(Message::AddNewTodoPressed)
                     .style(button::text),
-            ])
+            ]
+            .padding([10, 20])
         } else {
-            None
+            row![button(" ").style(button::text)].padding([10, 20])
         });
 
         todo_view = todo_view.push(Scrollable::new(all_todo_rows).height(Length::Fill));
