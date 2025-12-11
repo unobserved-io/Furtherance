@@ -2655,26 +2655,26 @@ impl Furtherance {
                                         Ok(Some(client_task)) => {
                                             // Task exists - update it if it changed
                                             if server_task.last_updated > client_task.last_updated {
-                                                if let Err(e) = db_update_task(&server_task) {
+                                                match db_update_task(&server_task) { Err(e) => {
                                                     eprintln!(
                                                         "Error updating task from server: {}",
                                                         e
                                                     );
-                                                } else {
+                                                } _ => {
                                                     sync_count += 1;
-                                                }
+                                                }}
                                             }
                                         }
                                         Ok(None) => {
                                             // Task does not exist - insert it
-                                            if let Err(e) = db_insert_task(&server_task) {
+                                            match db_insert_task(&server_task) { Err(e) => {
                                                 eprintln!(
                                                     "Error writing new task from server: {}",
                                                     e
                                                 );
-                                            } else {
+                                            } _ => {
                                                 sync_count += 1;
-                                            }
+                                            }}
                                         }
                                         Err(e) => {
                                             eprintln!(
@@ -2702,27 +2702,27 @@ impl Furtherance {
                                             if server_shortcut.last_updated
                                                 > client_shortcut.last_updated
                                             {
-                                                if let Err(e) = db_update_shortcut(&server_shortcut)
-                                                {
+                                                match db_update_shortcut(&server_shortcut)
+                                                { Err(e) => {
                                                     eprintln!(
                                                         "Error updating shortcut from server: {}",
                                                         e
                                                     );
-                                                } else {
+                                                } _ => {
                                                     sync_count += 1;
-                                                }
+                                                }}
                                             }
                                         }
                                         Ok(None) => {
                                             // Shortcut does not exist - insert it
-                                            if let Err(e) = db_insert_shortcut(&server_shortcut) {
+                                            match db_insert_shortcut(&server_shortcut) { Err(e) => {
                                                 eprintln!(
                                                     "Error writing new shortcut from server: {}",
                                                     e
                                                 );
-                                            } else {
+                                            } _ => {
                                                 sync_count += 1;
-                                            }
+                                            }}
                                         }
                                         Err(e) => {
                                             eprintln!(
@@ -2748,26 +2748,26 @@ impl Furtherance {
                                         Ok(Some(client_todo)) => {
                                             // Todo exists - update it if it changed
                                             if server_todo.last_updated > client_todo.last_updated {
-                                                if let Err(e) = db_update_todo(&server_todo) {
+                                                match db_update_todo(&server_todo) { Err(e) => {
                                                     eprintln!(
                                                         "Error updating todo from server: {}",
                                                         e
                                                     );
-                                                } else {
+                                                } _ => {
                                                     sync_count += 1;
-                                                }
+                                                }}
                                             }
                                         }
                                         Ok(None) => {
                                             // Todo does not exist - insert it
-                                            if let Err(e) = db_insert_todo(&server_todo) {
+                                            match db_insert_todo(&server_todo) { Err(e) => {
                                                 eprintln!(
                                                     "Error writing new todo from server: {}",
                                                     e
                                                 );
-                                            } else {
+                                            } _ => {
                                                 sync_count += 1;
-                                            }
+                                            }}
                                         }
                                         Err(e) => {
                                             eprintln!(
@@ -6477,9 +6477,9 @@ pub fn write_furtasks_to_csv(
     path: PathBuf,
     localization: &Localization,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if let Ok(file) = std::fs::File::create(path) {
-        if let Ok(tasks) = db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending)
-        {
+    match std::fs::File::create(path) { Ok(file) => {
+        match db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending)
+        { Ok(tasks) => {
             let mut csv_writer = Writer::from_writer(file);
             csv_writer.write_record(&[
                 "Name",
@@ -6509,14 +6509,14 @@ pub fn write_furtasks_to_csv(
 
             csv_writer.flush()?;
             Ok(())
-        } else {
+        } _ => {
             Err(localization
                 .get_message("error-retrieving-tasks", None)
                 .into())
-        }
-    } else {
+        }}
+    } _ => {
         Err(localization.get_message("error-creating-file", None).into())
-    }
+    }}
 }
 
 pub fn verify_csv(
