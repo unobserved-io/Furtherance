@@ -3337,7 +3337,8 @@ impl Furtherance {
                 total_earnings,
                 &self.fur_settings,
                 if self.timer_start_time.date_naive() == *date {
-                    Some((self.timer_is_running, &self.timer_text))
+                    let (_, _, _, rate) = split_task_input(&self.task_input);
+                    Some((self.timer_is_running, &self.timer_text, rate))
                 } else {
                     None
                 },
@@ -5930,52 +5931,40 @@ fn history_title_row<'a>(
     total_time: i64,
     total_earnings: f32,
     settings: &FurSettings,
-    running_timer: Option<(bool, &str)>,
+    running_timer: Option<(bool, &str, f32)>,
     localization: &Localization,
 ) -> Row<'a, Message> {
     let mut total_time_column = column![].align_x(Alignment::End);
 
     if settings.show_daily_time_total {
-        if settings.dynamic_total {
-            if let Some((running, timer_text)) = running_timer {
-                if running {
-                    let total_time_str = seconds_to_formatted_duration(
-                        combine_timer_with_seconds(timer_text, total_time),
-                        settings.show_seconds,
-                    );
-                    total_time_column =
-                        total_time_column.push(text(total_time_str).font(font::Font {
-                            weight: iced::font::Weight::Bold,
-                            ..Default::default()
-                        }));
-                } else {
-                    let total_time_str =
-                        seconds_to_formatted_duration(total_time, settings.show_seconds);
-                    total_time_column =
-                        total_time_column.push(text(total_time_str).font(font::Font {
-                            weight: iced::font::Weight::Bold,
-                            ..Default::default()
-                        }));
-                }
-            } else {
-                let total_time_str =
-                    seconds_to_formatted_duration(total_time, settings.show_seconds);
-                total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
-                    weight: iced::font::Weight::Bold,
-                    ..Default::default()
-                }));
-            }
+        let total_time = if settings.dynamic_total
+            && let Some((true, timer_text, _)) = running_timer
+        {
+            seconds_to_formatted_duration(
+                combine_timer_with_seconds(timer_text, total_time),
+                settings.show_seconds,
+            )
         } else {
-            let total_time_str = seconds_to_formatted_duration(total_time, settings.show_seconds);
-            total_time_column = total_time_column.push(text(total_time_str).font(font::Font {
-                weight: iced::font::Weight::Bold,
-                ..Default::default()
-            }));
-        }
+            seconds_to_formatted_duration(total_time, settings.show_seconds)
+        };
+        total_time_column = total_time_column.push(text(total_time).font(font::Font {
+            weight: iced::font::Weight::Bold,
+            ..Default::default()
+        }));
     }
 
-    if settings.show_task_earnings && total_earnings > 0.0 {
-        total_time_column = total_time_column.push(text!("${:.2}", total_earnings));
+    if settings.show_task_earnings {
+        let total_earnings = if settings.dynamic_total
+            && let Some((true, timer_text, rate)) = running_timer
+        {
+            let timer_seconds = parse_timer_text_to_seconds(timer_text);
+            total_earnings + ((timer_seconds as f32 / 3600.0) * rate)
+        } else {
+            total_earnings
+        };
+        if total_earnings > 0.0 {
+            total_time_column = total_time_column.push(text!("${:.2}", total_earnings));
+        }
     }
 
     row![
