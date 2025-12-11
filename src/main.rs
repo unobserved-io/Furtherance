@@ -92,7 +92,10 @@ fn main() -> iced::Result {
 
     let settings = iced::Settings {
         id: Some(String::from("io.unobserved.furtherance")),
-        fonts: vec![Cow::Borrowed(iced_fonts::BOOTSTRAP_FONT_BYTES)],
+        fonts: vec![
+            Cow::Borrowed(iced_fonts::BOOTSTRAP_FONT_BYTES),
+            Cow::Borrowed(iced_aw::ICED_AW_FONT_BYTES),
+        ],
         ..Default::default()
     };
 
