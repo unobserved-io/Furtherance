@@ -84,7 +84,7 @@ use iced_aw::{
     color_picker, date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition,
     TabLabel, Tabs, TimePicker,
 };
-use iced_fonts::bootstrap;
+use iced_fonts::bootstrap::{self, advanced_text};
 use itertools::Itertools;
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
@@ -3976,11 +3976,10 @@ impl Furtherance {
                 .tab_icon_position(iced_aw::tabs::Position::Top)
                 .push(
                     TabId::General,
-                    // TabLabel::IconText(
-                    //     bootstrap::gear_fill(),
-                    //     self.localization.get_message("general", None)
-                    // ),
-                    TabLabel::Text(self.localization.get_message("data", None)),
+                    TabLabel::IconText(
+                        advanced_text::gear_fill().0.chars().next().unwrap_or(' '),
+                        self.localization.get_message("general", None)
+                    ),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("interface", None)),
@@ -4087,12 +4086,14 @@ impl Furtherance {
                 )
                 .push(
                     TabId::Advanced,
-                    // TODO: Change all labels to IconText again (figure out bootstrap icon issue)
-                    // TabLabel::IconText(
-                    //     bootstrap::gear_wide_connected(),
-                    //     self.localization.get_message("advanced", None)
-                    // )
-                    TabLabel::Text(self.localization.get_message("advanced", None)),
+                    TabLabel::IconText(
+                        advanced_text::gear_wide_connected()
+                            .0
+                            .chars()
+                            .next()
+                            .unwrap_or(' '),
+                        self.localization.get_message("advanced", None)
+                    ),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("idle", None)),
@@ -4197,11 +4198,14 @@ impl Furtherance {
                 )
                 .push(
                     TabId::Pomodoro,
-                    // TabLabel::IconText(
-                    //     bootstrap::stopwatch_fill(),
-                    //     self.localization.get_message("pomodoro", None)
-                    // ),
-                    TabLabel::Text(self.localization.get_message("pomodoro", None)),
+                    TabLabel::IconText(
+                        advanced_text::stopwatch_fill()
+                            .0
+                            .chars()
+                            .next()
+                            .unwrap_or(' '),
+                        self.localization.get_message("pomodoro", None)
+                    ),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("pomodoro-timer", None)),
@@ -4307,11 +4311,10 @@ impl Furtherance {
                 )
                 .push(
                     TabId::Report,
-                    // TabLabel::IconText(
-                    //     bootstrap::graph_up(),
-                    //     self.localization.get_message("report", None)
-                    // ),
-                    TabLabel::Text(self.localization.get_message("report", None)),
+                    TabLabel::IconText(
+                        advanced_text::graph_up().0.chars().next().unwrap_or(' '),
+                        self.localization.get_message("report", None)
+                    ),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("toggle-charts", None)),
@@ -4383,11 +4386,10 @@ impl Furtherance {
                 // MARK: SETTINGS DATA TAB
                 .push(
                     TabId::Data,
-                    // TabLabel::IconText(
-                    //     icon_to_char(Bootstrap::FloppyFill),
-                    //     self.localization.get_message("data", None)
-                    // ),
-                    TabLabel::Text(self.localization.get_message("data", None)),
+                    TabLabel::IconText(
+                        advanced_text::floppy_fill().0.chars().next().unwrap_or(' '),
+                        self.localization.get_message("data", None)
+                    ),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("sync", None)),
