@@ -4255,7 +4255,7 @@ dependencies = [
 [[package]]
 name = "plotters-iced"
 version = "0.11.0"
-source = "git+https://github.com/unobserved-io/plotters-iced?branch=iced-0.14#7259609c7817ba322d81903a9e6a55d00e377f63"
+source = "git+https://github.com/unobserved-io/plotters-iced?branch=master#872bd5a2036b12f09aa5485677306c82c298a1f0"
 dependencies = [
  "iced_graphics",
  "iced_widget",

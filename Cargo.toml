@@ -66,7 +66,7 @@ machine-uid = "0.5"
 notify-rust = "4.11"
 palette = "0.7.6"
 plotters = "0.3"
-plotters-iced = { git = "https://github.com/unobserved-io/plotters-iced", branch = "iced-0.14" }
+plotters-iced = { git = "https://github.com/unobserved-io/plotters-iced", branch = "master" }
 rand = "0.8"
 regex = "1"
 reqwest = { version = "0.12", features = ["json"] }

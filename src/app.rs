@@ -3354,7 +3354,6 @@ impl Furtherance {
         }
 
         let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center);
-        // TODO: Make sure this works after changing .push_maybe
         timer_view = timer_view.push(if self.inspector_view.is_none() {
             row![
                 space::horizontal(),
@@ -3367,7 +3366,6 @@ impl Furtherance {
             row![button(" ").style(button::text)].padding([10, 20])
         });
 
-        // TODO: Make sure this works after changing .push_maybe
         timer_view = timer_view.push(if self.task_history.is_empty() {
             Some(space::vertical())
         } else {
@@ -3451,7 +3449,6 @@ impl Furtherance {
             }),
         );
 
-        // TODO: Make sure this works after changing .push_maybe
         timer_view = timer_view.push(if self.task_history.is_empty() {
             Some(Scrollable::new(column![]).height(Length::Fill))
         } else {
@@ -3527,7 +3524,6 @@ impl Furtherance {
 
         let mut todo_view: Column<'_, Message> = column![].align_x(Alignment::Center);
         // Add new todo button
-        // TODO: Make sure this works after changing .push_maybe
         todo_view = todo_view.push(if self.inspector_view.is_none() {
             row![
                 space::horizontal(),
@@ -3791,7 +3787,6 @@ impl Furtherance {
         ),]
         .padding([0, 15])
         .spacing(10);
-        // TODO: Make sure this works after changing .push_maybe
         server_choice_col = server_choice_col.push(
             if self.settings_server_choice == Some(ServerChoices::Custom) {
                 Some(
@@ -3856,7 +3851,6 @@ impl Furtherance {
                 button::secondary
             }),]
             .spacing(10);
-        // TODO: Make sure this works after changing .push_maybe
         sync_button_row = sync_button_row.push(if self.fur_user.is_some() {
             Some(
                 button(text(self.localization.get_message("sync", None)))
@@ -3882,7 +3876,6 @@ impl Furtherance {
             )
         });
         sync_server_col = sync_server_col.push(sync_button_row);
-        // TODO: Make sure this works after changing .push_maybe
         sync_server_col = sync_server_col.push(match &self.login_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -3919,7 +3912,6 @@ impl Furtherance {
             .wrap(),
         ]
         .spacing(10);
-        // TODO: Make sure this works after changing .push_maybe
         database_location_col = database_location_col.push(match &self.settings_database_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -3941,7 +3933,6 @@ impl Furtherance {
         ]
         .spacing(10),]
         .spacing(10);
-        // TODO: Make sure this works after changing .push_maybe
         csv_col = csv_col.push(match &self.settings_csv_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -3959,7 +3950,6 @@ impl Furtherance {
         .on_press(Message::ShowAlert(FurAlert::DeleteEverythingConfirmation))
         .style(button::danger)]
         .spacing(10);
-        // TODO: Make sure this works after changing .push_maybe
         backup_col = backup_col.push(match &self.settings_more_message {
             Ok(msg) => {
                 if msg.is_empty() {
