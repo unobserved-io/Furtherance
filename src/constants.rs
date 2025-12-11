@@ -32,8 +32,8 @@ pub const MAX_X_VALUES: usize = 7;
 
 // Inspector
 pub const INSPECTOR_PADDING: u16 = 10;
-pub const INSPECTOR_SPACING: u16 = 12;
-pub const INSPECTOR_WIDTH: u16 = 250;
+pub const INSPECTOR_SPACING: u32 = 12;
+pub const INSPECTOR_WIDTH: u32 = 250;
 pub const INSPECTOR_ALIGNMENT: Alignment = Alignment::Start;
 
 // Settings

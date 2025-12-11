@@ -41,7 +41,7 @@ impl EarningsChart {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         if self.date_earned.len() <= 1 {
             Text::new("").into()
         } else {

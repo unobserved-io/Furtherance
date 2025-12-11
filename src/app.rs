@@ -73,12 +73,10 @@ use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use fluent::FluentValue;
 use iced::{
     advanced::subscription,
-    alignment, font,
-    keyboard::{self, key},
+    alignment, font, keyboard,
     widget::{
-        self, button, center, checkbox, column, container, horizontal_rule, horizontal_space,
-        opaque, pick_list, row, stack, text, text_input, toggler, vertical_rule, vertical_space,
-        Button, Column, Container, Row, Scrollable,
+        self, button, center, checkbox, column, container, opaque, pick_list, row, rule, space,
+        stack, text, text_input, toggler, Button, Column, Container, Row, Scrollable,
     },
     Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
@@ -86,7 +84,7 @@ use iced_aw::{
     color_picker, date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition,
     TabLabel, Tabs, TimePicker,
 };
-use iced_fonts::{bootstrap::icon_to_char, Bootstrap, BOOTSTRAP_FONT};
+use iced_fonts::bootstrap;
 use itertools::Itertools;
 use notify_rust::{Notification, Timeout};
 use palette::color_difference::Wcag21RelativeContrast;
@@ -443,18 +441,18 @@ impl Furtherance {
             None
         };
 
-        let key_presssed = keyboard::on_key_press(|key, modifiers| {
-            let keyboard::Key::Named(key) = key else {
+        fn handle_hotkey(event: keyboard::Event) -> Option<Message> {
+            let keyboard::Event::KeyPressed { key, modifiers, .. } = event else {
                 return None;
             };
 
             match (key, modifiers) {
-                (key::Named::Tab, _) => Some(Message::TabPressed {
+                (keyboard::Key::Named(keyboard::key::Named::Tab), _) => Some(Message::TabPressed {
                     shift: modifiers.shift(),
                 }),
                 _ => None,
             }
-        });
+        }
 
         let timed_sync = if self.fur_user.is_some() {
             let sync_interval = 900; // 15 mins in secs
@@ -467,7 +465,7 @@ impl Furtherance {
         };
 
         Subscription::batch([
-            key_presssed,
+            keyboard::listen().filter_map(handle_hotkey),
             subscription::from_recipe(MidnightSubscription),
             show_reminder_notification.unwrap_or(Subscription::none()),
             timed_sync.unwrap_or(Subscription::none()),
@@ -2961,9 +2959,9 @@ impl Furtherance {
             }
             Message::TabPressed { shift } => {
                 if shift {
-                    return widget::focus_previous();
+                    return widget::operation::focus_previous();
                 } else {
-                    return widget::focus_next();
+                    return widget::operation::focus_next();
                 }
             }
             Message::TaskInputChanged(new_value) => {
@@ -3230,7 +3228,7 @@ impl Furtherance {
         Task::none()
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         // MARK: SIDEBAR
         let sidebar = Container::new(
             column![
@@ -3254,7 +3252,7 @@ impl Furtherance {
                     FurView::Report,
                     self.current_view == FurView::Report
                 ),
-                vertical_space().height(Length::Fill),
+                space::vertical().height(Length::Fill),
                 if self.timer_is_running && self.current_view != FurView::Timer {
                     text(convert_timer_text_to_vertical_hms(
                         &self.timer_text,
@@ -3297,8 +3295,8 @@ impl Furtherance {
 
         let new_shortcut_row = if self.inspector_view.is_none() {
             row![
-                horizontal_space(),
-                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+                space::horizontal(),
+                button(bootstrap::plus_lg())
                     .on_press(Message::AddNewShortcutPressed)
                     .style(button::text),
             ]
@@ -3356,10 +3354,11 @@ impl Furtherance {
         }
 
         let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center);
-        timer_view = timer_view.push_maybe(if self.inspector_view.is_none() {
+        // TODO: Make sure this works after changing .push_maybe
+        timer_view = timer_view.push(if self.inspector_view.is_none() {
             Some(row![
-                horizontal_space(),
-                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+                space::horizontal(),
+                button(button(bootstrap::plus_lg()))
                     .on_press(Message::AddNewTaskPressed)
                     .style(button::text),
             ])
@@ -3367,8 +3366,9 @@ impl Furtherance {
             None
         });
 
-        timer_view = timer_view.push_maybe(if self.task_history.is_empty() {
-            Some(vertical_space())
+        // TODO: Make sure this works after changing .push_maybe
+        timer_view = timer_view.push(if self.task_history.is_empty() {
+            Some(space::vertical())
         } else {
             None
         });
@@ -3393,17 +3393,13 @@ impl Furtherance {
                     .on_submit(Message::EnterPressedInTaskInput)
                     .size(20),
                     button(row![
-                        horizontal_space().width(Length::Fixed(5.0)),
+                        space::horizontal().width(Length::Fixed(5.0)),
                         if self.timer_is_running {
-                            text(icon_to_char(Bootstrap::StopFill))
-                                .font(BOOTSTRAP_FONT)
-                                .size(20)
+                            bootstrap::stop_fill().size(20)
                         } else {
-                            text(icon_to_char(Bootstrap::PlayFill))
-                                .font(BOOTSTRAP_FONT)
-                                .size(20)
+                            bootstrap::play_fill().size(20)
                         },
-                        horizontal_space().width(Length::Fixed(5.0)),
+                        space::horizontal().width(Length::Fixed(5.0)),
                     ])
                     .on_press_maybe(if self.task_input.trim().is_empty() {
                         None
@@ -3454,7 +3450,8 @@ impl Furtherance {
             }),
         );
 
-        timer_view = timer_view.push_maybe(if self.task_history.is_empty() {
+        // TODO: Make sure this works after changing .push_maybe
+        timer_view = timer_view.push(if self.task_history.is_empty() {
             Some(Scrollable::new(column![]).height(Length::Fill))
         } else {
             Some(Scrollable::new(all_history_rows).height(Length::Fill))
@@ -3529,10 +3526,11 @@ impl Furtherance {
 
         let mut todo_view: Column<'_, Message> = column![].align_x(Alignment::Center);
         // Add new todo button
-        todo_view = todo_view.push_maybe(if self.inspector_view.is_none() {
+        // TODO: Make sure this works after changing .push_maybe
+        todo_view = todo_view.push(if self.inspector_view.is_none() {
             Some(row![
-                horizontal_space(),
-                button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+                space::horizontal(),
+                button(bootstrap::plus_lg())
                     .on_press(Message::AddNewTodoPressed)
                     .style(button::text),
             ])
@@ -3571,11 +3569,11 @@ impl Furtherance {
             // If both boxes are present, place a spacer between them
             if timer_earnings_boxes_widgets.len() == 2 {
                 timer_earnings_boxes_widgets
-                    .insert(1, horizontal_space().width(Length::Fill).into());
+                    .insert(1, space::horizontal().width(Length::Fill).into());
             }
             // Then place the bookend spacers
-            timer_earnings_boxes_widgets.insert(0, horizontal_space().width(Length::Fill).into());
-            timer_earnings_boxes_widgets.push(horizontal_space().width(Length::Fill).into());
+            timer_earnings_boxes_widgets.insert(0, space::horizontal().width(Length::Fill).into());
+            timer_earnings_boxes_widgets.push(space::horizontal().width(Length::Fill).into());
 
             charts_column = charts_column.push(
                 Row::with_children(timer_earnings_boxes_widgets).padding(Padding {
@@ -3660,19 +3658,19 @@ impl Furtherance {
                 .width(Length::Fill),
             );
             charts_breakdown_by_selection_column =
-                charts_breakdown_by_selection_column.push(horizontal_rule(20));
+                charts_breakdown_by_selection_column.push(rule::horizontal(20));
 
             if !selection_timer_earnings_boxes_widgets.is_empty() {
                 // If both boxes are present, place a spacer between them
                 if selection_timer_earnings_boxes_widgets.len() == 2 {
                     selection_timer_earnings_boxes_widgets
-                        .insert(1, horizontal_space().width(Length::Fill).into());
+                        .insert(1, space::horizontal().width(Length::Fill).into());
                 }
                 // Then place the bookend spacers
                 selection_timer_earnings_boxes_widgets
-                    .insert(0, horizontal_space().width(Length::Fill).into());
+                    .insert(0, space::horizontal().width(Length::Fill).into());
                 selection_timer_earnings_boxes_widgets
-                    .push(horizontal_space().width(Length::Fill).into());
+                    .push(space::horizontal().width(Length::Fill).into());
 
                 charts_breakdown_by_selection_column = charts_breakdown_by_selection_column.push(
                     Row::with_children(selection_timer_earnings_boxes_widgets).padding(Padding {
@@ -3704,7 +3702,7 @@ impl Furtherance {
                 .width(Length::Fill),
                 if self.report.picked_date_range == Some(FurDateRange::Range) {
                     row![
-                        horizontal_space().width(Length::Fill),
+                        space::horizontal().width(Length::Fill),
                         date_picker(
                             self.report.show_start_date_picker,
                             self.report.picked_start_date,
@@ -3727,7 +3725,7 @@ impl Furtherance {
                             Message::CancelEndDate,
                             Message::SubmitEndDate,
                         ),
-                        horizontal_space().width(Length::Fill),
+                        space::horizontal().width(Length::Fill),
                     ]
                     .spacing(30)
                     .padding(Padding {
@@ -3739,8 +3737,8 @@ impl Furtherance {
                 } else {
                     row![]
                 },
-                vertical_space().height(Length::Fixed(20.0)),
-                horizontal_rule(1),
+                space::vertical().height(Length::Fixed(20.0)),
+                rule::horizontal(1),
             ]
             .padding(Padding {
                 top: 20.0,
@@ -3791,7 +3789,8 @@ impl Furtherance {
         ),]
         .padding([0, 15])
         .spacing(10);
-        server_choice_col = server_choice_col.push_maybe(
+        // TODO: Make sure this works after changing .push_maybe
+        server_choice_col = server_choice_col.push(
             if self.settings_server_choice == Some(ServerChoices::Custom) {
                 Some(
                     text_input("", &self.fur_user_fields.server)
@@ -3855,7 +3854,8 @@ impl Furtherance {
                 button::secondary
             }),]
             .spacing(10);
-        sync_button_row = sync_button_row.push_maybe(if self.fur_user.is_some() {
+        // TODO: Make sure this works after changing .push_maybe
+        sync_button_row = sync_button_row.push(if self.fur_user.is_some() {
             Some(
                 button(text(self.localization.get_message("sync", None)))
                     .on_press_maybe(match self.fur_user {
@@ -3880,7 +3880,8 @@ impl Furtherance {
             )
         });
         sync_server_col = sync_server_col.push(sync_button_row);
-        sync_server_col = sync_server_col.push_maybe(match &self.login_message {
+        // TODO: Make sure this works after changing .push_maybe
+        sync_server_col = sync_server_col.push(match &self.login_message {
             Ok(msg) => {
                 if msg.is_empty() {
                     None
@@ -3916,17 +3917,17 @@ impl Furtherance {
             .wrap(),
         ]
         .spacing(10);
-        database_location_col =
-            database_location_col.push_maybe(match &self.settings_database_message {
-                Ok(msg) => {
-                    if msg.is_empty() {
-                        None
-                    } else {
-                        Some(text(msg).style(style::green_text))
-                    }
+        // TODO: Make sure this works after changing .push_maybe
+        database_location_col = database_location_col.push(match &self.settings_database_message {
+            Ok(msg) => {
+                if msg.is_empty() {
+                    None
+                } else {
+                    Some(text(msg).style(style::green_text))
                 }
-                Err(e) => Some(text!("{}", e).style(style::red_text)),
-            });
+            }
+            Err(e) => Some(text!("{}", e).style(style::red_text)),
+        });
 
         let mut csv_col = column![row![
             button(text(self.localization.get_message("export-csv", None)))
@@ -3938,7 +3939,8 @@ impl Furtherance {
         ]
         .spacing(10),]
         .spacing(10);
-        csv_col = csv_col.push_maybe(match &self.settings_csv_message {
+        // TODO: Make sure this works after changing .push_maybe
+        csv_col = csv_col.push(match &self.settings_csv_message {
             Ok(msg) => {
                 if msg.is_empty() {
                     None
@@ -3955,7 +3957,8 @@ impl Furtherance {
         .on_press(Message::ShowAlert(FurAlert::DeleteEverythingConfirmation))
         .style(button::danger)]
         .spacing(10);
-        backup_col = backup_col.push_maybe(match &self.settings_more_message {
+        // TODO: Make sure this works after changing .push_maybe
+        backup_col = backup_col.push(match &self.settings_more_message {
             Ok(msg) => {
                 if msg.is_empty() {
                     None
@@ -3971,10 +3974,11 @@ impl Furtherance {
                 .tab_icon_position(iced_aw::tabs::Position::Top)
                 .push(
                     TabId::General,
-                    TabLabel::IconText(
-                        icon_to_char(Bootstrap::GearFill),
-                        self.localization.get_message("general", None)
-                    ),
+                    // TabLabel::IconText(
+                    //     bootstrap::gear_fill(),
+                    //     self.localization.get_message("general", None)
+                    // ),
+                    TabLabel::Text(self.localization.get_message("data", None)),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("interface", None)),
@@ -4081,10 +4085,12 @@ impl Furtherance {
                 )
                 .push(
                     TabId::Advanced,
-                    TabLabel::IconText(
-                        icon_to_char(Bootstrap::GearWideConnected),
-                        self.localization.get_message("advanced", None)
-                    ),
+                    // TODO: Change all labels to IconText again (figure out bootstrap icon issue)
+                    // TabLabel::IconText(
+                    //     bootstrap::gear_wide_connected(),
+                    //     self.localization.get_message("advanced", None)
+                    // )
+                    TabLabel::Text(self.localization.get_message("advanced", None)),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("idle", None)),
@@ -4100,11 +4106,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("minutes-until-idle", None)),
                                 number_input(
-                                    self.fur_settings.chosen_idle_time,
+                                    &self.fur_settings.chosen_idle_time,
                                     1..999,
                                     Message::SettingsIdleTimeChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4129,11 +4134,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("days-to-show", None)),
                                 number_input(
-                                    self.fur_settings.days_to_show,
+                                    &self.fur_settings.days_to_show,
                                     1..=365,
                                     Message::SettingsDaysToShowChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4165,11 +4169,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("reminder-interval", None)),
                                 number_input(
-                                    self.fur_settings.notify_reminder_interval,
+                                    &self.fur_settings.notify_reminder_interval,
                                     1..999,
                                     Message::SettingsReminderIntervalChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4192,10 +4195,11 @@ impl Furtherance {
                 )
                 .push(
                     TabId::Pomodoro,
-                    TabLabel::IconText(
-                        icon_to_char(Bootstrap::StopwatchFill),
-                        self.localization.get_message("pomodoro", None)
-                    ),
+                    // TabLabel::IconText(
+                    //     bootstrap::stopwatch_fill(),
+                    //     self.localization.get_message("pomodoro", None)
+                    // ),
+                    TabLabel::Text(self.localization.get_message("pomodoro", None)),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("pomodoro-timer", None)),
@@ -4215,11 +4219,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("timer-length", None)),
                                 number_input(
-                                    self.fur_settings.pomodoro_length,
+                                    &self.fur_settings.pomodoro_length,
                                     1..999,
                                     Message::SettingsPomodoroLengthChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4227,11 +4230,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("break-length", None)),
                                 number_input(
-                                    self.fur_settings.pomodoro_break_length,
+                                    &self.fur_settings.pomodoro_break_length,
                                     1..999,
                                     Message::SettingsPomodoroBreakLengthChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4239,11 +4241,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("snooze-length", None)),
                                 number_input(
-                                    self.fur_settings.pomodoro_snooze_length,
+                                    &self.fur_settings.pomodoro_snooze_length,
                                     1..999,
                                     Message::SettingsPomodoroSnoozeLengthChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4278,11 +4279,10 @@ impl Furtherance {
                                         .get_message("extended-break-interval", None)
                                 ),
                                 number_input(
-                                    self.fur_settings.pomodoro_extended_break_interval,
+                                    &self.fur_settings.pomodoro_extended_break_interval,
                                     1..999,
                                     Message::SettingsPomodoroExtendedBreakIntervalChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4290,11 +4290,10 @@ impl Furtherance {
                             row![
                                 text(self.localization.get_message("extended-break-length", None)),
                                 number_input(
-                                    self.fur_settings.pomodoro_extended_break_length,
+                                    &self.fur_settings.pomodoro_extended_break_length,
                                     1..999,
                                     Message::SettingsPomodoroExtendedBreakLengthChanged
                                 )
-                                .width(Length::Shrink)
                                 .style(style::fur_number_input_style)
                             ]
                             .spacing(10)
@@ -4306,83 +4305,74 @@ impl Furtherance {
                 )
                 .push(
                     TabId::Report,
-                    TabLabel::IconText(
-                        icon_to_char(Bootstrap::GraphUp),
-                        self.localization.get_message("report", None)
-                    ),
+                    // TabLabel::IconText(
+                    //     bootstrap::graph_up(),
+                    //     self.localization.get_message("report", None)
+                    // ),
+                    TabLabel::Text(self.localization.get_message("report", None)),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("toggle-charts", None)),
-                            checkbox(
-                                self.localization.get_message("total-time-box", None),
-                                self.fur_settings.show_chart_total_time_box
-                            )
-                            .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization.get_message("total-earnings-box", None),
-                                self.fur_settings.show_chart_total_earnings_box
-                            )
-                            .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization.get_message("time-recorded", None),
-                                self.fur_settings.show_chart_time_recorded
-                            )
-                            .on_toggle(Message::SettingsShowChartTimeRecordedToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization.get_message("earnings", None),
-                                self.fur_settings.show_chart_earnings
-                            )
-                            .on_toggle(Message::SettingsShowChartEarningsToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization.get_message("average-time-per-task", None),
-                                self.fur_settings.show_chart_average_time
-                            )
-                            .on_toggle(Message::SettingsShowChartAverageTimeToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization
-                                    .get_message("average-earnings-per-task", None),
-                                self.fur_settings.show_chart_average_earnings
-                            )
-                            .on_toggle(Message::SettingsShowChartAverageEarningsToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization
-                                    .get_message("breakdown-by-selection-section", None),
-                                self.fur_settings.show_chart_breakdown_by_selection
-                            )
-                            .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled)
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization
-                                    .get_message("time-recorded-for-selection", None),
-                                self.fur_settings.show_chart_selection_time
-                            )
-                            .on_toggle_maybe(
-                                if self.fur_settings.show_chart_breakdown_by_selection {
-                                    Some(Message::SettingsShowChartSelectionTimeToggled)
-                                } else {
-                                    None
-                                }
-                            )
-                            .style(style::fur_checkbox_style),
-                            checkbox(
-                                self.localization
-                                    .get_message("earnings-for-selection", None),
-                                self.fur_settings.show_chart_selection_earnings
-                            )
-                            .on_toggle_maybe(
-                                if self.fur_settings.show_chart_breakdown_by_selection {
-                                    Some(Message::SettingsShowChartSelectionEarningsToggled)
-                                } else {
-                                    None
-                                }
-                            )
-                            .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_total_time_box)
+                                .label(self.localization.get_message("total-time-box", None))
+                                .on_toggle(Message::SettingsShowChartTotalTimeBoxToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_total_earnings_box)
+                                .label(self.localization.get_message("total-earnings-box", None))
+                                .on_toggle(Message::SettingsShowChartTotalEarningsBoxToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_time_recorded)
+                                .label(self.localization.get_message("time-recorded", None))
+                                .on_toggle(Message::SettingsShowChartTimeRecordedToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_earnings)
+                                .label(self.localization.get_message("earnings", None))
+                                .on_toggle(Message::SettingsShowChartEarningsToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_average_time)
+                                .label(self.localization.get_message("average-time-per-task", None))
+                                .on_toggle(Message::SettingsShowChartAverageTimeToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_average_earnings)
+                                .label(
+                                    self.localization
+                                        .get_message("average-earnings-per-task", None)
+                                )
+                                .on_toggle(Message::SettingsShowChartAverageEarningsToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_breakdown_by_selection)
+                                .label(
+                                    self.localization
+                                        .get_message("breakdown-by-selection-section", None)
+                                )
+                                .on_toggle(Message::SettingsShowChartBreakdownBySelectionToggled)
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_selection_time)
+                                .label(
+                                    self.localization
+                                        .get_message("time-recorded-for-selection", None)
+                                )
+                                .on_toggle_maybe(
+                                    if self.fur_settings.show_chart_breakdown_by_selection {
+                                        Some(Message::SettingsShowChartSelectionTimeToggled)
+                                    } else {
+                                        None
+                                    }
+                                )
+                                .style(style::fur_checkbox_style),
+                            checkbox(self.fur_settings.show_chart_selection_earnings)
+                                .label(
+                                    self.localization
+                                        .get_message("earnings-for-selection", None)
+                                )
+                                .on_toggle_maybe(
+                                    if self.fur_settings.show_chart_breakdown_by_selection {
+                                        Some(Message::SettingsShowChartSelectionEarningsToggled)
+                                    } else {
+                                        None
+                                    }
+                                )
+                                .style(style::fur_checkbox_style),
                         ]
                         .spacing(SETTINGS_SPACING)
                         .padding(10),
@@ -4391,10 +4381,11 @@ impl Furtherance {
                 // MARK: SETTINGS DATA TAB
                 .push(
                     TabId::Data,
-                    TabLabel::IconText(
-                        icon_to_char(Bootstrap::FloppyFill),
-                        self.localization.get_message("data", None)
-                    ),
+                    // TabLabel::IconText(
+                    //     icon_to_char(Bootstrap::FloppyFill),
+                    //     self.localization.get_message("data", None)
+                    // ),
+                    TabLabel::Text(self.localization.get_message("data", None)),
                     Scrollable::new(
                         column![
                             settings_heading(self.localization.get_message("sync", None)),
@@ -5005,8 +4996,8 @@ impl Furtherance {
             Some(FurInspectorView::EditTask) => match &self.task_to_edit {
                 Some(task_to_edit) => column![
                     row![
-                        horizontal_space(),
-                        button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
+                        space::horizontal(),
+                        button(bootstrap::trash_fill())
                             .on_press(if self.fur_settings.show_delete_confirmation {
                                 Message::ShowAlert(FurAlert::DeleteTaskConfirmation)
                             } else {
@@ -5248,14 +5239,14 @@ impl Furtherance {
                         ));
                     column![
                         row![
-                            button(text(icon_to_char(Bootstrap::XLg)).font(BOOTSTRAP_FONT))
+                            button(bootstrap::x_lg())
                                 .on_press(Message::CancelGroupEdit)
                                 .style(button::text),
-                            horizontal_space(),
+                            space::horizontal(),
                             button(if group_to_edit.is_in_edit_mode {
-                                text(icon_to_char(Bootstrap::Pencil)).font(BOOTSTRAP_FONT)
+                                bootstrap::pencil()
                             } else {
-                                text(icon_to_char(Bootstrap::PencilFill)).font(BOOTSTRAP_FONT)
+                                bootstrap::pencil_fill()
                             })
                             .on_press_maybe(if group_to_edit.is_in_edit_mode {
                                 None
@@ -5263,14 +5254,14 @@ impl Furtherance {
                                 Some(Message::ToggleGroupEditor)
                             })
                             .style(button::text),
-                            button(text(icon_to_char(Bootstrap::PlusLg)).font(BOOTSTRAP_FONT))
+                            button(bootstrap::plus_lg())
                                 .on_press_maybe(if group_to_edit.is_in_edit_mode {
                                     None
                                 } else {
                                     Some(Message::AddTaskToGroup(group_to_edit.clone()))
                                 })
                                 .style(button::text),
-                            button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
+                            button(bootstrap::trash_fill())
                                 .on_press(if self.fur_settings.show_delete_confirmation {
                                     Message::ShowAlert(FurAlert::DeleteGroupConfirmation)
                                 } else {
@@ -5356,8 +5347,8 @@ impl Furtherance {
             Some(FurInspectorView::EditTodo) => match &self.todo_to_edit {
                 Some(todo_to_edit) => column![
                     row![
-                        horizontal_space(),
-                        button(text(icon_to_char(Bootstrap::TrashFill)).font(BOOTSTRAP_FONT))
+                        space::horizontal(),
+                        button(bootstrap::trash_fill())
                             .on_press(Message::DeleteTodoPressed(todo_to_edit.uid.clone()))
                             .style(button::text),
                     ],
@@ -5473,7 +5464,7 @@ impl Furtherance {
                 FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },
-            row![vertical_rule(1), inspector].width(if self.inspector_view.is_some() {
+            row![rule::vertical(1), inspector].width(if self.inspector_view.is_some() {
                 260
             } else {
                 0
@@ -5887,10 +5878,10 @@ fn history_group_row<'a, 'loc>(
     let task_group_string = task_group.to_string();
 
     task_row = task_row.push(task_details_column);
-    task_row = task_row.push(horizontal_space().width(Length::Fill));
+    task_row = task_row.push(space::horizontal().width(Length::Fill));
     task_row = task_row.push(totals_column);
     task_row = task_row.push(
-        button(text(icon_to_char(Bootstrap::ArrowRepeat)).font(BOOTSTRAP_FONT))
+        button(bootstrap::arrow_repeat())
             .on_press_maybe(if timer_is_running {
                 None
             } else {
@@ -5998,7 +5989,7 @@ fn history_title_row<'a>(
             weight: iced::font::Weight::Bold,
             ..Default::default()
         }),
-        horizontal_space().width(Length::Fill),
+        space::horizontal().width(Length::Fill),
         total_time_column,
     ]
     .align_y(Alignment::Center)
@@ -6047,9 +6038,9 @@ fn shortcut_button_content<'a>(
             }));
     }
     if shortcut.rate > 0.0 {
-        shortcut_text_column = shortcut_text_column.push(vertical_space());
+        shortcut_text_column = shortcut_text_column.push(space::vertical());
         shortcut_text_column = shortcut_text_column.push(row![
-            horizontal_space(),
+            space::horizontal(),
             text!("${:.2}", shortcut.rate).style(move |_| text::Style {
                 color: Some(text_color)
             })
@@ -6454,7 +6445,7 @@ fn settings_heading<'a>(heading: String) -> Column<'a, Message, Theme, Renderer>
             weight: iced::font::Weight::Bold,
             ..Default::default()
         }),
-        Container::new(horizontal_rule(1)).max_width(200.0)
+        Container::new(rule::horizontal(1)).max_width(200.0)
     ]
     .padding(Padding {
         top: 15.0,
@@ -6732,7 +6723,12 @@ where
     stack![
         base.into(),
         opaque(
-            center(opaque(row![horizontal_space(), alert, horizontal_space()])).style(|_theme| {
+            center(opaque(row![
+                space::horizontal(),
+                alert,
+                space::horizontal()
+            ]))
+            .style(|_theme| {
                 container::Style {
                     background: Some(
                         Color {

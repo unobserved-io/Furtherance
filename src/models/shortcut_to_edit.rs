@@ -16,8 +16,6 @@
 
 use iced::Color;
 
-use crate::{constants::FURTHERANCE_PURPLE, helpers::color_utils::ToIcedColor};
-
 use super::fur_shortcut::FurShortcut;
 
 #[derive(Clone, Debug)]
@@ -39,8 +37,11 @@ pub struct ShortcutToEdit {
 
 impl ShortcutToEdit {
     pub fn new_from(shortcut: &FurShortcut) -> Self {
-        let color =
-            Color::parse(shortcut.color_hex.as_str()).unwrap_or(FURTHERANCE_PURPLE.to_iced_color());
+        let color = Color::from_rgb8(
+            u8::from_str_radix(&shortcut.color_hex.get(1..3).unwrap_or("b1"), 16).unwrap_or(177),
+            u8::from_str_radix(&shortcut.color_hex.get(3..5).unwrap_or("79"), 16).unwrap_or(121),
+            u8::from_str_radix(&shortcut.color_hex.get(5..7).unwrap_or("f1"), 16).unwrap_or(241),
+        );
         ShortcutToEdit {
             name: shortcut.name.clone(),
             new_name: shortcut.name.clone(),

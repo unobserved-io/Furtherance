@@ -41,7 +41,7 @@ impl SelectionTimeRecordedChart {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         let localization = Localization::new();
         if self.date_time.len() <= 1 {
             Text::new(localization.get_message("cant-show-charts", None)).into()

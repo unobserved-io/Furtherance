@@ -41,7 +41,7 @@ impl AverageTimeChart {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         if self.date_time.len() <= 1 {
             Text::new("").into()
         } else {

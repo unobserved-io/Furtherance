@@ -22,7 +22,7 @@ use crate::{
 };
 use chrono::NaiveDate;
 use iced::{
-    widget::{horizontal_space, row, Text},
+    widget::{row, space, Text},
     Element, Length,
 };
 use plotters::prelude::*;
@@ -44,13 +44,13 @@ impl TimeRecordedChart {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         if self.date_time.len() <= 1 {
             let localization = Localization::new();
             row![
-                horizontal_space(),
+                space::horizontal(),
                 Text::new(localization.get_message("cant-show-charts", None)),
-                horizontal_space()
+                space::horizontal()
             ]
             .into()
         } else {

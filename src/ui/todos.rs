@@ -19,11 +19,11 @@ use std::collections::BTreeMap;
 use chrono::{Datelike, Local, NaiveDate, TimeDelta};
 use iced::{
     font,
-    widget::{button, column, horizontal_space, rich_text, row, span, text, Container, Row},
+    widget::{button, column, rich_text, row, space, span, text, Container, Row},
     Alignment, Element, Length, Renderer, Theme,
 };
 use iced_aw::ContextMenu;
-use iced_fonts::{bootstrap::icon_to_char, Bootstrap, BOOTSTRAP_FONT};
+use iced_fonts::bootstrap;
 
 use crate::{
     app::Message,
@@ -111,36 +111,42 @@ pub fn todo_row<'a, 'loc>(
         todo_extra_text = todo_extra_text + &format!("  ${}", todo.rate);
     }
 
-    let todo_text: text::Rich<'_, Message, Theme, Renderer> = rich_text![
-        span(todo.name.clone())
-            .font(font::Font {
-                weight: iced::font::Weight::Bold,
-                ..Default::default()
-            })
-            .strikethrough(todo.is_completed),
-        span(todo_extra_text).strikethrough(todo.is_completed)
-    ];
+    // let todo_text: text::Rich<'_, Message, Theme> = rich_text![
+    //     span(todo.name.clone())
+    //         .font(font::Font {
+    //             weight: iced::font::Weight::Bold,
+    //             ..Default::default()
+    //         })
+    //         .strikethrough(todo.is_completed),
+    //     span(todo_extra_text).strikethrough(todo.is_completed)
+    // ];
 
     let mut todo_row: Row<'_, Message, Theme, Renderer> = row![
-        button(
-            text(icon_to_char(if todo.is_completed {
-                Bootstrap::CheckSquare
-            } else {
-                Bootstrap::Square
-            }))
-            .font(BOOTSTRAP_FONT)
-        )
+        button(if todo.is_completed {
+            bootstrap::check_square()
+        } else {
+            bootstrap::square()
+        })
         .on_press(Message::ToggleTodoCompletePressed(todo.uid.clone()))
         .style(button::text),
-        todo_text.width(Length::FillPortion(10)),
-        horizontal_space().width(Length::FillPortion(1)),
+        rich_text![
+            span::<'_, (), _>(todo.name.clone())
+                .font(font::Font {
+                    weight: iced::font::Weight::Bold,
+                    ..Default::default()
+                })
+                .strikethrough(todo.is_completed),
+            span::<'_, (), _>(todo_extra_text).strikethrough(todo.is_completed)
+        ]
+        .width(Length::FillPortion(10)),
+        space::horizontal().width(Length::FillPortion(1)),
     ]
     .align_y(Alignment::Center)
     .spacing(10);
 
     if !todo.is_completed && !timer_is_running {
         todo_row = todo_row.push(
-            button(text(icon_to_char(Bootstrap::PlayFill)).font(BOOTSTRAP_FONT))
+            button(bootstrap::play_fill())
                 .style(button::text)
                 .on_press(Message::StartTimerWithTask(todo.to_string())),
         );

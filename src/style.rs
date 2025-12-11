@@ -353,35 +353,47 @@ pub fn fur_toggler_style(theme: &Theme, status: toggler::Status) -> toggler::Sty
     match status {
         toggler::Status::Active { is_toggled } => toggler::Style {
             background: if is_toggled {
-                palette.primary.base.color
+                iced::Background::Color(palette.primary.base.color)
             } else {
-                palette.background.strong.color
+                iced::Background::Color(palette.background.strong.color)
             },
             background_border_width: 0.0,
             background_border_color: Color::TRANSPARENT,
-            foreground: Color::WHITE,
+            foreground: iced::Background::Color(Color::WHITE),
             foreground_border_width: 0.0,
             foreground_border_color: Color::TRANSPARENT,
+            // TODO: Check if these fields need to be changed after upgrade to Iced 0.14
+            text_color: None,
+            border_radius: None,
+            padding_ratio: 0.0,
         },
         toggler::Status::Hovered { is_toggled } => toggler::Style {
             background: if is_toggled {
-                palette.primary.base.color
+                iced::Background::Color(palette.primary.base.color)
             } else {
-                palette.background.strong.color
+                iced::Background::Color(palette.background.strong.color)
             },
             background_border_width: 0.0,
             background_border_color: Color::TRANSPARENT,
-            foreground: FURTHERANCE_PURPLE.lighten(0.3).to_iced_color(),
+            foreground: iced::Background::Color(FURTHERANCE_PURPLE.lighten(0.3).to_iced_color()),
             foreground_border_width: 0.0,
             foreground_border_color: Color::TRANSPARENT,
+            // TODO: Check if these fields need to be changed after upgrade to Iced 0.14
+            text_color: None,
+            border_radius: None,
+            padding_ratio: 0.0,
         },
-        toggler::Status::Disabled => toggler::Style {
-            background: palette.background.strong.color,
+        toggler::Status::Disabled { is_toggled: _ } => toggler::Style {
+            background: iced::Background::Color(palette.background.strong.color),
             background_border_width: 0.0,
             background_border_color: Color::TRANSPARENT,
-            foreground: palette.background.weak.color,
+            foreground: iced::Background::Color(palette.background.weak.color),
             foreground_border_width: 0.0,
             foreground_border_color: Color::TRANSPARENT,
+            // TODO: Check if these fields need to be changed after upgrade to Iced 0.14
+            text_color: None,
+            border_radius: None,
+            padding_ratio: 0.0,
         },
     }
 }

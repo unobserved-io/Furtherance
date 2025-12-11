@@ -44,14 +44,13 @@ dark-light = "2.0"
 directories = "5.0"
 fluent = "0.16"
 futures-core = "0.3"
-iced = { version = "0.13.1", features = [
+iced = { version = "0.14.0", features = [
     "advanced",
     "canvas",
     "image",
-    "multi-window",
     "tokio",
 ] }
-iced_aw = { version = "0.11.0", default-features = false, features = [
+iced_aw = { version = "0.13.0", default-features = false, features = [
     "card",
     "color_picker",
     "context_menu",
@@ -60,13 +59,14 @@ iced_aw = { version = "0.11.0", default-features = false, features = [
     "tabs",
     "time_picker",
 ] }
-iced_fonts = { version = "0.1.1", features = ["bootstrap"] }
+iced_fonts = { version = "0.3.0", features = ["bootstrap"] }
+image = "0.25"
 itertools = "0.13"
 machine-uid = "0.5"
 notify-rust = "4.11"
 palette = "0.7.6"
 plotters = "0.3"
-plotters-iced = "0.11"
+plotters-iced = { git = "https://github.com/unobserved-io/plotters-iced", branch = "iced-0.14" }
 rand = "0.8"
 regex = "1"
 reqwest = { version = "0.12", features = ["json"] }

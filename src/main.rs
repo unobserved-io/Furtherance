@@ -74,7 +74,7 @@ mod view_enums;
 use std::borrow::Cow;
 
 use app::Furtherance;
-use iced::advanced::graphics::image::image_rs::ImageFormat;
+use image::ImageFormat;
 
 fn main() -> iced::Result {
     let window_icon = iced::window::icon::from_file_data(
@@ -92,17 +92,15 @@ fn main() -> iced::Result {
 
     let settings = iced::Settings {
         id: Some(String::from("io.unobserved.furtherance")),
-        fonts: vec![
-            Cow::Borrowed(iced_fonts::REQUIRED_FONT_BYTES),
-            Cow::Borrowed(iced_fonts::BOOTSTRAP_FONT_BYTES),
-        ],
+        fonts: vec![Cow::Borrowed(iced_fonts::BOOTSTRAP_FONT_BYTES)],
         ..Default::default()
     };
 
-    iced::application(Furtherance::title, Furtherance::update, Furtherance::view)
+    iced::application(Furtherance::new, Furtherance::update, Furtherance::view)
         .subscription(Furtherance::subscription)
+        .title(Furtherance::title)
         .theme(Furtherance::theme)
         .window(window_settings)
         .settings(settings)
-        .run_with(Furtherance::new)
+        .run()
 }

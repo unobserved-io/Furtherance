@@ -41,7 +41,7 @@ impl SelectionEarningsRecordedChart {
         }
     }
 
-    pub fn view(&self) -> Element<Message> {
+    pub fn view(&self) -> Element<'_, Message> {
         let total_earnings: f32 = self.date_earned.values().sum();
 
         if self.date_earned.len() <= 1 || total_earnings == 0.0 {
