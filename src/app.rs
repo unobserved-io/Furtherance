@@ -3318,7 +3318,7 @@ impl Furtherance {
                 bottom: 0.0,
                 left: 20.0,
             });
-        for (i, (date, task_groups)) in self.task_history.iter().rev().enumerate() {
+        for (date, task_groups) in self.task_history.iter().rev() {
             let (total_time, total_earnings) = task_groups.iter().fold(
                 (0i64, 0f32),
                 |(accumulated_time, accumulated_earnings), group| {
@@ -3336,7 +3336,7 @@ impl Furtherance {
                 total_time,
                 total_earnings,
                 &self.fur_settings,
-                if i == 0 {
+                if self.timer_start_time.date_naive() == *date {
                     Some((self.timer_is_running, &self.timer_text))
                 } else {
                     None
