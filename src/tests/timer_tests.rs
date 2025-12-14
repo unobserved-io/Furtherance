@@ -16,7 +16,7 @@
 
 #[cfg(test)]
 mod timer_tests {
-    use crate::{app::*, update::msg_helper_functions::split_task_input};
+    use crate::update::msg_helper_functions::split_task_input;
 
     #[test]
     fn test_split_task_input_basic() {
