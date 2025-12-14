@@ -41,6 +41,9 @@ use crate::{
     view_enums::NotificationType,
 };
 
+#[cfg(target_os = "linux")]
+use crate::helpers::wayland_idle;
+
 pub fn chain_tasks(commands: Vec<Task<Message>>) -> Task<Message> {
     Task::batch(commands)
 }

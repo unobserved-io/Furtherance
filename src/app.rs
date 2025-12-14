@@ -82,8 +82,6 @@ use palette::Srgb;
 use palette::color_difference::Wcag21RelativeContrast;
 use tokio::time;
 
-#[cfg(target_os = "linux")]
-use crate::helpers::wayland_idle;
 #[cfg(target_os = "macos")]
 use notify_rust::set_application;
 
