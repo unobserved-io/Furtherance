@@ -57,38 +57,38 @@ use crate::{
     },
     server::{
         encryption::{self, decrypt_encryption_key, encrypt_encryption_key},
-        login::{login, ApiError, LoginResponse},
+        login::{ApiError, LoginResponse, login},
         logout,
-        sync::{sync_with_server, SyncResponse},
+        sync::{SyncResponse, sync_with_server},
     },
     style::{self, FurTheme},
     ui::todos,
     view_enums::*,
 };
 use chrono::{
-    offset::LocalResult, DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeDelta,
-    TimeZone, Timelike,
+    DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeDelta, TimeZone, Timelike,
+    offset::LocalResult,
 };
 use csv::{Reader, ReaderBuilder, StringRecord, Writer};
 use fluent::FluentValue;
 use iced::{
+    Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
     advanced::subscription,
     alignment, font, keyboard,
     widget::{
-        self, button, center, checkbox, column, container, opaque, pick_list, row, rule, space,
-        stack, text, text_input, toggler, Button, Column, Container, Row, Scrollable,
+        self, Button, Column, Container, Row, Scrollable, button, center, checkbox, column,
+        container, opaque, pick_list, row, rule, space, stack, text, text_input, toggler,
     },
-    Alignment, Color, Element, Length, Padding, Renderer, Subscription, Task, Theme,
 };
 use iced_aw::{
-    color_picker, date_picker, number_input, time_picker, Card, ContextMenu, TabBarPosition,
-    TabLabel, Tabs, TimePicker,
+    Card, ContextMenu, TabBarPosition, TabLabel, Tabs, TimePicker, color_picker, date_picker,
+    number_input, time_picker,
 };
 use iced_fonts::bootstrap::{self, advanced_text};
 use itertools::Itertools;
 use notify_rust::{Notification, Timeout};
-use palette::color_difference::Wcag21RelativeContrast;
 use palette::Srgb;
+use palette::color_difference::Wcag21RelativeContrast;
 use regex::Regex;
 use rfd::FileDialog;
 use tokio::time;
@@ -1918,7 +1918,7 @@ impl Furtherance {
                 if new_days >= 1 {
                     match self.fur_settings.change_days_to_show(&new_days) {
                         Ok(_) => {
-                            return messages::update_task_history(self.fur_settings.days_to_show)
+                            return messages::update_task_history(self.fur_settings.days_to_show);
                         }
                         Err(e) => eprintln!("Failed to change days_to_show in settings: {}", e),
                     }
@@ -2655,26 +2655,32 @@ impl Furtherance {
                                         Ok(Some(client_task)) => {
                                             // Task exists - update it if it changed
                                             if server_task.last_updated > client_task.last_updated {
-                                                match db_update_task(&server_task) { Err(e) => {
-                                                    eprintln!(
-                                                        "Error updating task from server: {}",
-                                                        e
-                                                    );
-                                                } _ => {
-                                                    sync_count += 1;
-                                                }}
+                                                match db_update_task(&server_task) {
+                                                    Err(e) => {
+                                                        eprintln!(
+                                                            "Error updating task from server: {}",
+                                                            e
+                                                        );
+                                                    }
+                                                    _ => {
+                                                        sync_count += 1;
+                                                    }
+                                                }
                                             }
                                         }
                                         Ok(None) => {
                                             // Task does not exist - insert it
-                                            match db_insert_task(&server_task) { Err(e) => {
-                                                eprintln!(
-                                                    "Error writing new task from server: {}",
-                                                    e
-                                                );
-                                            } _ => {
-                                                sync_count += 1;
-                                            }}
+                                            match db_insert_task(&server_task) {
+                                                Err(e) => {
+                                                    eprintln!(
+                                                        "Error writing new task from server: {}",
+                                                        e
+                                                    );
+                                                }
+                                                _ => {
+                                                    sync_count += 1;
+                                                }
+                                            }
                                         }
                                         Err(e) => {
                                             eprintln!(
@@ -2702,27 +2708,32 @@ impl Furtherance {
                                             if server_shortcut.last_updated
                                                 > client_shortcut.last_updated
                                             {
-                                                match db_update_shortcut(&server_shortcut)
-                                                { Err(e) => {
-                                                    eprintln!(
-                                                        "Error updating shortcut from server: {}",
-                                                        e
-                                                    );
-                                                } _ => {
-                                                    sync_count += 1;
-                                                }}
+                                                match db_update_shortcut(&server_shortcut) {
+                                                    Err(e) => {
+                                                        eprintln!(
+                                                            "Error updating shortcut from server: {}",
+                                                            e
+                                                        );
+                                                    }
+                                                    _ => {
+                                                        sync_count += 1;
+                                                    }
+                                                }
                                             }
                                         }
                                         Ok(None) => {
                                             // Shortcut does not exist - insert it
-                                            match db_insert_shortcut(&server_shortcut) { Err(e) => {
-                                                eprintln!(
-                                                    "Error writing new shortcut from server: {}",
-                                                    e
-                                                );
-                                            } _ => {
-                                                sync_count += 1;
-                                            }}
+                                            match db_insert_shortcut(&server_shortcut) {
+                                                Err(e) => {
+                                                    eprintln!(
+                                                        "Error writing new shortcut from server: {}",
+                                                        e
+                                                    );
+                                                }
+                                                _ => {
+                                                    sync_count += 1;
+                                                }
+                                            }
                                         }
                                         Err(e) => {
                                             eprintln!(
@@ -2748,26 +2759,32 @@ impl Furtherance {
                                         Ok(Some(client_todo)) => {
                                             // Todo exists - update it if it changed
                                             if server_todo.last_updated > client_todo.last_updated {
-                                                match db_update_todo(&server_todo) { Err(e) => {
-                                                    eprintln!(
-                                                        "Error updating todo from server: {}",
-                                                        e
-                                                    );
-                                                } _ => {
-                                                    sync_count += 1;
-                                                }}
+                                                match db_update_todo(&server_todo) {
+                                                    Err(e) => {
+                                                        eprintln!(
+                                                            "Error updating todo from server: {}",
+                                                            e
+                                                        );
+                                                    }
+                                                    _ => {
+                                                        sync_count += 1;
+                                                    }
+                                                }
                                             }
                                         }
                                         Ok(None) => {
                                             // Todo does not exist - insert it
-                                            match db_insert_todo(&server_todo) { Err(e) => {
-                                                eprintln!(
-                                                    "Error writing new todo from server: {}",
-                                                    e
-                                                );
-                                            } _ => {
-                                                sync_count += 1;
-                                            }}
+                                            match db_insert_todo(&server_todo) {
+                                                Err(e) => {
+                                                    eprintln!(
+                                                        "Error writing new todo from server: {}",
+                                                        e
+                                                    );
+                                                }
+                                                _ => {
+                                                    sync_count += 1;
+                                                }
+                                            }
                                         }
                                         Err(e) => {
                                             eprintln!(
@@ -3410,24 +3427,26 @@ impl Furtherance {
                 ]
                 .spacing(10),
                 if self.timer_is_running {
-                    row![TimePicker::new(
-                        self.show_timer_start_picker,
-                        self.displayed_task_start_time,
-                        Button::new(text(self.localization.get_message(
-                            "started-at",
-                            Some(&HashMap::from([(
-                                "time",
-                                FluentValue::from(
-                                    self.timer_start_time.format("%H:%M").to_string()
-                                )
-                            )]))
-                        )))
-                        .on_press(Message::ChooseCurrentTaskStartTime)
-                        .style(style::primary_button_style),
-                        Message::CancelCurrentTaskStartTime,
-                        Message::SubmitCurrentTaskStartTime,
-                    )
-                    .use_24h(),]
+                    row![
+                        TimePicker::new(
+                            self.show_timer_start_picker,
+                            self.displayed_task_start_time,
+                            Button::new(text(self.localization.get_message(
+                                "started-at",
+                                Some(&HashMap::from([(
+                                    "time",
+                                    FluentValue::from(
+                                        self.timer_start_time.format("%H:%M").to_string()
+                                    )
+                                )]))
+                            )))
+                            .on_press(Message::ChooseCurrentTaskStartTime)
+                            .style(style::primary_button_style),
+                            Message::CancelCurrentTaskStartTime,
+                            Message::SubmitCurrentTaskStartTime,
+                        )
+                        .use_24h(),
+                    ]
                     .align_y(Alignment::Center)
                     .spacing(10)
                     .padding(Padding {
@@ -3711,9 +3730,11 @@ impl Furtherance {
                             Message::CancelStartDate,
                             Message::SubmitStartDate,
                         ),
-                        column![text("to")
-                            .align_y(alignment::Vertical::Center)
-                            .height(Length::Fill),]
+                        column![
+                            text("to")
+                                .align_y(alignment::Vertical::Center)
+                                .height(Length::Fill),
+                        ]
                         .height(30),
                         date_picker(
                             self.report.show_end_date_picker,
@@ -3808,25 +3829,29 @@ impl Furtherance {
             .align_y(Alignment::Center),
             row![
                 text(self.localization.get_message("email", None)),
-                column![text_input("", &self.fur_user_fields.email)
-                    .on_input(Message::UserEmailChanged)
-                    .on_submit(Message::EnterPressedInSyncFields)]
+                column![
+                    text_input("", &self.fur_user_fields.email)
+                        .on_input(Message::UserEmailChanged)
+                        .on_submit(Message::EnterPressedInSyncFields)
+                ]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
             row![
                 text(self.localization.get_message("encryption-key", None)),
-                column![text_input("", &self.fur_user_fields.encryption_key)
-                    .secure(true)
-                    .on_input(Message::UserEncryptionKeyChanged)
-                    .on_submit(Message::EnterPressedInSyncFields)]
+                column![
+                    text_input("", &self.fur_user_fields.encryption_key)
+                        .secure(true)
+                        .on_input(Message::UserEncryptionKeyChanged)
+                        .on_submit(Message::EnterPressedInSyncFields)
+                ]
                 .padding([0, 15])
             ]
             .align_y(Alignment::Center),
         ]
         .spacing(10);
-        let mut sync_button_row: Row<'_, Message> =
-            row![button(text(self.localization.get_message(
+        let mut sync_button_row: Row<'_, Message> = row![
+            button(text(self.localization.get_message(
                 if self.fur_user.is_none() {
                     "log-in"
                 } else {
@@ -3850,8 +3875,9 @@ impl Furtherance {
                 style::primary_button_style
             } else {
                 button::secondary
-            }),]
-            .spacing(10);
+            }),
+        ]
+        .spacing(10);
         sync_button_row = sync_button_row.push(if self.fur_user.is_some() {
             Some(
                 button(text(self.localization.get_message("sync", None)))
@@ -3924,15 +3950,17 @@ impl Furtherance {
             Err(e) => Some(text!("{}", e).style(style::red_text)),
         });
 
-        let mut csv_col = column![row![
-            button(text(self.localization.get_message("export-csv", None)))
-                .on_press(Message::ExportCsvPressed)
-                .style(style::primary_button_style),
-            button(text(self.localization.get_message("import-csv", None)))
-                .on_press(Message::ImportCsvPressed)
-                .style(style::primary_button_style)
+        let mut csv_col = column![
+            row![
+                button(text(self.localization.get_message("export-csv", None)))
+                    .on_press(Message::ExportCsvPressed)
+                    .style(style::primary_button_style),
+                button(text(self.localization.get_message("import-csv", None)))
+                    .on_press(Message::ImportCsvPressed)
+                    .style(style::primary_button_style)
+            ]
+            .spacing(10),
         ]
-        .spacing(10),]
         .spacing(10);
         csv_col = csv_col.push(match &self.settings_csv_message {
             Ok(msg) => {
@@ -3945,11 +3973,13 @@ impl Furtherance {
             Err(e) => Some(text!("{}", e).style(style::red_text)),
         });
 
-        let mut backup_col = column![button(text(
-            self.localization.get_message("delete-everything", None)
-        ))
-        .on_press(Message::ShowAlert(FurAlert::DeleteEverythingConfirmation))
-        .style(button::danger)]
+        let mut backup_col = column![
+            button(text(
+                self.localization.get_message("delete-everything", None)
+            ))
+            .on_press(Message::ShowAlert(FurAlert::DeleteEverythingConfirmation))
+            .style(button::danger)
+        ]
         .spacing(10);
         backup_col = backup_col.push(match &self.settings_more_message {
             Ok(msg) => {
@@ -3962,8 +3992,8 @@ impl Furtherance {
             Err(e) => Some(text!("{}", e).style(style::red_text)),
         });
 
-        let settings_view: Column<'_, Message, Theme, Renderer> =
-            column![Tabs::new(Message::SettingsTabSelected)
+        let settings_view: Column<'_, Message, Theme, Renderer> = column![
+            Tabs::new(Message::SettingsTabSelected)
                 .tab_icon_position(iced_aw::tabs::Position::Top)
                 .push(
                     TabId::General,
@@ -4171,11 +4201,14 @@ impl Furtherance {
                             ]
                             .spacing(10)
                             .align_y(Alignment::Center),
-                            row![text(format!("Furtherance version {}", FURTHERANCE_VERSION))
-                                .font(font::Font {
-                                    style: iced::font::Style::Italic,
-                                    ..Default::default()
-                                })]
+                            row![
+                                text(format!("Furtherance version {}", FURTHERANCE_VERSION)).font(
+                                    font::Font {
+                                        style: iced::font::Style::Italic,
+                                        ..Default::default()
+                                    }
+                                )
+                            ]
                             .padding(Padding {
                                 top: 40.0,
                                 right: 0.0,
@@ -4397,7 +4430,8 @@ impl Furtherance {
                     ),
                 )
                 .set_active_tab(&self.settings_active_tab)
-                .tab_bar_position(TabBarPosition::Top)];
+                .tab_bar_position(TabBarPosition::Top)
+        ];
 
         // MARK: INSPECTOR
         let inspector: Column<'_, Message, Theme, Renderer> = match &self.inspector_view {
@@ -4991,6 +5025,9 @@ impl Furtherance {
             Some(FurInspectorView::EditTask) => match &self.task_to_edit {
                 Some(task_to_edit) => column![
                     row![
+                        button(bootstrap::x_lg())
+                            .on_press(Message::CancelTaskEdit)
+                            .style(button::text),
                         space::horizontal(),
                         button(bootstrap::trash_fill())
                             .on_press(if self.fur_settings.show_delete_confirmation {
@@ -5264,7 +5301,10 @@ impl Furtherance {
                                 })
                                 .style(button::text),
                         ]
+                        .padding(INSPECTOR_PADDING)
+                        .width(INSPECTOR_WIDTH)
                         .spacing(5),
+                        // .spacing(5),
                         match group_to_edit.is_in_edit_mode {
                             true => column![
                                 text_input(&group_to_edit.name, &group_to_edit.new_name).on_input(
@@ -5858,12 +5898,12 @@ fn history_group_row<'a, 'loc>(
 
     let total_time_str =
         seconds_to_formatted_duration(task_group.total_time, settings.show_seconds);
-    let mut totals_column: Column<'_, Message, Theme, Renderer> = column![text(total_time_str)
-        .font(font::Font {
+    let mut totals_column: Column<'_, Message, Theme, Renderer> =
+        column![text(total_time_str).font(font::Font {
             weight: iced::font::Weight::Bold,
             ..Default::default()
         })]
-    .align_x(Alignment::End);
+        .align_x(Alignment::End);
 
     if settings.show_task_earnings && task_group.rate > 0.0 {
         let total_earnings = task_group.rate * (task_group.total_time as f32 / 3600.0);
@@ -5998,14 +6038,16 @@ fn shortcut_button_content<'a>(
     shortcut: &'a FurShortcut,
     text_color: Color,
 ) -> Column<'a, Message, Theme, Renderer> {
-    let mut shortcut_text_column = column![text(&shortcut.name)
-        .font(font::Font {
-            weight: iced::font::Weight::Bold,
-            ..Default::default()
-        })
-        .style(move |_| text::Style {
-            color: Some(text_color)
-        })]
+    let mut shortcut_text_column = column![
+        text(&shortcut.name)
+            .font(font::Font {
+                weight: iced::font::Weight::Bold,
+                ..Default::default()
+            })
+            .style(move |_| text::Style {
+                color: Some(text_color)
+            })
+    ]
     .spacing(5);
 
     if !shortcut.project.is_empty() {
@@ -6466,46 +6508,47 @@ pub fn write_furtasks_to_csv(
     path: PathBuf,
     localization: &Localization,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    match std::fs::File::create(path) { Ok(file) => {
-        match db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending)
-        { Ok(tasks) => {
-            let mut csv_writer = Writer::from_writer(file);
-            csv_writer.write_record(&[
-                "Name",
-                "Start Time",
-                "Stop Time",
-                "Tags",
-                "Project",
-                "Rate",
-                "Currency",
-                "Total Time",
-                "Total Earnings",
-            ])?;
+    match std::fs::File::create(path) {
+        Ok(file) => {
+            match db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending) {
+                Ok(tasks) => {
+                    let mut csv_writer = Writer::from_writer(file);
+                    csv_writer.write_record(&[
+                        "Name",
+                        "Start Time",
+                        "Stop Time",
+                        "Tags",
+                        "Project",
+                        "Rate",
+                        "Currency",
+                        "Total Time",
+                        "Total Earnings",
+                    ])?;
 
-            for task in tasks {
-                csv_writer.write_record(&[
-                    task.name.clone(),
-                    task.start_time.to_rfc3339(),
-                    task.stop_time.to_rfc3339(),
-                    task.tags.clone(),
-                    task.project.clone(),
-                    task.rate.to_string(),
-                    task.currency.clone(),
-                    seconds_to_formatted_duration(task.total_time_in_seconds(), true),
-                    format!("${:.2}", task.total_earnings()),
-                ])?;
+                    for task in tasks {
+                        csv_writer.write_record(&[
+                            task.name.clone(),
+                            task.start_time.to_rfc3339(),
+                            task.stop_time.to_rfc3339(),
+                            task.tags.clone(),
+                            task.project.clone(),
+                            task.rate.to_string(),
+                            task.currency.clone(),
+                            seconds_to_formatted_duration(task.total_time_in_seconds(), true),
+                            format!("${:.2}", task.total_earnings()),
+                        ])?;
+                    }
+
+                    csv_writer.flush()?;
+                    Ok(())
+                }
+                _ => Err(localization
+                    .get_message("error-retrieving-tasks", None)
+                    .into()),
             }
-
-            csv_writer.flush()?;
-            Ok(())
-        } _ => {
-            Err(localization
-                .get_message("error-retrieving-tasks", None)
-                .into())
-        }}
-    } _ => {
-        Err(localization.get_message("error-creating-file", None).into())
-    }}
+        }
+        _ => Err(localization.get_message("error-creating-file", None).into()),
+    }
 }
 
 pub fn verify_csv(
