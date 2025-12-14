@@ -220,10 +220,3 @@ impl std::fmt::Display for ServerChoices {
         )
     }
 }
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum FurDarkLight {
-    Light,
-    Dark,
-    Auto,
-}
