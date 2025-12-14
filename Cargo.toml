@@ -63,7 +63,7 @@ iced_fonts = { version = "0.3.0", features = ["bootstrap"] }
 image = "0.25"
 itertools = "0.14"
 machine-uid = "0.5"
-notify-rust = "4.11"
+notify-rust = "4.11.7"
 palette = "0.7.6"
 plotters = "0.3"
 plotters-iced = { git = "https://github.com/unobserved-io/plotters-iced", branch = "master" }
