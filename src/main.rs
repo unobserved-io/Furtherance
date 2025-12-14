@@ -32,7 +32,6 @@ mod database;
 mod helpers {
     pub mod color_utils;
     pub mod idle;
-    pub mod messages;
     pub mod midnight_subscription;
     pub mod task_actions;
     pub mod tasks;
@@ -68,6 +67,10 @@ mod tests {
 }
 pub mod ui {
     pub mod todos;
+}
+pub mod update {
+    pub mod messages;
+    pub mod msg_helper_functions;
 }
 mod view_enums;
 

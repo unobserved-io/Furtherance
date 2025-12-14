@@ -15,19 +15,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{
-    app::Message,
     constants::{CHART_COLOR, CHART_HEIGHT, MAX_X_VALUES},
     localization::Localization,
     models::fur_task::FurTask,
+    update::messages::Message,
 };
 use chrono::NaiveDate;
 use iced::{
-    widget::{row, space, Text},
     Element, Length,
+    widget::{Text, row, space},
 };
 use plotters::prelude::*;
 use plotters_backend::DrawingBackend;
-use plotters_iced::{plotters_backend, Chart, ChartWidget};
+use plotters_iced::{Chart, ChartWidget, plotters_backend};
 use std::collections::BTreeMap;
 
 use super::all_charts;

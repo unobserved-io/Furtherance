@@ -19,7 +19,7 @@ use std::time::Duration;
 use chrono::{Local, TimeDelta};
 use iced::advanced::subscription;
 
-use crate::app::Message;
+use crate::update::messages::Message;
 
 pub struct MidnightSubscription;
 

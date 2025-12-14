@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::{
-    fs::{remove_file, File},
+    fs::{File, remove_file},
     io::{BufRead, BufReader, BufWriter, Result, Write},
     path::PathBuf,
 };
@@ -23,9 +23,9 @@ use std::{
 use chrono::{DateTime, Local};
 
 use crate::{
-    app::split_task_input,
     database::db_insert_task,
     models::{fur_settings::get_data_path, fur_task::FurTask},
+    update::msg_helper_functions::split_task_input,
 };
 
 pub fn autosave_exists() -> bool {

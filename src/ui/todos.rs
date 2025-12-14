@@ -18,19 +18,18 @@ use std::collections::BTreeMap;
 
 use chrono::{Datelike, Local, NaiveDate, TimeDelta};
 use iced::{
-    font,
-    widget::{button, column, rich_text, row, space, span, text, Container, Row},
-    Alignment, Element, Length, Renderer, Theme,
+    Alignment, Element, Length, Renderer, Theme, font,
+    widget::{Container, Row, button, column, rich_text, row, space, span, text},
 };
 use iced_aw::ContextMenu;
 use iced_fonts::bootstrap;
 
 use crate::{
-    app::Message,
     database,
     localization::Localization,
     models::{fur_settings::FurSettings, fur_todo::FurTodo},
     style,
+    update::messages::Message,
 };
 
 pub fn get_all_todos() -> BTreeMap<chrono::NaiveDate, Vec<FurTodo>> {
@@ -157,13 +156,12 @@ pub fn todo_row<'a, 'loc>(
     ContextMenu::new(
         todo_row,
         Box::new(move || -> Element<'a, Message, Theme, Renderer> {
-            let mut menu_items =
-                column![
-                    iced::widget::button(text(localization.get_message("edit", None)))
-                        .on_press(Message::EditTodo(todo_clone.clone()))
-                        .style(style::context_menu_button_style)
-                        .width(Length::Fill),
-                ];
+            let mut menu_items = column![
+                iced::widget::button(text(localization.get_message("edit", None)))
+                    .on_press(Message::EditTodo(todo_clone.clone()))
+                    .style(style::context_menu_button_style)
+                    .width(Length::Fill),
+            ];
 
             if todo_clone.date.date_naive() != Local::now().date_naive() {
                 menu_items = menu_items.push(
