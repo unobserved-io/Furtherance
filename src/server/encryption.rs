@@ -15,14 +15,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use aes_gcm::{
-    aead::{Aead, KeyInit},
     Aes256Gcm, Key, Nonce,
+    aead::{Aead, KeyInit},
 };
 use base64::{
-    engine::general_purpose::{STANDARD as BASE64, URL_SAFE_NO_PAD},
     Engine,
+    engine::general_purpose::{STANDARD as BASE64, URL_SAFE_NO_PAD},
 };
-use rand::{thread_rng, RngCore};
+use rand::{RngCore, rng};
 use serde::{Deserialize, Serialize};
 use sysinfo::System;
 
@@ -39,7 +39,7 @@ pub fn encrypt<T: Serialize>(
     key: &[u8; 32],
 ) -> Result<(String, String), EncryptionError> {
     let mut nonce_bytes = [0u8; 12];
-    thread_rng().fill_bytes(&mut nonce_bytes);
+    rng().fill_bytes(&mut nonce_bytes);
     let nonce = Nonce::from_slice(&nonce_bytes);
 
     let json = serde_json::to_string(data).map_err(|_| EncryptionError::Serialization)?;

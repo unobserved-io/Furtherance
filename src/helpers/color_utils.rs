@@ -74,22 +74,22 @@ pub trait RandomColor {
 
 impl RandomColor for Srgb {
     fn random() -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         Srgb::new(
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
+            rng.random_range(0.0..1.0),
+            rng.random_range(0.0..1.0),
+            rng.random_range(0.0..1.0),
         )
     }
 }
 
 impl RandomColor for Color {
     fn random() -> Self {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         Color::from_rgb(
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
-            rng.gen_range(0.0..1.0),
+            rng.random_range(0.0..1.0),
+            rng.random_range(0.0..1.0),
+            rng.random_range(0.0..1.0),
         )
     }
 }
