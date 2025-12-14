@@ -1640,6 +1640,7 @@ impl Furtherance {
                         left: 0.0,
                     })
                     .spacing(10),
+                    text(&task_to_add.invalid_input_error_message).style(style::red_text),
                 ]
                 .spacing(INSPECTOR_SPACING)
                 .padding(INSPECTOR_PADDING)
@@ -1948,6 +1949,7 @@ impl Furtherance {
                         left: 0.0,
                     })
                     .spacing(10),
+                    text(&task_to_add.invalid_input_error_message).style(style::red_text),
                 ]
                 .spacing(INSPECTOR_SPACING)
                 .padding(INSPECTOR_PADDING)

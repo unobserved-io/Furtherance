@@ -1390,64 +1390,74 @@ impl Furtherance {
                 }
             }
             Message::SaveTaskEdit => {
-                if let Some(task_to_edit) = &self.task_to_edit {
-                    let tags_without_first_pound = task_to_edit
-                        .new_tags
-                        .trim()
-                        .strip_prefix('#')
-                        .unwrap_or(&task_to_edit.new_tags)
-                        .trim()
-                        .to_string();
-                    match db_update_task(&FurTask {
-                        name: task_to_edit.new_name.trim().to_string(),
-                        start_time: task_to_edit.new_start_time,
-                        stop_time: task_to_edit.new_stop_time,
-                        tags: tags_without_first_pound,
-                        project: task_to_edit.new_project.trim().to_string(),
-                        rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
-                        currency: String::new(),
-                        uid: task_to_edit.uid.clone(),
-                        is_deleted: false,
-                        last_updated: chrono::Utc::now().timestamp(),
-                    }) {
-                        Ok(_) => {
-                            self.inspector_view = None;
-                            self.task_to_edit = None;
-                            self.group_to_edit = None;
-                            let mut tasks = vec![];
-                            tasks.push(update_task_history(self.fur_settings.days_to_show));
-                            tasks.push(sync_after_change(&self.fur_user));
-                            return chain_tasks(tasks);
+                if let Some(task_to_edit) = &mut self.task_to_edit {
+                    if task_to_edit.new_stop_time >= task_to_edit.new_start_time {
+                        let tags_without_first_pound = task_to_edit
+                            .new_tags
+                            .trim()
+                            .strip_prefix('#')
+                            .unwrap_or(&task_to_edit.new_tags)
+                            .trim()
+                            .to_string();
+                        match db_update_task(&FurTask {
+                            name: task_to_edit.new_name.trim().to_string(),
+                            start_time: task_to_edit.new_start_time,
+                            stop_time: task_to_edit.new_stop_time,
+                            tags: tags_without_first_pound,
+                            project: task_to_edit.new_project.trim().to_string(),
+                            rate: task_to_edit.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                            currency: String::new(),
+                            uid: task_to_edit.uid.clone(),
+                            is_deleted: false,
+                            last_updated: chrono::Utc::now().timestamp(),
+                        }) {
+                            Ok(_) => {
+                                self.inspector_view = None;
+                                self.task_to_edit = None;
+                                self.group_to_edit = None;
+                                let mut tasks = vec![];
+                                tasks.push(update_task_history(self.fur_settings.days_to_show));
+                                tasks.push(sync_after_change(&self.fur_user));
+                                return chain_tasks(tasks);
+                            }
+                            Err(e) => eprintln!("Failed to update task in database: {}", e),
                         }
-                        Err(e) => eprintln!("Failed to update task in database: {}", e),
+                    } else {
+                        task_to_edit.invalid_input_error_message =
+                            "The start time must be before the stop time.".to_string();
                     }
-                } else if let Some(task_to_add) = &self.task_to_add {
-                    let tags_without_first_pound = task_to_add
-                        .tags
-                        .trim()
-                        .strip_prefix('#')
-                        .unwrap_or(&task_to_add.tags)
-                        .trim()
-                        .to_string();
-                    match db_insert_task(&FurTask::new(
-                        task_to_add.name.trim().to_string(),
-                        task_to_add.start_time,
-                        task_to_add.stop_time,
-                        tags_without_first_pound,
-                        task_to_add.project.trim().to_string(),
-                        task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
-                        String::new(),
-                    )) {
-                        Ok(_) => {
-                            self.inspector_view = None;
-                            self.task_to_add = None;
-                            self.group_to_edit = None;
-                            let mut tasks = vec![];
-                            tasks.push(update_task_history(self.fur_settings.days_to_show));
-                            tasks.push(sync_after_change(&self.fur_user));
-                            return chain_tasks(tasks);
+                } else if let Some(task_to_add) = &mut self.task_to_add {
+                    if task_to_add.stop_time >= task_to_add.start_time {
+                        let tags_without_first_pound = task_to_add
+                            .tags
+                            .trim()
+                            .strip_prefix('#')
+                            .unwrap_or(&task_to_add.tags)
+                            .trim()
+                            .to_string();
+                        match db_insert_task(&FurTask::new(
+                            task_to_add.name.trim().to_string(),
+                            task_to_add.start_time,
+                            task_to_add.stop_time,
+                            tags_without_first_pound,
+                            task_to_add.project.trim().to_string(),
+                            task_to_add.new_rate.trim().parse::<f32>().unwrap_or(0.0),
+                            String::new(),
+                        )) {
+                            Ok(_) => {
+                                self.inspector_view = None;
+                                self.task_to_add = None;
+                                self.group_to_edit = None;
+                                let mut tasks = vec![];
+                                tasks.push(update_task_history(self.fur_settings.days_to_show));
+                                tasks.push(sync_after_change(&self.fur_user));
+                                return chain_tasks(tasks);
+                            }
+                            Err(e) => eprintln!("Error adding task: {}", e),
                         }
-                        Err(e) => eprintln!("Error adding task: {}", e),
+                    } else {
+                        task_to_add.invalid_input_error_message =
+                            "The start time must be before the stop time.".to_string();
                     }
                 }
             }
@@ -2073,9 +2083,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_date_with_time(task_to_edit.new_start_time, new_date)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time < task_to_edit.new_stop_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_edit.displayed_start_date = new_date;
                                     task_to_edit.new_start_time = new_local_date_time;
                                     task_to_edit.show_displayed_start_date_picker = false;
@@ -2086,9 +2094,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_date_with_time(task_to_edit.new_stop_time, new_date)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time > task_to_edit.new_start_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_edit.displayed_stop_date = new_date;
                                     task_to_edit.new_stop_time = new_local_date_time;
                                     task_to_edit.show_displayed_stop_date_picker = false;
@@ -2103,9 +2109,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_date_with_time(task_to_add.start_time, new_date)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time < task_to_add.stop_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_add.displayed_start_date = new_date;
                                     task_to_add.start_time = new_local_date_time;
                                     task_to_add.show_start_date_picker = false;
@@ -2116,9 +2120,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_date_with_time(task_to_add.stop_time, new_date)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time > task_to_add.start_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_add.displayed_stop_date = new_date;
                                     task_to_add.stop_time = new_local_date_time;
                                     task_to_add.show_stop_date_picker = false;
@@ -2137,9 +2139,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_time_with_date(task_to_edit.new_start_time, new_time)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time < task_to_edit.new_stop_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_edit.displayed_start_time = new_time;
                                     task_to_edit.new_start_time = new_local_date_time;
                                     task_to_edit.show_displayed_start_time_picker = false;
@@ -2150,9 +2150,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_time_with_date(task_to_edit.new_stop_time, new_time)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time > task_to_edit.new_start_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_edit.displayed_stop_time = new_time;
                                     task_to_edit.new_stop_time = new_local_date_time;
                                     task_to_edit.show_displayed_stop_time_picker = false;
@@ -2167,9 +2165,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_time_with_date(task_to_add.start_time, new_time)
                             {
-                                if new_local_date_time <= Local::now()
-                                    && new_local_date_time < task_to_add.stop_time
-                                {
+                                if new_local_date_time <= Local::now() {
                                     task_to_add.displayed_start_time = new_time;
                                     task_to_add.start_time = new_local_date_time;
                                     task_to_add.show_start_time_picker = false;
@@ -2180,7 +2176,7 @@ impl Furtherance {
                             if let LocalResult::Single(new_local_date_time) =
                                 combine_chosen_time_with_date(task_to_add.stop_time, new_time)
                             {
-                                if new_local_date_time > task_to_add.start_time {
+                                if new_local_date_time <= Local::now() {
                                     task_to_add.displayed_stop_time = new_time;
                                     task_to_add.stop_time = new_local_date_time;
                                     task_to_add.show_stop_time_picker = false;
