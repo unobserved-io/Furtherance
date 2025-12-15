@@ -446,7 +446,7 @@ impl Furtherance {
             }
         }
 
-        let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center);
+        let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center).clip(true);
         timer_view = timer_view.push(if self.inspector_view.is_none() {
             row![
                 space::horizontal(),
