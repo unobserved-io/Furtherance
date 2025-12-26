@@ -71,7 +71,7 @@ rand = "0.9"
 regex = "1"
 reqwest = { version = "0.12", features = ["json"] }
 rfd = "0.16"
-rusqlite = { version = "0.37", features = [
+rusqlite = { version = "0.38", features = [
     "bundled",
     "chrono",
     "backup",
