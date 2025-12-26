@@ -96,6 +96,7 @@ pub enum Message {
     ChooseTaskEditDateTime(EditTaskProperty),
     ChooseTodoEditDate,
     ClearLoginMessage,
+    CloseInspector,
     CreateShortcutFromTaskGroup(FurTaskGroup),
     DeleteEverything,
     DateRangeSelected(FurDateRange),
@@ -401,6 +402,16 @@ impl Furtherance {
                 {
                     self.login_message = Ok(String::new());
                 }
+            }
+            Message::CloseInspector => {
+                self.group_to_edit = None;
+                self.shortcut_to_add = None;
+                self.shortcut_to_edit = None;
+                self.task_to_add = None;
+                self.task_to_edit = None;
+                self.todo_to_add = None;
+                self.todo_to_edit = None;
+                self.inspector_view = None;
             }
             Message::CreateShortcutFromTaskGroup(task_group) => {
                 let new_shortcut = FurShortcut::new(
@@ -1203,11 +1214,11 @@ impl Furtherance {
             }
             Message::NavigateTo(destination) => {
                 if self.current_view != destination {
-                    self.inspector_view = None;
                     self.current_view = destination;
                     if destination == FurView::Report {
                         self.report.update_tasks_in_range();
                     }
+                    return Task::perform(async { Message::CloseInspector }, |msg| msg);
                 }
             }
             Message::NotifyOfSyncClose => {

@@ -2566,6 +2566,12 @@ impl Furtherance {
             _ => column![],
         };
 
+        let inspector_row = if self.inspector_view.is_some() {
+            Some(row![rule::vertical(1), inspector].width(260))
+        } else {
+            None
+        };
+
         let content = row![
             sidebar,
             // Main view
@@ -2576,11 +2582,7 @@ impl Furtherance {
                 FurView::Report => charts_view,
                 FurView::Settings => settings_view,
             },
-            row![rule::vertical(1), inspector].width(if self.inspector_view.is_some() {
-                260
-            } else {
-                0
-            }),
+            inspector_row,
         ];
 
         let overlay: Option<Card<'_, Message, Theme, Renderer>> = if self.displayed_alert.is_some()
