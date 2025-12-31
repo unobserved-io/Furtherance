@@ -23,7 +23,9 @@
   <key>CFBundleVersion</key>
   <string>{{ BUILD }}</string>
   <key>CFBundleIconFile</key>
-  <string>furtherance.icns</string>
+  <string>Furtherance.icns</string>
+  <key>CFBundleIconName</key>
+  <string>Furtherance</string>
   <key>NSHighResolutionCapable</key>
   <true/>
   <key>NSMainNibFile</key>
