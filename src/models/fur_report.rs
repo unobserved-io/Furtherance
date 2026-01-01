@@ -109,6 +109,22 @@ impl FurReport {
                     self.date_range_start = (Local::now() - Duration::days(7)).date_naive();
                     self.date_range_end = Local::now().date_naive();
                 }
+                FurDateRange::ThisMonth => {
+                    if let Some((start_date, end_date)) = get_current_month_bounds() {
+                        self.date_range_start = start_date;
+                        self.date_range_end = end_date;
+                    } else {
+                        self.set_picked_date_ranged(FurDateRange::ThirtyDays);
+                    }
+                }
+                FurDateRange::LastMonth => {
+                    if let Some((start_date, end_date)) = get_last_month_bounds() {
+                        self.date_range_start = start_date;
+                        self.date_range_end = end_date;
+                    } else {
+                        self.set_picked_date_ranged(FurDateRange::ThirtyDays);
+                    }
+                }
                 FurDateRange::ThirtyDays => {
                     self.date_range_start = (Local::now() - Duration::days(30)).date_naive();
                     self.date_range_end = Local::now().date_naive();
@@ -351,4 +367,38 @@ impl FurReport {
             }
         }
     }
+}
+
+fn get_current_month_bounds() -> Option<(NaiveDate, NaiveDate)> {
+    let today = Local::now().date_naive();
+
+    let start_of_month = today.with_day(1)?;
+
+    let next_month_year = if today.month() == 12 {
+        today.year() + 1
+    } else {
+        today.year()
+    };
+    let next_month = if today.month() == 12 {
+        1
+    } else {
+        today.month() + 1
+    };
+
+    let first_of_next_month = NaiveDate::from_ymd_opt(next_month_year, next_month, 1)?;
+    let end_of_month = first_of_next_month.pred_opt()?;
+
+    Some((start_of_month, end_of_month))
+}
+
+fn get_last_month_bounds() -> Option<(NaiveDate, NaiveDate)> {
+    let today = Local::now().date_naive();
+
+    let first_day_of_current_month = today.with_day(1)?;
+
+    let last_day_of_last_month = first_day_of_current_month.pred_opt()?;
+
+    let first_day_of_last_month = last_day_of_last_month.with_day(1)?;
+
+    Some((first_day_of_last_month, last_day_of_last_month))
 }
