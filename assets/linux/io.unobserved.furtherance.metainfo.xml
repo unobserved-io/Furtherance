@@ -49,12 +49,13 @@
   <content_rating type="oars-1.1" />
 
   <releases>
-    <release version="25.12.0" date="2025-12-14">
+    <release version="26.1.0" date="2026-01-01">
         <description translate="no">
         <ul>
             <li>Updated Iced to version 0.14.0 (gui framework)</li>
             <li>Date/time verification now happens on save, not input</li>
             <li>Daily earnings now tick up with timer (when dynamic total is on)</li>
+            <li>Added This Month and Last Month to reports</li>
             <li>Fixed several small and large bugs</li>
             <li>Updated dependencies</li>
         </ul>
