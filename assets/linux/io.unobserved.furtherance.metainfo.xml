@@ -54,6 +54,13 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="26.1.1" date="2026-01-04">
+      <description translate="no">
+        <ul>
+          <li>Fix macOS icon</li>
+        </ul>
+      </description>
+    </release>
     <release version="26.1.0" date="2026-01-01">
         <description translate="no">
         <ul>
