@@ -4,6 +4,7 @@ pkgs.mkShell rec {
   buildInputs = with pkgs; [
     cargo
     cargo-bundle
+    rust-analyzer
     rustc
     fontconfig
     pkg-config
