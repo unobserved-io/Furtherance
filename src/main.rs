@@ -77,6 +77,7 @@ mod view_enums;
 use std::borrow::Cow;
 
 use app::Furtherance;
+use iced::window::settings::PlatformSpecific;
 use image::ImageFormat;
 
 fn main() -> iced::Result {
@@ -88,6 +89,10 @@ fn main() -> iced::Result {
         size: iced::Size {
             width: 1024.0,
             height: 600.0,
+        },
+        platform_specific: PlatformSpecific {
+            application_id: String::from("io.unobserved.furtherance"),
+            ..Default::default()
         },
         icon: window_icon.ok(),
         ..Default::default()
