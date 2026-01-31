@@ -27,6 +27,11 @@
             fontconfig
             pkg-config
             cmake
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXrandr
+            xorg.libXi
+            xorg.libXScrnSaver
             wayland
             wayland-protocols
             libxkbcommon
