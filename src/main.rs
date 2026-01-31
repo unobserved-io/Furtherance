@@ -90,6 +90,7 @@ fn main() -> iced::Result {
             width: 1024.0,
             height: 600.0,
         },
+        #[cfg(target_os = "linux")]
         platform_specific: PlatformSpecific {
             application_id: String::from("io.unobserved.furtherance"),
             ..Default::default()
