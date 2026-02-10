@@ -72,11 +72,16 @@ trait ThemeExt {
 #[allow(dead_code)]
 impl ThemeExt for Theme {
     fn is_fur_theme_dark(&self) -> bool {
-        *self == FurTheme::Dark.to_theme()
+        let palette = self.extended_palette();
+        let bg = palette.background.base.color;
+
+        // Calculate relative luminance to guess if we are in dark mode
+        let (r, g, b) = (bg.r, bg.g, bg.b);
+        (0.2126 * r + 0.7152 * g + 0.0722 * b) < 0.5
     }
 
     fn is_fur_theme_light(&self) -> bool {
-        *self == FurTheme::Light.to_theme()
+        !self.is_fur_theme_dark()
     }
 }
 
