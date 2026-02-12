@@ -40,6 +40,7 @@ mod helpers {
 }
 mod localization;
 mod models {
+    pub mod export_settings;
     pub mod fur_idle;
     pub mod fur_pomodoro;
     pub mod fur_report;

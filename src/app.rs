@@ -36,19 +36,7 @@ use crate::{
     },
     localization::Localization,
     models::{
-        fur_idle::FurIdle,
-        fur_pomodoro::FurPomodoro,
-        fur_report::FurReport,
-        fur_settings::FurSettings,
-        fur_shortcut::FurShortcut,
-        fur_task_group::FurTaskGroup,
-        fur_todo::{FurTodo, TodoToAdd, TodoToEdit},
-        fur_user::{FurUser, FurUserFields},
-        group_to_edit::GroupToEdit,
-        shortcut_to_add::ShortcutToAdd,
-        shortcut_to_edit::ShortcutToEdit,
-        task_to_add::TaskToAdd,
-        task_to_edit::TaskToEdit,
+        export_settings::ExportSettings, fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport, fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task_group::FurTaskGroup, fur_todo::{FurTodo, TodoToAdd, TodoToEdit}, fur_user::{FurUser, FurUserFields}, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd, shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit
     },
     style::{self, FurTheme},
     ui::todos,
@@ -92,6 +80,7 @@ pub struct Furtherance {
     pub delete_todo_uid: Option<String>,
     pub displayed_alert: Option<FurAlert>,
     pub displayed_task_start_time: time_picker::Time,
+    pub export_settings: ExportSettings,
     pub fur_settings: FurSettings,
     pub fur_user: Option<FurUser>,
     pub fur_user_fields: FurUserFields,
@@ -169,6 +158,7 @@ impl Furtherance {
             delete_todo_uid: None,
             displayed_alert: None,
             displayed_task_start_time: time_picker::Time::now_hm(true),
+            export_settings: ExportSettings::new(),
             fur_settings: settings,
             fur_user: saved_user.clone(),
             fur_user_fields: match &saved_user {
@@ -1026,6 +1016,41 @@ impl Furtherance {
         });
 
         let mut csv_col = column![
+                text(self.localization.get_message("export-options", None)),
+
+            row![
+                column![
+                    checkbox(self.export_settings.name)
+                        .label(self.localization.get_message("task-name", None))
+                        .on_toggle(Message::ExportNameColumnToggled),
+                    checkbox(self.export_settings.stop_time)
+                        .label(self.localization.get_message("stop-time", None))
+                        .on_toggle(Message::ExportStopTimeColumnToggled),
+                    checkbox(self.export_settings.tags)
+                        .label(self.localization.get_message("tags", None))
+                        .on_toggle(Message::ExportTagsColumnToggled),
+                    checkbox(self.export_settings.rate)
+                        .label(self.localization.get_message("rate", None))
+                        .on_toggle(Message::ExportRateColumnToggled),
+                    checkbox(self.export_settings.total_time)
+                        .label(self.localization.get_message("total-time", None))
+                        .on_toggle(Message::ExportTotalTimeColumnToggled),
+                ].spacing(6),
+                column![
+                    checkbox(self.export_settings.start_time)
+                        .label(self.localization.get_message("start-time", None))
+                        .on_toggle(Message::ExportStartTimeColumnToggled),
+                    checkbox(self.export_settings.project)
+                        .label(self.localization.get_message("project", None))
+                        .on_toggle(Message::ExportProjectColumnToggled),
+                    checkbox(self.export_settings.currency)
+                        .label(self.localization.get_message("currency", None))
+                        .on_toggle(Message::ExportCurrencyColumnToggled),
+                    checkbox(self.export_settings.total_earnings)
+                        .label(self.localization.get_message("total-earnings-text", None))
+                        .on_toggle(Message::ExportTotalEarningsColumnToggled),
+                ].spacing(6),
+            ].spacing(30),
             row![
                 button(text(self.localization.get_message("export-csv", None)))
                     .on_press(Message::ExportCsvPressed)
@@ -3296,6 +3321,7 @@ fn parse_timer_text_to_seconds(timer_text: &str) -> i64 {
 
 pub fn write_furtasks_to_csv(
     path: PathBuf,
+    export_settings: &ExportSettings,
     localization: &Localization,
 ) -> Result<(), Box<dyn std::error::Error>> {
     match std::fs::File::create(path) {
@@ -3303,30 +3329,67 @@ pub fn write_furtasks_to_csv(
             match db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending) {
                 Ok(tasks) => {
                     let mut csv_writer = Writer::from_writer(file);
-                    csv_writer.write_record(&[
-                        "Name",
-                        "Start Time",
-                        "Stop Time",
-                        "Tags",
-                        "Project",
-                        "Rate",
-                        "Currency",
-                        "Total Time",
-                        "Total Earnings",
-                    ])?;
+                    let mut columns: Vec<String> = Vec::new();
+                    if export_settings.name {
+                        columns.push("Name".to_string());
+                    }
+                    if export_settings.start_time {
+                        columns.push("Start Time".to_string());
+                    }
+                    if export_settings.stop_time {
+                        columns.push("Stop Time".to_string());
+                    }
+                    if export_settings.tags {
+                        columns.push("Tags".to_string());
+                    }
+                    if export_settings.project {
+                        columns.push("Project".to_string());
+                    }
+                    if export_settings.rate {
+                        columns.push("Rate".to_string());
+                    }
+                    if export_settings.currency {
+                        columns.push("Currency".to_string());
+                    }
+                    if export_settings.total_time {
+                        columns.push("Total Time".to_string());
+                    }
+                    if export_settings.total_earnings {
+                        columns.push("Total Earnings".to_string());
+                    }
+
+                    csv_writer.write_record(&columns)?;
 
                     for task in tasks {
-                        csv_writer.write_record(&[
-                            task.name.clone(),
-                            task.start_time.to_rfc3339(),
-                            task.stop_time.to_rfc3339(),
-                            task.tags.clone(),
-                            task.project.clone(),
-                            task.rate.to_string(),
-                            task.currency.clone(),
-                            seconds_to_formatted_duration(task.total_time_in_seconds(), true),
-                            format!("${:.2}", task.total_earnings()),
-                        ])?;
+                        let mut records: Vec<String> = Vec::new();
+                        if export_settings.name {
+                            records.push(task.name.clone());
+                        }
+                        if export_settings.start_time {
+                            records.push(task.start_time.to_rfc3339());
+                        }
+                        if export_settings.stop_time {
+                            records.push(task.stop_time.to_rfc3339());
+                        }
+                        if export_settings.tags {
+                            records.push(task.tags.clone());
+                        }
+                        if export_settings.project {
+                            records.push(task.project.clone());
+                        }
+                        if export_settings.rate {
+                            records.push(task.rate.to_string());
+                        }
+                        if export_settings.currency {
+                            records.push(task.currency.clone());
+                        }
+                        if export_settings.total_time {
+                            records.push(seconds_to_formatted_duration(task.total_time_in_seconds(), true));
+                        }
+                        if export_settings.total_earnings {
+                            records.push(format!("${:.2}", task.total_earnings()));
+                        }
+                        csv_writer.write_record(&records)?;
                     }
 
                     csv_writer.flush()?;

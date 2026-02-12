@@ -117,6 +117,15 @@ pub enum Message {
     EnterPressedInTaskInput,
     EnterPressedInSyncFields,
     ExportCsvPressed,
+    ExportNameColumnToggled(bool),
+    ExportStartTimeColumnToggled(bool),
+    ExportStopTimeColumnToggled(bool),
+    ExportTagsColumnToggled(bool),
+    ExportProjectColumnToggled(bool),
+    ExportRateColumnToggled(bool),
+    ExportCurrencyColumnToggled(bool),
+    ExportTotalTimeColumnToggled(bool),
+    ExportTotalEarningsColumnToggled(bool),
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
     IdleReset,
@@ -1119,7 +1128,7 @@ impl Furtherance {
                     .save_file();
 
                 if let Some(path) = selected_file {
-                    match write_furtasks_to_csv(path, &self.localization) {
+                    match write_furtasks_to_csv(path, &self.export_settings, &self.localization) {
                         Ok(_) => {
                             self.settings_csv_message =
                                 Ok(self.localization.get_message("csv-file-saved", None))
@@ -1133,6 +1142,33 @@ impl Furtherance {
                         }
                     }
                 }
+            }
+            Message::ExportNameColumnToggled(toggled) => {
+                self.export_settings.name = toggled;
+            }
+            Message::ExportStartTimeColumnToggled(toggled) => {
+                self.export_settings.start_time = toggled;
+            }
+            Message::ExportStopTimeColumnToggled(toggled) => {
+                self.export_settings.stop_time = toggled;
+            }
+            Message::ExportTagsColumnToggled(toggled) => {
+                self.export_settings.tags = toggled;
+            }
+            Message::ExportProjectColumnToggled(toggled) => {
+                self.export_settings.project = toggled;
+            }
+            Message::ExportRateColumnToggled(toggled) => {
+                self.export_settings.rate = toggled;
+            }
+            Message::ExportCurrencyColumnToggled(toggled) => {
+                self.export_settings.currency = toggled;
+            }
+            Message::ExportTotalTimeColumnToggled(toggled) => {
+                self.export_settings.total_time = toggled;
+            }
+            Message::ExportTotalEarningsColumnToggled(toggled) => {
+                self.export_settings.total_earnings = toggled;
             }
             Message::FontLoaded(_) => {}
             Message::IdleDiscard => {
