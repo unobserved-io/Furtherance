@@ -17,7 +17,7 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    database::{db_retrieve_tasks_with_day_limit, SortBy, SortOrder},
+    database::{SortBy, SortOrder, db_retrieve_tasks_with_day_limit},
     models::{fur_task::FurTask, fur_task_group::FurTaskGroup},
 };
 

@@ -17,8 +17,8 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{
-    mpsc::{channel, Receiver, Sender},
     Arc, Mutex,
+    mpsc::{Receiver, Sender, channel},
 };
 use std::thread;
 use wayland_client::protocol::wl_registry::{self, WlRegistry};

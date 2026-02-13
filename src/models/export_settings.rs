@@ -16,7 +16,7 @@
 
 use std::collections::HashMap;
 
-use chrono::{ Datelike, Days, Local, NaiveDate};
+use chrono::{Datelike, Days, Local, NaiveDate};
 use iced_aw::date_picker::Date;
 use itertools::Itertools;
 
@@ -61,12 +61,11 @@ impl ExportSettings {
             filter_by_date: false,
             show_start_date_picker: false,
             show_end_date_picker: false,
-            picked_start_date: 
-               Date::from_ymd(
-                   thirty_days_ago.year(),
-                   thirty_days_ago.month(),
-                   thirty_days_ago.day(),
-               ),
+            picked_start_date: Date::from_ymd(
+                thirty_days_ago.year(),
+                thirty_days_ago.month(),
+                thirty_days_ago.day(),
+            ),
             picked_end_date: Date::today(),
             filter_by_project: false,
             list_of_projects: Vec::new(),
@@ -76,26 +75,28 @@ impl ExportSettings {
     }
 
     pub fn get_all_projects(&mut self) {
-        let tasks_by_project = match db_retrieve_all_existing_tasks(
-            SortBy::StopTime,
-            SortOrder::Descending,
-        ) {
-            Ok(all_tasks) => all_tasks
-                .into_iter()
-                .into_group_map_by(|t| t.project.clone()),
-            Err(e) => {
-                eprintln!("Could not fetch tasks: {e}");
-                HashMap::new()
-            }
-        };
+        let tasks_by_project =
+            match db_retrieve_all_existing_tasks(SortBy::StopTime, SortOrder::Descending) {
+                Ok(all_tasks) => all_tasks
+                    .into_iter()
+                    .into_group_map_by(|t| t.project.clone()),
+                Err(e) => {
+                    eprintln!("Could not fetch tasks: {e}");
+                    HashMap::new()
+                }
+            };
 
         self.list_of_projects = tasks_by_project.keys().cloned().collect();
     }
 
     pub fn set_picked_end_date(&mut self, new_date: Date) {
         if let Some(new_end_date) =
-            NaiveDate::from_ymd_opt(new_date.year, new_date.month, new_date.day) && let Some(start_date) =
-            NaiveDate::from_ymd_opt(self.picked_start_date.year, self.picked_start_date.month, self.picked_start_date.day)
+            NaiveDate::from_ymd_opt(new_date.year, new_date.month, new_date.day)
+            && let Some(start_date) = NaiveDate::from_ymd_opt(
+                self.picked_start_date.year,
+                self.picked_start_date.month,
+                self.picked_start_date.day,
+            )
         {
             if new_end_date >= start_date {
                 self.picked_end_date = new_date;
@@ -106,8 +107,13 @@ impl ExportSettings {
 
     pub fn set_picked_start_date(&mut self, new_date: Date) {
         if let Some(new_start_date) =
-            NaiveDate::from_ymd_opt(new_date.year, new_date.month, new_date.day) && let Some(end_date) =
-            NaiveDate::from_ymd_opt(self.picked_end_date.year, self.picked_end_date.month, self.picked_end_date.day)        {
+            NaiveDate::from_ymd_opt(new_date.year, new_date.month, new_date.day)
+            && let Some(end_date) = NaiveDate::from_ymd_opt(
+                self.picked_end_date.year,
+                self.picked_end_date.month,
+                self.picked_end_date.day,
+            )
+        {
             if new_start_date <= end_date {
                 self.picked_start_date = new_date;
                 self.show_start_date_picker = false;

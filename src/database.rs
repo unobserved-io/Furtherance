@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::offset::LocalResult;
 use chrono::DateTime;
 use chrono::Local;
 use chrono::TimeDelta;
 use chrono::TimeZone;
-use rusqlite::{backup, params, Connection, Result};
+use chrono::offset::LocalResult;
+use rusqlite::{Connection, Result, backup, params};
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;

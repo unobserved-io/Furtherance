@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use iced::theme::{Custom, Palette};
 use iced::widget::{button, checkbox, container, text, toggler};
-use iced::{gradient, Background, Border, Color, Gradient, Radians, Theme};
+use iced::{Background, Border, Color, Gradient, Radians, Theme, gradient};
 use iced_aw::card;
 use iced_aw::style::number_input;
 use palette::{Lighten, Srgb};

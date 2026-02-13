@@ -36,7 +36,20 @@ use crate::{
     },
     localization::Localization,
     models::{
-        export_settings::{ExportSettings}, fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport, fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task_group::FurTaskGroup, fur_todo::{FurTodo, TodoToAdd, TodoToEdit}, fur_user::{FurUser, FurUserFields}, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd, shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit
+        export_settings::ExportSettings,
+        fur_idle::FurIdle,
+        fur_pomodoro::FurPomodoro,
+        fur_report::FurReport,
+        fur_settings::FurSettings,
+        fur_shortcut::FurShortcut,
+        fur_task_group::FurTaskGroup,
+        fur_todo::{FurTodo, TodoToAdd, TodoToEdit},
+        fur_user::{FurUser, FurUserFields},
+        group_to_edit::GroupToEdit,
+        shortcut_to_add::ShortcutToAdd,
+        shortcut_to_edit::ShortcutToEdit,
+        task_to_add::TaskToAdd,
+        task_to_edit::TaskToEdit,
     },
     style::{self, FurTheme},
     ui::todos,
@@ -99,6 +112,7 @@ pub struct Furtherance {
     pub shortcuts: Vec<FurShortcut>,
     pub shortcut_to_add: Option<ShortcutToAdd>,
     pub shortcut_to_edit: Option<ShortcutToEdit>,
+    pub show_sidebar: bool,
     pub show_timer_start_picker: bool,
     pub task_history: BTreeMap<NaiveDate, Vec<FurTaskGroup>>,
     pub task_input: String,
@@ -197,6 +211,7 @@ impl Furtherance {
             },
             shortcut_to_add: None,
             shortcut_to_edit: None,
+            show_sidebar: true,
             show_timer_start_picker: false,
             task_history: BTreeMap::<chrono::NaiveDate, Vec<FurTaskGroup>>::new(),
             task_input: "".to_string(),
@@ -312,58 +327,115 @@ impl Furtherance {
 
     pub fn view(&self) -> Element<'_, Message> {
         // MARK: SIDEBAR
-        let sidebar = Container::new(
-            column![
-                nav_button(
-                    self.localization.get_message("shortcuts", None),
-                    FurView::Shortcuts,
-                    self.current_view == FurView::Shortcuts
-                ),
-                nav_button(
-                    self.localization.get_message("timer", None),
-                    FurView::Timer,
-                    self.current_view == FurView::Timer
-                ),
-                nav_button(
-                    self.localization.get_message("todo", None),
-                    FurView::Todo,
-                    self.current_view == FurView::Todo
-                ),
-                nav_button(
-                    self.localization.get_message("report", None),
-                    FurView::Report,
-                    self.current_view == FurView::Report
-                ),
-                space::vertical().height(Length::Fill),
-                if self.timer_is_running && self.current_view != FurView::Timer {
-                    text(convert_timer_text_to_vertical_hms(
-                        &self.timer_text,
-                        &self.localization,
-                    ))
-                    .size(50)
-                    .style(|theme| {
-                        if self.pomodoro.on_break {
-                            style::red_text(theme)
-                        } else {
-                            text::Style::default()
-                        }
-                    })
+        let sidebar_button_in_sidebar = Some(row![
+            space::horizontal(),
+            button(bootstrap::layout_sidebar_inset())
+                .on_press_maybe(if self.current_view == FurView::Settings {
+                    None
                 } else {
-                    text("")
-                },
-                nav_button(
-                    self.localization.get_message("settings", None),
-                    FurView::Settings,
-                    self.current_view == FurView::Settings
-                ),
-            ]
-            .spacing(12)
-            .align_x(Alignment::Start),
-        )
-        .width(175)
-        .padding(10)
-        .clip(true)
-        .style(style::gray_background);
+                    Some(Message::ToggleSidebar)
+                })
+                .style(button::text)
+        ]);
+        let sidebar_button_in_timer = if !self.show_sidebar {
+            Some(
+                button(bootstrap::layout_sidebar_inset())
+                    .on_press(Message::ToggleSidebar)
+                    .style(button::text),
+            )
+        } else {
+            None
+        };
+        let sidebar_button_in_shortcuts = if !self.show_sidebar {
+            Some(
+                button(bootstrap::layout_sidebar_inset())
+                    .on_press(Message::ToggleSidebar)
+                    .style(button::text),
+            )
+        } else {
+            None
+        };
+        let sidebar_button_in_todos = if !self.show_sidebar {
+            Some(
+                button(bootstrap::layout_sidebar_inset())
+                    .on_press(Message::ToggleSidebar)
+                    .style(button::text),
+            )
+        } else {
+            None
+        };
+        let sidebar_button_in_report = if !self.show_sidebar {
+            Some(
+                row![
+                    button(bootstrap::layout_sidebar_inset())
+                        .on_press(Message::ToggleSidebar)
+                        .style(button::text),
+                    space::horizontal()
+                ]
+                .padding([10, 20]),
+            )
+        } else {
+            None
+        };
+        let sidebar = if self.show_sidebar {
+            Some(
+                Container::new(
+                    column![
+                        sidebar_button_in_sidebar,
+                        nav_button(
+                            self.localization.get_message("shortcuts", None),
+                            FurView::Shortcuts,
+                            self.current_view == FurView::Shortcuts
+                        ),
+                        nav_button(
+                            self.localization.get_message("timer", None),
+                            FurView::Timer,
+                            self.current_view == FurView::Timer
+                        ),
+                        nav_button(
+                            self.localization.get_message("todo", None),
+                            FurView::Todo,
+                            self.current_view == FurView::Todo
+                        ),
+                        nav_button(
+                            self.localization.get_message("report", None),
+                            FurView::Report,
+                            self.current_view == FurView::Report
+                        ),
+                        space::vertical().height(Length::Fill),
+                        if self.timer_is_running && self.current_view != FurView::Timer {
+                            text(convert_timer_text_to_vertical_hms(
+                                &self.timer_text,
+                                &self.localization,
+                            ))
+                            .size(50)
+                            .style(|theme| {
+                                if self.pomodoro.on_break {
+                                    style::red_text(theme)
+                                } else {
+                                    text::Style::default()
+                                }
+                            })
+                        } else {
+                            text("")
+                        },
+                        nav_button(
+                            self.localization.get_message("settings", None),
+                            FurView::Settings,
+                            self.current_view == FurView::Settings
+                        ),
+                    ]
+                    .spacing(12)
+                    .align_x(Alignment::Start),
+                )
+                .width(175)
+                .padding(10)
+                .clip(true)
+                .style(style::gray_background),
+            )
+        } else {
+            None
+        };
 
         // MARK: Shortcuts
         let mut shortcuts_row = Row::new().spacing(20.0);
@@ -377,6 +449,7 @@ impl Furtherance {
 
         let new_shortcut_row = if self.inspector_view.is_none() {
             row![
+                sidebar_button_in_shortcuts,
                 space::horizontal(),
                 button(bootstrap::plus_lg())
                     .on_press(Message::AddNewShortcutPressed)
@@ -384,7 +457,12 @@ impl Furtherance {
             ]
             .padding([10, 20])
         } else {
-            row![button(" ").style(button::text)].padding([10, 20])
+            row![
+                sidebar_button_in_shortcuts,
+                space::horizontal(),
+                button(" ").style(button::text)
+            ]
+            .padding([10, 20])
         };
 
         let shortcuts_view = column![
@@ -439,6 +517,7 @@ impl Furtherance {
         let mut timer_view: Column<'_, Message> = column![].align_x(Alignment::Center).clip(true);
         timer_view = timer_view.push(if self.inspector_view.is_none() {
             row![
+                sidebar_button_in_timer,
                 space::horizontal(),
                 button(bootstrap::plus_lg())
                     .on_press(Message::AddNewTaskPressed)
@@ -446,7 +525,12 @@ impl Furtherance {
             ]
             .padding([10, 20])
         } else {
-            row![button(" ").style(button::text)].padding([10, 20])
+            row![
+                sidebar_button_in_timer,
+                space::horizontal(),
+                button(" ").style(button::text)
+            ]
+            .padding([10, 20])
         });
 
         timer_view = timer_view.push(if self.task_history.is_empty() {
@@ -611,6 +695,7 @@ impl Furtherance {
         // Add new todo button
         todo_view = todo_view.push(if self.inspector_view.is_none() {
             row![
+                sidebar_button_in_todos,
                 space::horizontal(),
                 button(bootstrap::plus_lg())
                     .on_press(Message::AddNewTodoPressed)
@@ -618,7 +703,12 @@ impl Furtherance {
             ]
             .padding([10, 20])
         } else {
-            row![button(" ").style(button::text)].padding([10, 20])
+            row![
+                sidebar_button_in_todos,
+                space::horizontal(),
+                button(" ").style(button::text)
+            ]
+            .padding([10, 20])
         });
 
         todo_view = todo_view.push(Scrollable::new(all_todo_rows).height(Length::Fill));
@@ -776,6 +866,7 @@ impl Furtherance {
         };
 
         let charts_view = column![
+            sidebar_button_in_report,
             column![
                 pick_list(
                     &FurDateRange::ALL[..],
@@ -1030,7 +1121,8 @@ impl Furtherance {
                     checkbox(self.export_settings.total_time)
                         .label(self.localization.get_message("total-time", None))
                         .on_toggle(Message::ExportTotalTimeColumnToggled),
-                ].spacing(6),
+                ]
+                .spacing(6),
                 column![
                     checkbox(self.export_settings.start_time)
                         .label(self.localization.get_message("start-time", None))
@@ -1044,8 +1136,10 @@ impl Furtherance {
                     checkbox(self.export_settings.total_earnings)
                         .label(self.localization.get_message("total-earnings-text", None))
                         .on_toggle(Message::ExportTotalEarningsColumnToggled),
-                ].spacing(6),
-            ].spacing(30),
+                ]
+                .spacing(6),
+            ]
+            .spacing(30),
             row![
                 checkbox(self.export_settings.filter_by_date)
                     .label(self.localization.get_message("filter-by-date", None))
@@ -1075,7 +1169,8 @@ impl Furtherance {
                         Message::CancelExportEndDate,
                         Message::SubmitExportEndDate,
                     ),
-                ].spacing(15),
+                ]
+                .spacing(15),
             ]
             .align_y(Alignment::Center)
             .spacing(15),
@@ -1091,7 +1186,7 @@ impl Furtherance {
             ]
             .align_y(Alignment::Center)
             .spacing(15),
-            row! [
+            row![
                 text(self.localization.get_message("sort-by-date", None)),
                 pick_list(
                     &SortOrder::ALL[..],
@@ -1101,10 +1196,14 @@ impl Furtherance {
             ]
             .align_y(Alignment::Center)
             .spacing(15),
-            text(self.localization.get_message("note-about-export-columns", None)).font(font::Font {
-                            style: iced::font::Style::Italic,
-                            ..Default::default()
-                        }),
+            text(
+                self.localization
+                    .get_message("note-about-export-columns", None)
+            )
+            .font(font::Font {
+                style: iced::font::Style::Italic,
+                ..Default::default()
+            }),
             row![
                 button(text(self.localization.get_message("export-csv", None)))
                     .on_press(Message::ExportCsvPressed)
@@ -3418,14 +3517,22 @@ pub fn write_furtasks_to_csv(
                     let mut filtered_tasks = tasks.clone();
 
                     if export_settings.filter_by_date {
-                        if let Some(start_date) =
-                            NaiveDate::from_ymd_opt(export_settings.picked_start_date.year, export_settings.picked_start_date.month, export_settings.picked_start_date.day) && let Some(end_date) =
-                            NaiveDate::from_ymd_opt(export_settings.picked_end_date.year, export_settings.picked_end_date.month, export_settings.picked_end_date.day)
-                        {
-                            filtered_tasks.retain(|t| t.stop_time.date_naive() >= start_date && t.stop_time.date_naive() <= end_date);
+                        if let Some(start_date) = NaiveDate::from_ymd_opt(
+                            export_settings.picked_start_date.year,
+                            export_settings.picked_start_date.month,
+                            export_settings.picked_start_date.day,
+                        ) && let Some(end_date) = NaiveDate::from_ymd_opt(
+                            export_settings.picked_end_date.year,
+                            export_settings.picked_end_date.month,
+                            export_settings.picked_end_date.day,
+                        ) {
+                            filtered_tasks.retain(|t| {
+                                t.stop_time.date_naive() >= start_date
+                                    && t.stop_time.date_naive() <= end_date
+                            });
                         }
                     }
-                    
+
                     if export_settings.filter_by_project {
                         if let Some(selected_project) = &export_settings.selected_project {
                             filtered_tasks.retain(|t| &t.project == selected_project);
@@ -3456,7 +3563,10 @@ pub fn write_furtasks_to_csv(
                             records.push(task.currency.clone());
                         }
                         if export_settings.total_time {
-                            records.push(seconds_to_formatted_duration(task.total_time_in_seconds(), true));
+                            records.push(seconds_to_formatted_duration(
+                                task.total_time_in_seconds(),
+                                true,
+                            ));
                         }
                         if export_settings.total_earnings {
                             records.push(format!("${:.2}", task.total_earnings()));

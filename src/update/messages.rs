@@ -213,6 +213,7 @@ pub enum Message {
     TabPressed { shift: bool },
     TaskInputChanged(String),
     ToggleGroupEditor,
+    ToggleSidebar,
     ToggleTodoCompletePressed(String),
     UpdateTaskHistory(BTreeMap<NaiveDate, Vec<FurTaskGroup>>),
     UpdateTodaysTodos(Vec<FurTodo>),
@@ -2138,8 +2139,12 @@ impl Furtherance {
                     }
                 }
             }
-            Message::SubmitExportEndDate(new_date) => self.export_settings.set_picked_end_date(new_date),
-            Message::SubmitExportStartDate(new_date) => self.export_settings.set_picked_start_date(new_date),
+            Message::SubmitExportEndDate(new_date) => {
+                self.export_settings.set_picked_end_date(new_date)
+            }
+            Message::SubmitExportStartDate(new_date) => {
+                self.export_settings.set_picked_start_date(new_date)
+            }
             Message::SubmitReportEndDate(new_date) => self.report.set_date_range_end(new_date),
             Message::SubmitReportStartDate(new_date) => self.report.set_date_range_start(new_date),
             Message::SubmitShortcutColor(new_color) => {
@@ -2822,6 +2827,9 @@ impl Furtherance {
                 self.group_to_edit
                     .as_mut()
                     .map(|group| group.is_in_edit_mode = !group.is_in_edit_mode);
+            }
+            Message::ToggleSidebar => {
+                self.show_sidebar = !self.show_sidebar;
             }
             Message::ToggleTodoCompletePressed(uid) => match self
                 .todos

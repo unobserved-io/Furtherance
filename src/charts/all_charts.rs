@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use plotters::style::{
-    full_palette::{BLACK, WHITE},
     RGBColor,
+    full_palette::{BLACK, WHITE},
 };
 
 pub fn light_dark_color() -> RGBColor {

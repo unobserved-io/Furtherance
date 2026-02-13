@@ -22,7 +22,7 @@ use crate::{
         fur_shortcut::EncryptedShortcut, fur_task::EncryptedTask, fur_todo::EncryptedTodo,
         fur_user::FurUser,
     },
-    server::login::{refresh_auth_token, ApiError},
+    server::login::{ApiError, refresh_auth_token},
 };
 
 use reqwest::{self, Client};
