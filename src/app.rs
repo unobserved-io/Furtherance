@@ -961,11 +961,7 @@ impl Furtherance {
                     .style(style::primary_button_style),
             )
         } else {
-            Some(
-                button(text(self.localization.get_message("sign-up", None)))
-                    .on_press(Message::OpenUrl("https://furtherance.app/sync".to_string()))
-                    .style(style::primary_button_style),
-            )
+            None
         });
         sync_server_col = sync_server_col.push(sync_button_row);
         sync_server_col = sync_server_col.push(match &self.login_message {
