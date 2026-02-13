@@ -169,6 +169,7 @@ start-time = Start Time
 stop-time = Stop Time
 total-earnings-text = Total Earnings
 currency = Currency
+filter-by-date = Filter by Date
 filter-by-project = Filter by Project
 note-about-export-columns = Note: Only CSV files exported with all columns selected can be imported into Furtherance again.
 export-csv = Export CSV

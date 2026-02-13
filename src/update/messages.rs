@@ -78,11 +78,13 @@ pub enum Message {
     AlertClose,
     BackupDatabase,
     CancelCurrentTaskStartTime,
-    CancelEndDate,
+    CancelExportEndDate,
+    CancelExportStartDate,
     CancelGroupEdit,
+    CancelReportEndDate,
+    CancelReportStartDate,
     CancelShortcut,
     CancelShortcutColor,
-    CancelStartDate,
     CancelTaskEdit,
     CancelTaskEditDateTime(EditTaskProperty),
     CancelTodoEdit,
@@ -90,9 +92,11 @@ pub enum Message {
     ChartTaskPropertyKeySelected(FurTaskProperty),
     ChartTaskPropertyValueSelected(String),
     ChooseCurrentTaskStartTime,
-    ChooseEndDate,
+    ChooseExportEndDate,
+    ChooseExportStartDate,
+    ChooseReportEndDate,
+    ChooseReportStartDate,
     ChooseShortcutColor,
-    ChooseStartDate,
     ChooseTaskEditDateTime(EditTaskProperty),
     ChooseTodoEditDate,
     ClearLoginMessage,
@@ -117,17 +121,18 @@ pub enum Message {
     EnterPressedInTaskInput,
     EnterPressedInSyncFields,
     ExportCsvPressed,
+    ExportCurrencyColumnToggled(bool),
+    ExportFilterByDateToggled(bool),
+    ExportFilterByProjectToggled(bool),
     ExportNameColumnToggled(bool),
+    ExportProjectColumnToggled(bool),
+    ExportProjectSelected(String),
+    ExportRateColumnToggled(bool),
     ExportStartTimeColumnToggled(bool),
     ExportStopTimeColumnToggled(bool),
     ExportTagsColumnToggled(bool),
-    ExportProjectColumnToggled(bool),
-    ExportRateColumnToggled(bool),
-    ExportCurrencyColumnToggled(bool),
     ExportTotalTimeColumnToggled(bool),
     ExportTotalEarningsColumnToggled(bool),
-    ExportFilterByProjectToggled(bool),
-    ExportProjectSelected(String),
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
     IdleReset,
@@ -194,9 +199,11 @@ pub enum Message {
     StartTimerWithTask(String),
     StopwatchTick,
     SubmitCurrentTaskStartTime(time_picker::Time),
-    SubmitEndDate(date_picker::Date),
+    SubmitExportEndDate(date_picker::Date),
+    SubmitExportStartDate(date_picker::Date),
+    SubmitReportEndDate(date_picker::Date),
+    SubmitReportStartDate(date_picker::Date),
     SubmitShortcutColor(Color),
-    SubmitStartDate(date_picker::Date),
     SubmitTaskEditDate(date_picker::Date, EditTaskProperty),
     SubmitTaskEditTime(time_picker::Time, EditTaskProperty),
     SubmitTodoEditDate(date_picker::Date),
@@ -273,17 +280,19 @@ impl Furtherance {
                 }
             }
             Message::CancelCurrentTaskStartTime => self.show_timer_start_picker = false,
-            Message::CancelEndDate => self.report.show_end_date_picker = false,
+            Message::CancelExportEndDate => self.export_settings.show_end_date_picker = false,
+            Message::CancelExportStartDate => self.export_settings.show_start_date_picker = false,
             Message::CancelGroupEdit => {
                 self.group_to_edit = None;
                 self.inspector_view = None;
             }
+            Message::CancelReportEndDate => self.report.show_end_date_picker = false,
+            Message::CancelReportStartDate => self.report.show_start_date_picker = false,
             Message::CancelShortcut => {
                 self.shortcut_to_add = None;
                 self.shortcut_to_edit = None;
                 self.inspector_view = None;
             }
-            Message::CancelStartDate => self.report.show_start_date_picker = false,
             Message::CancelShortcutColor => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.show_color_picker = false;
@@ -354,7 +363,10 @@ impl Furtherance {
                 self.report.set_picked_task_property_value(new_value);
             }
             Message::ChooseCurrentTaskStartTime => self.show_timer_start_picker = true,
-            Message::ChooseEndDate => self.report.show_end_date_picker = true,
+            Message::ChooseExportEndDate => self.export_settings.show_end_date_picker = true,
+            Message::ChooseExportStartDate => self.export_settings.show_start_date_picker = true,
+            Message::ChooseReportEndDate => self.report.show_end_date_picker = true,
+            Message::ChooseReportStartDate => self.report.show_start_date_picker = true,
             Message::ChooseShortcutColor => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.show_color_picker = true
@@ -362,7 +374,6 @@ impl Furtherance {
                     shortcut_to_edit.show_color_picker = true
                 }
             }
-            Message::ChooseStartDate => self.report.show_start_date_picker = true,
             Message::ChooseTaskEditDateTime(property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {
@@ -1145,8 +1156,26 @@ impl Furtherance {
                     }
                 }
             }
+            Message::ExportCurrencyColumnToggled(toggled) => {
+                self.export_settings.currency = toggled;
+            }
+            Message::ExportFilterByDateToggled(toggled) => {
+                self.export_settings.filter_by_date = toggled;
+            }
+            Message::ExportFilterByProjectToggled(toggled) => {
+                self.export_settings.filter_by_project = toggled;
+            }
             Message::ExportNameColumnToggled(toggled) => {
                 self.export_settings.name = toggled;
+            }
+            Message::ExportProjectColumnToggled(toggled) => {
+                self.export_settings.project = toggled;
+            }
+            Message::ExportProjectSelected(selection) => {
+                self.export_settings.selected_project = Some(selection);
+            }
+            Message::ExportRateColumnToggled(toggled) => {
+                self.export_settings.rate = toggled;
             }
             Message::ExportStartTimeColumnToggled(toggled) => {
                 self.export_settings.start_time = toggled;
@@ -1157,26 +1186,11 @@ impl Furtherance {
             Message::ExportTagsColumnToggled(toggled) => {
                 self.export_settings.tags = toggled;
             }
-            Message::ExportProjectColumnToggled(toggled) => {
-                self.export_settings.project = toggled;
-            }
-            Message::ExportRateColumnToggled(toggled) => {
-                self.export_settings.rate = toggled;
-            }
-            Message::ExportCurrencyColumnToggled(toggled) => {
-                self.export_settings.currency = toggled;
-            }
             Message::ExportTotalTimeColumnToggled(toggled) => {
                 self.export_settings.total_time = toggled;
             }
             Message::ExportTotalEarningsColumnToggled(toggled) => {
                 self.export_settings.total_earnings = toggled;
-            }
-            Message::ExportFilterByProjectToggled(toggled) => {
-                self.export_settings.filter_by_project = toggled;
-            }
-            Message::ExportProjectSelected(selection) => {
-                self.export_settings.selected_project = Some(selection);
             }
             Message::FontLoaded(_) => {}
             Message::IdleDiscard => {
@@ -2120,7 +2134,10 @@ impl Furtherance {
                     }
                 }
             }
-            Message::SubmitEndDate(new_date) => self.report.set_date_range_end(new_date),
+            Message::SubmitExportEndDate(new_date) => self.export_settings.set_picked_end_date(new_date),
+            Message::SubmitExportStartDate(new_date) => self.export_settings.set_picked_start_date(new_date),
+            Message::SubmitReportEndDate(new_date) => self.report.set_date_range_end(new_date),
+            Message::SubmitReportStartDate(new_date) => self.report.set_date_range_start(new_date),
             Message::SubmitShortcutColor(new_color) => {
                 if let Some(shortcut_to_add) = self.shortcut_to_add.as_mut() {
                     shortcut_to_add.color = new_color;
@@ -2130,7 +2147,6 @@ impl Furtherance {
                     shortcut_to_edit.show_color_picker = false;
                 }
             }
-            Message::SubmitStartDate(new_date) => self.report.set_date_range_start(new_date),
             Message::SubmitTaskEditDate(new_date, property) => {
                 if let Some(task_to_edit) = self.task_to_edit.as_mut() {
                     match property {

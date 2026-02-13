@@ -790,10 +790,10 @@ impl Furtherance {
                             self.report.show_start_date_picker,
                             self.report.picked_start_date,
                             button(text(self.report.picked_start_date.to_string()))
-                                .on_press(Message::ChooseStartDate)
+                                .on_press(Message::ChooseReportStartDate)
                                 .style(style::primary_button_style),
-                            Message::CancelStartDate,
-                            Message::SubmitStartDate,
+                            Message::CancelReportStartDate,
+                            Message::SubmitReportStartDate,
                         ),
                         column![
                             text("to")
@@ -805,10 +805,10 @@ impl Furtherance {
                             self.report.show_end_date_picker,
                             self.report.picked_end_date,
                             button(text(self.report.picked_end_date.to_string()))
-                                .on_press(Message::ChooseEndDate)
+                                .on_press(Message::ChooseReportEndDate)
                                 .style(style::primary_button_style),
-                            Message::CancelEndDate,
-                            Message::SubmitEndDate,
+                            Message::CancelReportEndDate,
+                            Message::SubmitReportEndDate,
                         ),
                         space::horizontal().width(Length::Fill),
                     ]
@@ -1051,6 +1051,37 @@ impl Furtherance {
                 ].spacing(6),
             ].spacing(30),
             row![
+                checkbox(self.export_settings.filter_by_date)
+                    .label(self.localization.get_message("filter-by-date", None))
+                    .on_toggle(Message::ExportFilterByDateToggled),
+                row![
+                    date_picker(
+                        self.export_settings.show_start_date_picker,
+                        self.export_settings.picked_start_date,
+                        button(text(self.export_settings.picked_start_date.to_string()))
+                            .on_press(Message::ChooseExportStartDate)
+                            .style(style::primary_button_style),
+                        Message::CancelExportStartDate,
+                        Message::SubmitExportStartDate,
+                    ),
+                    column![
+                        text("to")
+                            .align_y(alignment::Vertical::Center)
+                            .height(Length::Fill),
+                    ]
+                    .height(30),
+                    date_picker(
+                        self.export_settings.show_end_date_picker,
+                        self.export_settings.picked_end_date,
+                        button(text(self.export_settings.picked_end_date.to_string()))
+                            .on_press(Message::ChooseExportEndDate)
+                            .style(style::primary_button_style),
+                        Message::CancelExportEndDate,
+                        Message::SubmitExportEndDate,
+                    ),
+                ].spacing(15),
+            ].spacing(15),
+            row![
                 checkbox(self.export_settings.filter_by_project)
                     .label(self.localization.get_message("filter-by-project", None))
                     .on_toggle(Message::ExportFilterByProjectToggled),
@@ -1059,7 +1090,7 @@ impl Furtherance {
                     self.export_settings.selected_project.clone(),
                     Message::ExportProjectSelected,
                 ),
-            ].spacing(10),
+            ].spacing(15),
             text(self.localization.get_message("note-about-export-columns", None)).font(font::Font {
                             style: iced::font::Style::Italic,
                             ..Default::default()
@@ -3375,6 +3406,15 @@ pub fn write_furtasks_to_csv(
 
                     let mut filtered_tasks = tasks.clone();
 
+                    if export_settings.filter_by_date {
+                        if let Some(start_date) =
+                            NaiveDate::from_ymd_opt(export_settings.picked_start_date.year, export_settings.picked_start_date.month, export_settings.picked_start_date.day) && let Some(end_date) =
+                            NaiveDate::from_ymd_opt(export_settings.picked_end_date.year, export_settings.picked_end_date.month, export_settings.picked_end_date.day)
+                        {
+                            filtered_tasks.retain(|t| t.stop_time.date_naive() >= start_date && t.stop_time.date_naive() <= end_date);
+                        }
+                    }
+                    
                     if export_settings.filter_by_project {
                         if let Some(selected_project) = &export_settings.selected_project {
                             filtered_tasks.retain(|t| &t.project == selected_project);
