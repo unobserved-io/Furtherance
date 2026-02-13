@@ -1080,7 +1080,9 @@ impl Furtherance {
                         Message::SubmitExportEndDate,
                     ),
                 ].spacing(15),
-            ].spacing(15),
+            ]
+            .align_y(Alignment::Center)
+            .spacing(15),
             row![
                 checkbox(self.export_settings.filter_by_project)
                     .label(self.localization.get_message("filter-by-project", None))
@@ -1090,7 +1092,9 @@ impl Furtherance {
                     self.export_settings.selected_project.clone(),
                     Message::ExportProjectSelected,
                 ),
-            ].spacing(15),
+            ]
+            .align_y(Alignment::Center)
+            .spacing(15),
             row! [
                 text(self.localization.get_message("sort-by-date", None)),
                 pick_list(
@@ -1098,7 +1102,9 @@ impl Furtherance {
                     Some(self.export_settings.sort_order),
                     Message::ExportSortOrderSelected,
                 )
-            ].spacing(15),
+            ]
+            .align_y(Alignment::Center)
+            .spacing(15),
             text(self.localization.get_message("note-about-export-columns", None)).font(font::Font {
                             style: iced::font::Style::Italic,
                             ..Default::default()
@@ -1111,6 +1117,7 @@ impl Furtherance {
                     .on_press(Message::ImportCsvPressed)
                     .style(style::primary_button_style)
             ]
+            .align_y(Alignment::Center)
             .spacing(10),
         ]
         .spacing(15);
