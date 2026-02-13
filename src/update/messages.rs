@@ -128,6 +128,7 @@ pub enum Message {
     ExportProjectColumnToggled(bool),
     ExportProjectSelected(String),
     ExportRateColumnToggled(bool),
+    ExportSortOrderSelected(SortOrder),
     ExportStartTimeColumnToggled(bool),
     ExportStopTimeColumnToggled(bool),
     ExportTagsColumnToggled(bool),
@@ -1176,6 +1177,9 @@ impl Furtherance {
             }
             Message::ExportRateColumnToggled(toggled) => {
                 self.export_settings.rate = toggled;
+            }
+            Message::ExportSortOrderSelected(sort_order) => {
+                self.export_settings.sort_order = sort_order;
             }
             Message::ExportStartTimeColumnToggled(toggled) => {
                 self.export_settings.start_time = toggled;

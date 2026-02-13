@@ -168,6 +168,7 @@ export-options = Export Options
 start-time = Start Time
 stop-time = Stop Time
 total-earnings-text = Total Earnings
+sort-by-date = Sort by Date
 currency = Currency
 filter-by-date = Filter by Date
 filter-by-project = Filter by Project

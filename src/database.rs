@@ -35,7 +35,7 @@ use crate::models::{
 #[cfg(target_os = "macos")]
 use crate::view_enums::FurAlert;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SortOrder {
     Ascending,
     Descending,
@@ -53,6 +53,21 @@ impl SortOrder {
             SortOrder::Ascending => "ASC",
             SortOrder::Descending => "DESC",
         }
+    }
+
+    pub const ALL: [SortOrder; 2] = [SortOrder::Ascending, SortOrder::Descending];
+}
+
+impl std::fmt::Display for SortOrder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                SortOrder::Ascending => "Ascending",
+                SortOrder::Descending => "Descending",
+            }
+        )
     }
 }
 

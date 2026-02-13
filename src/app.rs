@@ -1091,6 +1091,14 @@ impl Furtherance {
                     Message::ExportProjectSelected,
                 ),
             ].spacing(15),
+            row! [
+                text(self.localization.get_message("sort-by-date", None)),
+                pick_list(
+                    &SortOrder::ALL[..],
+                    Some(self.export_settings.sort_order),
+                    Message::ExportSortOrderSelected,
+                )
+            ].spacing(15),
             text(self.localization.get_message("note-about-export-columns", None)).font(font::Font {
                             style: iced::font::Style::Italic,
                             ..Default::default()
@@ -3370,7 +3378,7 @@ pub fn write_furtasks_to_csv(
 ) -> Result<(), Box<dyn std::error::Error>> {
     match std::fs::File::create(path) {
         Ok(file) => {
-            match db_retrieve_all_existing_tasks(SortBy::StartTime, SortOrder::Descending) {
+            match db_retrieve_all_existing_tasks(SortBy::StopTime, export_settings.sort_order) {
                 Ok(tasks) => {
                     let mut csv_writer = Writer::from_writer(file);
                     let mut columns: Vec<String> = Vec::new();

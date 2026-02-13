@@ -20,7 +20,7 @@ use chrono::{ Datelike, Days, Local, NaiveDate};
 use iced_aw::date_picker::Date;
 use itertools::Itertools;
 
-use crate::database::{self, db_retrieve_all_existing_tasks};
+use crate::database::{SortBy, SortOrder, db_retrieve_all_existing_tasks};
 
 pub struct ExportSettings {
     pub name: bool,
@@ -40,6 +40,7 @@ pub struct ExportSettings {
     pub filter_by_project: bool,
     pub list_of_projects: Vec<String>,
     pub selected_project: Option<String>,
+    pub sort_order: SortOrder,
 }
 
 impl ExportSettings {
@@ -70,13 +71,14 @@ impl ExportSettings {
             filter_by_project: false,
             list_of_projects: Vec::new(),
             selected_project: None,
+            sort_order: SortOrder::Descending,
         }
     }
 
     pub fn get_all_projects(&mut self) {
         let tasks_by_project = match db_retrieve_all_existing_tasks(
-            database::SortBy::StopTime,
-            database::SortOrder::Descending,
+            SortBy::StopTime,
+            SortOrder::Descending,
         ) {
             Ok(all_tasks) => all_tasks
                 .into_iter()
