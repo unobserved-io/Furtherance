@@ -36,7 +36,7 @@ use crate::{
     },
     localization::Localization,
     models::{
-        export_settings::ExportSettings, fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport, fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task_group::FurTaskGroup, fur_todo::{FurTodo, TodoToAdd, TodoToEdit}, fur_user::{FurUser, FurUserFields}, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd, shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit
+        export_settings::{ExportSettings}, fur_idle::FurIdle, fur_pomodoro::FurPomodoro, fur_report::FurReport, fur_settings::FurSettings, fur_shortcut::FurShortcut, fur_task_group::FurTaskGroup, fur_todo::{FurTodo, TodoToAdd, TodoToEdit}, fur_user::{FurUser, FurUserFields}, group_to_edit::GroupToEdit, shortcut_to_add::ShortcutToAdd, shortcut_to_edit::ShortcutToEdit, task_to_add::TaskToAdd, task_to_edit::TaskToEdit
     },
     style::{self, FurTheme},
     ui::todos,
@@ -233,8 +233,8 @@ impl Furtherance {
         }
 
         furtherance.task_history = tasks::get_task_history(furtherance.fur_settings.days_to_show);
-
         furtherance.todos = todos::get_all_todos();
+        furtherance.export_settings.get_all_projects();
 
         let mut tasks: Vec<Task<Message>> = vec![];
 
@@ -1016,8 +1016,7 @@ impl Furtherance {
         });
 
         let mut csv_col = column![
-                text(self.localization.get_message("export-options", None)),
-
+            text(self.localization.get_message("export-options", None)),
             row![
                 column![
                     checkbox(self.export_settings.name)
@@ -1052,6 +1051,20 @@ impl Furtherance {
                 ].spacing(6),
             ].spacing(30),
             row![
+                checkbox(self.export_settings.filter_by_project)
+                    .label(self.localization.get_message("filter-by-project", None))
+                    .on_toggle(Message::ExportFilterByProjectToggled),
+                pick_list(
+                    &self.export_settings.list_of_projects[..],
+                    self.export_settings.selected_project.clone(),
+                    Message::ExportProjectSelected,
+                ),
+            ].spacing(10),
+            text(self.localization.get_message("note-about-export-columns", None)).font(font::Font {
+                            style: iced::font::Style::Italic,
+                            ..Default::default()
+                        }),
+            row![
                 button(text(self.localization.get_message("export-csv", None)))
                     .on_press(Message::ExportCsvPressed)
                     .style(style::primary_button_style),
@@ -1061,7 +1074,7 @@ impl Furtherance {
             ]
             .spacing(10),
         ]
-        .spacing(10);
+        .spacing(15);
         csv_col = csv_col.push(match &self.settings_csv_message {
             Ok(msg) => {
                 if msg.is_empty() {
@@ -3360,7 +3373,15 @@ pub fn write_furtasks_to_csv(
 
                     csv_writer.write_record(&columns)?;
 
-                    for task in tasks {
+                    let mut filtered_tasks = tasks.clone();
+
+                    if export_settings.filter_by_project {
+                        if let Some(selected_project) = &export_settings.selected_project {
+                            filtered_tasks.retain(|t| &t.project == selected_project);
+                        }
+                    }
+
+                    for task in filtered_tasks {
                         let mut records: Vec<String> = Vec::new();
                         if export_settings.name {
                             records.push(task.name.clone());

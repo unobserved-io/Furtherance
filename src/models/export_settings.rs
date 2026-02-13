@@ -14,6 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashMap;
+
+use itertools::Itertools;
+
+use crate::database::{self, db_retrieve_all_existing_tasks};
+
 pub struct ExportSettings {
     pub name: bool,
     pub start_time: bool,
@@ -24,6 +30,9 @@ pub struct ExportSettings {
     pub currency: bool,
     pub total_time: bool,
     pub total_earnings: bool,
+    pub filter_by_project: bool,
+    pub list_of_projects: Vec<String>,
+    pub selected_project: Option<String>,
 }
 
 impl ExportSettings {
@@ -38,6 +47,26 @@ impl ExportSettings {
             currency: true,
             total_time: true,
             total_earnings: true,
+            filter_by_project: false,
+            list_of_projects: Vec::new(),
+            selected_project: None,
         }
+    }
+
+    pub fn get_all_projects(&mut self) {
+        let tasks_by_project = match db_retrieve_all_existing_tasks(
+            database::SortBy::StopTime,
+            database::SortOrder::Descending,
+        ) {
+            Ok(all_tasks) => all_tasks
+                .into_iter()
+                .into_group_map_by(|t| t.project.clone()),
+            Err(e) => {
+                eprintln!("Could not fetch tasks: {e}");
+                HashMap::new()
+            }
+        };
+
+        self.list_of_projects = tasks_by_project.keys().cloned().collect();
     }
 }

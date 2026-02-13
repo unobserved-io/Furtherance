@@ -126,6 +126,8 @@ pub enum Message {
     ExportCurrencyColumnToggled(bool),
     ExportTotalTimeColumnToggled(bool),
     ExportTotalEarningsColumnToggled(bool),
+    ExportFilterByProjectToggled(bool),
+    ExportProjectSelected(String),
     FontLoaded(Result<(), font::Error>),
     IdleDiscard,
     IdleReset,
@@ -1169,6 +1171,12 @@ impl Furtherance {
             }
             Message::ExportTotalEarningsColumnToggled(toggled) => {
                 self.export_settings.total_earnings = toggled;
+            }
+            Message::ExportFilterByProjectToggled(toggled) => {
+                self.export_settings.filter_by_project = toggled;
+            }
+            Message::ExportProjectSelected(selection) => {
+                self.export_settings.selected_project = Some(selection);
             }
             Message::FontLoaded(_) => {}
             Message::IdleDiscard => {
@@ -2842,6 +2850,7 @@ impl Furtherance {
                         );
                     }
                 };
+                self.export_settings.get_all_projects();
             }
             Message::UpdateTodaysTodos(new_todos) => {
                 let today = Local::now().date_naive();
