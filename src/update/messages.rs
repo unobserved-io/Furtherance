@@ -27,7 +27,7 @@ use crate::{
     database::*,
     helpers::{
         color_utils::{RandomColor, ToHex},
-        idle, task_actions,
+        task_actions,
     },
     models::{
         fur_idle::FurIdle,
@@ -68,6 +68,12 @@ use itertools::Itertools;
 use palette::Srgb;
 use rfd::FileDialog;
 use webbrowser;
+
+#[cfg(target_os = "linux")]
+use {std::{env, sync::OnceLock}, uzers::get_current_uid, crate::helpers::wayland_idle::WaylandIdleMonitor, user_idle::UserIdle};
+
+#[cfg(target_os = "linux")]
+static WAYLAND_MONITOR: OnceLock<WaylandIdleMonitor> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -2088,20 +2094,27 @@ impl Furtherance {
 
                     if self.fur_settings.notify_on_idle
                         && self.displayed_alert != Some(FurAlert::PomodoroOver)
-                    {
-                        let idle_time = idle::get_idle_time() as i64;
-                        if idle_time >= self.fur_settings.chosen_idle_time * 60
-                            && !self.idle.reached
-                        {
-                            // User is idle
+                    {   
+                        let is_wayland = detect_wayland();
+                        let is_currently_idle = if is_wayland {
+                            let monitor = WAYLAND_MONITOR.get_or_init(|| {
+                                WaylandIdleMonitor::spawn((self.fur_settings.chosen_idle_time * 60) as u64)
+                            });
+                            monitor.is_idle()
+                        } else {
+                            let secs = if let Ok(idle) = UserIdle::get_time() {
+                                idle.as_seconds()
+                            } else {
+                                0
+                            };
+                            secs >= (self.fur_settings.chosen_idle_time * 60) as u64
+                        };
+
+                        if is_currently_idle && !self.idle.reached {
                             self.idle.reached = true;
                             self.idle.start_time = Local::now()
                                 - TimeDelta::seconds(self.fur_settings.chosen_idle_time * 60);
-                        } else if idle_time < self.fur_settings.chosen_idle_time * 60
-                            && self.idle.reached
-                            && !self.idle.notified
-                        {
-                            // User is back - show idle message
+                        } else if !is_currently_idle && self.idle.reached && !self.idle.notified {
                             self.idle.notified = true;
                             show_notification(
                                 NotificationType::Idle,
@@ -2110,7 +2123,7 @@ impl Furtherance {
                             );
                             self.displayed_alert = Some(FurAlert::Idle);
                         }
-                    }
+                   }
 
                     // Write autosave every minute
                     if seconds_elapsed > 1 && seconds_elapsed % 60 == 0 {
@@ -3034,4 +3047,15 @@ impl Furtherance {
         }
         Task::none()
     }
+}
+
+fn detect_wayland() -> bool {
+    #[cfg(target_os = "linux")]
+    if let Ok(true) = env::var("XDG_SESSION_TYPE").map(|v| v == "wayland") {
+        return true;
+    } else if let Ok(_) = env::var("WAYLAND_DISPLAY") {
+        return Path::new(&format!("/run/user/{}/wayland-0", get_current_uid())).exists();
+    }
+
+    false
 }

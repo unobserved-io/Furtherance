@@ -1,7 +1,7 @@
 [package]
 name = "furtherance"
 version = "26.1.1"
-authors = ["Ricky Kresslein <ricky@unobserved.io>"]
+authors = ["Ricky Kresslein <r@kressle.in>"]
 description = "Track your time without being tracked."
 license = "GPL-3.0-or-later"
 edition = "2024"
@@ -92,9 +92,10 @@ webbrowser = "1.0"
 x11rb = "0.13"
 zbus = "5.12"
 uzers = "0.12"
-wayland-client = "0.31"
-wayland-protocols = { version = "0.32", features = ["client"] }
-wayland-protocols-plasma = "0.3"
+wayrs-client = "1.3.1"
+wayrs-protocols = { version = "0.14.11", features = ["ext-idle-notify-v1"] }
+wayrs-utils = { version = "0.17.2", features = ["seats"] }
+anyhow = "1.0"
 lazy_static = "1.5"
 
 [build-dependencies]

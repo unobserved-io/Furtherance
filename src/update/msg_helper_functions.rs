@@ -1,5 +1,5 @@
 // Furtherance - Track your time without being tracked
-// Copyright (C) 2025  Ricky Kresslein <rk@unobserved.io>
+// Copyright (C) 2025  Ricky Kresslein <r@kressle.in>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,9 +40,6 @@ use crate::{
     update::messages::Message,
     view_enums::NotificationType,
 };
-
-#[cfg(target_os = "linux")]
-use crate::helpers::{idle, wayland_idle};
 
 pub fn chain_tasks(commands: Vec<Task<Message>>) -> Task<Message> {
     Task::batch(commands)
@@ -131,11 +128,6 @@ pub fn stop_timer(state: &mut Furtherance, stop_time: DateTime<Local>) {
 
     delete_autosave();
     reset_timer(state);
-
-    #[cfg(target_os = "linux")]
-    if idle::is_kde() {
-        wayland_idle::stop_idle_monitor();
-    }
 }
 
 pub fn start_timer(state: &mut Furtherance) {
@@ -144,13 +136,6 @@ pub fn start_timer(state: &mut Furtherance) {
     state.timer_is_running = true;
     if state.fur_settings.pomodoro && !state.pomodoro.on_break {
         state.pomodoro.sessions += 1;
-    }
-
-    #[cfg(target_os = "linux")]
-    if idle::is_kde() {
-        if let Err(e) = wayland_idle::start_idle_monitor() {
-            eprintln!("Failed to start idle monitor: {}", e);
-        }
     }
 }
 

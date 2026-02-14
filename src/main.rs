@@ -31,7 +31,6 @@ mod constants;
 mod database;
 mod helpers {
     pub mod color_utils;
-    pub mod idle;
     pub mod midnight_subscription;
     pub mod task_actions;
     pub mod tasks;
