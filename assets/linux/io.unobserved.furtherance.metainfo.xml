@@ -54,6 +54,18 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="26.7.0" date="2026-02-14">
+      <description translate="no">
+        <ul>
+          <li>Implemented full wayland idle detection - #155 & #168</li>
+          <li>Added a button to hide the sidebar - #167</li>
+          <li>Removed the signup button for hosted sync as signups are now closed</li>
+          <li>Customization options now available for CSV exports</li>
+          <li>App icon now works properly in KDE</li>
+          <li>Small performance tweaks</li>
+        </ul>
+      </description>
+    </release>
     <release version="26.1.1" date="2026-01-04">
       <description translate="no">
         <ul>

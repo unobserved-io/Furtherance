@@ -1766,7 +1766,7 @@ dependencies = [
 
 [[package]]
 name = "furtherance"
-version = "26.1.1"
+version = "26.7.0"
 dependencies = [
  "aes-gcm",
  "anyhow",
