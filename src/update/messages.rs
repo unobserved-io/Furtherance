@@ -68,10 +68,11 @@ use iced_aw::{date_picker, time_picker};
 use itertools::Itertools;
 use palette::Srgb;
 use rfd::FileDialog;
+use user_idle::UserIdle;
 use webbrowser;
 
 #[cfg(target_os = "linux")]
-use {crate::helpers::wayland_idle::WaylandIdleMonitor, std::sync::OnceLock, user_idle::UserIdle};
+use {crate::helpers::wayland_idle::WaylandIdleMonitor, std::sync::OnceLock};
 
 #[cfg(target_os = "linux")]
 static WAYLAND_MONITOR: OnceLock<WaylandIdleMonitor> = OnceLock::new();
@@ -2098,14 +2099,22 @@ impl Furtherance {
                     {
                         let is_wayland = detect_wayland();
                         let is_currently_idle = if is_wayland {
-                            let monitor = WAYLAND_MONITOR.get_or_init(|| {
-                                WaylandIdleMonitor::spawn(
-                                    (self.fur_settings.chosen_idle_time * 60) as u64,
-                                )
-                            });
-                            monitor.is_idle()
+                            #[cfg(target_os = "linux")]
+                            {
+                                let monitor = WAYLAND_MONITOR.get_or_init(|| {
+                                    WaylandIdleMonitor::spawn(
+                                        (self.fur_settings.chosen_idle_time * 60) as u64,
+                                    )
+                                });
+                                monitor.is_idle()
+                            }
+
+                            #[cfg(not(target_os = "linux"))]
+                            {
+                                false
+                            }
                         } else {
-                            let secs = if let Ok(idle) = UserIdle::get_time() {
+                            let secs: u64 = if let Ok(idle) = UserIdle::get_time() {
                                 idle.as_seconds()
                             } else {
                                 0

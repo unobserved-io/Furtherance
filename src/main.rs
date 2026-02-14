@@ -77,8 +77,10 @@ mod view_enums;
 use std::borrow::Cow;
 
 use app::Furtherance;
-use iced::window::settings::PlatformSpecific;
 use image::ImageFormat;
+
+#[cfg(target_os = "linux")]
+use iced::window::settings::PlatformSpecific;
 
 fn main() -> iced::Result {
     let window_icon = iced::window::icon::from_file_data(
