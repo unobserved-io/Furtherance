@@ -41,6 +41,12 @@ use crate::{
     view_enums::NotificationType,
 };
 
+#[cfg(target_os = "linux")]
+use {
+    std::{env, path::Path},
+    uzers::get_current_uid,
+};
+
 pub fn chain_tasks(commands: Vec<Task<Message>>) -> Task<Message> {
     Task::batch(commands)
 }
@@ -572,4 +578,15 @@ pub fn reset_fur_user(user: &mut Option<FurUser>) {
         Ok(_) => {}
         Err(e) => eprintln!("Error deleting user credentials: {}", e),
     }
+}
+
+pub fn detect_wayland() -> bool {
+    #[cfg(target_os = "linux")]
+    if let Ok(true) = env::var("XDG_SESSION_TYPE").map(|v| v == "wayland") {
+        return true;
+    } else if let Ok(_) = env::var("WAYLAND_DISPLAY") {
+        return Path::new(&format!("/run/user/{}/wayland-0", get_current_uid())).exists();
+    }
+
+    false
 }

@@ -17,13 +17,13 @@
 use anyhow::Context;
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use wayrs_client::protocol::WlSeat;
 use wayrs_client::{Connection, EventCtx, IoMode};
 use wayrs_protocols::ext_idle_notify_v1::{
-    ext_idle_notification_v1, ExtIdleNotificationV1, ExtIdleNotifierV1,
+    ExtIdleNotificationV1, ExtIdleNotifierV1, ext_idle_notification_v1,
 };
 use wayrs_utils::seats::{SeatHandler, Seats};
 
