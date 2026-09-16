@@ -31,6 +31,8 @@ mod constants;
 mod database;
 mod helpers {
     pub mod color_utils;
+    #[cfg(target_os = "linux")]
+    pub mod gnome_idle;
     pub mod midnight_subscription;
     pub mod task_actions;
     pub mod tasks;
