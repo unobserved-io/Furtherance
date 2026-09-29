@@ -72,7 +72,10 @@ use user_idle::UserIdle;
 use webbrowser;
 
 #[cfg(target_os = "linux")]
-use {crate::helpers::wayland_idle::WaylandIdleMonitor, std::sync::OnceLock};
+use {
+    crate::helpers::{gnome_idle, wayland_idle::WaylandIdleMonitor},
+    std::sync::OnceLock,
+};
 
 #[cfg(target_os = "linux")]
 static WAYLAND_MONITOR: OnceLock<WaylandIdleMonitor> = OnceLock::new();
@@ -2101,12 +2104,20 @@ impl Furtherance {
                         let is_currently_idle = if is_wayland {
                             #[cfg(target_os = "linux")]
                             {
-                                let monitor = WAYLAND_MONITOR.get_or_init(|| {
-                                    WaylandIdleMonitor::spawn(
-                                        (self.fur_settings.chosen_idle_time * 60) as u64,
-                                    )
-                                });
-                                monitor.is_idle()
+                                if gnome_idle::is_gnome() {
+                                    gnome_idle::get_idle_seconds()
+                                        .map(|secs| {
+                                            secs >= (self.fur_settings.chosen_idle_time * 60) as u64
+                                        })
+                                        .unwrap_or(false)
+                                } else {
+                                    let monitor = WAYLAND_MONITOR.get_or_init(|| {
+                                        WaylandIdleMonitor::spawn(
+                                            (self.fur_settings.chosen_idle_time * 60) as u64,
+                                        )
+                                    });
+                                    monitor.is_idle()
+                                }
                             }
 
                             #[cfg(not(target_os = "linux"))]
